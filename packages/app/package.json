@@ -1,0 +1,17 @@
+{
+  "name": "@orion-js/app",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "watch": "babel ./src --watch --out-dir ./lib --presets es2015,stage-2"
+  },
+  "dependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1"
+  },
+  "devDependencies": {
+    "eslint-config-orionsoft": "^1.2.8"
+  }
+}

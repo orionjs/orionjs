@@ -1,0 +1,14 @@
+{
+  "presets": ["env"],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "root": ["./"],
+        "alias": {
+          "app": "./app"
+        }
+      }
+    ]
+  ]
+}
