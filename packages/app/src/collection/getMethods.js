@@ -1,7 +1,8 @@
 import generateId from './generateId'
 import getSelector from './getSelector'
+import validate from '../../lib/schema/validate'
 
-export default function({rawCollection}) {
+export default function({schema, rawCollection}) {
   const collection = rawCollection
 
   const funcs = {
@@ -15,6 +16,9 @@ export default function({rawCollection}) {
       return collection.aggregate(pipeline)
     },
     async insert(doc) {
+      if (schema) {
+        await validate(schema, doc)
+      }
       doc._id = generateId()
       await collection.insert(doc)
       return doc._id

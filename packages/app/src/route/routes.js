@@ -1,18 +1,16 @@
-import unionBy from 'lodash/unionBy'
 import pathToRegexp from 'path-to-regexp'
 import matcher from 'path-match'
 
 global.allRoutes = []
 
-export const addRoutes = function(routes) {
-  routes = routes.map(route => {
-    return {
-      regex: pathToRegexp(route.path),
-      match: matcher()(route.path),
-      ...route
-    }
+export const addRoute = function(path, options, func) {
+  global.allRoutes.push({
+    ...options,
+    path,
+    func,
+    regex: pathToRegexp(path),
+    match: matcher()(path)
   })
-  global.allRoutes = unionBy(global.allRoutes, routes, 'path')
 }
 
 export const getRoutes = function() {

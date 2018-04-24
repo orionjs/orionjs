@@ -2,7 +2,9 @@ import connect from '../database/connect'
 import getMethods from './getMethods'
 
 export default function(options) {
-  const collection = {}
+  const collection = {
+    ...options
+  }
 
   connect().then(db => {
     const rawCollection = db.collection(options.name)
