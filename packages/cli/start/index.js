@@ -2,38 +2,63 @@ import fs from 'fs'
 import compileAll from './compileAll'
 import run from './run'
 import colors from 'colors/safe'
+import getModulesToWatch from '../helpers/getModulesToWatch'
+import defer from './defer'
+import startDB from './startDB'
 
-let hasChanges = true
-let app = null
+let hasChanges = false
 
-const runApp = function() {
-  if (app) app.kill()
-  app = run({restart: runApp})
-  console.log(colors.bold('=> App started\n'))
-}
-
-const start = async function() {
-  if (!hasChanges) return
+const onAppChange = defer(async function() {
+  const success = await compileAll()
+  if (success) {
+    await run()
+  }
   hasChanges = false
+}, 200)
 
-  console.log(colors.bold('=> Compiling...'))
-  const result = await compileAll()
-  if (!result) return
-  runApp()
-}
-
-setInterval(start, 1000)
+const onDependencyChange = defer(async function() {
+  await run()
+  hasChanges = false
+}, 2000)
 
 const watch = function() {
-  fs.watch('./app', {recursive: true}, function(event, file) {
+  fs.watch('./app', {recursive: true}, async function(event, file) {
     if (!hasChanges) console.log('')
     hasChanges = true
     console.log(colors.bold(`=> File changed -- ${file} -- restarting`))
+    onAppChange()
   })
+
+  const moduleListener = async function(event, fileName) {
+    if (!hasChanges) console.log('')
+    hasChanges = true
+    console.log(colors.bold(`=> Modules updated -- restarting`))
+    onDependencyChange()
+  }
+
+  const paths = getModulesToWatch()
+  for (const path of paths) {
+    fs.watch(path, {recursive: true}, moduleListener)
+  }
 }
 
-export default function() {
+export default async function() {
   console.log(colors.bold('\nOrionjs App\n'))
-  start()
+
+  if (!process.env.MONGO_URL) {
+    try {
+      await startDB()
+      console.log(colors.bold(`=> Database started`))
+    } catch (error) {
+      console.log(colors.bold(`=> Error starting database`))
+      console.log(error.message)
+      return
+    }
+  }
+
+  const success = await compileAll()
+  if (success) {
+    await run()
+  }
   watch()
 }

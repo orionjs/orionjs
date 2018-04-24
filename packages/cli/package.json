@@ -11,12 +11,14 @@
     "commander": "^2.15.1",
     "globby": "^8.0.1",
     "lodash": "^4.17.5",
-    "source-map-support": "^0.5.4"
+    "source-map-support": "^0.5.4",
+    "walk-sync": "^0.3.2"
   },
   "bin": {
     "orion": "./index.js"
   },
   "devDependencies": {
+    "babel-preset-env": "^1.6.1",
     "eslint-config-orionsoft": "^1.2.8"
   }
 }

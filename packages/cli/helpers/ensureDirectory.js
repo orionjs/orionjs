@@ -8,7 +8,4 @@ const ensureDirExistence = function(filePath) {
   fs.mkdirSync(dirname)
 }
 
-export default async function(path, content) {
-  ensureDirExistence(path)
-  fs.writeFileSync(path, content)
-}
+export default ensureDirExistence

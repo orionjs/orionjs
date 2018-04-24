@@ -2,11 +2,12 @@ import execute from './execute'
 import globby from 'globby'
 import compileFile from './compileFile'
 import colors from 'colors/safe'
+import runOnce from './runOnce'
 
-export default async function() {
-  await execute('rm -rf .build')
+export default runOnce(async function() {
+  console.log(colors.bold('=> Compiling...'))
+  await execute('rm -rf .orion/build')
   const files = await globby('app/**/*.js')
-
   try {
     await Promise.all(files.map(file => compileFile(file)))
     return true
@@ -19,4 +20,4 @@ export default async function() {
     }
     return false
   }
-}
+})

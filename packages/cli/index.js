@@ -1,4 +1,4 @@
-#!/usr/bin/env babel-node --presets es2015,stage-2
+#!/usr/bin/env babel-node --presets env
 
 import program from 'commander'
 import start from './start'

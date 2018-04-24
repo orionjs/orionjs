@@ -1,9 +1,8 @@
 import {register, http} from '@orion-js/app'
-import hello from './hello'
+import routes from './routes'
 
 register({
   service: 'http',
   type: http,
-  path: '/hello',
-  run: hello
+  routes
 })

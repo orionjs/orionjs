@@ -1,3 +1,6 @@
+import 'babel-core/register'
+import 'babel-polyfill'
+import './database/connect'
 import start from './start'
 import register from './register'
 import http from './http'

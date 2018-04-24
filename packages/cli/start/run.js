@@ -1,21 +1,20 @@
-import {exec} from 'child_process'
+import runProcess from './runProcess'
+import runOnce from './runOnce'
 import colors from 'colors/safe'
+import sleep from '../helpers/sleep'
 
-export default function({restart}) {
-  let appProcess = exec('node .build/index.js')
+let appProcess = null
 
-  appProcess.stdout.pipe(process.stdout)
-  appProcess.stderr.pipe(process.stderr)
+const restart = runOnce(async function() {
+  if (appProcess) {
+    console.log(colors.bold('=> Restarting...'))
+    appProcess.kill()
+    await sleep(100)
+  }
+  appProcess = await runProcess({restart})
+  console.log(colors.bold('=> App started\n'))
 
-  appProcess.on('exit', function(code, signal) {
-    if (code === 0) {
-    } else {
-      console.log(colors.bold('\n=> Error running app, restarting...'))
-      setTimeout(() => {
-        restart()
-      }, 2000)
-    }
-  })
+  await sleep(100)
+})
 
-  return appProcess
-}
+export default restart

@@ -1,5 +1,5 @@
 import {transformFile} from 'babel-core'
-import writeFile from './writeFile'
+import writeFile from '../helpers/writeFile'
 import sourceMapSupport from 'babel-plugin-source-map-support'
 
 const addSourceMapPath = function(path, code) {
@@ -21,7 +21,7 @@ export default async function(filePath) {
     })
   })
 
-  const finalPath = filePath.replace(/^app/, '.build')
+  const finalPath = filePath.replace(/^app/, '.orion/build')
   await writeFile(finalPath, addSourceMapPath(finalPath, code))
   await writeFile(finalPath + '.map', JSON.stringify(map, null, 2))
 }
