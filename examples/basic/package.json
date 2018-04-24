@@ -9,7 +9,8 @@
     "start": "nodemon --exec babel-node ./app"
   },
   "dependencies": {
-    "@orion-js/app": "^0.0.1"
+    "@orion-js/app": "^0.0.1",
+    "babel-plugin-module-resolver": "^3.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
