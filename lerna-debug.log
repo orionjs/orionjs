@@ -9,13 +9,113 @@
 8 info current version 0.0.0
 9 silly isDetachedHead
 10 silly getCurrentBranch
-11 error initialize caught error
-12 error Error: fatal: ambiguous argument 'HEAD': unknown revision or path not in the working tree.
-12 error Use '--' to separate paths from revisions, like this:
-12 error 'git <command> [<revision>...] -- [<file>...]'
-12 error
-12 error     at Function.module.exports.sync (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:303:26)
-12 error     at Function.execSync (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/lib/ChildProcessUtilities.js:59:30)
-12 error     at Function.getCurrentBranch (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/lib/GitUtilities.js:202:59)
-12 error     at Function.isDetachedHead (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/lib/GitUtilities.js:45:37)
-12 error     at PublishCommand.initialize (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/lib/commands/PublishCommand.js:260:36)
+11 verbose getCurrentBranch master
+12 verbose isDetachedHead false
+13 silly getCurrentBranch
+14 verbose getCurrentBranch master
+15 silly getUpdates
+16 info Checking for updated packages...
+17 silly hasTags
+18 verbose hasTags false
+19 info Comparing with initial commit.
+20 verbose updated @orion-js/app
+21 verbose updated @orion-js/cli
+22 info Checking for prereleased packages...
+23 silly collectDependents
+24 silly isPackageDependentOf @orion-js/app @orion-js/app
+25 silly isPackageDependentOf @orion-js/app @orion-js/cli
+26 silly isPackageDependentOf @orion-js/cli @orion-js/app
+27 silly isPackageDependentOf @orion-js/cli @orion-js/cli
+28 silly collectUpdates
+29 verbose has filtered update @orion-js/app
+30 verbose has filtered update @orion-js/cli
+31 silly initialize success
+32 silly execute attempt
+33 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/lerna.json
+34 silly runScriptSync preversion undefined
+35 silly runScriptSync preversion @orion-js/app
+36 silly runScriptSync version @orion-js/app
+37 silly runScriptSync preversion @orion-js/cli
+38 silly runScriptSync version @orion-js/cli
+39 silly runScriptSync version undefined
+40 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/package.json
+41 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli/package.json
+42 silly commit v0.0.1
+43 verbose commit [ 'commit', '--no-verify', '-m', 'v0.0.1' ]
+44 silly addTag v0.0.1
+45 silly runScriptSync postversion @orion-js/app
+46 silly runScriptSync postversion @orion-js/cli
+47 silly runScriptSync postversion undefined
+48 info publish Publishing packages to npm...
+49 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/scripts/prepublish.js
+50 verbose execScript No prepublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/scripts/prepublish.js
+51 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli/scripts/prepublish.js
+52 verbose execScript No prepublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli/scripts/prepublish.js
+53 verbose publishing @orion-js/app
+54 silly publishTaggedInDir latest app
+55 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
+56 verbose publishing @orion-js/cli
+57 silly publishTaggedInDir latest cli
+58 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+59 error publish Retrying failed publish: @orion-js/app
+60 verbose publish error undefined
+61 verbose publishing @orion-js/app
+62 silly publishTaggedInDir latest app
+63 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
+64 error publish Retrying failed publish: @orion-js/cli
+65 verbose publish error undefined
+66 verbose publishing @orion-js/cli
+67 silly publishTaggedInDir latest cli
+68 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+69 error publish Retrying failed publish: @orion-js/app
+70 verbose publish error undefined
+71 verbose publishing @orion-js/app
+72 silly publishTaggedInDir latest app
+73 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
+74 error publish Retrying failed publish: @orion-js/cli
+75 verbose publish error undefined
+76 verbose publishing @orion-js/cli
+77 silly publishTaggedInDir latest cli
+78 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+79 error publish Retrying failed publish: @orion-js/app
+80 verbose publish error undefined
+81 verbose publishing @orion-js/app
+82 silly publishTaggedInDir latest app
+83 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
+84 error publish Retrying failed publish: @orion-js/cli
+85 verbose publish error undefined
+86 verbose publishing @orion-js/cli
+87 silly publishTaggedInDir latest cli
+88 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+89 error publish Retrying failed publish: @orion-js/app
+90 verbose publish error undefined
+91 verbose publishing @orion-js/app
+92 silly publishTaggedInDir latest app
+93 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
+94 error publish Retrying failed publish: @orion-js/cli
+95 verbose publish error undefined
+96 verbose publishing @orion-js/cli
+97 silly publishTaggedInDir latest cli
+98 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+99 error publish Ran out of retries while publishing @orion-js/app Error: Command failed: npm publish --tag latest
+99 error publish npm ERR! code ENEEDAUTH
+99 error publish npm ERR! need auth auth required for publishing
+99 error publish npm ERR! need auth You need to authorize this machine using `npm adduser`
+99 error publish
+99 error publish npm ERR! A complete log of this run can be found in:
+99 error publish npm ERR!     /Users/nicolaslopezj/.npm/_logs/2018-04-24T13_57_38_721Z-debug.log
+99 error publish
+99 error publish     at Promise.all.then.arr (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:236:11)
+99 error publish     at <anonymous>
+99 error publish     at process._tickCallback (internal/process/next_tick.js:118:7)
+100 error execute callback with error
+101 error Error: Command failed: npm publish --tag latest
+101 error npm ERR! code ENEEDAUTH
+101 error npm ERR! need auth auth required for publishing
+101 error npm ERR! need auth You need to authorize this machine using `npm adduser`
+101 error
+101 error npm ERR! A complete log of this run can be found in:
+101 error npm ERR!     /Users/nicolaslopezj/.npm/_logs/2018-04-24T13_57_38_721Z-debug.log
+101 error
+101 error     at Promise.all.then.arr (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:236:11)
+101 error     at <anonymous>
