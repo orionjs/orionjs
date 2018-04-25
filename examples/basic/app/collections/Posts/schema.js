@@ -12,7 +12,7 @@ export default {
     type: String,
     custom(title) {
       if (title.length < 5) {
-        return 'Title is too short'
+        return 'short'
       }
     }
   },
@@ -20,7 +20,7 @@ export default {
     type: String,
     custom(content, {doc}) {
       if (content.length < doc.title.length) {
-        return 'Content is smaller than title'
+        return 'smallerThanTitle'
       }
     }
   },

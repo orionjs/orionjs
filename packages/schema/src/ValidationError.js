@@ -1,5 +1,4 @@
 import isArray from 'lodash/isArray'
-import OrionError from '../OrionError'
 
 const getValidationErrors = function(validationErrors) {
   const errors = {}
@@ -11,16 +10,18 @@ const getValidationErrors = function(validationErrors) {
   return errors
 }
 
-export default class ValidationError extends OrionError {
+export default class ValidationError extends Error {
   constructor(validationErrors) {
     if (!isArray(validationErrors)) {
       validationErrors = [validationErrors]
     }
 
-    super('validationError', 'Validation Error')
+    super('Validation Error')
     Error.captureStackTrace(this, this.constructor)
 
+    this.code = 'validationError'
     this.isValidationError = true
+    this.isOrionError = true
     this.validationErrors = validationErrors
 
     this.getInfo = () => {

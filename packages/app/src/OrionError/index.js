@@ -10,7 +10,7 @@ export default class OrionError extends Error {
 
     this.getInfo = () => {
       return {
-        code,
+        error: code,
         message,
         extra
       }
