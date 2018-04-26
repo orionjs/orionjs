@@ -1,14 +1,5 @@
 import isArray from 'lodash/isArray'
-
-const getValidationErrors = function(validationErrors) {
-  const errors = {}
-
-  for (const validationError of validationErrors) {
-    errors[validationError.key] = validationError.code
-  }
-
-  return errors
-}
+import getValidationErrorsObject from './getValidationErrorsObject'
 
 export default class ValidationError extends Error {
   constructor(validationErrors) {
@@ -28,7 +19,7 @@ export default class ValidationError extends Error {
       return {
         error: 'validationError',
         message: this.message,
-        validationErrors: getValidationErrors(validationErrors)
+        validationErrors: getValidationErrorsObject(validationErrors)
       }
     }
   }

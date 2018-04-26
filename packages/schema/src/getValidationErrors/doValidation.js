@@ -2,6 +2,7 @@ import getError from './getError'
 import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import clone from 'lodash/clone'
+import isNil from 'lodash/isNil'
 
 export default async function doValidation({
   schema,
@@ -17,11 +18,12 @@ export default async function doValidation({
     return
   }
 
+  if (isNil(value)) return
+
   /**
    * Deep validation
    */
   if (isPlainObject(currentSchema.type)) {
-    console.log('is plain object', keys.join('.'))
     const schemaKeys = Object.keys(currentSchema.type)
     for (const key of schemaKeys) {
       const itemSchema = currentSchema.type[key]
@@ -38,18 +40,16 @@ export default async function doValidation({
       })
     }
   } else if (isArray(currentSchema.type)) {
-    console.log('is array', keys.join('.'))
     const itemSchema = currentSchema.type[0]
     for (let i = 0; i < value.length; i++) {
       const itemValue = value[i]
       const keyItemKeys = clone(keys)
       keyItemKeys.push(i)
-      console.log('on array, keyItemKeys', keyItemKeys)
       await doValidation({
         schema,
         doc,
         value: itemValue,
-        currentSchema: itemSchema,
+        currentSchema: {type: itemSchema},
         keys: keyItemKeys,
         addError
       })

@@ -1,5 +1,6 @@
 import isNil from 'lodash/isNil'
 import getFieldValidator from './getFieldValidator'
+import validators from './validators'
 
 export default async function({schema, doc, value, currentSchema, keys}) {
   const info = {schema, doc, keys, currentSchema}
@@ -10,13 +11,20 @@ export default async function({schema, doc, value, currentSchema, keys}) {
     }
   }
 
-  if (typeof currentSchema.custom === 'function') {
-    const error = await currentSchema.custom(value, info)
-    if (error) return error
+  const validatorKey = await getFieldValidator(currentSchema.type)
+  const validator = validators[validatorKey]
+
+  const error = await validator(value, info)
+  if (error) {
+    return error
   }
 
-  const validator = await getFieldValidator(currentSchema.type)
+  if (typeof currentSchema.custom === 'function') {
+    const customError = await currentSchema.custom(value, info)
+    if (customError) {
+      return customError
+    }
+  }
 
-  const error = validator(value, info)
-  if (error) return error
+  return null
 }
