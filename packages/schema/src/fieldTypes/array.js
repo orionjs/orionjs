@@ -1,6 +1,6 @@
-import fieldType from '../../../fieldType'
+import fieldType from '../fieldType'
 import isArray from 'lodash/isArray'
-import Errors from '../../../Errors'
+import Errors from '../Errors'
 
 export default fieldType({
   validate(value) {

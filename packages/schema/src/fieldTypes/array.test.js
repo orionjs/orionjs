@@ -1,5 +1,5 @@
 import array from './array'
-import Errors from '../../../Errors'
+import Errors from '../Errors'
 
 test('return an error when the value is incorrect', async () => {
   expect(array.validate('a string')).toBe(Errors.NOT_AN_ARRAY)
