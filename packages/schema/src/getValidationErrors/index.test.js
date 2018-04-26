@@ -53,7 +53,8 @@ test('returns an array with the respective errors', async () => {
   })
   expect(errors).toEqual({
     firstName: Errors.REQUIRED,
-    'friends.0.firstName': Errors.REQUIRED
+    'friends.0.firstName': Errors.REQUIRED,
+    'friends.0.lastName': Errors.NOT_IN_SCHEMA
   })
 })
 
@@ -70,7 +71,7 @@ test('gives error when a document field is not present in schema', async () => {
     }
   )
   expect(errors).toEqual({
-    age: 'Errors.NOT_IN_SCHEMA'
+    age: Errors.NOT_IN_SCHEMA
   })
 })
 

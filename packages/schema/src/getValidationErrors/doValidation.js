@@ -3,6 +3,8 @@ import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import clone from 'lodash/clone'
 import isNil from 'lodash/isNil'
+import difference from 'lodash/difference'
+import Errors from '../Errors'
 
 export default async function doValidation({
   schema,
@@ -38,6 +40,14 @@ export default async function doValidation({
         keys: keyItemKeys,
         addError
       })
+    }
+
+    const documentKeys = Object.keys(value)
+    const notInSchemaKeys = difference(documentKeys, schemaKeys)
+    for (const key of notInSchemaKeys) {
+      const keyItemKeys = clone(keys)
+      keyItemKeys.push(key)
+      addError(keyItemKeys, Errors.NOT_IN_SCHEMA)
     }
   } else if (isArray(currentSchema.type)) {
     const itemSchema = currentSchema.type[0]
