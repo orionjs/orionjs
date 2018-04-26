@@ -1,4 +1,5 @@
 import getError from './index'
+import Errors from '../../Errors'
 
 test('pass a simple string validation', async () => {
   const error = await getError({value: 'A valid string', currentSchema: {type: String}})
@@ -7,7 +8,7 @@ test('pass a simple string validation', async () => {
 
 test('detect required field when value is null', async () => {
   const error = await getError({value: null, currentSchema: {type: String}})
-  expect(error).toBe('required')
+  expect(error).toBe(Errors.REQUIRED)
 })
 
 test('run custom validation if passed', async () => {

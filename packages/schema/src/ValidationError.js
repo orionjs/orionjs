@@ -1,10 +1,9 @@
-import isArray from 'lodash/isArray'
-import getValidationErrorsObject from './getValidationErrorsObject'
+import isPlainObject from 'lodash/isPlainObject'
 
 export default class ValidationError extends Error {
   constructor(validationErrors) {
-    if (!isArray(validationErrors)) {
-      validationErrors = [validationErrors]
+    if (!isPlainObject(validationErrors)) {
+      throw new Error('ValidationError must be initialized with an errors object')
     }
 
     super('Validation Error')
@@ -19,7 +18,7 @@ export default class ValidationError extends Error {
       return {
         error: 'validationError',
         message: this.message,
-        validationErrors: getValidationErrorsObject(validationErrors)
+        validationErrors: validationErrors
       }
     }
   }

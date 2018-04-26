@@ -1,5 +1,5 @@
 import getValidationErrors from './index'
-import getValidationErrorsObject from '../getValidationErrorsObject'
+import Errors from '../Errors'
 
 const friend = {
   firstName: {
@@ -33,7 +33,7 @@ const schema = {
   }
 }
 
-test('returns empty array when object is valid', async () => {
+test('returns null when object is valid', async () => {
   const errors = await getValidationErrors(schema, {
     firstName: 'Nicolás',
     lastName: 'López',
@@ -43,7 +43,7 @@ test('returns empty array when object is valid', async () => {
       model: 'Kicks'
     }
   })
-  expect(errors).toEqual([])
+  expect(errors).toBeNull()
 })
 
 test('returns an array with the respective errors', async () => {
@@ -51,10 +51,27 @@ test('returns an array with the respective errors', async () => {
     lastName: 'López',
     friends: [{lastName: 'Zibert'}, {firstName: 'Joaquin'}]
   })
-  expect(errors).toEqual([
-    {key: 'firstName', code: 'required'},
-    {key: 'friends.0.firstName', code: 'required'}
-  ])
+  expect(errors).toEqual({
+    firstName: Errors.REQUIRED,
+    'friends.0.firstName': Errors.REQUIRED
+  })
+})
+
+test('gives error when a document field is not present in schema', async () => {
+  const errors = await getValidationErrors(
+    {
+      name: {
+        type: String
+      }
+    },
+    {
+      name: 'Nicolás López',
+      age: 25
+    }
+  )
+  expect(errors).toEqual({
+    age: 'Errors.NOT_IN_SCHEMA'
+  })
 })
 
 test('gives an error if a optional object is present and has missing values', async () => {
@@ -66,7 +83,9 @@ test('gives an error if a optional object is present and has missing values', as
       brand: 'Nissan'
     }
   })
-  expect(errors).toEqual([{key: 'car.model', code: 'required'}])
+  expect(errors).toEqual({
+    'car.model': Errors.REQUIRED
+  })
 })
 
 test('can check errors in deeply nested keys', async () => {
@@ -123,15 +142,16 @@ test('can check errors in deeply nested keys', async () => {
             }
           },
           {
-            name: 'Diego'
+            name: 'Diego',
+            age: 21
           }
         ]
       }
     }
   })
-  const errorsObject = getValidationErrorsObject(errors)
-  expect(errorsObject).toEqual({
-    'family.mother.car.brand': 'required',
-    'family.mother.children.0.car.model': 'required'
+  expect(errors).toEqual({
+    'family.mother.car.brand': Errors.REQUIRED,
+    'family.mother.children.0.car.model': Errors.REQUIRED,
+    'family.mother.children.1.age': Errors.NOT_IN_SCHEMA
   })
 })

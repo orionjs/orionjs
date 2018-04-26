@@ -1,4 +1,6 @@
 export default function(validationErrors) {
+  if (validationErrors.length === 0) return null
+
   const errors = {}
 
   for (const validationError of validationErrors) {

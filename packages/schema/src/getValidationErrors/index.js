@@ -1,4 +1,5 @@
 import doValidation from './doValidation'
+import getValidationErrorsObject from './getValidationErrorsObject'
 
 export default async function(schema, doc) {
   const errors = []
@@ -18,5 +19,5 @@ export default async function(schema, doc) {
     addError
   })
 
-  return errors
+  return getValidationErrorsObject(errors)
 }
