@@ -25,18 +25,17 @@ test('run custom validation if passed', async () => {
   expect(error).toBe('hello')
 })
 
-test('run custom validation and pass', async () => {
-  const error = await getError({
-    value: 'A valid string',
-    currentSchema: {type: String, custom: () => null}
+test('run async custom validation', async () => {
+  const customType = fieldType({
+    async validate(value) {
+      const sleep = time => new Promise(resolve => setTimeout(resolve, time))
+      await sleep(1)
+      return 'hello'
+    }
   })
-  expect(error).toBeNull()
-})
-
-test('detect unkown field type', async () => {
   const error = await getError({
     value: 'A string',
-    currentSchema: {type: 'an unkown field type'}
+    currentSchema: {type: customType}
   })
-  expect(error).toBe('unknownFieldType')
+  expect(error).toBe('hello')
 })

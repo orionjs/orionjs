@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1524710663350" clover="3.2.0">
-  <project timestamp="1524710663351" name="All files">
-    <metrics statements="73" coveredstatements="73" conditionals="37" coveredconditionals="37" methods="11" coveredmethods="11" elements="121" coveredelements="121" complexity="0" loc="73" ncloc="73" packages="4" files="15" classes="15">
+<coverage generated="1524713160267" clover="3.2.0">
+  <project timestamp="1524713160267" name="All files">
+    <metrics statements="92" coveredstatements="92" conditionals="62" coveredconditionals="62" methods="11" coveredmethods="11" elements="165" coveredelements="165" complexity="0" loc="92" ncloc="92" packages="4" files="17" classes="17">
       <package name="src">
-        <metrics statements="16" coveredstatements="16" conditionals="4" coveredconditionals="4" methods="5" coveredmethods="5"/>
+        <metrics statements="19" coveredstatements="19" conditionals="7" coveredconditionals="7" methods="5" coveredmethods="5"/>
         <file name="Errors.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/Errors.js">
           <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         </file>
@@ -21,8 +21,11 @@
           <line num="18" count="1" type="stmt"/>
         </file>
         <file name="fieldType.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldType.js">
-          <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
-          <line num="2" count="20" type="stmt"/>
+          <metrics statements="4" coveredstatements="4" conditionals="3" coveredconditionals="3" methods="1" coveredmethods="1"/>
+          <line num="2" count="39" type="stmt"/>
+          <line num="4" count="96" type="cond" truecount="2" falsecount="0"/>
+          <line num="5" count="35" type="stmt"/>
+          <line num="7" count="96" type="stmt"/>
         </file>
         <file name="isValid.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/isValid.js">
           <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
@@ -37,13 +40,32 @@
         </file>
       </package>
       <package name="src.fieldTypes">
-        <metrics statements="4" coveredstatements="4" conditionals="6" coveredconditionals="6" methods="0" coveredmethods="0"/>
+        <metrics statements="13" coveredstatements="13" conditionals="20" coveredconditionals="20" methods="0" coveredmethods="0"/>
         <file name="array.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/array.js">
           <metrics statements="1" coveredstatements="1" conditionals="2" coveredconditionals="2" methods="0" coveredmethods="0"/>
           <line num="7" count="9" type="cond" truecount="2" falsecount="0"/>
         </file>
+        <file name="date.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/date.js">
+          <metrics statements="1" coveredstatements="1" conditionals="2" coveredconditionals="2" methods="0" coveredmethods="0"/>
+          <line num="7" count="5" type="cond" truecount="2" falsecount="0"/>
+        </file>
         <file name="index.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/index.js">
           <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        </file>
+        <file name="integer.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/integer.js">
+          <metrics statements="2" coveredstatements="2" conditionals="2" coveredconditionals="2" methods="0" coveredmethods="0"/>
+          <line num="8" count="7" type="cond" truecount="2" falsecount="0"/>
+          <line num="9" count="3" type="stmt"/>
+        </file>
+        <file name="number.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/number.js">
+          <metrics statements="7" coveredstatements="7" conditionals="10" coveredconditionals="10" methods="0" coveredmethods="0"/>
+          <line num="7" count="14" type="cond" truecount="2" falsecount="0"/>
+          <line num="9" count="9" type="cond" truecount="2" falsecount="0"/>
+          <line num="10" count="3" type="cond" truecount="2" falsecount="0"/>
+          <line num="11" count="1" type="stmt"/>
+          <line num="15" count="8" type="cond" truecount="2" falsecount="0"/>
+          <line num="16" count="2" type="cond" truecount="2" falsecount="0"/>
+          <line num="17" count="1" type="stmt"/>
         </file>
         <file name="plainObject.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/plainObject.js">
           <metrics statements="1" coveredstatements="1" conditionals="2" coveredconditionals="2" methods="0" coveredmethods="0"/>
@@ -51,11 +73,7 @@
         </file>
         <file name="string.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/string.js">
           <metrics statements="1" coveredstatements="1" conditionals="2" coveredconditionals="2" methods="0" coveredmethods="0"/>
-          <line num="7" count="33" type="cond" truecount="2" falsecount="0"/>
-        </file>
-        <file name="unkown.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/fieldTypes/unkown.js">
-          <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-          <line num="6" count="1" type="stmt"/>
+          <line num="7" count="32" type="cond" truecount="2" falsecount="0"/>
         </file>
       </package>
       <package name="src.getValidationErrors">
@@ -107,29 +125,36 @@
         </file>
       </package>
       <package name="src.getValidationErrors.getError">
-        <metrics statements="17" coveredstatements="17" conditionals="16" coveredconditionals="16" methods="2" coveredmethods="2"/>
+        <metrics statements="24" coveredstatements="24" conditionals="24" coveredconditionals="24" methods="2" coveredmethods="2"/>
         <file name="getFieldValidator.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/getValidationErrors/getError/getFieldValidator.js">
-          <metrics statements="6" coveredstatements="6" conditionals="8" coveredconditionals="8" methods="1" coveredmethods="1"/>
-          <line num="5" count="60" type="cond" truecount="2" falsecount="0"/>
-          <line num="6" count="24" type="cond" truecount="2" falsecount="0"/>
-          <line num="7" count="23" type="stmt"/>
-          <line num="9" count="36" type="cond" truecount="2" falsecount="0"/>
-          <line num="10" count="31" type="cond" truecount="2" falsecount="0"/>
-          <line num="11" count="2" type="stmt"/>
+          <metrics statements="13" coveredstatements="13" conditionals="16" coveredconditionals="16" methods="1" coveredmethods="1"/>
+          <line num="8" count="64" type="cond" truecount="2" falsecount="0"/>
+          <line num="9" count="25" type="cond" truecount="2" falsecount="0"/>
+          <line num="10" count="23" type="stmt"/>
+          <line num="12" count="39" type="cond" truecount="2" falsecount="0"/>
+          <line num="13" count="34" type="cond" truecount="2" falsecount="0"/>
+          <line num="14" count="6" type="cond" truecount="2" falsecount="0"/>
+          <line num="15" count="5" type="cond" truecount="2" falsecount="0"/>
+          <line num="17" count="4" type="cond" truecount="2" falsecount="0"/>
+          <line num="18" count="1" type="stmt"/>
+          <line num="21" count="3" type="stmt"/>
+          <line num="23" count="3" type="cond" truecount="2" falsecount="0"/>
+          <line num="24" count="1" type="stmt"/>
+          <line num="27" count="2" type="stmt"/>
         </file>
         <file name="index.js" path="/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/src/getValidationErrors/getError/index.js">
           <metrics statements="11" coveredstatements="11" conditionals="8" coveredconditionals="8" methods="1" coveredmethods="1"/>
-          <line num="7" count="66" type="stmt"/>
-          <line num="9" count="66" type="cond" truecount="2" falsecount="0"/>
+          <line num="7" count="65" type="stmt"/>
+          <line num="9" count="65" type="cond" truecount="2" falsecount="0"/>
           <line num="10" count="10" type="cond" truecount="2" falsecount="0"/>
           <line num="11" count="2" type="stmt"/>
           <line num="13" count="8" type="stmt"/>
-          <line num="17" count="56" type="stmt"/>
-          <line num="18" count="56" type="cond" truecount="2" falsecount="0"/>
-          <line num="20" count="56" type="stmt"/>
-          <line num="21" count="56" type="cond" truecount="2" falsecount="0"/>
+          <line num="17" count="55" type="stmt"/>
+          <line num="18" count="55" type="cond" truecount="2" falsecount="0"/>
+          <line num="20" count="55" type="stmt"/>
+          <line num="21" count="55" type="cond" truecount="2" falsecount="0"/>
           <line num="22" count="2" type="stmt"/>
-          <line num="25" count="54" type="stmt"/>
+          <line num="25" count="53" type="stmt"/>
         </file>
       </package>
     </metrics>

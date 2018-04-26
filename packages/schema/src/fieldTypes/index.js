@@ -1,11 +1,15 @@
 import array from './array'
 import plainObject from './plainObject'
 import string from './string'
-import unkown from './unkown'
+import date from './date'
+import integer from './integer'
+import number from './number'
 
 export default {
   array,
   plainObject,
   string,
-  unkown
+  date,
+  integer,
+  number
 }
