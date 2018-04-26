@@ -1,11 +1,11 @@
 import array from './array'
 import plainObject from './plainObject'
 import string from './string'
-import Errors from '../../../Errors'
+import unkown from './unkown'
 
 export default {
   array,
   plainObject,
   string,
-  unkown: () => Errors.UNKNOWN_FIELD_TYPE
+  unkown
 }

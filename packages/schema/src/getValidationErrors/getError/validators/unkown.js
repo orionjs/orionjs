@@ -1,9 +1,8 @@
 import fieldType from '../../../fieldType'
-import isPlainObject from 'lodash/isPlainObject'
 import Errors from '../../../Errors'
 
 export default fieldType({
   validate(value) {
-    if (!isPlainObject(value)) return Errors.NOT_AN_OBJECT
+    return Errors.UNKNOWN_FIELD_TYPE
   }
 })

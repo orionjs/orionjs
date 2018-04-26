@@ -1,5 +1,6 @@
 import getError from './index'
 import Errors from '../../Errors'
+import fieldType from '../../fieldType'
 
 test('pass a simple string validation', async () => {
   const error = await getError({value: 'A valid string', currentSchema: {type: String}})
@@ -12,9 +13,14 @@ test('detect required field when value is null', async () => {
 })
 
 test('run custom validation if passed', async () => {
+  const customType = fieldType({
+    validate(value) {
+      return 'hello'
+    }
+  })
   const error = await getError({
     value: 'A string',
-    currentSchema: {type: String, custom: () => 'hello'}
+    currentSchema: {type: customType}
   })
   expect(error).toBe('hello')
 })
