@@ -6,7 +6,7 @@
 5 silly isInitialized true
 6 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/VERSION
 7 silly initialize attempt
-8 info current version 0.0.1
+8 info current version 0.0.3
 9 silly isDetachedHead
 10 silly getCurrentBranch
 11 verbose getCurrentBranch master
@@ -18,77 +18,210 @@
 17 silly hasTags
 18 verbose hasTags true
 19 silly getLastTag
-20 verbose getLastTag v0.0.1
-21 info Comparing with v0.0.1.
-22 silly diffSinceIn v0.0.1 packages/app
+20 verbose getLastTag v0.0.3
+21 info Comparing with v0.0.3.
+22 silly diffSinceIn v0.0.3 packages/app
+23 silly diff packages/app/.babelrc
+23 silly diff packages/app/package.json
+23 silly diff packages/app/src/OrionError/index.js
+23 silly diff packages/app/src/collection/generateId.js
+23 silly diff packages/app/src/collection/getMethods.js
+23 silly diff packages/app/src/collection/getSelector.js
 23 silly diff packages/app/src/collection/index.js
-24 silly diffSinceIn v0.0.1 packages/cli
-25 silly diff
-26 verbose updated @orion-js/app
-27 info Checking for prereleased packages...
-28 silly collectDependents
-29 silly isPackageDependentOf @orion-js/app @orion-js/app
-30 silly isPackageDependentOf @orion-js/cli @orion-js/app
-31 silly collectUpdates
-32 verbose has filtered update @orion-js/app
-33 silly initialize success
-34 silly execute attempt
-35 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/lerna.json
-36 silly runScriptSync preversion undefined
-37 silly runScriptSync preversion @orion-js/app
-38 silly runScriptSync version @orion-js/app
-39 silly runScriptSync version undefined
-40 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/package.json
-41 silly commit v0.0.2
-42 verbose commit [ 'commit', '--no-verify', '-m', 'v0.0.2' ]
-43 silly addTag v0.0.2
-44 silly runScriptSync postversion @orion-js/app
-45 silly runScriptSync postversion undefined
-46 info publish Publishing packages to npm...
-47 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/scripts/prepublish.js
-48 verbose execScript No prepublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/scripts/prepublish.js
-49 verbose publishing @orion-js/app
-50 silly publishTaggedInDir latest app
-51 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
-52 error publish Retrying failed publish: @orion-js/app
-53 verbose publish error undefined
-54 verbose publishing @orion-js/app
-55 silly publishTaggedInDir latest app
-56 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
-57 error publish Retrying failed publish: @orion-js/app
-58 verbose publish error undefined
-59 verbose publishing @orion-js/app
-60 silly publishTaggedInDir latest app
-61 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
-62 error publish Retrying failed publish: @orion-js/app
-63 verbose publish error undefined
-64 verbose publishing @orion-js/app
-65 silly publishTaggedInDir latest app
-66 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
-67 error publish Retrying failed publish: @orion-js/app
-68 verbose publish error undefined
-69 verbose publishing @orion-js/app
-70 silly publishTaggedInDir latest app
-71 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
-72 error publish Ran out of retries while publishing @orion-js/app Error: Command failed: npm publish --tag latest
-72 error publish npm ERR! publish Failed PUT 402
-72 error publish npm ERR! code E402
-72 error publish npm ERR! You must sign up for private packages : @orion-js/app
-72 error publish
-72 error publish npm ERR! A complete log of this run can be found in:
-72 error publish npm ERR!     /Users/nicolaslopezj/.npm/_logs/2018-04-24T13_59_56_959Z-debug.log
-72 error publish
-72 error publish     at Promise.all.then.arr (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:236:11)
-72 error publish     at <anonymous>
-72 error publish     at process._tickCallback (internal/process/next_tick.js:118:7)
-73 error execute callback with error
-74 error Error: Command failed: npm publish --tag latest
-74 error npm ERR! publish Failed PUT 402
-74 error npm ERR! code E402
-74 error npm ERR! You must sign up for private packages : @orion-js/app
-74 error
-74 error npm ERR! A complete log of this run can be found in:
-74 error npm ERR!     /Users/nicolaslopezj/.npm/_logs/2018-04-24T13_59_56_959Z-debug.log
-74 error
-74 error     at Promise.all.then.arr (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:236:11)
-74 error     at <anonymous>
+23 silly diff packages/app/src/database/connect.js
+23 silly diff packages/app/src/database/index.js
+23 silly diff packages/app/src/http/index.js
+23 silly diff packages/app/src/index.js
+23 silly diff packages/app/src/route/handler.js
+23 silly diff packages/app/src/route/index.js
+23 silly diff packages/app/src/route/routes.js
+23 silly diff packages/app/src/route/start.js
+23 silly diff packages/app/src/schema/ValidationError.js
+23 silly diff packages/app/src/schema/getValidationErrors/doValidation.js
+23 silly diff packages/app/src/schema/getValidationErrors/getError/getFieldValidator.js
+23 silly diff packages/app/src/schema/getValidationErrors/getError/index.js
+23 silly diff packages/app/src/schema/getValidationErrors/getError/validators/array.js
+23 silly diff packages/app/src/schema/getValidationErrors/getError/validators/plainObject.js
+23 silly diff packages/app/src/schema/getValidationErrors/getError/validators/string.js
+23 silly diff packages/app/src/schema/getValidationErrors/index.js
+23 silly diff packages/app/src/schema/index.js
+23 silly diff packages/app/src/schema/isValid.js
+23 silly diff packages/app/src/schema/validate.js
+23 silly diff packages/app/yarn.lock
+24 silly diffSinceIn v0.0.3 packages/cli
+25 silly diff packages/cli/helpers/ensureDirectory.js
+25 silly diff packages/cli/helpers/getModulesToWatch.js
+25 silly diff packages/cli/helpers/onExit.js
+25 silly diff packages/cli/helpers/sleep.js
+25 silly diff packages/cli/helpers/writeFile.js
+25 silly diff packages/cli/index.js
+25 silly diff packages/cli/package.json
+25 silly diff packages/cli/start/compileAll.js
+25 silly diff packages/cli/start/compileFile.js
+25 silly diff packages/cli/start/defer.js
+25 silly diff packages/cli/start/index.js
+25 silly diff packages/cli/start/run.js
+25 silly diff packages/cli/start/runOnce.js
+25 silly diff packages/cli/start/runProcess.js
+25 silly diff packages/cli/start/startDB/index.js
+25 silly diff packages/cli/yarn.lock
+26 silly diffSinceIn v0.0.3 packages/schema
+27 silly diff packages/schema/.babelrc
+27 silly diff packages/schema/.gitignore
+27 silly diff packages/schema/coverage/clover.xml
+27 silly diff packages/schema/coverage/coverage-final.json
+27 silly diff packages/schema/coverage/lcov-report/base.css
+27 silly diff packages/schema/coverage/lcov-report/block-navigation.js
+27 silly diff packages/schema/coverage/lcov-report/index.html
+27 silly diff packages/schema/coverage/lcov-report/prettify.css
+27 silly diff packages/schema/coverage/lcov-report/prettify.js
+27 silly diff packages/schema/coverage/lcov-report/sort-arrow-sprite.png
+27 silly diff packages/schema/coverage/lcov-report/sorter.js
+27 silly diff packages/schema/coverage/lcov-report/src/Errors.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/ValidationError.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/doValidation.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/getFieldValidator.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/index.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/index.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/validators/array.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/validators/index.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/validators/index.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/validators/plainObject.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getError/validators/string.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/getValidationErrorsObject.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/index.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrors/index.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/getValidationErrorsObject.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/index.html
+27 silly diff packages/schema/coverage/lcov-report/src/isValid.js.html
+27 silly diff packages/schema/coverage/lcov-report/src/validate.js.html
+27 silly diff packages/schema/coverage/lcov.info
+27 silly diff packages/schema/index.js
+27 silly diff packages/schema/package.json
+27 silly diff packages/schema/src/Errors.js
+27 silly diff packages/schema/src/ValidationError.js
+27 silly diff packages/schema/src/ValidationError.test.js
+27 silly diff packages/schema/src/fieldType.js
+27 silly diff packages/schema/src/fieldTypes/array.js
+27 silly diff packages/schema/src/fieldTypes/array.test.js
+27 silly diff packages/schema/src/fieldTypes/date.js
+27 silly diff packages/schema/src/fieldTypes/date.test.js
+27 silly diff packages/schema/src/fieldTypes/index.js
+27 silly diff packages/schema/src/fieldTypes/integer.js
+27 silly diff packages/schema/src/fieldTypes/integer.test.js
+27 silly diff packages/schema/src/fieldTypes/number.js
+27 silly diff packages/schema/src/fieldTypes/number.test.js
+27 silly diff packages/schema/src/fieldTypes/plainObject.js
+27 silly diff packages/schema/src/fieldTypes/plainObject.test.js
+27 silly diff packages/schema/src/fieldTypes/string.js
+27 silly diff packages/schema/src/fieldTypes/string.test.js
+27 silly diff packages/schema/src/getValidationErrors/doValidation.js
+27 silly diff packages/schema/src/getValidationErrors/getError/getFieldValidator.js
+27 silly diff packages/schema/src/getValidationErrors/getError/getFieldValidator.test.js
+27 silly diff packages/schema/src/getValidationErrors/getError/index.js
+27 silly diff packages/schema/src/getValidationErrors/getError/index.test.js
+27 silly diff packages/schema/src/getValidationErrors/getValidationErrorsObject.js
+27 silly diff packages/schema/src/getValidationErrors/index.js
+27 silly diff packages/schema/src/getValidationErrors/index.test.js
+27 silly diff packages/schema/src/index.js
+27 silly diff packages/schema/src/isValid.js
+27 silly diff packages/schema/src/isValid.test.js
+27 silly diff packages/schema/src/validate.js
+27 silly diff packages/schema/src/validate.test.js
+27 silly diff packages/schema/yarn-error.log
+27 silly diff packages/schema/yarn.lock
+28 verbose updated @orion-js/app
+29 verbose updated @orion-js/cli
+30 verbose updated @orion-js/app
+31 info Checking for prereleased packages...
+32 silly collectDependents
+33 silly isPackageDependentOf @orion-js/app @orion-js/app
+34 silly isPackageDependentOf @orion-js/app @orion-js/cli
+35 silly isPackageDependentOf @orion-js/cli @orion-js/app
+36 silly isPackageDependentOf @orion-js/cli @orion-js/cli
+37 silly isPackageDependentOf @orion-js/app @orion-js/app
+38 silly isPackageDependentOf @orion-js/app @orion-js/cli
+39 silly collectUpdates
+40 verbose has filtered update @orion-js/app
+41 verbose has filtered update @orion-js/cli
+42 verbose has filtered update @orion-js/app
+43 silly initialize success
+44 silly execute attempt
+45 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/lerna.json
+46 silly runScriptSync preversion undefined
+47 silly runScriptSync preversion @orion-js/app
+48 silly runScriptSync version @orion-js/app
+49 silly runScriptSync preversion @orion-js/cli
+50 silly runScriptSync version @orion-js/cli
+51 silly runScriptSync preversion @orion-js/app
+52 silly runScriptSync version @orion-js/app
+53 silly runScriptSync version undefined
+54 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/package.json
+55 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli/package.json
+56 silly addFile /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/package.json
+57 silly commit v0.0.4
+58 verbose commit [ 'commit', '--no-verify', '-m', 'v0.0.4' ]
+59 silly addTag v0.0.4
+60 silly runScriptSync postversion @orion-js/app
+61 silly runScriptSync postversion @orion-js/cli
+62 silly runScriptSync postversion @orion-js/app
+63 silly runScriptSync postversion undefined
+64 info publish Publishing packages to npm...
+65 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/scripts/prepublish.js
+66 verbose execScript No prepublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app/scripts/prepublish.js
+67 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli/scripts/prepublish.js
+68 verbose execScript No prepublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli/scripts/prepublish.js
+69 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/scripts/prepublish.js
+70 verbose execScript No prepublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/scripts/prepublish.js
+71 verbose publishing @orion-js/app
+72 silly publishTaggedInDir latest app
+73 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/app' }
+74 verbose publishing @orion-js/cli
+75 silly publishTaggedInDir latest cli
+76 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+77 verbose publishing @orion-js/app
+78 silly publishTaggedInDir latest schema
+79 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema' }
+80 error publish Retrying failed publish: @orion-js/cli
+81 verbose publish error undefined
+82 verbose publishing @orion-js/cli
+83 silly publishTaggedInDir latest cli
+84 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+85 error publish Retrying failed publish: @orion-js/cli
+86 verbose publish error undefined
+87 verbose publishing @orion-js/cli
+88 silly publishTaggedInDir latest cli
+89 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+90 info published @orion-js/app
+91 silly existsSync /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/scripts/postpublish.js
+92 verbose execScript No postpublish script found at /Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/schema/scripts/postpublish.js
+93 error publish Retrying failed publish: @orion-js/cli
+94 verbose publish error undefined
+95 verbose publishing @orion-js/cli
+96 silly publishTaggedInDir latest cli
+97 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+98 error publish Retrying failed publish: @orion-js/cli
+99 verbose publish error undefined
+100 verbose publishing @orion-js/cli
+101 silly publishTaggedInDir latest cli
+102 silly getExecOpts { cwd: '/Users/nicolaslopezj/Code/Node/labs/projects/orionjs/packages/cli' }
+103 error publish Ran out of retries while publishing @orion-js/cli Error: Command failed: npm publish --tag latest
+103 error publish npm ERR! publish Failed PUT 402
+103 error publish npm ERR! code E402
+103 error publish npm ERR! You must sign up for private packages : @orion-js/cli
+103 error publish
+103 error publish npm ERR! A complete log of this run can be found in:
+103 error publish npm ERR!     /Users/nicolaslopezj/.npm/_logs/2018-04-26T03_29_51_855Z-debug.log
+103 error publish
+103 error publish     at Promise.all.then.arr (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:236:11)
+103 error publish     at process._tickCallback (internal/process/next_tick.js:178:7)
+104 error execute callback with error
+105 error Error: Command failed: npm publish --tag latest
+105 error npm ERR! publish Failed PUT 402
+105 error npm ERR! code E402
+105 error npm ERR! You must sign up for private packages : @orion-js/cli
+105 error
+105 error npm ERR! A complete log of this run can be found in:
+105 error npm ERR!     /Users/nicolaslopezj/.npm/_logs/2018-04-26T03_29_51_855Z-debug.log
+105 error
+105 error     at Promise.all.then.arr (/Users/nicolaslopezj/.config/yarn/global/node_modules/lerna/node_modules/execa/index.js:236:11)
