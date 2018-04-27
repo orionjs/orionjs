@@ -1,5 +1,7 @@
-export default function({validate, clean}) {
+export default function({name, validate, clean, ...otherFields}) {
   return {
+    ...otherFields,
+    name,
     validate(value, info = {}) {
       if (!info.currentSchema) {
         info.currentSchema = {}

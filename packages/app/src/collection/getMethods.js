@@ -1,9 +1,10 @@
 import generateId from './generateId'
 import getSelector from './getSelector'
-import validate from '../../lib/schema/validate'
+import {validate} from '@orion-js/schema'
 
-export default function({schema, rawCollection}) {
+export default function({model, rawCollection}) {
   const collection = rawCollection
+  const schema = model.schema
 
   const funcs = {
     find(selector, options) {

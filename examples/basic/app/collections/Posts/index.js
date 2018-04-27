@@ -1,7 +1,7 @@
 import {Collection} from '@orion-js/app'
-import schema from './schema'
+import Post from 'app/models/Post'
 
-export default Collection({
+export default new Collection({
   name: 'posts',
-  schema
+  model: Post
 })

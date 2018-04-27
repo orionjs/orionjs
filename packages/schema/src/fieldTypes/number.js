@@ -3,6 +3,7 @@ import isFinite from 'lodash/isFinite'
 import Errors from '../Errors'
 
 export default fieldType({
+  name: 'number',
   validate(value, {currentSchema}) {
     if (!isFinite(value)) return Errors.NOT_A_NUMBER
 

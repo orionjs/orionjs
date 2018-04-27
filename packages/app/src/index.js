@@ -6,16 +6,9 @@ import register from './register'
 import route from './route'
 import Collection from './collection'
 import OrionError from './OrionError'
-import {validate, ValidationError, getValidationErrors, isValid} from './schema'
+import Model from './Model'
+import {startGraphQL} from './graphql'
+import {resolver} from './controllers'
+import * as GraphQL from 'graphql'
 
-export {
-  start,
-  register,
-  route,
-  Collection,
-  validate,
-  OrionError,
-  ValidationError,
-  getValidationErrors,
-  isValid
-}
+export {start, register, route, Collection, OrionError, Model, startGraphQL, resolver, GraphQL}

@@ -26,7 +26,7 @@ export default async function doValidation({
    * Deep validation
    */
   if (isPlainObject(currentSchema.type)) {
-    const schemaKeys = Object.keys(currentSchema.type)
+    const schemaKeys = Object.keys(currentSchema.type).filter(key => !key.startsWith('__'))
     for (const key of schemaKeys) {
       const itemSchema = currentSchema.type[key]
       const itemValue = value[key]
