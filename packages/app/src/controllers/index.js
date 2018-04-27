@@ -1,3 +1,4 @@
 import resolver from './resolver'
+import Controller from './Controller'
 
-export {resolver}
+export {Controller, resolver}

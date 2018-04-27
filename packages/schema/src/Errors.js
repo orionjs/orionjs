@@ -9,5 +9,6 @@ export default {
   NOT_AN_INTEGER: 'notAnInteger',
   NOT_A_NUMBER: 'notANumber',
   NUMBER_TOO_SMALL: 'numberTooSmall',
-  NUMBER_TOO_BIG: 'numberTooBig'
+  NUMBER_TOO_BIG: 'numberTooBig',
+  NOT_A_BOOLEAN: 'notABoolean'
 }

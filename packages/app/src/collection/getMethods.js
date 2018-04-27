@@ -8,10 +8,21 @@ export default function({model, rawCollection}) {
 
   const funcs = {
     find(selector, options) {
-      return collection.find(getSelector(selector), options)
+      const cursor = collection.find(getSelector(selector), options)
+
+      return {
+        cursor,
+        count: cursor.count,
+        async toArray() {
+          const items = await cursor.toArray()
+          return items.map(item => model.initItem(item))
+        }
+      }
     },
-    findOne(selector, options) {
-      return collection.findOne(getSelector(selector), options)
+    async findOne(selector, options) {
+      const item = await collection.findOne(getSelector(selector), options)
+      if (!item) return item
+      return model.initItem(item)
     },
     aggregate(pipeline) {
       return collection.aggregate(pipeline)

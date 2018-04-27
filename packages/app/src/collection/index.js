@@ -1,7 +1,12 @@
 import connect from '../database/connect'
 import getMethods from './getMethods'
+import checkOptions from './checkOptions'
+
+global.db = {}
 
 export default function(options) {
+  checkOptions(options)
+
   const collection = {
     ...options
   }
@@ -15,6 +20,8 @@ export default function(options) {
       collection[key] = methods[key]
     }
   })
+
+  global.db[options.name] = collection
 
   return collection
 }

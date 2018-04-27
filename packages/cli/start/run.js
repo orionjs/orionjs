@@ -11,7 +11,8 @@ const restart = runOnce(async function() {
     appProcess.kill()
     await sleep(100)
   }
-  appProcess = await runProcess({restart})
+  const options = global.processOptions
+  appProcess = await runProcess({restart, options})
   console.log(colors.bold('=> App started\n'))
 
   await sleep(100)

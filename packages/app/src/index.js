@@ -8,7 +8,18 @@ import Collection from './collection'
 import OrionError from './OrionError'
 import Model from './Model'
 import {startGraphQL} from './graphql'
-import {resolver} from './controllers'
+import {resolver, Controller} from './controllers'
 import * as GraphQL from 'graphql'
 
-export {start, register, route, Collection, OrionError, Model, startGraphQL, resolver, GraphQL}
+export {
+  start,
+  register,
+  route,
+  Collection,
+  OrionError,
+  Model,
+  startGraphQL,
+  resolver,
+  GraphQL,
+  Controller
+}

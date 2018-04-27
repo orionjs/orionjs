@@ -1,9 +1,15 @@
+import initItem from './initItem'
+
 export default class Model {
   constructor({name, schema, resolvers}) {
     this.name = name
     this.__isModel = true
     this._schema = schema
     this.resolvers = resolvers
+  }
+
+  initItem(data) {
+    return initItem(this, data)
   }
 
   set schema(schema) {

@@ -1,4 +1,4 @@
-import execute from './execute'
+import execute from '../helpers/execute'
 import globby from 'globby'
 import compileFile from './compileFile'
 import colors from 'colors/safe'

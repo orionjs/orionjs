@@ -8,6 +8,9 @@ export default new Model({
     },
     size: {
       type: Number
+    },
+    caption: {
+      type: String
     }
   }
 })

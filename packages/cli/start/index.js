@@ -42,7 +42,8 @@ const watch = function() {
   }
 }
 
-export default async function() {
+export default async function(options) {
+  global.processOptions = options
   console.log(colors.bold('\nOrionjs App\n'))
 
   if (!process.env.MONGO_URL) {

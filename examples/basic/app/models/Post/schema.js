@@ -1,6 +1,9 @@
 import Image from '../Image'
 
 export default {
+  _id: {
+    type: 'ID'
+  },
   title: {
     type: String
   },

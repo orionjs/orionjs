@@ -13,6 +13,7 @@ export default async function(type) {
   if (type === String) return 'string'
   if (type === Date) return 'date'
   if (type === Number) return 'number'
+  if (type === Boolean) return 'boolean'
 
   if (!isString(type)) {
     throw new Error('Field type is invalid. Pass a string or a custom field type')

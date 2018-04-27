@@ -3,9 +3,9 @@ import flatten from 'lodash/flatten'
 import getType from './getType'
 
 export default async function({controllers, mutation}) {
-  const resolvers = flatten(controllers.map(controller => values(controller))).filter(
-    resolver => !!resolver.mutation === !!mutation
-  )
+  const resolvers = flatten(
+    values(controllers).map(controller => values(controller.resolvers))
+  ).filter(resolver => !!resolver.mutation === !!mutation)
 
   const fields = {}
 

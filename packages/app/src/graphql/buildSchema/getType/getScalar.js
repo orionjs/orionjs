@@ -1,12 +1,14 @@
 import BigIntScalar from './BigIntScalar'
 import DateScalar from './DateScalar'
-import {GraphQLFloat, GraphQLString} from 'graphql'
+import {GraphQLFloat, GraphQLString, GraphQLID, GraphQLBoolean} from 'graphql'
 
 const fieldMap = {
   string: GraphQLString,
   date: DateScalar,
   integer: BigIntScalar,
-  number: GraphQLFloat
+  number: GraphQLFloat,
+  ID: GraphQLID,
+  boolean: GraphQLBoolean
 }
 
 export default async function(fieldType) {
@@ -16,5 +18,5 @@ export default async function(fieldType) {
   if (fieldType.toGraphQLType) {
     return await fieldType.toGraphQLType()
   }
-  throw new Error('Field has no convertion to GraphQLType')
+  throw new Error(`Field type "${fieldType.name}" has no convertion to GraphQLType`)
 }
