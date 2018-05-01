@@ -1,4 +1,5 @@
 import initItem from './initItem'
+import isArray from 'lodash/isArray'
 
 export default class Model {
   constructor({name, schema, resolvers}) {
@@ -17,6 +18,17 @@ export default class Model {
   }
 
   get schema() {
+    const keys = Object.keys(this._schema)
+    for (const key of keys) {
+      if (isArray(this._schema[key].type)) {
+        if (this._schema[key].type[0] instanceof Model) {
+          this._schema[key].type[0] = this._schema[key].type[0].schema
+        }
+      }
+      if (this._schema[key].type instanceof Model) {
+        this._schema[key].type = this._schema[key].type.schema
+      }
+    }
     return {
       ...this._schema,
       __model: this

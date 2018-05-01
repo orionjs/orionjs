@@ -22,5 +22,12 @@ export default async function({schema, doc, value, currentSchema, keys}) {
     return error
   }
 
+  if (currentSchema.custom) {
+    const customError = await currentSchema.custom(value, info)
+    if (customError) {
+      return customError
+    }
+  }
+
   return null
 }

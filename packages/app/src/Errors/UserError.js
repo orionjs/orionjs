@@ -1,4 +1,4 @@
-export default class OrionError extends Error {
+export default class UserError extends Error {
   constructor(code, message, extra) {
     // Calling parent constructor of base Error class.
     super(message)

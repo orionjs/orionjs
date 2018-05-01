@@ -12,6 +12,7 @@ export default async function getGraphQLType(type) {
   } else if (isPlainObject(type) || type instanceof Model) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
+    if (model.graphQLType) return model.graphQLType
 
     const fields = {}
 
@@ -32,10 +33,13 @@ export default async function getGraphQLType(type) {
       }
     }
 
-    return new GraphQLObjectType({
+    const graphQLType = new GraphQLObjectType({
       name: model.name,
       fields
     })
+    model.graphQLType = graphQLType
+
+    return model.graphQLType
   } else {
     const schemaType = await getFieldType(type)
     const graphQLType = await getScalar(schemaType)

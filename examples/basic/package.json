@@ -4,12 +4,14 @@
   "description": "A basic example for orionjs",
   "main": "index.js",
   "author": "nicolaslopezj",
+  "private": true,
   "license": "MIT",
   "scripts": {
     "start": "nodemon --exec babel-node ./app"
   },
   "dependencies": {
     "@orion-js/app": "^0.0.2",
+    "@orion-js/auth": "^0.0.5",
     "babel-plugin-module-resolver": "^3.1.1"
   },
   "devDependencies": {

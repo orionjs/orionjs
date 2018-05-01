@@ -6,6 +6,8 @@ import integer from './integer'
 import number from './number'
 import ID from './ID'
 import boolean from './boolean'
+import email from './email'
+import blackbox from './blackbox'
 
 export default {
   array,
@@ -15,5 +17,7 @@ export default {
   integer,
   number,
   ID,
-  boolean
+  boolean,
+  email,
+  blackbox
 }

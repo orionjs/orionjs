@@ -1,6 +1,7 @@
 import {getRoute} from './routes'
 import {parse} from 'url'
-import {send} from 'micro'
+import {send, text} from 'micro'
+import getViewer from './getViewer'
 
 export default async function(request, response) {
   const {pathname, query} = parse(request.url, true)
@@ -9,16 +10,17 @@ export default async function(request, response) {
 
   const params = route.match(pathname)
 
-  const viewer = {}
-  const funcParams = {
-    viewer,
-    params,
-    query,
-    pathname,
-    request,
-    response
-  }
   try {
+    const funcParams = {
+      params,
+      query,
+      pathname,
+      request,
+      headers: request.headers,
+      response,
+      getBody: async () => await text(request)
+    }
+    funcParams.viewer = await getViewer(funcParams)
     return await route.func(funcParams)
   } catch (error) {
     if (error.isOrionError) {

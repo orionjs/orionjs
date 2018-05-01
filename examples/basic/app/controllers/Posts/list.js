@@ -7,7 +7,8 @@ export default resolver({
   params: {},
   returns: [Post],
   mutation: false,
-  resolve: async function() {
+  resolve: async function(params, viewer) {
+    console.log(viewer, 'viewer')
     return await Posts.find({}).toArray()
   }
 })

@@ -5,10 +5,12 @@ import start from './start'
 import register from './register'
 import route from './route'
 import Collection from './collection'
-import OrionError from './OrionError'
+import generateId from './collection/generateId'
+import UserError from './Errors/UserError'
 import Model from './Model'
 import {startGraphQL} from './graphql'
 import {resolver, Controller} from './controllers'
+import {setGetViewer} from './route/setGetViewer'
 import * as GraphQL from 'graphql'
 
 export {
@@ -16,10 +18,12 @@ export {
   register,
   route,
   Collection,
-  OrionError,
+  UserError,
   Model,
   startGraphQL,
   resolver,
   GraphQL,
-  Controller
+  Controller,
+  generateId,
+  setGetViewer
 }

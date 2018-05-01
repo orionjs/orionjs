@@ -9,6 +9,14 @@
     babel-preset-es2015 "^6.24.1"
     babel-preset-stage-2 "^6.24.1"
 
+"@orion-js/auth@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@orion-js/auth/-/auth-0.0.5.tgz#ca594cd7f964a58f8b26ebdb263d150cab083731"
+  dependencies:
+    babel-core "^6.26.0"
+    babel-polyfill "^6.26.0"
+    lodash "^4.17.10"
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -1753,6 +1761,10 @@ locate-path@^2.0.0:
   dependencies:
     p-locate "^2.0.0"
     path-exists "^3.0.0"
+
+lodash@^4.17.10:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 lodash@^4.17.4, lodash@^4.3.0:
   version "4.17.5"

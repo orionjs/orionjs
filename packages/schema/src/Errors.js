@@ -10,5 +10,6 @@ export default {
   NOT_A_NUMBER: 'notANumber',
   NUMBER_TOO_SMALL: 'numberTooSmall',
   NUMBER_TOO_BIG: 'numberTooBig',
-  NOT_A_BOOLEAN: 'notABoolean'
+  NOT_A_BOOLEAN: 'notABoolean',
+  NOT_AN_EMAIL: 'notAnEmail'
 }

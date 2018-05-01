@@ -5,12 +5,12 @@ if (!uri) {
   throw new Error('Mongo URL env is required')
 }
 
-let database = null
+global.orionMainDatabase = null
 
 export default async function() {
-  if (database) return database
+  if (global.orionMainDatabase) return global.orionMainDatabase
   const client = await MongoClient.connect(uri)
   const dbName = client.s.options.dbName
-  database = client.db(dbName)
-  return database
+  global.orionMainDatabase = client.db(dbName)
+  return global.orionMainDatabase
 }
