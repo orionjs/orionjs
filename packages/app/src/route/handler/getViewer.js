@@ -1,5 +1,5 @@
-import {getGetViewer} from './setGetViewer'
-import UserError from '../Errors/UserError'
+import {getGetViewer} from '../setGetViewer'
+import UserError from '../../Errors/UserError'
 
 export default async function(params) {
   try {

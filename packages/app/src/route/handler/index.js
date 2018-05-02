@@ -1,7 +1,9 @@
-import {getRoute} from './routes'
+import {getRoute} from '../routes'
 import {parse} from 'url'
 import {send, text} from 'micro'
 import getViewer from './getViewer'
+import onError from './onError'
+import cors from './cors'
 
 export default async function(request, response) {
   const {pathname, query} = parse(request.url, true)
@@ -20,22 +22,15 @@ export default async function(request, response) {
       response,
       getBody: async () => await text(request)
     }
+
+    cors(funcParams)
+    if (request.method === 'OPTIONS') {
+      return {}
+    }
+
     funcParams.viewer = await getViewer(funcParams)
     return await route.func(funcParams)
   } catch (error) {
-    if (error.isOrionError) {
-      const statusCode = 400
-      const data = error.getInfo()
-      send(response, statusCode, data)
-    } else if (error.isGraphQLError) {
-      send(response, error.statusCode, error.message)
-    } else {
-      const statusCode = 500
-      const data = {error: 500, message: 'Internal server error'}
-
-      console.error('Unhandled error in route')
-      console.error(error)
-      send(response, statusCode, data)
-    }
+    onError({error, send, response})
   }
 }

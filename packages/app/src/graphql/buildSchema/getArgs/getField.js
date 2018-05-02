@@ -22,7 +22,7 @@ export default async function getParams(type) {
     }
 
     return new GraphQLInputObjectType({
-      name: model.name,
+      name: model.name + 'Input',
       fields
     })
   } else {

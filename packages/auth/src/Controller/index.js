@@ -1,4 +1,4 @@
-import {Controller, setGetViewer} from '@orion-js/app'
+import {Controller, setGetViewer, setCorsOptions} from '@orion-js/app'
 import loginWithPassword from './loginWithPassword'
 import changePassword from './changePassword'
 import getUserByID from './getUserByID'
@@ -13,6 +13,20 @@ export default function(options) {
 
   const getViewer = getSession(options)
   setGetViewer(getViewer)
+
+  setCorsOptions({
+    allowHeaders: [
+      'X-Requested-With',
+      'Access-Control-Allow-Origin',
+      'X-HTTP-Method-Override',
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'x-orion-nonce',
+      'x-orion-publickey',
+      'x-orion-signature'
+    ]
+  })
 
   return new Controller({
     name: 'Authentication',

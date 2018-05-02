@@ -11,6 +11,7 @@ import Model from './Model'
 import {startGraphQL} from './graphql'
 import {resolver, Controller} from './controllers'
 import {setGetViewer} from './route/setGetViewer'
+import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as GraphQL from 'graphql'
 
 export {
@@ -25,5 +26,7 @@ export {
   GraphQL,
   Controller,
   generateId,
-  setGetViewer
+  setGetViewer,
+  getCorsOptions,
+  setCorsOptions
 }

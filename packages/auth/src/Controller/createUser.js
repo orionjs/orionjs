@@ -2,6 +2,7 @@ import {resolver} from '@orion-js/app'
 import hashPassword from '../helpers/hashPassword'
 
 export default ({Session, Users}) => {
+  let profile = Users.model.schema.profile || null
   return resolver({
     name: 'createUser',
     params: {
@@ -22,11 +23,12 @@ export default ({Session, Users}) => {
             return 'passwordIsTooShort'
           }
         }
-      }
+      },
+      ...({profile} || {})
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, password}) {
+    resolve: async function({email, password, profile}) {
       const newUser = {
         emails: [
           {
@@ -39,11 +41,11 @@ export default ({Session, Users}) => {
             bcrypt: hashPassword(password)
           }
         },
-        profile: {},
+        profile: profile || {},
         createdAt: new Date()
       }
-      console.log('a new user was created', newUser)
-      await Users.insert(newUser)
+      console.log('a new user was created', JSON.stringify(newUser, null, 2))
+      // await Users.insert(newUser)
       return {
         _id: email
       }

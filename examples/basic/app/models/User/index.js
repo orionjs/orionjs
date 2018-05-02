@@ -22,6 +22,9 @@ export default new Model({
     },
     profile: {
       type: UserProfile
+    },
+    roles: {
+      type: ['ID']
     }
   }
 })
