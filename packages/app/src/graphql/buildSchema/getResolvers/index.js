@@ -3,6 +3,8 @@ import flatten from 'lodash/flatten'
 import getType from '../getType'
 import getArgs from '../getArgs'
 
+global.graphQLResolvers = {}
+
 export default async function({controllers, mutation}) {
   const resolvers = flatten(values(controllers).map(controller => values(controller.resolvers)))
     .filter(resolver => !!resolver.mutation === !!mutation)
@@ -11,6 +13,8 @@ export default async function({controllers, mutation}) {
   const fields = {}
 
   for (const resolver of resolvers) {
+    global.graphQLResolvers[resolver.name] = resolver
+
     const type = await getType(resolver.returns)
     const args = await getArgs(resolver.params)
     fields[resolver.name] = {

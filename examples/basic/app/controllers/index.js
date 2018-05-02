@@ -1,3 +1,4 @@
+import {ExposeSchemaController} from '@orion-js/app'
 import Posts from './Posts'
 import Views from './Views'
 import AuthController from './AuthController'
@@ -7,5 +8,6 @@ export default {
   Posts,
   Views,
   AuthController,
-  Users
+  Users,
+  ExposeSchemaController
 }

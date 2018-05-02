@@ -16,6 +16,10 @@ export default new Model({
       type: String,
       optional: true
     },
+    lastName: {
+      type: String,
+      optional: true
+    },
     addresses: {
       type: [Address],
       optional: true

@@ -9,6 +9,7 @@ import generateId from './collection/generateId'
 import UserError from './Errors/UserError'
 import Model from './Model'
 import {startGraphQL} from './graphql'
+import ExposeSchemaController from './graphql/ExposeSchemaController'
 import {resolver, Controller} from './controllers'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
@@ -28,5 +29,6 @@ export {
   generateId,
   setGetViewer,
   getCorsOptions,
-  setCorsOptions
+  setCorsOptions,
+  ExposeSchemaController
 }
