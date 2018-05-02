@@ -16,10 +16,7 @@ export default async function(type) {
   if (type === Boolean) return 'boolean'
 
   if (!isString(type)) {
-    throw new Error(
-      'Field type is invalid. Pass a string or a custom field type. Got ' +
-        JSON.stringify(type, null, 2)
-    )
+    throw new Error('Field type is invalid. Pass a string or a custom field type. Got ' + type)
   }
 
   const exists = has(fieldTypes, type)

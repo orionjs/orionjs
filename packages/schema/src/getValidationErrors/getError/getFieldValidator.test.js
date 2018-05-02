@@ -35,20 +35,20 @@ test('returns integer validator when a integer key is passed', async () => {
   expect(validator).toBe('integer')
 })
 
-test('returns unkown field validator when an unkown type is passed', async () => {
+test('returns unkown field validator when an unkown type function is passed', async () => {
   expect.assertions(1)
   try {
     await getFieldValidator(() => {})
   } catch (error) {
-    expect(error.message).toBe('Field type is invalid. Pass a string or a custom field type')
+    expect(error.message).toMatch(/Field type is invalid/)
   }
 })
 
-test('returns unkown field validator when an unkown type is passed', async () => {
+test('returns unkown field validator when an unkown type string is passed', async () => {
   expect.assertions(1)
   try {
     await getFieldValidator('an unknown type')
   } catch (error) {
-    expect(error.message).toBe('Field type does not exist')
+    expect(error.message).toMatch(/Field type does not exist/)
   }
 })
