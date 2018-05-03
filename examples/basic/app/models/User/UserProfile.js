@@ -1,28 +1,15 @@
 import {Model, resolver} from '@orion-js/app'
 
-const Address = new Model({
-  name: 'UserProfileAddress',
-  schema: {
-    name: {
-      type: String
-    }
-  }
-})
-
 export default new Model({
   name: 'UserProfile',
   schema: {
     firstName: {
       type: String,
-      optional: true
+      min: 3
     },
     lastName: {
       type: String,
-      optional: true
-    },
-    addresses: {
-      type: [Address],
-      optional: true
+      min: 3
     }
   },
   resolvers: {
@@ -30,6 +17,7 @@ export default new Model({
       name: 'name',
       returns: String,
       resolve: async function(profile) {
+        console.log(profile)
         return profile.firstName
       }
     })

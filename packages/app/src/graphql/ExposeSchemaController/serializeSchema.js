@@ -7,10 +7,8 @@ export default async function serializeSchema(params) {
   const fields = {}
 
   for (const key of Object.keys(params)) {
-    fields[key] = {
-      ...params[key],
-      type: await getField(params[key].type)
-    }
+    const field = params[key]
+    fields[key] = await getField(field)
   }
 
   return fields

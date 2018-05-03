@@ -1,7 +1,8 @@
 import {resolver} from '@orion-js/app'
 import hashPassword from '../helpers/hashPassword'
+import createSession from '../helpers/createSession'
 
-export default ({Session, Users}) => {
+export default ({Session, Users, Sessions}) => {
   let profile = Users.model.schema.profile || null
   return resolver({
     name: 'createUser',
@@ -18,11 +19,7 @@ export default ({Session, Users}) => {
       },
       password: {
         type: String,
-        async custom(password) {
-          if (password.length < 6) {
-            return 'passwordIsTooShort'
-          }
-        }
+        min: 8
       },
       ...({profile} || {})
     },
@@ -45,10 +42,8 @@ export default ({Session, Users}) => {
         createdAt: new Date()
       }
       console.log('a new user was created', JSON.stringify(newUser, null, 2))
-      // await Users.insert(newUser)
-      return {
-        _id: email
-      }
+      const userId = await Users.insert(newUser)
+      return await createSession({userId, Sessions})
     }
   })
 }

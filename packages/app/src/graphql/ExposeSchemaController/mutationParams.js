@@ -2,6 +2,7 @@ import resolver from '../../controllers/resolver'
 import Model from '../../Model'
 import UserError from '../../Errors/UserError'
 import serializeSchema from './serializeSchema'
+import getBasicResultQuery from './getBasicResultQuery'
 
 const MutationParams = new Model({
   name: 'MutationParams',
@@ -11,6 +12,12 @@ const MutationParams = new Model({
     },
     params: {
       type: 'blackbox'
+    },
+    result: {
+      type: String
+    },
+    basicResultQuery: {
+      type: String
     }
   }
 })
@@ -30,6 +37,8 @@ export default resolver({
       throw new UserError('mutationNotFound', 'Mutation not found')
     }
     const params = await serializeSchema(resolver.params)
-    return {name, params}
+    const result = resolver.returns.name
+    const basicResultQuery = await getBasicResultQuery({type: resolver.returns.schema})
+    return {name, params, result, basicResultQuery}
   }
 })

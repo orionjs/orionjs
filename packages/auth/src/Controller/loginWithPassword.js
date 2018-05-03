@@ -34,6 +34,6 @@ export default ({Users, Session, Sessions}) =>
     mutation: true,
     resolve: async function({email, password}) {
       const user = await findUserByEmail({email, Users})
-      return await createSession({user, Sessions})
+      return await createSession({userId: user._id, Sessions})
     }
   })

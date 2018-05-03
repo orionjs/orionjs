@@ -8,6 +8,8 @@ export default {
   NOT_A_DATE: 'notADate',
   NOT_AN_INTEGER: 'notAnInteger',
   NOT_A_NUMBER: 'notANumber',
+  TOO_SHORT: 'tooShort',
+  TOO_LONG: 'tooLong',
   NUMBER_TOO_SMALL: 'numberTooSmall',
   NUMBER_TOO_BIG: 'numberTooBig',
   NOT_A_BOOLEAN: 'notABoolean',

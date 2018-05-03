@@ -1,5 +1,6 @@
 import {Controller, setGetViewer, setCorsOptions} from '@orion-js/app'
 import loginWithPassword from './loginWithPassword'
+import logout from './logout'
 import changePassword from './changePassword'
 import getUserByID from './getUserByID'
 import getUserByEmail from './getUserByEmail'
@@ -32,6 +33,7 @@ export default function(options) {
     name: 'Authentication',
     resolvers: {
       loginWithPassword: loginWithPassword(options),
+      logout: logout(options),
       getUserByID: getUserByID(options),
       getUserByEmail: getUserByEmail(options),
       createUser: createUser(options),

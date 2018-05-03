@@ -1,32 +1,40 @@
 import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import {getFieldType} from '@orion-js/schema'
-import Model from '../../Model'
 import omit from 'lodash/omit'
+import getScalar from '../buildSchema/getType/getScalar'
 
-export default async function getParams(type) {
+export default async function getParams(field) {
+  const {type} = field
   if (isArray(type)) {
-    const serialized = await getParams(type[0])
-    return [serialized]
-  } else if (isPlainObject(type) || type instanceof Model) {
+    const serialized = await getParams({type: type[0]})
+    return {
+      ...serialized,
+      type: [serialized.type],
+      __graphQLType: `[${serialized.__graphQLType}]`
+    }
+  } else if (isPlainObject(type)) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
 
     const fields = {}
 
     for (const field of model.staticFields) {
-      fields[field.key] = {
-        ...omit(field, 'key'),
-        type: await getParams(field.type)
-      }
+      fields[field.key] = await getParams(field)
     }
 
     return {
-      name: model.name + 'Input',
-      fields
+      ...omit(field, 'key'),
+      type: fields,
+      __graphQLType: model.name + 'Input'
     }
   } else {
     const schemaType = await getFieldType(type)
-    return schemaType.name
+    const graphQLType = await getScalar(schemaType)
+    return {
+      ...omit(field, 'key'),
+      type: schemaType.name,
+      __graphQLType: graphQLType.name
+    }
   }
 }

@@ -24,7 +24,8 @@ export default new Model({
       type: UserProfile
     },
     roles: {
-      type: ['ID']
+      type: ['ID'],
+      optional: true
     }
   }
 })

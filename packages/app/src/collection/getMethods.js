@@ -52,28 +52,33 @@ export default function(collection) {
       }
       doc._id = generateId()
       if (schema) {
-        console.log(doc)
         await validate(schema, doc)
-        console.log('did pass validation')
       }
       const rawCollection = getRawCollection()
       await rawCollection.insert(doc)
       return doc._id
     },
-    async update(selector, doc, options) {
+    async update(...args) {
+      const selector = getSelector(args)
+      const doc = args[1]
+      const options = args[2]
       const rawCollection = getRawCollection()
-      const result = await rawCollection.update(getSelector(selector), doc, options)
+      const result = await rawCollection.update(selector, doc, options)
       return result
     },
-    async remove(selector, options) {
+    async remove(...args) {
+      const selector = getSelector(args)
+      const options = args[1]
       const rawCollection = getRawCollection()
-      const result = await rawCollection.remove(getSelector(selector), options)
+      const result = await rawCollection.remove(selector, options)
       return result
     },
-    async upsert(selector, doc) {
+    async upsert(...args) {
+      const selector = getSelector(args)
+      const doc = args[1]
       doc.$setOnInsert = {_id: generateId()}
       const rawCollection = getRawCollection()
-      const result = await rawCollection.update(getSelector(selector), doc, {upsert: true})
+      const result = await rawCollection.update(selector, doc, {upsert: true})
       return result
     }
   }
