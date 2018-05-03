@@ -1,7 +1,7 @@
 import doValidation from './doValidation'
 import getValidationErrorsObject from './getValidationErrorsObject'
 
-export default async function(schema, doc) {
+export default async function(schema, doc, ...args) {
   const errors = []
 
   const addError = function(keys, code) {
@@ -16,7 +16,8 @@ export default async function(schema, doc) {
     doc,
     value: doc,
     currentSchema: {type: schema},
-    addError
+    addError,
+    args
   })
 
   return getValidationErrorsObject(errors)

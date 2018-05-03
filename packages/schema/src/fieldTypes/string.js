@@ -9,14 +9,29 @@ export default fieldType({
 
     if (isFinite(currentSchema.min)) {
       if (value.length < currentSchema.min) {
-        return Errors.TOO_SHORT
+        return Errors.STRING_TOO_SHORT
       }
     }
 
     if (isFinite(currentSchema.max)) {
       if (value.length > currentSchema.max) {
-        return Errors.TOO_LONG
+        return Errors.STRING_TOO_LONG
       }
     }
+  },
+  clean(value, {options: {autoConvert, trimStrings, removeEmptyStrings}}) {
+    if (autoConvert) {
+      value = String(value)
+    }
+
+    if (trimStrings) {
+      value = value.trim()
+    }
+
+    if (removeEmptyStrings && value === '') {
+      return undefined
+    }
+
+    return value
   }
 })

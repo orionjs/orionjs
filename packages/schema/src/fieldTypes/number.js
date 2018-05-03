@@ -1,6 +1,7 @@
 import fieldType from '../fieldType'
 import isFinite from 'lodash/isFinite'
 import Errors from '../Errors'
+import toNumber from 'lodash/toNumber'
 
 export default fieldType({
   name: 'number',
@@ -18,5 +19,12 @@ export default fieldType({
         return Errors.NUMBER_TOO_BIG
       }
     }
+  },
+  clean(value, {options: {autoConvert}}) {
+    if (typeof value === 'string' && autoConvert) {
+      value = toNumber(value)
+    }
+
+    return value
   }
 })

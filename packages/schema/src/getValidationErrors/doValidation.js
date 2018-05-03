@@ -12,9 +12,10 @@ export default async function doValidation({
   value,
   currentSchema,
   keys = [],
-  addError
+  addError,
+  args
 }) {
-  const error = await getError({schema, doc, value, currentSchema, keys})
+  const error = await getError({schema, doc, value, currentSchema, keys, args})
   if (error) {
     addError(keys, error)
     return
@@ -38,7 +39,8 @@ export default async function doValidation({
         value: itemValue,
         currentSchema: itemSchema,
         keys: keyItemKeys,
-        addError
+        addError,
+        args
       })
     }
 
@@ -61,7 +63,8 @@ export default async function doValidation({
         value: itemValue,
         currentSchema: {type: itemSchema},
         keys: keyItemKeys,
-        addError
+        addError,
+        args
       })
     }
   }

@@ -6,27 +6,18 @@ export default ({Users, Session}) =>
   resolver({
     name: 'changePassword',
     params: {
-      email: {
-        type: 'email',
-        async custom(email) {
-          const user = await findUserByEmail({email, Users})
-          if (!user) {
-            return 'userNotFound'
-          }
-        }
-      },
-      password: {
+      oldPassword: {
         type: String,
-        async custom(password, {doc}) {
-          const {email} = doc
-          const user = await findUserByEmail({email, Users})
-          if (!user) {
-            return 'userNotFound'
-          }
-          if (!checkPassword(user, password)) {
+        async custom(oldPassword, info, viewer) {
+          const user = await Users.findOne(viewer.userId)
+          if (!checkPassword(user, oldPassword)) {
             return 'incorrectPassword'
           }
         }
+      },
+      newPassword: {
+        type: String,
+        min: 8
       }
     },
     returns: Session,

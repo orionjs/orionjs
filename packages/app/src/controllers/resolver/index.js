@@ -8,7 +8,7 @@ export default function({name, params, returns, mutation, private: isPrivate, re
     private: isPrivate,
     resolve: async (...args) => {
       if (params) {
-        await checkArgs(params, args)
+        await checkArgs(params, ...args)
       }
 
       return await resolve(...args)

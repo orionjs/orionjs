@@ -3,7 +3,7 @@ import getFieldValidator from './getFieldValidator'
 import fieldTypes from '../../fieldTypes'
 import Errors from '../../Errors'
 
-export default async function({schema, doc, value, currentSchema, keys}) {
+export default async function({schema, doc, value, currentSchema, keys, args = []}) {
   const info = {schema, doc, keys, currentSchema}
 
   if (isNil(value)) {
@@ -17,13 +17,13 @@ export default async function({schema, doc, value, currentSchema, keys}) {
   const validatorKey = await getFieldValidator(currentSchema.type)
   const validator = validatorKey === 'custom' ? currentSchema.type : fieldTypes[validatorKey]
 
-  const error = await validator.validate(value, info)
+  const error = await validator.validate(value, info, ...args)
   if (error) {
     return error
   }
 
   if (currentSchema.custom) {
-    const customError = await currentSchema.custom(value, info)
+    const customError = await currentSchema.custom(value, info, ...args)
     if (customError) {
       return customError
     }
