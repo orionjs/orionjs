@@ -1,6 +1,8 @@
 import isArray from 'lodash/isArray'
 
 export default async function getBasicQuery(field) {
+  if (!field.type) return ''
+
   if ((isArray(field.type) && field.type[0].__model) || field.type.__model) {
     const model = isArray(field.type) ? field.type[0].__model : field.type.__model
     const fields = []

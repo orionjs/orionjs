@@ -1,10 +1,11 @@
 import {resolver} from '@orion-js/app'
-import findUserByEmail from '../helpers/findUserByEmail'
 import checkPassword from '../helpers/checkPassword'
+import hashPassword from '../helpers/hashPassword'
 
 export default ({Users, Session}) =>
   resolver({
     name: 'changePassword',
+    requireUserId: true,
     params: {
       oldPassword: {
         type: String,
@@ -20,13 +21,23 @@ export default ({Users, Session}) =>
         min: 8
       }
     },
-    returns: Session,
+    returns: Boolean,
     mutation: true,
-    resolve: async function({email, password}) {
-      const user = await findUserByEmail({email, Users})
-
-      return {
-        _id: user._id
-      }
+    resolve: async function({oldPassword, newPassword}, viewer) {
+      Users.update(viewer.userId, {
+        $set: {
+          'services.password': {
+            bcrypt: hashPassword(newPassword),
+            createdAt: new Date()
+          }
+        },
+        $push: {
+          'services.oldPasswords': {
+            bcrypt: hashPassword(oldPassword),
+            changedAt: new Date()
+          }
+        }
+      })
+      return true
     }
   })

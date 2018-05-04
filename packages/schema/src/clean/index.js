@@ -8,11 +8,9 @@ const clean = async function(type, value, {schema, doc, options}, ...args) {
   if (isArray(type) && isArray(value)) {
     const items = []
     for (let i = 0; i < value.length; i++) {
-      if (!isUndefined(value[i])) {
-        const newValue = await clean(type[0], value[i], info, ...args)
-        if (!isUndefined(newValue)) {
-          items.push(newValue)
-        }
+      const newValue = await clean(type[0], value[i], info, ...args)
+      if (!isUndefined(newValue)) {
+        items.push(newValue)
       }
     }
     return await cleanType('array', items, info, ...args)

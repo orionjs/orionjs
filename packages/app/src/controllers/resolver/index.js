@@ -1,14 +1,32 @@
-import checkArgs from './checkArgs'
-export default function({name, params, returns, mutation, private: isPrivate, resolve}) {
+import {validate} from '@orion-js/schema'
+import PermissionsError from '../../Errors/PermissionsError'
+
+export default function({
+  name,
+  params,
+  requireUserId,
+  returns,
+  mutation,
+  private: isPrivate,
+  resolve
+}) {
   return {
     name,
     params,
+    requireUserId,
     returns,
     mutation,
     private: isPrivate,
     resolve: async (...args) => {
+      const callParams = args[args.length - 2]
+      const viewer = args[args.length - 1]
+
+      if (requireUserId && !viewer.userId) {
+        throw new PermissionsError('notLoggedIn')
+      }
+
       if (params) {
-        await checkArgs(params, ...args)
+        await validate(params, callParams, viewer)
       }
 
       return await resolve(...args)

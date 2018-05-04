@@ -35,7 +35,8 @@ export default ({Session, Users, Sessions}) => {
         ],
         services: {
           password: {
-            bcrypt: hashPassword(password)
+            bcrypt: hashPassword(password),
+            createdAt: new Date()
           }
         },
         profile: profile || {},
