@@ -1,6 +1,6 @@
 import getValidationErrors from './getValidationErrors'
 
-export default async function(schema, doc, ...args) {
-  const validationErrors = await getValidationErrors(schema, doc, ...args)
+export default async function(...args) {
+  const validationErrors = await getValidationErrors(...args)
   return !validationErrors
 }

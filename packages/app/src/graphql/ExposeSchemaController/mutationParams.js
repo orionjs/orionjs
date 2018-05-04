@@ -6,19 +6,36 @@ import getBasicResultQuery from './getBasicResultQuery'
 
 const MutationParams = new Model({
   name: 'MutationParams',
-  schema: {
-    name: {
-      type: String
-    },
-    params: {
-      type: 'blackbox'
-    },
-    result: {
-      type: String
-    },
-    basicResultQuery: {
-      type: String
-    }
+  schema: {},
+  resolvers: {
+    name: resolver({
+      name: 'name',
+      returns: String,
+      resolve: async function(resolver) {
+        return resolver.name
+      }
+    }),
+    params: resolver({
+      name: 'params',
+      returns: 'blackbox',
+      resolve: async function(resolver) {
+        return await serializeSchema(resolver.params)
+      }
+    }),
+    result: resolver({
+      name: 'result',
+      returns: String,
+      resolve: async function(resolver) {
+        return resolver.returns.name
+      }
+    }),
+    basicResultQuery: resolver({
+      name: 'basicResultQuery',
+      returns: String,
+      resolve: async function(resolver) {
+        return await getBasicResultQuery({type: resolver.returns.schema})
+      }
+    })
   }
 })
 
@@ -36,9 +53,6 @@ export default resolver({
     if (!resolver) {
       throw new UserError('mutationNotFound', 'Mutation not found')
     }
-    const params = await serializeSchema(resolver.params)
-    const result = resolver.returns.name
-    const basicResultQuery = await getBasicResultQuery({type: resolver.returns.schema})
-    return {name, params, result, basicResultQuery}
+    return resolver
   }
 })

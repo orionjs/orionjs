@@ -11,7 +11,8 @@ export default class PermissionsError extends Error {
     this.getInfo = () => {
       return {
         error: 'PermissionsError',
-        message
+        message,
+        type: permissionErrorType
       }
     }
   }

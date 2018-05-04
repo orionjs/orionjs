@@ -12,6 +12,15 @@ test('detect required field when value is null', async () => {
   expect(error).toBe(Errors.REQUIRED)
 })
 
+test('dont detect required field when value is null and omit required is passed', async () => {
+  const error = await getError({
+    options: {omitRequired: true},
+    value: null,
+    currentSchema: {type: String}
+  })
+  expect(error).toBeNull()
+})
+
 test('run custom validation if passed', async () => {
   const customType = fieldType({
     validate(value) {

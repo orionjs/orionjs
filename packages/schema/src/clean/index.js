@@ -1,7 +1,7 @@
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import cleanType from './cleanType'
-import isUndefined from 'lodash/isUndefined'
+import isNil from 'lodash/isNil'
 
 const clean = async function(type, value, {schema, doc, options}, ...args) {
   const info = {schema, doc, options, type}
@@ -9,7 +9,7 @@ const clean = async function(type, value, {schema, doc, options}, ...args) {
     const items = []
     for (let i = 0; i < value.length; i++) {
       const newValue = await clean(type[0], value[i], info, ...args)
-      if (!isUndefined(newValue)) {
+      if (!isNil(newValue)) {
         items.push(newValue)
       }
     }
@@ -18,9 +18,9 @@ const clean = async function(type, value, {schema, doc, options}, ...args) {
     const keys = Object.keys(type)
     const fields = {}
     for (const key of keys) {
-      if (!isUndefined(value[key])) {
+      if (!isNil(value[key])) {
         const newValue = await clean(type[key].type, value[key], info, ...args)
-        if (!isUndefined(newValue)) {
+        if (!isNil(newValue)) {
           fields[key] = newValue
         }
       }

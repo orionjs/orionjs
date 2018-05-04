@@ -10,6 +10,7 @@ export default ({Users, Session}) =>
       oldPassword: {
         type: String,
         async custom(oldPassword, info, viewer) {
+          console.log('got user', viewer)
           const user = await Users.findOne(viewer.userId)
           if (!checkPassword(user, oldPassword)) {
             return 'incorrectPassword'

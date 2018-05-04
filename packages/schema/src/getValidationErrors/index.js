@@ -1,7 +1,12 @@
 import doValidation from './doValidation'
 import getValidationErrorsObject from './getValidationErrorsObject'
 
-export default async function(schema, doc, ...args) {
+const defaultOptions = {
+  omitRequired: false
+}
+
+export default async function(schema, doc, passedOptions = {}, ...args) {
+  const options = {...defaultOptions, ...passedOptions}
   const errors = []
 
   const addError = function(keys, code) {
@@ -17,6 +22,7 @@ export default async function(schema, doc, ...args) {
     value: doc,
     currentSchema: {type: schema},
     addError,
+    options,
     args
   })
 

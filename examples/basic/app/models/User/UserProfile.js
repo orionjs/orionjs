@@ -17,7 +17,6 @@ export default new Model({
       name: 'name',
       returns: String,
       resolve: async function(profile) {
-        console.log(profile)
         return profile.firstName
       }
     })

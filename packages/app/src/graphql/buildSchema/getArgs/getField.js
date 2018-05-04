@@ -5,6 +5,21 @@ import {getFieldType} from '@orion-js/schema'
 import Model from '../../../Model'
 import getScalar from '../getType/getScalar'
 
+const storedModelInput = {}
+
+const getModelInput = function(model, fields) {
+  if (storedModelInput[model.name]) {
+    return storedModelInput[model.name]
+  }
+
+  storedModelInput[model.name] = new GraphQLInputObjectType({
+    name: model.name + 'Input',
+    fields
+  })
+
+  return storedModelInput[model.name]
+}
+
 export default async function getParams(type) {
   if (isArray(type)) {
     const graphQLType = await getParams(type[0])
@@ -21,10 +36,7 @@ export default async function getParams(type) {
       }
     }
 
-    return new GraphQLInputObjectType({
-      name: model.name + 'Input',
-      fields
-    })
+    return getModelInput(model, fields)
   } else {
     const schemaType = await getFieldType(type)
     const graphQLType = await getScalar(schemaType)
