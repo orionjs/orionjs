@@ -26,7 +26,7 @@ export default function(passedOptions) {
 
   const resolvers = []
   let isReady = false
-  let onReady = () => resolvers.map(resolve => resolve())
+  let onReady = () => resolvers.map(resolve => resolve(collection))
   collection.await = async () => (isReady ? null : new Promise(resolve => resolvers.push(resolve)))
 
   const methods = getMethods(collection)
