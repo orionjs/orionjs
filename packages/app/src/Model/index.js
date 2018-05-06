@@ -18,6 +18,7 @@ export default class Model {
   }
 
   get schema() {
+    if (!this._schema) return
     const keys = Object.keys(this._schema)
     for (const key of keys) {
       if (isArray(this._schema[key].type)) {

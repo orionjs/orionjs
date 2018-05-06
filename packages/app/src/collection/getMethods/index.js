@@ -1,5 +1,5 @@
-import generateId from './generateId'
-import getSelector from './getSelector'
+import generateId from '../generateId'
+import getSelector from '../getSelector'
 import {validate} from '@orion-js/schema'
 import isPlainObject from 'lodash/isPlainObject'
 
