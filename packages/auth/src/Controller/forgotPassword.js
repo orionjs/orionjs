@@ -22,10 +22,7 @@ export default ({Users, Session, Sessions}) =>
       const token = generateId() + generateId()
       const date = new Date()
 
-      console.log(token)
-      console.log(user._id)
       Users.update(user._id, {$set: {'services.forgot': {token, date}}})
-
       return true
     }
   })
