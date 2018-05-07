@@ -1,4 +1,4 @@
-import validateModifier from './validateModifier'
+import validateModifier from './index'
 
 it('should pass validation when not all fields are present', async () => {
   const wife = {
@@ -42,6 +42,27 @@ it('validate arrays', async () => {
 
   await validateModifier(schema, {$set: {'friends.0.name': 'Roberto'}})
   await validateModifier(schema, {$set: {friends: [{name: 'Roberto'}]}})
+  expect.assertions(1)
+  try {
+    await validateModifier(schema, {$set: {friends: ['Roberto']}})
+  } catch (error) {
+    expect(error.code).toBe('validationError')
+  }
+})
+
+it('validate $push operations', async () => {
+  const friend = {
+    name: {type: String}
+  }
+  const schema = {
+    _id: {type: 'ID'},
+    friends: {type: [friend]}
+  }
+
+  await validateModifier(schema, {$push: {friends: {name: 'Roberto'}}})
+  await validateModifier(schema, {
+    $push: {friends: {$each: [{name: 'Roberto'}, {name: 'Joaquín'}]}}
+  })
   expect.assertions(1)
   try {
     await validateModifier(schema, {$set: {friends: ['Roberto']}})

@@ -18,12 +18,30 @@ export default async function validateModifier(schema, modifier) {
     }
     if (!shouldCheck(operation)) continue
 
-    if (operation === '$push' || operation === '$addToSet') {
-      throw new Error('$push and $addToSet are not supported yet')
-    }
-
     for (const key of Object.keys(operationDoc)) {
-      const cleaned = await cleanKey(schema, key, operationDoc[key])
+      const value = operationDoc[key]
+      let cleaned = null
+      if (operation === '$push' || operation === '$addToSet') {
+        if (typeof value === 'object' && '$each' in value) {
+          const $each = await cleanKey(schema, key, value.$each)
+          cleaned = {...value, $each}
+        } else {
+          cleaned = await cleanKey(schema, `${key}.0`, value)
+        }
+      }
+
+      if (operation === '$set') {
+        cleaned = await cleanKey(schema, key, value)
+      }
+
+      if (operation === '$setOnInsert') {
+        cleaned = await cleanKey(schema, key, value)
+      }
+
+      if (operation === '$inc') {
+        cleaned = await cleanKey(schema, key, value)
+      }
+
       if (!isNil(cleaned)) {
         cleanedModifier[operation][key] = cleaned
       }

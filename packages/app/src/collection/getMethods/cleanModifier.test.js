@@ -44,6 +44,16 @@ it('should clean modifier and leave dots', async () => {
   expect(cleaned).toEqual(modifier)
 })
 
+it('should cleans $inc modifier', async () => {
+  const schema = {
+    age: {type: Number}
+  }
+  const modifier = {$inc: {age: '1'}}
+
+  const cleaned = await cleanModifier(schema, modifier)
+  expect(cleaned).toEqual({$inc: {age: 1}})
+})
+
 it('should clean modifier with arrays with index in key', async () => {
   const friend = {
     name: {type: String}
@@ -95,4 +105,47 @@ it('clean well deep schema fields', async () => {
     $set: {name: 1234, 'car.brand': 'Nissan'}
   })
   expect(cleaned).toEqual({$set: {name: '1234', 'car.brand': 'Nissan'}})
+})
+
+it('should clean modifier with $push', async () => {
+  const schema = {
+    friends: {type: [String]}
+  }
+  const cleaned = await cleanModifier(schema, {
+    $push: {friends: 1234}
+  })
+  expect(cleaned).toEqual({
+    $push: {friends: '1234'}
+  })
+})
+
+it('should clean modifier with $push and $each', async () => {
+  const schema = {
+    friends: {type: [String]}
+  }
+  const cleaned = await cleanModifier(schema, {
+    $push: {friends: {$each: [1234, 'a string'], $slice: 3}}
+  })
+  expect(cleaned).toEqual({
+    $push: {friends: {$each: ['1234', 'a string'], $slice: 3}}
+  })
+})
+
+it('cleans $push modifier with deep array', async () => {
+  const friend = {
+    name: {type: String}
+  }
+  const person = {
+    friends: {type: [friend]}
+  }
+  const schema = {
+    persons: {type: [person]}
+  }
+
+  const cleaned = await cleanModifier(schema, {
+    $push: {'persons.14321.friends': {name: 1234}}
+  })
+  expect(cleaned).toEqual({
+    $push: {'persons.14321.friends': {name: '1234'}}
+  })
 })

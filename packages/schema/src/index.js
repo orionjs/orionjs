@@ -5,6 +5,7 @@ import isValid from './isValid'
 import getFieldType from './getValidationErrors/getError/getFieldType'
 import clean from './clean'
 import cleanKey from './cleanKey'
+import validateKey from './validateKey'
 import dotGet from './dotGet'
 
 export {
@@ -15,5 +16,6 @@ export {
   getFieldType,
   clean,
   cleanKey,
-  dotGet
+  dotGet,
+  validateKey
 }
