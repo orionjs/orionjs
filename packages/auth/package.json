@@ -13,7 +13,8 @@
     "babel-polyfill": "^6.26.0",
     "bcryptjs": "^2.4.3",
     "jssha": "^2.3.1",
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "luxon": "^1.2.0"
   },
   "devDependencies": {
     "babel-jest": "^22.4.3",

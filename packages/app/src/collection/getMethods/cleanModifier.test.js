@@ -9,8 +9,12 @@ it('should remove the modifier if no fields are present in schema', async () => 
   const modifier = {
     $set: {name: 'Nicolás'}
   }
-  const cleaned = await cleanModifier(schema, modifier)
-  expect(cleaned).toEqual({})
+  expect.assertions(1)
+  try {
+    await cleanModifier(schema, modifier)
+  } catch (error) {
+    expect(error.message).toBe('After cleaning your modifier is empty')
+  }
 })
 
 it('should remove the invalid fields and leave the valid ones', async () => {

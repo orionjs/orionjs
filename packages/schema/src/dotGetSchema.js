@@ -14,9 +14,13 @@ const dotGet = function dotGet(object, path) {
     return dotGet({type: levelObject[0]}, remainingPath)
   } else if (isPlainObject(levelObject[first])) {
     return dotGet(levelObject[first], remainingPath)
-  } else {
-    return null
   }
+
+  if (levelObject === 'blackbox') {
+    return {type: 'blackbox'}
+  }
+
+  return null
 }
 
 export default function(object, path) {

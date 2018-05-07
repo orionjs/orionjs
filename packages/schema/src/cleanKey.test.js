@@ -38,3 +38,13 @@ test('deep clean fields', async () => {
   expect(await cleanKey(schema, 'car.tags.$.name', 12)).toBe('12')
   expect(await cleanKey(schema, 'car.tags.100.name', 12)).toBe('12')
 })
+
+test('clean blackbox key', async () => {
+  const schema = {
+    services: {
+      type: 'blackbox'
+    }
+  }
+
+  expect(await cleanKey(schema, 'services.password', '123456')).toBe('123456')
+})

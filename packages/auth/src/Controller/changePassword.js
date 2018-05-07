@@ -10,7 +10,6 @@ export default ({Users, Session}) =>
       oldPassword: {
         type: String,
         async custom(oldPassword, info, viewer) {
-          console.log('got user', viewer)
           const user = await Users.findOne(viewer.userId)
           if (!checkPassword(user, oldPassword)) {
             return 'incorrectPassword'
@@ -19,7 +18,12 @@ export default ({Users, Session}) =>
       },
       newPassword: {
         type: String,
-        min: 8
+        min: 8,
+        async custom(newPassword, {doc}, viewer) {
+          if (newPassword === doc.oldPassword) {
+            return 'samePassword'
+          }
+        }
       }
     },
     returns: Boolean,

@@ -1,6 +1,7 @@
 import {cleanKey} from '@orion-js/schema'
 import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
+import isEqual from 'lodash/isEqual'
 
 const shouldCheck = function(key) {
   if (key === '$pushAll') throw new Error('$pushAll is not supported; use $push + $each')
@@ -50,6 +51,10 @@ export default async function validateModifier(schema, modifier) {
     if (isEmpty(cleanedModifier[operation])) {
       delete cleanedModifier[operation]
     }
+  }
+
+  if (isEqual(cleanedModifier, {})) {
+    throw new Error('After cleaning your modifier is empty')
   }
 
   return cleanedModifier

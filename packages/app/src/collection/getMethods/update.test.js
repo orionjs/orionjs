@@ -72,6 +72,22 @@ it('should update documents passing validation', async () => {
   expect(doc).toEqual({_id: personId, wife: {state: 'Full', name: 'Francisca'}})
 })
 
+it('should update documents passing validation with blackbox field', async () => {
+  const schema = {
+    _id: {type: 'ID'},
+    services: {type: 'blackbox'}
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({name: generateId(), model}).await()
+
+  const personId = await Tests.insert({services: {password: 123456}})
+
+  await Tests.update(personId, {$set: {'services.forgot': 'mypassword'}})
+
+  const doc = await Tests.findOne(personId)
+  expect(doc).toEqual({_id: personId, services: {password: 123456, forgot: 'mypassword'}})
+})
+
 it('should throw an error when modifier is invalid', async () => {
   const wife = {
     name: {type: String},
