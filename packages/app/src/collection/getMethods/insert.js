@@ -1,6 +1,7 @@
 import {validate, clean} from '@orion-js/schema'
 import isPlainObject from 'lodash/isPlainObject'
 import generateId from './generateId'
+import fromDot from '../../database/dot/fromDot'
 
 export default ({getRawCollection, schema}) =>
   async function insert(doc) {
@@ -9,7 +10,7 @@ export default ({getRawCollection, schema}) =>
     }
     doc._id = generateId()
     if (schema) {
-      doc = await clean(schema, doc)
+      doc = await clean(schema, fromDot(doc))
       await validate(schema, doc)
     }
     const rawCollection = getRawCollection()

@@ -8,7 +8,9 @@ export default fieldType({
   validate(value) {
     if (!isPlainObject(value)) return Errors.NOT_AN_OBJECT
   },
-  clean(value, {type, options: {filter}}) {
+  clean(value, {type, options: {filter} = {}} = {}) {
+    if (!isPlainObject(value)) return value
+
     if (filter) {
       const documentKeys = Object.keys(value)
       const schemaKeys = Object.keys(type)

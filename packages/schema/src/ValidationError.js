@@ -6,7 +6,14 @@ export default class ValidationError extends Error {
       throw new Error('ValidationError must be initialized with an errors object')
     }
 
-    super('Validation Error')
+    const printableErrors = Object.keys(validationErrors)
+      .map(key => {
+        return `${key}: ${validationErrors[key]}`
+      })
+      .join(', ')
+    const s = Object.keys(validationErrors).length === 1 ? '' : 's'
+    const message = `Validation Error${s}: {${printableErrors}}`
+    super(message)
     Error.captureStackTrace(this, this.constructor)
 
     this.code = 'validationError'
@@ -17,7 +24,7 @@ export default class ValidationError extends Error {
     this.getInfo = () => {
       return {
         error: 'validationError',
-        message: this.message,
+        message: 'Validation Error',
         validationErrors: validationErrors
       }
     }

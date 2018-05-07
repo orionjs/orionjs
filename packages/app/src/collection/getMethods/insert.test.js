@@ -16,6 +16,20 @@ it('inserts a document without errors', async () => {
   expect(count).toBe(1)
 })
 
+it('should insert documents passing deep validation', async () => {
+  const wife = {
+    name: {type: String}
+  }
+  const schema = {
+    _id: {type: 'ID'},
+    wife: {type: wife}
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({name: generateId(), model}).await()
+
+  await Tests.insert({'wife.name': 'Francisca'})
+})
+
 it('should clean a document before inserting', async () => {
   const schema = {_id: {type: 'ID'}, name: {type: String}}
   const model = new Model({name: generateId(), schema})
@@ -35,6 +49,6 @@ it('should validate a document', async () => {
   try {
     await Tests.insert({})
   } catch (error) {
-    expect(error.message).toBe('Validation Error')
+    expect(error.code).toBe('validationError')
   }
 })

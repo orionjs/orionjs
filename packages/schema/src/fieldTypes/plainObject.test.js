@@ -11,3 +11,7 @@ test('return no error when the value is correct', async () => {
   expect(plainObject.validate({})).toBeFalsy()
   expect(plainObject.validate({name: 'Nicolás'})).toBeFalsy()
 })
+
+test('should return same value when cleaning non-object ', async () => {
+  expect(plainObject.clean('a string')).toBe('a string')
+})

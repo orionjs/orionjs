@@ -13,9 +13,9 @@ test('ValidationError is instance of Error', () => {
   expect(error).toBeInstanceOf(Error)
 })
 
-test('message to be Validation error', () => {
+test('message to be show error information', () => {
   const error = new ValidationError({name: Errors.REQUIRED})
-  expect(error.message).toBe('Validation Error')
+  expect(error.message).toBe('Validation Error: {name: required}')
 })
 
 test('getInfo to return error information in correct format', () => {

@@ -22,6 +22,6 @@ test('throws validation error when object is invalid', async () => {
   try {
     await validate(schema, invalidObject)
   } catch (error) {
-    expect(error.message).toBe('Validation Error')
+    expect(error.code).toBe('validationError')
   }
 })

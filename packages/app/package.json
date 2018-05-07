@@ -14,6 +14,7 @@
     "apollo-server-core": "^1.3.6",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
+    "dot-object": "^1.7.0",
     "graphql": "^0.13.2",
     "micro": "^9.3.0",
     "mongodb": "^3.0.7",

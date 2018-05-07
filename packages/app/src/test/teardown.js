@@ -1,7 +1,10 @@
 const disconnect = require('../database/disconnect')
+const includes = require('lodash/includes')
 
 module.exports = async function() {
   await disconnect()
   await global.MONGOD.stop()
-  setTimeout(() => process.exit(), 100)
+  if (!includes(process.argv, '--watch')) {
+    setTimeout(() => process.exit(), 100)
+  }
 }
