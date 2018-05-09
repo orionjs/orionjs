@@ -21,6 +21,10 @@ const getModelInput = function(model, fields) {
 }
 
 export default async function getParams(type) {
+  if (!type) {
+    throw new Error(`No type specified`)
+  }
+
   if (isArray(type)) {
     const graphQLType = await getParams(type[0])
     return new GraphQLList(graphQLType)

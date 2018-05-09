@@ -1,5 +1,7 @@
 import initItem from './initItem'
 import isArray from 'lodash/isArray'
+import includes from 'lodash/includes'
+import clone from 'lodash/clone'
 
 export default class Model {
   constructor({name, schema, resolvers}) {
@@ -65,5 +67,21 @@ export default class Model {
         }
       })
       .filter(resolver => !resolver.private)
+  }
+
+  clone({name = this.name, omitFields = [], mapFields = f => f}) {
+    const schema = {}
+
+    const keys = Object.keys(this._schema).filter(key => !includes(omitFields, key))
+    for (const key of keys) {
+      const field = clone(this._schema[key])
+      schema[key] = mapFields(field, key)
+    }
+
+    return new Model({
+      name,
+      schema,
+      resolvers: this.resolvers
+    })
   }
 }

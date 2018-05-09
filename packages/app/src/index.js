@@ -11,6 +11,7 @@ import Model from './Model'
 import {startGraphQL} from './graphql'
 import ExposeSchemaController from './graphql/ExposeSchemaController'
 import {resolver, Controller} from './controllers'
+import createCrudController from './controllers/createCrudController'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as GraphQL from 'graphql'
@@ -26,6 +27,7 @@ export {
   resolver,
   GraphQL,
   Controller,
+  createCrudController,
   generateId,
   setGetViewer,
   getCorsOptions,

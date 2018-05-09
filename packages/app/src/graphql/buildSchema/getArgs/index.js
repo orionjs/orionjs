@@ -7,8 +7,11 @@ export default async function(params) {
   const fields = {}
 
   for (const key of Object.keys(params)) {
-    fields[key] = {
-      type: await getField(params[key].type)
+    try {
+      const type = await getField(params[key].type)
+      fields[key] = {type}
+    } catch (error) {
+      console.error(`Error creating GraphQL resolver params argument ${key}`, error)
     }
   }
 
