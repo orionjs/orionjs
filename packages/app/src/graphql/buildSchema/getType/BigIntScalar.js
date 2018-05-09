@@ -1,5 +1,4 @@
 import {GraphQLScalarType} from 'graphql'
-import {INT} from 'graphql/language/kinds'
 
 const MAX_INT = Number.MAX_SAFE_INTEGER
 const MIN_INT = Number.MIN_SAFE_INTEGER
@@ -27,7 +26,7 @@ export default new GraphQLScalarType({
   serialize: coerceBigInt,
   parseValue: coerceBigInt,
   parseLiteral(ast) {
-    if (ast.kind === INT) {
+    if (ast.kind === 'IntValue') {
       const num = parseInt(ast.value, 10)
       if (num <= MAX_INT && num >= MIN_INT) {
         return num

@@ -14,6 +14,5 @@ export default async function(params) {
       console.error(`Error creating GraphQL resolver params argument ${key}`, error)
     }
   }
-
   return fields
 }

@@ -11,6 +11,7 @@ import Model from './Model'
 import {startGraphQL} from './graphql'
 import ExposeSchemaController from './graphql/ExposeSchemaController'
 import {resolver, Controller} from './controllers'
+import createPaginatedResolver from './controllers/resolver/createPaginatedResolver'
 import createCrudController from './controllers/createCrudController'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
@@ -32,5 +33,6 @@ export {
   setGetViewer,
   getCorsOptions,
   setCorsOptions,
-  ExposeSchemaController
+  ExposeSchemaController,
+  createPaginatedResolver
 }
