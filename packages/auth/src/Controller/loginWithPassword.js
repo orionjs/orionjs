@@ -9,6 +9,10 @@ export default ({Users, Session, Sessions}) =>
     params: {
       email: {
         type: 'email',
+        label: {
+          en: 'Email',
+          es: 'Email'
+        },
         async custom(email) {
           const user = await findUserByEmail({email, Users})
           if (!user) {
@@ -18,6 +22,10 @@ export default ({Users, Session, Sessions}) =>
       },
       password: {
         type: String,
+        label: {
+          en: 'Password',
+          es: 'Contraseña'
+        },
         async custom(password, {doc}) {
           const {email} = doc
           const user = await findUserByEmail({email, Users})
@@ -34,6 +42,6 @@ export default ({Users, Session, Sessions}) =>
     mutation: true,
     resolve: async function({email, password}) {
       const user = await findUserByEmail({email, Users})
-      return await createSession({userId: user._id, Sessions})
+      return await createSession({user, Sessions})
     }
   })

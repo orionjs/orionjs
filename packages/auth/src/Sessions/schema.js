@@ -20,5 +20,9 @@ export default {
   },
   userId: {
     type: 'ID'
+  },
+  locale: {
+    type: String,
+    optional: true
   }
 }

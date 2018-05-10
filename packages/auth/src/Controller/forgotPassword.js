@@ -7,6 +7,10 @@ export default ({Users, Session, Sessions}) =>
     params: {
       email: {
         type: 'email',
+        label: {
+          en: 'Email',
+          es: 'Email'
+        },
         async custom(email) {
           const user = await findUserByEmail({email, Users})
           if (!user) {

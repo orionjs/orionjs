@@ -27,7 +27,8 @@ export default function(options) {
       'Accept',
       'x-orion-nonce',
       'x-orion-publickey',
-      'x-orion-signature'
+      'x-orion-signature',
+      'x-orion-locale'
     ]
   })
 

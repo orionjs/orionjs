@@ -22,7 +22,11 @@ export default ({Users, Session, Sessions}) =>
       },
       password: {
         type: String,
-        min: 8
+        min: 8,
+        label: {
+          en: 'Password',
+          es: 'Contraseña'
+        }
       }
     },
     returns: Session,
@@ -47,6 +51,6 @@ export default ({Users, Session, Sessions}) =>
           'services.forgot': ''
         }
       })
-      return await createSession({userId: user._id, Sessions})
+      return await createSession({user, Sessions})
     }
   })

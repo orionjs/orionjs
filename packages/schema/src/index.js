@@ -7,6 +7,7 @@ import clean from './clean'
 import cleanKey from './cleanKey'
 import validateKey from './validateKey'
 import dotGet from './dotGet'
+import dotGetSchema from './dotGetSchema'
 
 export {
   validate,
@@ -17,5 +18,6 @@ export {
   clean,
   cleanKey,
   dotGet,
+  dotGetSchema,
   validateKey
 }

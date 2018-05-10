@@ -4,8 +4,8 @@ import UserError from '../../Errors/UserError'
 import serializeSchema from './serializeSchema'
 import getBasicResultQuery from './getBasicResultQuery'
 
-const MutationParams = new Model({
-  name: 'MutationParams',
+const Params = new Model({
+  name: 'Params',
   schema: {},
   resolvers: {
     name: resolver({
@@ -40,18 +40,21 @@ const MutationParams = new Model({
 })
 
 export default resolver({
-  name: 'mutationParams',
+  name: 'params',
   params: {
     name: {
       type: 'ID'
+    },
+    mutation: {
+      type: Boolean
     }
   },
-  returns: MutationParams,
+  returns: Params,
   mutation: false,
   resolve: async function({mutation, name}, viewer) {
     const resolver = global.graphQLResolvers[name]
     if (!resolver) {
-      throw new UserError('mutationNotFound', 'Mutation not found')
+      throw new UserError('notFound', 'Query or Mutation not found')
     }
     return resolver
   }

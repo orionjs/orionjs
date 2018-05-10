@@ -9,6 +9,10 @@ export default ({Session, Users, Sessions}) => {
     params: {
       email: {
         type: 'email',
+        label: {
+          en: 'Email',
+          es: 'Email'
+        },
         async custom(email) {
           email = email.toLowerCase()
           const count = await Users.find({'emails.address': email}).count()
@@ -19,7 +23,11 @@ export default ({Session, Users, Sessions}) => {
       },
       password: {
         type: String,
-        min: 8
+        min: 8,
+        label: {
+          en: 'Password',
+          es: 'Contraseña'
+        }
       },
       ...({profile} || {})
     },
@@ -44,7 +52,8 @@ export default ({Session, Users, Sessions}) => {
       }
       console.log('a new user was created', JSON.stringify(newUser, null, 2))
       const userId = await Users.insert(newUser)
-      return await createSession({userId, Sessions})
+      const user = await Users.findOne(userId)
+      return await createSession({user, Sessions})
     }
   })
 }

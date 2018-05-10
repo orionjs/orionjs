@@ -1,6 +1,7 @@
 import PermissionsError from '../../Errors/PermissionsError'
 import checkOptions from './checkOptions'
 import validate from './validate'
+import clean from './clean'
 
 export default function({
   name,
@@ -30,7 +31,7 @@ export default function({
     checkPermission,
     private: isPrivate,
     resolve: async (...args) => {
-      const callParams = args[args.length - 2]
+      let callParams = args[args.length - 2]
       const viewer = args[args.length - 1]
 
       if (requireUserId && !viewer.userId) {
@@ -46,7 +47,8 @@ export default function({
 
       if (params) {
         const options = {}
-        await validate(params, callParams, viewer)
+        callParams = await clean(params, callParams, options, viewer)
+        await validate(params, callParams, options, viewer)
       }
 
       return await resolve(...args)

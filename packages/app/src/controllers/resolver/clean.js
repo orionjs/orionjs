@@ -1,4 +1,4 @@
-import {validate} from '@orion-js/schema'
+import {clean} from '@orion-js/schema'
 import clone from 'lodash/clone'
 
 export default async function(resolverParams, params, options, viewer) {
@@ -10,5 +10,5 @@ export default async function(resolverParams, params, options, viewer) {
     }
     schema[key] = field
   }
-  return await validate(schema, params, options, viewer)
+  return await clean(schema, params, options, viewer)
 }

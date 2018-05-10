@@ -34,7 +34,8 @@ export default ({Session, Sessions}) => {
 
     return {
       userId: session.userId,
-      session
+      session,
+      locale: session.locale
     }
   }
 }
