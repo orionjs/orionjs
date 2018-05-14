@@ -1,0 +1,32 @@
+{
+  "context-menu": {
+    ".tree-view .header.list-item": [
+      {
+        "label": "Orionjs",
+        "submenu": [
+          {
+            "label": "Create a resolver",
+            "command": "orionjs:create-resolver"
+          },
+          {
+            "label": "Create a new collection",
+            "command": "orionjs:create-colleciton"
+          },
+          {
+            "label": "Create a new model",
+            "command": "orionjs:create-model"
+          }
+        ]
+      },
+      {
+        "type": "separator"
+      }
+    ]
+  },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": []
+    }
+  ]
+}

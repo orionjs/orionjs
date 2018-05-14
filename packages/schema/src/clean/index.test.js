@@ -108,3 +108,69 @@ test('filter fields not in schema', async () => {
     b: 'hi'
   })
 })
+
+test('runs autovalues with arrays', async () => {
+  const schema = {
+    texts: {
+      type: [String],
+      autoValue(values) {
+        return values.map(val => val + ' world')
+      }
+    }
+  }
+  const doc = {
+    texts: ['hello', 'good bye']
+  }
+  const cleaned = await clean(schema, doc)
+  expect(cleaned).toEqual({
+    texts: ['hello world', 'good bye world']
+  })
+})
+
+test('dont run autovalue when field is not present', async () => {
+  const schema = {
+    text: {
+      type: String,
+      autoValue(values) {
+        return 'a value'
+      }
+    }
+  }
+  const doc = {}
+  const cleaned = await clean(schema, doc)
+  expect(cleaned).toEqual({})
+})
+
+test('run deep autovalues', async () => {
+  const deep = {
+    s: {
+      type: String,
+      autoValue() {
+        return 'no'
+      }
+    }
+  }
+  const schema = {
+    text: {
+      type: deep,
+      autoValue(text) {
+        return {...text, type: 'text'}
+      }
+    },
+    texts: {
+      type: [deep],
+      autoValue(texts) {
+        return [texts[0], 'yes']
+      }
+    }
+  }
+  const doc = {
+    text: {s: 'objecttext'},
+    texts: [{s: 'arraytext'}, {s: 'noa'}]
+  }
+  const cleaned = await clean(schema, doc)
+  expect(cleaned).toEqual({
+    text: {s: 'no', type: 'text'},
+    texts: [{s: 'no'}, 'yes']
+  })
+})

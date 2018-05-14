@@ -10,9 +10,8 @@ import UserError from './Errors/UserError'
 import Model from './Model'
 import {startGraphQL} from './graphql'
 import ExposeSchemaController from './graphql/ExposeSchemaController'
-import {resolver, Controller} from './controllers'
+import {resolver, Controller, getCrudResolvers} from './controllers'
 import createPaginatedResolver from './controllers/resolver/createPaginatedResolver'
-import createCrudController from './controllers/createCrudController'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as GraphQL from 'graphql'
@@ -28,7 +27,7 @@ export {
   resolver,
   GraphQL,
   Controller,
-  createCrudController,
+  getCrudResolvers,
   generateId,
   setGetViewer,
   getCorsOptions,

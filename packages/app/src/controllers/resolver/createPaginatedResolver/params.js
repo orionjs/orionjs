@@ -1,4 +1,4 @@
-export default () => ({
+export default ({params}) => ({
   page: {
     type: 'integer',
     defaultValue: 1,
@@ -9,5 +9,6 @@ export default () => ({
     defaultValue: 20,
     min: 1,
     max: 200
-  }
+  },
+  ...params
 })
