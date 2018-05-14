@@ -127,7 +127,7 @@ test('runs autovalues with arrays', async () => {
   })
 })
 
-test('dont run autovalue when field is not present', async () => {
+test('run autovalue when field is not present', async () => {
   const schema = {
     text: {
       type: String,
@@ -138,7 +138,44 @@ test('dont run autovalue when field is not present', async () => {
   }
   const doc = {}
   const cleaned = await clean(schema, doc)
-  expect(cleaned).toEqual({})
+  expect(cleaned).toEqual({text: 'a value'})
+})
+
+test('returns the default values', async () => {
+  const schema = {
+    text: {
+      type: String,
+      defaultValue: 'hello',
+      autoValue(value) {
+        return value + ' world'
+      }
+    },
+    text1: {
+      type: String,
+      defaultValue: 'text1'
+    },
+    text2: {
+      type: String,
+      defaultValue: 'text2'
+    },
+    text3: {
+      type: String
+    },
+    text4: {
+      type: String,
+      defaultValue() {
+        return 'afunc'
+      }
+    }
+  }
+  const doc = {text1: 'pass'}
+  const cleaned = await clean(schema, doc)
+  expect(cleaned).toEqual({
+    text: 'hello world',
+    text1: 'pass',
+    text2: 'text2',
+    text4: 'afunc'
+  })
 })
 
 test('run deep autovalues', async () => {

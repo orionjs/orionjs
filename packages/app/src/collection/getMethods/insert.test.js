@@ -31,13 +31,19 @@ it('should insert documents passing deep validation', async () => {
 })
 
 it('should clean a document before inserting', async () => {
-  const schema = {_id: {type: 'ID'}, name: {type: String}}
+  const now = new Date()
+  const schema = {
+    _id: {type: 'ID'},
+    name: {type: String},
+    createdAt: {type: Date, autoValue: () => now}
+  }
   const model = new Model({name: generateId(), schema})
   const Tests = await new Collection({name: generateId(), model}).await()
 
   const docId = await Tests.insert({name: 1234})
   const result = await Tests.findOne(docId)
   expect(result.name).toBe('1234')
+  expect(result.createdAt).toEqual(now)
 })
 
 it('should validate a document', async () => {

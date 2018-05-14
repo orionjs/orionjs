@@ -15,14 +15,16 @@ const clean = async function(type, fieldSchema, value, {schema, doc, options}, .
     }
     return await cleanType('array', fieldSchema, items, info, ...args)
   } else if (isPlainObject(type) && isPlainObject(value)) {
-    const keys = Object.keys(type)
+    const keys = Object.keys(type).filter(key => !key.startsWith('__'))
     const fields = {}
     for (const key of keys) {
-      if (!isNil(value[key])) {
+      try {
         const newValue = await clean(type[key].type, type[key], value[key], info, ...args)
         if (!isNil(newValue)) {
           fields[key] = newValue
         }
+      } catch (error) {
+        throw new Error(`Error cleaning field ${key}, error: ${error.message}`)
       }
     }
     return await cleanType('plainObject', fieldSchema, fields, info, ...args)

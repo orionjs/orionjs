@@ -29,6 +29,49 @@ it('inserts a document if it does not exists', async () => {
   expect(final.hello).toBe('country')
 })
 
+it('adds autovalue when creating docs', async () => {
+  const now = new Date()
+  let calls = 0
+  const schema = {
+    _id: {
+      type: 'ID'
+    },
+    firstName: {
+      type: String,
+      autoValue() {
+        return 'Nicolás'
+      }
+    },
+    lastName: {
+      type: String
+    },
+    createdAt: {
+      type: Date,
+      autoValue: () => {
+        calls++
+        return now
+      }
+    }
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({name: generateId(), model}).await()
+
+  const {numberAffected, insertedId} = await Tests.upsert(
+    {firstName: 'Bastian'},
+    {$set: {lastName: 'Ermann'}}
+  )
+  expect(numberAffected).toBe(0)
+  expect(calls).toBe(1)
+  expect(typeof insertedId).toBe('string')
+  const final = await Tests.findOne()
+  expect(final).toEqual({
+    _id: insertedId,
+    firstName: 'Nicolás',
+    lastName: 'Ermann',
+    createdAt: now
+  })
+})
+
 it('should upsert documents passing cleaning validation', async () => {
   const person = {
     name: {type: String},

@@ -1,7 +1,8 @@
-import {cleanKey} from '@orion-js/schema'
+import {cleanKey, clean} from '@orion-js/schema'
 import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
 import isEqual from 'lodash/isEqual'
+import fromDot from '../../database/dot/fromDot'
 
 const shouldCheck = function(key) {
   if (key === '$pushAll') throw new Error('$pushAll is not supported; use $push + $each')
@@ -51,6 +52,12 @@ export default async function validateModifier(schema, modifier) {
     if (isEmpty(cleanedModifier[operation])) {
       delete cleanedModifier[operation]
     }
+  }
+
+  if (cleanedModifier.$setOnInsert) {
+    console.log('set on', cleanedModifier.$setOnInsert)
+    cleanedModifier.$setOnInsert = await clean(schema, fromDot(cleanedModifier.$setOnInsert))
+    console.log('after cleaning', cleanedModifier.$setOnInsert)
   }
 
   if (isEqual(cleanedModifier, {})) {

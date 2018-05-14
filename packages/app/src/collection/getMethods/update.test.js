@@ -113,3 +113,26 @@ it('should throw an error when modifier is invalid', async () => {
     expect(error.code).toBe('validationError')
   }
 })
+
+it('dont add autovalue when updating', async () => {
+  let index = 1
+  const schema = {
+    _id: {type: 'ID'},
+    name: {
+      type: String
+    },
+    count: {
+      type: Number,
+      autoValue(name) {
+        return index++
+      }
+    }
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({name: generateId(), model}).await()
+
+  const personId = await Tests.insert({name: 'Nicolás'})
+  await Tests.update(personId, {$set: {name: 'Nicolás López'}})
+  const doc = await Tests.findOne(personId)
+  expect(doc).toEqual({_id: personId, name: 'Nicolás López', count: 1})
+})

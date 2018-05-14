@@ -9,6 +9,10 @@ export default ({getRawCollection, schema}) =>
     const options = args[2] || {}
     const rawCollection = getRawCollection()
 
+    if (!modifier) {
+      throw new Error('Modifier is required when makeing an update')
+    }
+
     if (schema) {
       modifier = options.clean !== false ? await cleanModifier(schema, modifier) : modifier
       if (options.validate !== false) await validateModifier(schema, modifier)
