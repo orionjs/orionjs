@@ -3,6 +3,7 @@
 
 import {CompositeDisposable} from 'atom'
 import commands from './commands'
+import Snippets from './Snippets'
 
 export default {
   atomView: null,
@@ -20,10 +21,18 @@ export default {
         ...commands
       })
     )
+
+    this.completionProvider = new Snippets()
   },
 
   deactivate() {
     this.subscriptions.dispose()
+    delete this.completionProvider
+    this.completionProvider = null
+  },
+
+  getCompletionProvider() {
+    return this.completionProvider
   },
 
   serialize() {

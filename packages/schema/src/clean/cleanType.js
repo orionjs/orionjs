@@ -11,7 +11,7 @@ export default async function(type, fieldSchema, value, info, ...args) {
   const {defaultValue} = fieldSchema
   if (isNil(value) && !isNil(defaultValue)) {
     if (typeof defaultValue === 'function') {
-      value = await defaultValue(value, info, ...args)
+      value = await defaultValue(info, ...args)
     } else {
       value = defaultValue
     }

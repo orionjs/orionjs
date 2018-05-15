@@ -3,6 +3,7 @@ import parseInt from 'lodash/parseInt'
 
 export default ({Session, Sessions}) => {
   return async function({getBody, headers}) {
+    await Sessions.await() // wait till db is connected
     const body = await getBody()
     const nonce = parseInt(headers['x-orion-nonce'])
     const publicKey = headers['x-orion-publickey']
