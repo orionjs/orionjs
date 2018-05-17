@@ -1,6 +1,8 @@
 import fieldType from '../fieldType'
 import isString from 'lodash/isString'
 import Errors from '../Errors'
+import includes from 'lodash/includes'
+import isArray from 'lodash/isArray'
 
 export default fieldType({
   name: 'string',
@@ -16,6 +18,12 @@ export default fieldType({
     if (isFinite(currentSchema.max)) {
       if (value.length > currentSchema.max) {
         return Errors.STRING_TOO_LONG
+      }
+    }
+
+    if (isArray(currentSchema.allowedValues)) {
+      if (!includes(currentSchema.allowedValues, value)) {
+        return Errors.NOT_AN_ALLOWED_VALUE
       }
     }
   },

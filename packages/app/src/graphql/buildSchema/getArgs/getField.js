@@ -28,7 +28,7 @@ export default async function getParams(type) {
   if (isArray(type)) {
     const graphQLType = await getParams(type[0])
     return new GraphQLList(graphQLType)
-  } else if (isPlainObject(type) || type instanceof Model) {
+  } else if (!type._isFieldType && (isPlainObject(type) || type instanceof Model)) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
 

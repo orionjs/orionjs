@@ -15,5 +15,6 @@ export default {
   NUMBER_TOO_BIG: 'numberTooBig',
   NOT_A_BOOLEAN: 'notABoolean',
   NOT_AN_EMAIL: 'notAnEmail',
-  NOT_UNIQUE: 'notUnique'
+  NOT_UNIQUE: 'notUnique',
+  NOT_AN_ALLOWED_VALUE: 'notAnAllowedValue'
 }

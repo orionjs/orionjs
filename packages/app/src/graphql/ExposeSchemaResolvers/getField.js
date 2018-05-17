@@ -13,7 +13,7 @@ export default async function getParams(field) {
       type: [serialized.type],
       __graphQLType: `[${serialized.__graphQLType}]`
     }
-  } else if (isPlainObject(type) || type.__isModel) {
+  } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
 
