@@ -10,25 +10,25 @@ const Params = new Model({
   resolvers: {
     name: resolver({
       returns: String,
-      resolve: async function(resolver) {
-        return resolver.name
+      resolve: async function({name, resolver}) {
+        return name
       }
     }),
     params: resolver({
       returns: 'blackbox',
-      resolve: async function(resolver) {
+      resolve: async function({resolver}) {
         return await serializeSchema(resolver.params)
       }
     }),
     result: resolver({
       returns: String,
-      resolve: async function(resolver) {
+      resolve: async function({resolver}) {
         return resolver.returns.name
       }
     }),
     basicResultQuery: resolver({
       returns: String,
-      resolve: async function(resolver) {
+      resolve: async function({resolver}) {
         return await getBasicResultQuery({type: resolver.returns.schema})
       }
     })
@@ -54,6 +54,6 @@ export default resolver({
         `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`
       )
     }
-    return resolver
+    return {resolver, name}
   }
 })
