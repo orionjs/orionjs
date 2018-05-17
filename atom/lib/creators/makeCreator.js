@@ -22,7 +22,12 @@ export default function(create) {
         return finalPath
       }
 
-      create({path, name, createFile})
+      const openFile = filePath => {
+        const finalPath = path + '/' + filePath
+        atom.workspace.open(finalPath)
+      }
+
+      create({path, name, createFile, openFile})
     })
     dialog.attach()
   }

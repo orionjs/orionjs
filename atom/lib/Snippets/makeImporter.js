@@ -1,5 +1,5 @@
 'use babel'
-import addImport from './addImport'
+import addImport from '../helpers/addImport'
 
 export default function({snippet, description, imports}) {
   return {
