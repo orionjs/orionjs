@@ -5,16 +5,17 @@ import update from './update'
 import list from './list'
 
 export default function getCrudResolvers({collection, ...otherOptions}) {
+  const Model = collection.model
   const info = {
     collection,
-    Model: collection.model,
+    Model,
     ...otherOptions
   }
   return {
-    create: create(info),
-    read: read(info),
-    delete: deleteResolver(info),
-    update: update(info),
-    list: list(info)
+    [`create${Model.name}`]: create(info),
+    [Model.name.toLowerCase()]: read(info),
+    [`delete${Model.name}`]: deleteResolver(info),
+    [`update${Model.name}`]: update(info),
+    [otherOptions.listName || collection.name]: list(info)
   }
 }

@@ -1,3 +1,3 @@
-import AuthController from './Controller'
+import getAuthResolvers from './getResolvers'
 
-export {AuthController}
+export {getAuthResolvers}

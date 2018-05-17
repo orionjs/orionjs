@@ -13,7 +13,6 @@ export default ({name, collection, Model}) => {
   const idParam = Model.name.toLowerCase() + 'Id'
   const dataParam = Model.name.toLowerCase()
   return resolver({
-    name: `update${Model.name}`,
     params: {
       [idParam]: {
         type: String,

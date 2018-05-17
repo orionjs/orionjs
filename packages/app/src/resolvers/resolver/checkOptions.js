@@ -2,10 +2,6 @@ import ConfigurationError from '../../../lib/Errors/ConfigurationError'
 import isPlainObject from 'lodash/isPlainObject'
 
 export default function({name, params, returns, mutation, resolve, checkPermission}) {
-  if (!name) {
-    throw new ConfigurationError('Resolver name is required')
-  }
-
   if (!resolve || typeof resolve !== 'function') {
     throw new ConfigurationError('Resolver resolve function is required for ' + name)
   }

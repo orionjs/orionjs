@@ -4,7 +4,7 @@ import generateId from './generateId'
 import fromDot from '../../database/dot/fromDot'
 
 export default ({getRawCollection, schema}) =>
-  async function insert(doc) {
+  async function insert(doc, options) {
     if (!doc || !isPlainObject(doc)) {
       throw new Error('Insert must receive a document')
     }
@@ -14,6 +14,6 @@ export default ({getRawCollection, schema}) =>
       await validate(schema, doc)
     }
     const rawCollection = getRawCollection()
-    await rawCollection.insert(doc)
+    await rawCollection.insert(doc, options)
     return doc._id
   }

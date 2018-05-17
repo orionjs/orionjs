@@ -5,13 +5,13 @@ import start from './start'
 import register from './register'
 import route from './route'
 import Collection from './collection'
-import generateId from './collection/generateId'
+import generateId from './collection/getMethods/generateId'
 import UserError from './Errors/UserError'
 import Model from './Model'
 import {startGraphQL} from './graphql'
-import ExposeSchemaController from './graphql/ExposeSchemaController'
-import {resolver, Controller, getCrudResolvers} from './controllers'
-import createPaginatedResolver from './controllers/resolver/createPaginatedResolver'
+import ExposeSchemaResolvers from './graphql/ExposeSchemaResolvers'
+import {resolver, getCrudResolvers} from './resolvers'
+import createPaginatedResolver from './resolvers/resolver/createPaginatedResolver'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as GraphQL from 'graphql'
@@ -26,12 +26,11 @@ export {
   startGraphQL,
   resolver,
   GraphQL,
-  Controller,
   getCrudResolvers,
   generateId,
   setGetViewer,
   getCorsOptions,
   setCorsOptions,
-  ExposeSchemaController,
+  ExposeSchemaResolvers,
   createPaginatedResolver
 }

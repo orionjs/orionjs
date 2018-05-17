@@ -1,8 +1,8 @@
 import {GraphQLObjectType} from 'graphql'
 import getResolvers from './getResolvers'
 
-export default async function({controllers}) {
-  const fields = await getResolvers({controllers, mutation: false})
+export default async function({resolvers}) {
+  const fields = await getResolvers({resolvers, mutation: false})
   return new GraphQLObjectType({
     name: 'Query',
     fields

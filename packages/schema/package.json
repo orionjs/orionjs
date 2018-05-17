@@ -5,13 +5,10 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "watch": "babel ./src --watch --out-dir ./lib --presets es2015,stage-2",
+    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib --presets es2015,stage-2",
     "test": "jest src --coverage"
   },
-  "files": [
-    "index.js",
-    "lib/"
-  ],
+  "files": ["index.js", "lib/"],
   "dependencies": {
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",

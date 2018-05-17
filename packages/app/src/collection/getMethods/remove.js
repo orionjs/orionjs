@@ -6,5 +6,5 @@ export default ({getRawCollection}) =>
     const options = args[1]
     const rawCollection = getRawCollection()
     const result = await rawCollection.remove(selector, options)
-    return result
+    return result.result.ok
   }

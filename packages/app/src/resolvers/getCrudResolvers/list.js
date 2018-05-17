@@ -1,8 +1,7 @@
 import createPaginatedResolver from '../resolver/createPaginatedResolver'
 
-export default ({name, collection, Model, listName, paginatedOptions}) => {
+export default ({name, collection, Model, paginatedOptions}) => {
   return createPaginatedResolver({
-    name: listName || collection.name,
     returns: Model,
     collection,
     ...paginatedOptions

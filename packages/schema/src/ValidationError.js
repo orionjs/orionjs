@@ -28,5 +28,17 @@ export default class ValidationError extends Error {
         validationErrors: validationErrors
       }
     }
+
+    this.prependKey = prepend => {
+      const newErrors = {}
+
+      const keys = Object.keys(this.validationErrors)
+
+      for (const key of keys) {
+        newErrors[`${prepend}.${key}`] = this.validationErrors[key]
+      }
+
+      return new ValidationError(newErrors)
+    }
   }
 }

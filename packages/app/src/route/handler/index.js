@@ -4,8 +4,11 @@ import {send, text} from 'micro'
 import getViewer from './getViewer'
 import onError from './onError'
 import cors from './cors'
+import connect from '../../database/connect'
 
 export default async function(request, response) {
+  await connect()
+
   const {pathname, query} = parse(request.url, true)
   const route = getRoute(pathname)
   if (!route) return 'Not found'

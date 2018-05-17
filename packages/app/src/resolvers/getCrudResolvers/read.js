@@ -2,7 +2,6 @@ import resolver from '../resolver'
 export default ({name, collection, Model}) => {
   const idParam = Model.name.toLowerCase() + 'Id'
   return resolver({
-    name: Model.name.toLowerCase(),
     params: {
       [idParam]: {type: String}
     },

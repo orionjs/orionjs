@@ -1,4 +1,4 @@
-import resolver from '../../controllers/resolver'
+import resolver from '../../resolvers/resolver'
 import Model from '../../Model'
 import UserError from '../../Errors/UserError'
 import serializeSchema from './serializeSchema'
@@ -9,28 +9,24 @@ const Params = new Model({
   schema: {},
   resolvers: {
     name: resolver({
-      name: 'name',
       returns: String,
       resolve: async function(resolver) {
         return resolver.name
       }
     }),
     params: resolver({
-      name: 'params',
       returns: 'blackbox',
       resolve: async function(resolver) {
         return await serializeSchema(resolver.params)
       }
     }),
     result: resolver({
-      name: 'result',
       returns: String,
       resolve: async function(resolver) {
         return resolver.returns.name
       }
     }),
     basicResultQuery: resolver({
-      name: 'basicResultQuery',
       returns: String,
       resolve: async function(resolver) {
         return await getBasicResultQuery({type: resolver.returns.schema})
@@ -40,7 +36,6 @@ const Params = new Model({
 })
 
 export default resolver({
-  name: 'params',
   params: {
     name: {
       type: 'ID'
@@ -54,7 +49,10 @@ export default resolver({
   resolve: async function({mutation, name}, viewer) {
     const resolver = global.graphQLResolvers[name]
     if (!resolver) {
-      throw new UserError('notFound', 'Query or Mutation not found')
+      throw new UserError(
+        'notFound',
+        `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`
+      )
     }
     return resolver
   }

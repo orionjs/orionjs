@@ -1,8 +1,9 @@
 'use babel'
 import debounce from 'lodash/debounce'
 import importCollections from './importCollections'
+import importModels from './importModels'
 
-const providers = [importCollections]
+const providers = [importCollections, importModels]
 
 export default class Snippets {
   selector = '.source.js'
