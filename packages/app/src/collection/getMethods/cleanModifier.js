@@ -55,9 +55,7 @@ export default async function validateModifier(schema, modifier) {
   }
 
   if (cleanedModifier.$setOnInsert) {
-    console.log('set on', cleanedModifier.$setOnInsert)
     cleanedModifier.$setOnInsert = await clean(schema, fromDot(cleanedModifier.$setOnInsert))
-    console.log('after cleaning', cleanedModifier.$setOnInsert)
   }
 
   if (isEqual(cleanedModifier, {})) {

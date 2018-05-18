@@ -1,10 +1,10 @@
 'use babel'
 import addImport from '../helpers/addImport'
 
-export default function({snippet, description, imports}) {
+export default function({snippet, displayText, description, imports}) {
   return {
     snippet: snippet,
-    displayText: snippet,
+    displayText: displayText || snippet,
     type: 'snippet',
     description: description,
     onDidInsertSuggestion: function({fileContent, editor}) {

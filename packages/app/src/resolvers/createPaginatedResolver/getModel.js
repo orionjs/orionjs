@@ -1,6 +1,6 @@
-import Model from '../../../Model'
+import Model from '../../Model'
 import hash from './hash'
-import resolver from '../index'
+import resolver from '../resolver'
 
 export default ({returns}) => {
   const getTotalCount = async function(paginated) {

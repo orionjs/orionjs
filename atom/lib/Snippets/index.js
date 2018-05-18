@@ -2,8 +2,9 @@
 import debounce from 'lodash/debounce'
 import importCollections from './importCollections'
 import importModels from './importModels'
+import importNeighbourFile from './importNeighbourFile'
 
-const providers = [importCollections, importModels]
+const providers = [importNeighbourFile, importCollections, importModels]
 
 export default class Snippets {
   selector = '.source.js'

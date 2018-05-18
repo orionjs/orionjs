@@ -9,6 +9,18 @@ export default ({getRawCollection, model}) =>
 
     return {
       cursor,
+      sort(...args) {
+        return cursor.sort(...args)
+      },
+      project(...args) {
+        return cursor.project(...args)
+      },
+      limit(...args) {
+        return cursor.limit(...args)
+      },
+      skip(...args) {
+        return cursor.skip(...args)
+      },
       async count() {
         return await cursor.count()
       },
