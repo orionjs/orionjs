@@ -15,7 +15,10 @@ export default function({file, prefix, preText}) {
     return makeImporter({
       snippet: name,
       description: `Complete and import model ${name}`,
-      imports: `import ${name} from 'app/models/${name}'`
+      imports: `import ${name} from 'app/models/${name}'`,
+      iconHTML: '<i class="icon-versions"></i>',
+      type: 'class',
+      leftLabel: 'Model'
     })
   })
 }

@@ -4,7 +4,7 @@ import importCollections from './importCollections'
 import importModels from './importModels'
 import importNeighbourFile from './importNeighbourFile'
 
-const providers = [importNeighbourFile, importCollections, importModels]
+const providers = [importCollections, importModels, importNeighbourFile]
 
 export default class Snippets {
   selector = '.source.js'

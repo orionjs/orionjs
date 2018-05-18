@@ -18,13 +18,19 @@ export default function({file, prefix, preText}) {
         snippet: `${name} $1/>`,
         displayText: `<${name} />`,
         description: `Complete and import the component ${name}`,
-        imports: `import ${name} from './${name}'`
+        imports: `import ${name} from './${name}'`,
+        iconHTML: '<i class="icon-file-code"></i>',
+        type: 'import',
+        leftLabel: 'Component'
       })
     } else {
       return makeImporter({
         snippet: name,
         description: `Complete and import ${name}`,
-        imports: `import ${name} from './${name}'`
+        imports: `import ${name} from './${name}'`,
+        iconHTML: '<i class="icon-file"></i>',
+        type: 'import',
+        leftLabel: 'File'
       })
     }
   })

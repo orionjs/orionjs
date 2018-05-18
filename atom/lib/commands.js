@@ -1,7 +1,6 @@
 'use babel'
-
-import createResolver from './creators/createResolver'
+import creators from './creators'
 
 export default {
-  'orionjs:create-resolver': createResolver
+  ...creators
 }

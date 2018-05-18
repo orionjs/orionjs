@@ -10,11 +10,15 @@
           },
           {
             "label": "Create a new collection",
-            "command": "orionjs:create-colleciton"
+            "command": "orionjs:create-collection"
           },
           {
             "label": "Create a new model",
             "command": "orionjs:create-model"
+          },
+          {
+            "label": "Create resolvers group",
+            "command": "orionjs:create-resolvers-group"
           }
         ]
       },

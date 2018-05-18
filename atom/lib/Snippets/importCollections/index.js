@@ -14,8 +14,13 @@ export default function({file, prefix, preText}) {
   return collections.filter(name => name.startsWith(prefix)).map(name => {
     return makeImporter({
       snippet: `await ${name}.`,
+      displayText: name,
+      iconHTML: '<i class="icon-database"></i>',
       description: `Complete and import collection ${name}`,
-      imports: `import ${name} from 'app/collections/${name}'`
+      imports: `import ${name} from 'app/collections/${name}'`,
+      rightLabel: `await ${name}.`,
+      type: 'type',
+      leftLabel: 'Collection'
     })
   })
 }
