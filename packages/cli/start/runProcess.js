@@ -11,9 +11,11 @@ export default async function({restart, options}) {
   let appProcess = exec(`node ${inspect} .orion/build/index.js`, {
     env: {
       MONGO_URL,
-      ORION_DEV: 'local'
+      ORION_DEV: 'local',
+      FORCE_COLOR: true
     }
   })
+
   appProcess.stdout.pipe(process.stdout)
   appProcess.stderr.pipe(process.stderr)
 
@@ -22,7 +24,7 @@ export default async function({restart, options}) {
   appProcess.on('exit', function(code, signal) {
     if (code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
     } else {
-      console.log(code, signal)
+      console.log('Exit code: ', code)
       console.log(colors.bold('\n=> Error running app, restarting...'))
       appProcess.kill()
       setTimeout(() => {
