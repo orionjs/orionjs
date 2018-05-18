@@ -1,5 +1,6 @@
 import 'babel-core/register'
 import 'babel-polyfill'
+import './Errors/handleErrors'
 import './database/connect'
 import start from './start'
 import register from './register'
@@ -14,7 +15,6 @@ import {resolver, getCrudResolvers, createPaginatedResolver} from './resolvers'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as GraphQL from 'graphql'
-
 export {
   start,
   register,
