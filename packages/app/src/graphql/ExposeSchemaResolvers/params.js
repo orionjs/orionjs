@@ -54,6 +54,9 @@ export default resolver({
         `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`
       )
     }
+    if (!!resolver.mutation !== !!mutation) {
+      throw new UserError('incorrectType', `"${name}" is ${mutation ? 'not' : ''} a mutation`)
+    }
     return {resolver, name}
   }
 })

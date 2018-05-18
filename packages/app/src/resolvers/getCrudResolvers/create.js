@@ -20,7 +20,7 @@ export default ({name, collection, Model}) => {
       } catch (error) {
         console.log(error)
         if (error.isValidationError) {
-          throw error.prependKey('city')
+          throw error.prependKey(dataParam)
         }
 
         throw error
