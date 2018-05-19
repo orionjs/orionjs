@@ -15,6 +15,7 @@ import {resolver, getCrudResolvers, createPaginatedResolver} from './resolvers'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as GraphQL from 'graphql'
+
 export {
   start,
   register,

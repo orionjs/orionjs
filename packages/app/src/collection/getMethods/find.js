@@ -1,10 +1,9 @@
 import getSelector from './getSelector'
 
-export default ({getRawCollection, model}) =>
+export default ({rawCollection, model}) =>
   function find(...args) {
     const options = args[1]
     const selector = getSelector(args)
-    const rawCollection = getRawCollection()
     const cursor = rawCollection.find(selector, options)
 
     return {

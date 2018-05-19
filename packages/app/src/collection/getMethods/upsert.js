@@ -3,7 +3,7 @@ import generateId from './generateId'
 import validateUpsert from './validateModifier/validateUpsert'
 import cleanModifier from './cleanModifier'
 
-export default ({getRawCollection, schema}) =>
+export default ({rawCollection, schema}) =>
   async function upsert(...args) {
     let selector = getSelector(args)
     let modifier = args[1]
@@ -18,7 +18,6 @@ export default ({getRawCollection, schema}) =>
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
 
-    const rawCollection = getRawCollection()
     const result = await rawCollection.update(selector, modifier, {...options, upsert: true})
     return {
       numberAffected: result.result.nModified,

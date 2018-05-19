@@ -14,7 +14,7 @@ export default async function({schema, doc, value, currentSchema, keys, options 
     }
   }
 
-  const validatorKey = await getFieldValidator(currentSchema.type)
+  const validatorKey = getFieldValidator(currentSchema.type)
   const validator = validatorKey === 'custom' ? currentSchema.type : fieldTypes[validatorKey]
 
   const error = await validator.validate(value, info, ...args)

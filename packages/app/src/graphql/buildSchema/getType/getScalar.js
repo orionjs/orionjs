@@ -14,12 +14,16 @@ const fieldMap = {
   blackbox: JSONScalar
 }
 
-export default async function(fieldType) {
+export default function(fieldType) {
   if (fieldMap[fieldType.name]) {
     return fieldMap[fieldType.name]
   }
   if (fieldType.toGraphQLType) {
-    return await fieldType.toGraphQLType()
+    const result = fieldType.toGraphQLType()
+    if (result.then) {
+      throw new Error('toGraphQLType cant return a promise')
+    }
+    return result
   }
   throw new Error(`Field type "${fieldType.name}" has no convertion to GraphQLType`)
 }

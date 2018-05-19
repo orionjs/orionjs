@@ -8,18 +8,10 @@ import upsert from './upsert'
 import handleError from './handleError'
 
 export default function(collection) {
-  const {model} = collection
-  const {schema} = model
+  const {model, rawCollection} = collection
+  const {schema} = model || {}
 
-  const getRawCollection = () => {
-    const {rawCollection} = collection
-    if (!rawCollection) {
-      throw new Error('DB is not connected yet')
-    }
-    return rawCollection
-  }
-
-  const info = {model, schema, collection, getRawCollection}
+  const info = {model, schema, collection, rawCollection}
 
   const funcs = {
     find: find(info),

@@ -4,8 +4,8 @@ import getMutation from './getMutation'
 
 export default async function(options) {
   global.resolvers = options.resolvers
-  return new GraphQLSchema({
-    query: await getQuery(options),
-    mutation: await getMutation(options)
-  })
+  const query = await getQuery(options)
+  const mutation = await getMutation(options)
+  const schema = new GraphQLSchema({query, mutation})
+  return schema
 }

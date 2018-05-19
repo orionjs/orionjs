@@ -2,38 +2,59 @@ import initItem from './initItem'
 import isArray from 'lodash/isArray'
 import includes from 'lodash/includes'
 import clone from 'lodash/clone'
+import resolveParam from './resolveParam'
 
 export default class Model {
-  constructor({name, schema, resolvers}) {
+  constructor({name, schema, resolvers, getSchema = f => f}) {
     this.name = name
     this.__isModel = true
+    this.resolvedSchema = 'unresolved'
     this._schema = schema
-    this.resolvers = resolvers
+    this.resolvedResolvers = 'unresolved'
+    this._resolvers = resolvers
+
+    this._getSchema = getSchema
   }
 
   initItem(data) {
     return initItem(this, data)
   }
 
+  get resolvers() {
+    if (this.resolvedResolvers !== 'unresolved') return this.resolvedResolvers
+    this.resolvedResolvers = resolveParam(this._resolvers)
+    return this.resolvedResolvers
+  }
+
   set schema(schema) {
     this._schema = schema
+    this.resolvedSchema = 'unresolved'
+  }
+
+  getSchema() {
+    if (this.resolvedSchema !== 'unresolved') return this.resolvedSchema
+    const schema = resolveParam(this._schema)
+
+    this.resolvedSchema = this._getSchema(schema)
+    return this.resolvedSchema
   }
 
   get schema() {
-    if (!this._schema) return
-    const keys = Object.keys(this._schema)
+    const schema = this.getSchema()
+    if (!schema) return
+    const keys = Object.keys(schema)
     for (const key of keys) {
-      if (isArray(this._schema[key].type)) {
-        if (this._schema[key].type[0] instanceof Model) {
-          this._schema[key].type[0] = this._schema[key].type[0].schema
+      if (isArray(schema[key].type)) {
+        if (schema[key].type[0] instanceof Model) {
+          schema[key].type[0] = schema[key].type[0].schema
         }
       }
-      if (this._schema[key].type instanceof Model) {
-        this._schema[key].type = this._schema[key].type.schema
+      if (schema[key].type instanceof Model) {
+        schema[key].type = schema[key].type.schema
       }
     }
     return {
-      ...this._schema,
+      ...schema,
       __model: this
     }
   }
@@ -70,18 +91,22 @@ export default class Model {
   }
 
   clone({name = this.name, omitFields = [], mapFields = f => f}) {
-    const schema = {}
+    const getSchema = function(_schema) {
+      const schema = {}
 
-    const keys = Object.keys(this._schema).filter(key => !includes(omitFields, key))
-    for (const key of keys) {
-      const field = clone(this._schema[key])
-      schema[key] = mapFields(field, key)
+      const keys = Object.keys(_schema).filter(key => !includes(omitFields, key))
+      for (const key of keys) {
+        const field = clone(_schema[key])
+        schema[key] = mapFields(field, key)
+      }
+      return schema
     }
 
     return new Model({
       name,
-      schema,
-      resolvers: this.resolvers
+      schema: this._schema,
+      getSchema,
+      resolvers: this._resolvers
     })
   }
 }

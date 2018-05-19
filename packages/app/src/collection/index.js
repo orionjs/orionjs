@@ -16,27 +16,26 @@ export default function(passedOptions) {
     ...passedOptions
   }
 
-  checkOptions(options)
-
   const collection = {
     ...options
   }
-
-  global.db[options.name] = collection
 
   const resolvers = []
   let isReady = false
   let onReady = () => resolvers.map(resolve => resolve(collection))
   collection.await = async () => (isReady ? null : new Promise(resolve => resolvers.push(resolve)))
 
-  const methods = getMethods(collection)
-  for (const key of Object.keys(methods)) {
-    collection[key] = methods[key]
-  }
-
   connect().then(db => {
+    checkOptions(options)
+    global.db[options.name] = collection
+
     const rawCollection = db.collection(options.name)
     collection.rawCollection = rawCollection
+
+    const methods = getMethods(collection)
+    for (const key of Object.keys(methods)) {
+      collection[key] = methods[key]
+    }
 
     loadIndexes(collection)
 

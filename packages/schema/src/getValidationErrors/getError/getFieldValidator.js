@@ -4,7 +4,7 @@ import isString from 'lodash/isString'
 import fieldTypes from '../../fieldTypes'
 import has from 'lodash/has'
 
-export default async function(type) {
+export default function(type) {
   if (isPlainObject(type)) {
     if (type._isFieldType) return 'custom'
     return 'plainObject'

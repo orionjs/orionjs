@@ -5,11 +5,7 @@ export default function({model, name}) {
     throw new ConfigurationError('Collection name is required')
   }
 
-  if (!model) {
-    throw new ConfigurationError('Model is required in collection ' + name)
-  }
-
-  if (model.schema) {
+  if (model && model.schema) {
     if (!model.schema._id || model.schema._id.type !== 'ID') {
       throw new ConfigurationError(
         'Field _id type "ID" on schema is required in collection ' + name

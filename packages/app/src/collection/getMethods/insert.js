@@ -3,7 +3,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import generateId from './generateId'
 import fromDot from '../../database/dot/fromDot'
 
-export default ({getRawCollection, schema}) =>
+export default ({rawCollection, schema}) =>
   async function insert(doc, options) {
     if (!doc || !isPlainObject(doc)) {
       throw new Error('Insert must receive a document')
@@ -13,7 +13,6 @@ export default ({getRawCollection, schema}) =>
       doc = await clean(schema, fromDot(doc))
       await validate(schema, doc)
     }
-    const rawCollection = getRawCollection()
     await rawCollection.insert(doc, options)
     return doc._id
   }

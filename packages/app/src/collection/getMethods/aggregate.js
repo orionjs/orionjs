@@ -1,5 +1,4 @@
-export default ({getRawCollection}) =>
+export default ({rawCollection}) =>
   function aggregate(pipeline) {
-    const rawCollection = getRawCollection()
     return rawCollection.aggregate(pipeline)
   }
