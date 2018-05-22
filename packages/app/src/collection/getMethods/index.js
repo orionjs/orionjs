@@ -6,6 +6,7 @@ import update from './update'
 import remove from './remove'
 import upsert from './upsert'
 import handleError from './handleError'
+import updateItemWithModifier from './updateItemWithModifier'
 
 export default function(collection) {
   const {model, rawCollection} = collection
@@ -17,15 +18,14 @@ export default function(collection) {
     const item = model.initItem(doc)
     item.remove = async function() {
       const result = await funcs.remove(doc._id)
-      if (result !== 1) {
-        throw new Error('Error removing item')
-      }
+      return result
     }
     item.update = async function(modifier) {
       const result = await funcs.update(doc._id, modifier)
-      if (result !== 1) {
-        throw new Error('Error updating item')
+      if (result === 1) {
+        updateItemWithModifier(item, modifier)
       }
+      return result
     }
     return item
   }

@@ -44,6 +44,11 @@ export default async function validateModifier(schema, modifier) {
         cleaned = await cleanKey(schema, key, value)
       }
 
+      if (operation === '$unset') {
+        const isPresent = await cleanKey(schema, key, value)
+        cleaned = !isNil(isPresent) ? '' : null
+      }
+
       if (!isNil(cleaned)) {
         cleanedModifier[operation][key] = cleaned
       }
