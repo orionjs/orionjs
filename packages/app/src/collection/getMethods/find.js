@@ -1,6 +1,6 @@
 import getSelector from './getSelector'
 
-export default ({rawCollection, model}) =>
+export default ({rawCollection, initItem, odel}) =>
   function find(...args) {
     const options = args[1]
     const selector = getSelector(args)
@@ -25,7 +25,7 @@ export default ({rawCollection, model}) =>
       },
       async toArray() {
         const items = await cursor.toArray()
-        return items.map(item => model.initItem(item))
+        return items.map(item => initItem(item))
       }
     }
   }
