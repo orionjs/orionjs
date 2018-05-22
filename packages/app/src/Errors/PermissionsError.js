@@ -1,5 +1,5 @@
 export default class PermissionsError extends Error {
-  constructor(permissionErrorType) {
+  constructor(permissionErrorType, otherInfo) {
     // Calling parent constructor of base Error class.
     const message = `Client is not allowed to perform this action [${permissionErrorType}]`
     super(message)
@@ -7,9 +7,11 @@ export default class PermissionsError extends Error {
 
     this.isOrionError = true
     this.code = PermissionsError
+    this.otherInfo = otherInfo
 
     this.getInfo = () => {
       return {
+        ...otherInfo,
         error: 'PermissionsError',
         message,
         type: permissionErrorType

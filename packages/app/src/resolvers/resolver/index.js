@@ -3,6 +3,7 @@ import checkOptions from './checkOptions'
 import validate from './validate'
 import clean from './clean'
 import getArgs from './getArgs'
+import includes from 'lodash/includes'
 
 export default function({
   params,
@@ -11,15 +12,22 @@ export default function({
   mutation,
   private: isPrivate,
   resolve,
-  checkPermission
+  checkPermission,
+  roles = [],
+  role
 }) {
+  if (role) {
+    roles.push(role)
+  }
+
   checkOptions({
     params,
     requireUserId,
     returns,
     mutation,
     resolve,
-    checkPermission
+    checkPermission,
+    roles
   })
 
   const resolver = async function(...args) {
@@ -27,6 +35,18 @@ export default function({
 
     if (requireUserId && !viewer.userId) {
       throw new PermissionsError('notLoggedIn')
+    }
+
+    if (roles.length) {
+      let hasPermission = false
+      for (const requiredRole of roles) {
+        if (includes(viewer.roles, requiredRole)) {
+          hasPermission = true
+        }
+      }
+      if (!hasPermission) {
+        throw new PermissionsError('missingRoles', {roles})
+      }
     }
 
     if (checkPermission) {

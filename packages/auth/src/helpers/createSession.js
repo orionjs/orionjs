@@ -1,5 +1,13 @@
 import {generateId} from '@orion-js/app'
 
+const hasEmailsVerified = function(user) {
+  if (!user.emails) return true
+  for (const email of user.emails) {
+    if (!email.verified) return false
+  }
+  return true
+}
+
 export default async function({user, Sessions}) {
   if (!user) throw new Error('User not found')
   const session = {
@@ -9,7 +17,9 @@ export default async function({user, Sessions}) {
     nonce: '0',
     lastCall: new Date(),
     userId: user._id,
-    locale: user.locale
+    locale: user.locale,
+    roles: user.roles,
+    emailVerified: hasEmailsVerified(user)
   }
   const sessionId = await Sessions.insert(session)
   session._id = sessionId

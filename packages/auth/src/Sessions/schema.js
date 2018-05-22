@@ -24,5 +24,13 @@ export default {
   locale: {
     type: String,
     optional: true
+  },
+  roles: {
+    type: [String],
+    optional: true
+  },
+  emailVerified: {
+    type: Boolean,
+    optional: true
   }
 }
