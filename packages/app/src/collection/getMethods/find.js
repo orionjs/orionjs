@@ -4,28 +4,34 @@ export default ({rawCollection, initItem, odel}) =>
   function find(...args) {
     const options = args[1]
     const selector = getSelector(args)
-    const cursor = rawCollection.find(selector, options)
+    const rawCursor = rawCollection.find(selector, options)
 
-    return {
-      cursor,
+    const cursor = {
+      rawCursor,
       sort(...args) {
-        return cursor.sort(...args)
+        cursor.rawCursor.sort(...args)
+        return cursor
       },
       project(...args) {
-        return cursor.project(...args)
+        cursor.rawCursor.project(...args)
+        return cursor
       },
       limit(...args) {
-        return cursor.limit(...args)
+        cursor.rawCursor.limit(...args)
+        return cursor
       },
       skip(...args) {
-        return cursor.skip(...args)
+        cursor.rawCursor.skip(...args)
+        return cursor
       },
       async count() {
-        return await cursor.count()
+        return await cursor.rawCursor.count()
       },
       async toArray() {
-        const items = await cursor.toArray()
+        const items = await cursor.rawCursor.toArray()
         return items.map(item => initItem(item))
       }
     }
+
+    return cursor
   }
