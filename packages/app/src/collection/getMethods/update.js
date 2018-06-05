@@ -9,7 +9,7 @@ export default ({rawCollection, schema}) =>
     const options = args[2] || {}
 
     if (!modifier) {
-      throw new Error('Modifier is required when makeing an update')
+      throw new Error('Modifier is required when making an update')
     }
 
     if (schema) {
