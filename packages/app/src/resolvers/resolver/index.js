@@ -4,6 +4,7 @@ import validate from './validate'
 import clean from './clean'
 import getArgs from './getArgs'
 import includes from 'lodash/includes'
+import getSchema from './getSchema'
 
 export default function({
   params,
@@ -58,8 +59,9 @@ export default function({
 
     if (params) {
       const options = {}
-      callParams = await clean(params, callParams, options, viewer)
-      await validate(params, callParams, options, viewer)
+      const schema = getSchema(params, callParams, options, viewer)
+      callParams = await clean(schema, callParams, options, viewer)
+      await validate(schema, callParams, options, viewer)
     }
 
     if (parent) {
