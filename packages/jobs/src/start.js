@@ -1,6 +1,9 @@
 import daemon from './daemon'
+import JobsCollection from './JobsCollection'
 
-export default function(jobMap) {
+export default async function(jobMap) {
+  await JobsCollection.await()
+
   const jobs = Object.keys(jobMap).map(identifier => {
     const data = jobMap[identifier]
     return {

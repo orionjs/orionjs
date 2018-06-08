@@ -16,7 +16,7 @@ export default function(collection) {
   let funcs
 
   const initItem = function(doc) {
-    const item = model.initItem(doc)
+    const item = model ? model.initItem(doc) : doc
     if (passUpdateAndRemove) {
       item.remove = async function() {
         const result = await funcs.remove(doc._id)
