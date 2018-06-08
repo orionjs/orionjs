@@ -44,3 +44,28 @@ it('validate $unset operations', async () => {
     expect(error.code).toBe('validationError')
   }
 })
+
+it('should allow an $unset operation on a children of a required blackbox', async () => {
+  const schema = {
+    data: {
+      type: 'blackbox'
+    }
+  }
+
+  await validateModifier(schema, {
+    $unset: {
+      'data.items': ''
+    }
+  })
+
+  expect.assertions(1)
+  try {
+    await validateModifier(schema, {
+      $unset: {
+        data: ''
+      }
+    })
+  } catch (error) {
+    expect(error.code).toBe('validationError')
+  }
+})

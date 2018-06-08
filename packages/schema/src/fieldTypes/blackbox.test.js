@@ -8,6 +8,6 @@ test('return an error when the value is incorrect', async () => {
 })
 
 test('return no error when the value is correct', async () => {
-  expect(plainObject.validate({})).toBeFalsy()
+  expect(plainObject.validate({name: null})).toBeFalsy()
   expect(plainObject.validate({name: 'Nicolás'})).toBeFalsy()
 })

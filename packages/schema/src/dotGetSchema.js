@@ -17,7 +17,7 @@ const dotGet = function dotGet(object, path) {
   }
 
   if (levelObject === 'blackbox') {
-    return {type: 'blackbox'}
+    return {type: 'blackbox', optional: true}
   }
 
   return null

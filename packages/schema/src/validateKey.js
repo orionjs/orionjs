@@ -22,6 +22,7 @@ export default async function(schema, key, value, passedOptions = {}, ...args) {
     options,
     ...args
   )
+
   if (!result) return null
 
   return result.validate
