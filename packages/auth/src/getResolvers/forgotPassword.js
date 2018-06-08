@@ -1,7 +1,7 @@
 import {resolver, generateId} from '@orion-js/app'
 import findUserByEmail from '../helpers/findUserByEmail'
 
-export default ({Users, Session, Sessions}) =>
+export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
   resolver({
     params: {
       email: {
@@ -26,6 +26,9 @@ export default ({Users, Session, Sessions}) =>
       const date = new Date()
 
       Users.update(user._id, {$set: {'services.forgot': {token, date}}})
+      if (sendForgotPasswordToken) {
+        await sendForgotPasswordToken(user, token)
+      }
       return true
     }
   })
