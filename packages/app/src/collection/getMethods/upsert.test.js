@@ -3,7 +3,7 @@ import generateId from './generateId'
 import Model from '../../Model'
 
 it('updates a document if exists', async () => {
-  const Tests = await new Collection({name: generateId()}).await()
+  const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
   const docId = await Tests.insert({hello: 'world'})
   const {numberAffected, insertedId} = await Tests.upsert(
@@ -17,7 +17,7 @@ it('updates a document if exists', async () => {
 })
 
 it('inserts a document if it does not exists', async () => {
-  const Tests = await new Collection({name: generateId()}).await()
+  const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
   const {numberAffected, insertedId} = await Tests.upsert(
     {hello: 'world'},
@@ -54,7 +54,11 @@ it('adds autovalue when creating docs', async () => {
     }
   }
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const {numberAffected, insertedId} = await Tests.upsert(
     {firstName: 'Bastian'},
@@ -86,7 +90,11 @@ it('should upsert documents passing cleaning validation', async () => {
   }
 
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const {insertedId} = await Tests.upsert(
     {name: 'Nicolás', label: 1234},

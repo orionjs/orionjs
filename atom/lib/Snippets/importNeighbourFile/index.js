@@ -8,7 +8,15 @@ const debouncedGetFiles = debounce(getFiles, 3000, {
   trailing: false
 })
 
-export default function({file, prefix, preText}) {
+const shouldSuggest = function(scopeDescriptor) {
+  const chain = scopeDescriptor.getScopeChain()
+  if (chain.includes('string')) return false
+
+  return true
+}
+
+export default function({file, prefix, preText, scopeDescriptor}) {
+  if (!shouldSuggest(scopeDescriptor)) return
   const files = debouncedGetFiles(file)
   if (prefix.trim().length < 2) return
   return files.filter(name => name.toLowerCase().startsWith(prefix.toLowerCase())).map(name => {

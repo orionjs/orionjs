@@ -7,25 +7,28 @@ import remove from './remove'
 import upsert from './upsert'
 import handleError from './handleError'
 import updateItemWithModifier from './updateItemWithModifier'
+import findOneAndUpdate from './findOneAndUpdate'
 
 export default function(collection) {
-  const {model, rawCollection} = collection
+  const {model, rawCollection, passUpdateAndRemove} = collection
   const {schema} = model || {}
 
   let funcs
 
   const initItem = function(doc) {
     const item = model.initItem(doc)
-    item.remove = async function() {
-      const result = await funcs.remove(doc._id)
-      return result
-    }
-    item.update = async function(modifier) {
-      const result = await funcs.update(doc._id, modifier)
-      if (result === 1) {
-        updateItemWithModifier(item, modifier)
+    if (passUpdateAndRemove) {
+      item.remove = async function() {
+        const result = await funcs.remove(doc._id)
+        return result
       }
-      return result
+      item.update = async function(modifier) {
+        const result = await funcs.update(doc._id, modifier)
+        if (result === 1) {
+          updateItemWithModifier(item, modifier)
+        }
+        return result
+      }
     }
     return item
   }
@@ -36,6 +39,7 @@ export default function(collection) {
     find: find(info),
     findOne: findOne(info),
     aggregate: aggregate(info),
+    findOneAndUpdate: findOneAndUpdate(info),
     insert: handleError(insert(info)),
     update: handleError(update(info)),
     remove: handleError(remove(info)),

@@ -2,6 +2,9 @@
   'Collection findOne':
     'prefix': 'findOne()'
     'body': 'findOne($1)'
+  'Collection findOneAndUpdate':
+    'prefix': 'findOneAndUpdate()'
+    'body': 'findOneAndUpdate($1, {$2})'
   'Collection find, toArray':
     'prefix': 'find().toArray()'
     'body': 'find($1).toArray()'

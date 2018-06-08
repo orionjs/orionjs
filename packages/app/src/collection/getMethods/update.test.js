@@ -3,7 +3,7 @@ import generateId from './generateId'
 import Model from '../../Model'
 
 it('updates a document without errors', async () => {
-  const Tests = await new Collection({name: generateId()}).await()
+  const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
   const docId = await Tests.insert({hello: 'world'})
   const modifiedCount = await Tests.update(docId, {$set: {hello: 'country'}})
@@ -13,7 +13,7 @@ it('updates a document without errors', async () => {
 })
 
 it('updates multiple document without errors', async () => {
-  const Tests = await new Collection({name: generateId()}).await()
+  const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
   await Tests.insert({hello: 'world'})
   await Tests.insert({hello: 'world'})
@@ -34,7 +34,11 @@ it('should update documents that have array passing validation', async () => {
     friends: {type: [friend]}
   }
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const personId = await Tests.insert({friends: [{name: 'Roberto'}, {name: 'Joaquín'}]})
 
@@ -62,7 +66,11 @@ it('should update documents passing validation', async () => {
     wife: {type: wife}
   }
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const personId = await Tests.insert({'wife.state': 'Hungry', 'wife.name': 'Francisca'})
 
@@ -78,7 +86,11 @@ it('should update documents passing validation with blackbox field', async () =>
     services: {type: 'blackbox'}
   }
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const personId = await Tests.insert({services: {password: 123456}})
 
@@ -98,7 +110,11 @@ it('should throw an error when modifier is invalid', async () => {
     wife: {type: wife}
   }
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const personId = await Tests.insert({'wife.state': 'Hungry', 'wife.name': 'Francisca'})
 
@@ -129,7 +145,11 @@ it('dont add autovalue when updating', async () => {
     }
   }
   const model = new Model({name: generateId(), schema})
-  const Tests = await new Collection({name: generateId(), model}).await()
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
 
   const personId = await Tests.insert({name: 'Nicolás'})
   await Tests.update(personId, {$set: {name: 'Nicolás López'}})

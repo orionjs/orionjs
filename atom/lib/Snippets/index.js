@@ -37,6 +37,7 @@ export default class Snippets {
     const lineText = this.getLine(fileContent, bufferPosition)
     const nextLine = this.getLine(fileContent, {...bufferPosition, row: bufferPosition.row + 1})
     const preText = lineText.substr(0, bufferPosition.column)
+    const beforeText = preText.replace(new RegExp(`${prefix}$`), '')
     const id = this.getId(editor, bufferPosition)
     const suggestions = []
     const file = editor.buffer.file
@@ -55,7 +56,8 @@ export default class Snippets {
             scopeDescriptor,
             prefix,
             fileContent,
-            nextLine
+            nextLine,
+            beforeText
           })) || []
         result.forEach(suggestion => suggestions.push(suggestion))
       } catch (error) {

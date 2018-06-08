@@ -6,7 +6,7 @@ it('should connect to the test mongodb database', async () => {
 })
 
 it('should let insert and find a document to the database', async () => {
-  const Views = new Collection({name: 'test2'})
+  const Views = new Collection({name: 'test2', passUpdateAndRemove: false})
   await Views.await()
 
   const doc = {hello: 'world'}
