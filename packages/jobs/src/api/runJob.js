@@ -13,8 +13,7 @@ export default async function({job, identifier, params}) {
     job,
     identifier,
     params,
-    createdAt: new Date(),
-    startedAt: null
+    createdAt: new Date()
   })
 
   return jobId

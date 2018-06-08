@@ -19,6 +19,10 @@
           {
             "label": "Create resolvers group",
             "command": "orionjs:create-resolvers-group"
+          },
+          {
+            "label": "Create a event job",
+            "command": "orionjs:create-event-job"
           }
         ]
       },

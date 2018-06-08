@@ -17,7 +17,7 @@ const loop = async function({jobs, workers}) {
   const func = createJobExecutor({jobData, jobs})
   freeWorker.execute(func)
 
-  console.log(`will execute job ${jobData.job} in worker ${freeWorker.index}`)
+  // console.log(`did execute job ${jobData.job} in worker ${freeWorker.index}`)
 
   return runLoop({jobs, workers})
 }
