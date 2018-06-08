@@ -9,6 +9,7 @@ import Sessions from '../Sessions'
 import getSession from './getSession'
 import forgotPassword from './forgotPassword'
 import resetPassword from './resetPassword'
+import verifyEmail from './verifyEmail'
 
 export default function(options) {
   options.Sessions = Sessions(options)
@@ -40,6 +41,7 @@ export default function(options) {
     createUser: createUser(options),
     changePassword: changePassword(options),
     forgotPassword: forgotPassword(options),
-    resetPassword: resetPassword(options)
+    resetPassword: resetPassword(options),
+    verifyEmail: verifyEmail(options)
   }
 }

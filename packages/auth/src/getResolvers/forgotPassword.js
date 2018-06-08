@@ -3,7 +3,6 @@ import findUserByEmail from '../helpers/findUserByEmail'
 
 export default ({Users, Session, Sessions}) =>
   resolver({
-    name: 'forgotPassword',
     params: {
       email: {
         type: 'email',
