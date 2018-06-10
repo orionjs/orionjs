@@ -8,7 +8,9 @@ export default ({rawCollection, schema}) =>
     if (!doc || !isPlainObject(doc)) {
       throw new Error('Insert must receive a document')
     }
-    doc._id = generateId()
+    if (!doc._id) {
+      doc._id = generateId()
+    }
     if (schema) {
       doc = await clean(schema, fromDot(doc))
       await validate(schema, doc)
