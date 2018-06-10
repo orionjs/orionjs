@@ -90,11 +90,16 @@ export default class Model {
       .filter(resolver => !resolver.private)
   }
 
-  clone({name = this.name, omitFields = [], mapFields = f => f}) {
+  clone({name = this.name, omitFields = [], pickFields, mapFields = f => f}) {
     const getSchema = function(_schema) {
       const schema = {}
 
-      const keys = Object.keys(_schema).filter(key => !includes(omitFields, key))
+      const keys = Object.keys(_schema)
+        .filter(key => !includes(omitFields, key))
+        .filter(key => {
+          if (!pickFields) return true
+          return includes(pickFields, key)
+        })
       for (const key of keys) {
         const field = clone(_schema[key])
         schema[key] = mapFields(field, key)
