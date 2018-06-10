@@ -1,6 +1,6 @@
 import resolver from '../resolver'
 
-export default ({name, collection, Model}) => {
+export default ({name, collection, Model, canUpdate}) => {
   const InputModel = collection.model.clone({
     name: `Update${Model.name}`,
     omitFields: ['_id'],
@@ -26,6 +26,7 @@ export default ({name, collection, Model}) => {
     returns: Model,
     mutation: true,
     resolve: async function(params, viewer) {
+      if (canUpdate) await canUpdate(params, viewer)
       const itemId = params[idParam]
       const data = params[dataParam]
       await collection.update(itemId, {$set: data})

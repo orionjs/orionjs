@@ -2,6 +2,7 @@ import resolver from '../resolver'
 import getModel from './getModel'
 import getParams from './params'
 import setOptions from './setOptions'
+
 export default function({returns, collection, params, getCursor}) {
   const getPaginatedCursor = async (params, viewer) => {
     if (getCursor) {

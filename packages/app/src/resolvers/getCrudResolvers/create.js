@@ -1,6 +1,6 @@
 import resolver from '../resolver'
 
-export default ({name, collection, Model}) => {
+export default ({name, collection, Model, canCreate}) => {
   const InputModel = collection.model.clone({
     name: `Create${Model.name}`,
     omitFields: ['_id']
@@ -15,6 +15,7 @@ export default ({name, collection, Model}) => {
     resolve: async function(params, viewer) {
       try {
         const data = params[dataParam]
+        if (canCreate) await canCreate(data, viewer)
         const itemId = await collection.insert(data)
         return await collection.findOne(itemId)
       } catch (error) {
