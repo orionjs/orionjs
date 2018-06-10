@@ -8,6 +8,7 @@ const defaultLockTime = {
 export default async function() {
   const job = await JobsCollection.findOneAndUpdate(
     {
+      runAfter: {$lte: new Date()},
       $or: [
         {
           lockedAt: null
