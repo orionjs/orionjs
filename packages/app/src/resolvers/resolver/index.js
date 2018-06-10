@@ -24,6 +24,7 @@ export default function({
     params,
     requireUserId,
     returns,
+    isPrivate,
     mutation,
     resolve,
     checkPermission,
@@ -33,26 +34,28 @@ export default function({
   const resolver = async function(...args) {
     let {parent, callParams, viewer} = getArgs(...args)
 
-    if (requireUserId && !viewer.userId) {
-      throw new PermissionsError('notLoggedIn')
-    }
+    if (!viewer.app) {
+      if (requireUserId && !viewer.userId) {
+        throw new PermissionsError('notLoggedIn')
+      }
 
-    if (roles.length) {
-      let hasPermission = false
-      for (const requiredRole of roles) {
-        if (includes(viewer.roles, requiredRole)) {
-          hasPermission = true
+      if (roles.length) {
+        let hasPermission = false
+        for (const requiredRole of roles) {
+          if (includes(viewer.roles, requiredRole)) {
+            hasPermission = true
+          }
+        }
+        if (!hasPermission) {
+          throw new PermissionsError('missingRoles', {roles})
         }
       }
-      if (!hasPermission) {
-        throw new PermissionsError('missingRoles', {roles})
-      }
-    }
 
-    if (checkPermission) {
-      const error = await checkPermission(callParams, viewer)
-      if (error) {
-        throw new PermissionsError(error)
+      if (checkPermission) {
+        const error = await checkPermission(callParams, viewer)
+        if (error) {
+          throw new PermissionsError(error)
+        }
       }
     }
 

@@ -1,8 +1,8 @@
 import ConfigurationError from '../../../lib/Errors/ConfigurationError'
 import isPlainObject from 'lodash/isPlainObject'
 
-export default function({params, returns, mutation, resolve, checkPermission}) {
-  if (!returns) {
+export default function({params, isPrivate, returns, mutation, resolve, checkPermission}) {
+  if (!returns && !isPrivate) {
     throw new ConfigurationError('Resolver returns is undefined')
   }
 
