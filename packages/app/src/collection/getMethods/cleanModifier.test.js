@@ -42,7 +42,7 @@ it('should clean modifier and leave dots', async () => {
     _id: {type: 'ID'},
     wife: {type: wife}
   }
-  const modifier = {$set: {'wife.state': 'Full'}}
+  const modifier = {$set: {'wife.state': 'Happy'}}
 
   const cleaned = await cleanModifier(schema, modifier)
   expect(cleaned).toEqual(modifier)
