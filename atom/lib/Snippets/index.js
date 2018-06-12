@@ -3,6 +3,7 @@ import debounce from 'lodash/debounce'
 import importCollections from './importCollections'
 import importModels from './importModels'
 import importNeighbourFile from './importNeighbourFile'
+import escapeStringRegexp from 'escape-string-regexp'
 
 const providers = [importCollections, importModels, importNeighbourFile]
 
@@ -37,7 +38,7 @@ export default class Snippets {
     const lineText = this.getLine(fileContent, bufferPosition)
     const nextLine = this.getLine(fileContent, {...bufferPosition, row: bufferPosition.row + 1})
     const preText = lineText.substr(0, bufferPosition.column)
-    const beforeText = preText.replace(new RegExp(`${prefix}$`), '')
+    const beforeText = preText.replace(new RegExp(`${escapeStringRegexp(prefix)}$`), '')
     const id = this.getId(editor, bufferPosition)
     const suggestions = []
     const file = editor.buffer.file
