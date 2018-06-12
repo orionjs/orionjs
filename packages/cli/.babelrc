@@ -1,0 +1,14 @@
+{
+  "presets": ["env"],
+  "plugins": [
+    "syntax-async-functions",
+    "transform-regenerator",
+    [
+      "transform-runtime",
+      {
+        "polyfill": false,
+        "regenerator": true
+      }
+    ]
+  ]
+}

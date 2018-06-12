@@ -5,20 +5,22 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "dependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-plugin-source-map-support": "^2.0.1",
-    "babel-preset-env": "^1.7.0",
     "colors": "^1.2.1",
     "commander": "^2.15.1",
     "globby": "^8.0.1",
     "lodash": "^4.17.5",
-    "source-map-support": "^0.5.4",
     "walk-sync": "^0.3.2"
   },
   "bin": {
-    "orion": "./index.js"
+    "orion": "./build/index.js"
+  },
+  "scripts": {
+    "build": "babel ./src --out-dir ./build",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
     "eslint-config-orionsoft": "^1.2.8"
   }
 }
