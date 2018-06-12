@@ -16,7 +16,7 @@
     "walk-sync": "^0.3.2"
   },
   "bin": {
-    "orion": "./index.js"
+    "orion": "./node_modules/babel-cli/bin/babel-node.js --presets env ./index.js"
   },
   "devDependencies": {
     "eslint-config-orionsoft": "^1.2.8"
