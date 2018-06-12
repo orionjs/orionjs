@@ -9,7 +9,7 @@ export default async function({output}) {
   }
 
   const finalDirPath = output.replace('~', os.homedir())
-  console.log(colors.bold('=> Compiling...'))
+  console.log(colors.bold('Compiling your app...'))
   await compile(finalDirPath)
   createPackageJSON(finalDirPath)
   console.log(colors.bold('Build created'))

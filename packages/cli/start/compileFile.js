@@ -7,7 +7,7 @@ const addSourceMapPath = function(path, code) {
   return `${code}\n\n//# sourceMappingURL=${sourceMapPath}`
 }
 
-export default async function(filePath) {
+export default async function(filePath, dirPath) {
   const babelOptions = {
     ast: false,
     plugins: [sourceMapSupport],
@@ -21,7 +21,7 @@ export default async function(filePath) {
     })
   })
 
-  const finalPath = filePath.replace(/^app/, '.orion/build')
+  const finalPath = filePath.replace(/^app/, dirPath)
   await writeFile(finalPath, addSourceMapPath(finalPath, code))
   await writeFile(finalPath + '.map', JSON.stringify(map, null, 2))
 }

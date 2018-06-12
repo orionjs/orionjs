@@ -1,8 +1,8 @@
 import execute from '../helpers/execute'
 import globby from 'globby'
-import compileFile from './compileFile'
 import colors from 'colors/safe'
 import path from 'path'
+import compileFile from '../start/compileFile'
 
 export default async function(dirPath) {
   const finalDirPath = path.join(dirPath, 'app')

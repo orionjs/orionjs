@@ -9,7 +9,7 @@ export default runOnce(async function() {
   await execute('rm -rf .orion/build')
   const files = await globby('app/**/*.js')
   try {
-    await Promise.all(files.map(file => compileFile(file)))
+    await Promise.all(files.map(file => compileFile(file, '.orion/build')))
     return true
   } catch (error) {
     console.log(colors.red(`=> Syntax error at ${error.message}`))
