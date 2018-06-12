@@ -1,3 +1,4 @@
+#! /usr/bin/env ./node_modules/babel-cli/bin/babel-node.js --presets env
 import program from 'commander'
 import start from './start'
 import build from './build'
