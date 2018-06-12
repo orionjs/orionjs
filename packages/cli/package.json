@@ -7,6 +7,7 @@
   "dependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-source-map-support": "^2.0.1",
+    "babel-preset-env": "^1.7.0",
     "colors": "^1.2.1",
     "commander": "^2.15.1",
     "globby": "^8.0.1",
@@ -18,7 +19,6 @@
     "orion": "./index.js"
   },
   "devDependencies": {
-    "babel-preset-env": "^1.6.1",
     "eslint-config-orionsoft": "^1.2.8"
   }
 }
