@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/cli",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
