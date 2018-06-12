@@ -5,6 +5,7 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "dependencies": {
+    "babel-plugin-source-map-support": "^2.0.1",
     "colors": "^1.2.1",
     "commander": "^2.15.1",
     "globby": "^8.0.1",
