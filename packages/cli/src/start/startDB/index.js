@@ -16,6 +16,7 @@ export default async function() {
   const dbProcess = await new Promise(async function(resolve, reject) {
     let error = false
     const dbProcess = exec(command, {}, function(error, stdout, stderr) {
+      console.error(stderr)
       if (error) {
         const logs = fs.readFileSync('.orion/db/logs/mongolog.log')
         reject(new Error(logs))
