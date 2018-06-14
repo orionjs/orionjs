@@ -15,6 +15,9 @@ const onExit = function(...args) {
 process.on('SIGINT', onExit)
 process.on('SIGTERM', onExit)
 
+// catches terminal close
+process.on('SIGHUP', onExit)
+
 // catches "kill pid" (for example: nodemon restart)
 process.on('SIGUSR1', onExit)
 process.on('SIGUSR2', onExit)
