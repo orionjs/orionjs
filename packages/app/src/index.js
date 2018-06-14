@@ -11,6 +11,8 @@ import UserError from './Errors/UserError'
 import Model from './Model'
 import {startGraphQL} from './graphql'
 import ExposeSchemaResolvers from './graphql/ExposeSchemaResolvers'
+import ResolverParams from './graphql/ExposeSchemaResolvers/ResolverParams'
+import serializeSchema from './graphql/ExposeSchemaResolvers/serializeSchema'
 import {resolver, getCrudResolvers, createPaginatedResolver} from './resolvers'
 import {setGetViewer} from './route/setGetViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
@@ -32,5 +34,7 @@ export {
   getCorsOptions,
   setCorsOptions,
   ExposeSchemaResolvers,
-  createPaginatedResolver
+  createPaginatedResolver,
+  ResolverParams,
+  serializeSchema
 }
