@@ -18,7 +18,8 @@
   },
   "scripts": {
     "build": "babel ./src --out-dir ./build",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "watch": "rm -rf ./build && babel ./src --watch --out-dir ./build"
   },
   "devDependencies": {
     "babel-plugin-transform-runtime": "^6.23.0",
