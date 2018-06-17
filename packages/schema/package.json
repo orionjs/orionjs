@@ -1,10 +1,13 @@
 {
   "name": "@orion-js/schema",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
+    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "clean-build": "rm -rf node_modules && yarn install && yarn run build",
+    "prepublishOnly": "yarn run clean-build",
     "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib --presets es2015,stage-2",
     "test": "jest src --coverage"
   },
@@ -21,5 +24,8 @@
     "babel-preset-stage-2": "^6.24.1",
     "eslint-config-orionsoft": "^1.2.8",
     "jest": "^23.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
