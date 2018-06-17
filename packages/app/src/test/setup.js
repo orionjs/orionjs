@@ -12,6 +12,5 @@ module.exports = async function() {
 
   global.MONGOD = mongod
   process.env.MONGO_URL = await mongod.getConnectionString()
-
   global.MONGODB_DB = await connect()
 }

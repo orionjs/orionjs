@@ -21,6 +21,7 @@ const connect = async function() {
   for (const resolve of resolvers) {
     resolve(global.orionMainDatabase)
   }
+  connecting = false
   return global.orionMainDatabase
 }
 
