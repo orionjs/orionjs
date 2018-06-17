@@ -17,7 +17,8 @@ export default function(model, item) {
   }
 
   if (model.schema) {
-    for (const key of Object.keys(model.schema)) {
+    const keys = Object.keys(model.schema).filter(key => !key.startsWith('__'))
+    for (const key of keys) {
       const fieldSchema = model.schema[key]
       if (!fieldSchema.type) continue
       const fieldModel = isArray(fieldSchema.type) ? fieldSchema.type[0] : fieldSchema.type

@@ -3,16 +3,18 @@ import isArray from 'lodash/isArray'
 import includes from 'lodash/includes'
 import clone from 'lodash/clone'
 import resolveParam from './resolveParam'
+import {validate, clean} from '@orion-js/schema'
 
 export default class Model {
-  constructor({name, schema, resolvers, getSchema = f => f}) {
+  constructor({name, validate, clean, schema, resolvers, getSchema = f => f}) {
     this.name = name
     this.__isModel = true
     this.resolvedSchema = 'unresolved'
     this._schema = schema
     this.resolvedResolvers = 'unresolved'
     this._resolvers = resolvers
-
+    this._validate = validate
+    this._clean = clean
     this._getSchema = getSchema
   }
 
@@ -55,7 +57,9 @@ export default class Model {
     }
     return {
       ...schema,
-      __model: this
+      __model: this,
+      __validate: this._validate,
+      __clean: this._clean
     }
   }
 
@@ -90,7 +94,14 @@ export default class Model {
       .filter(resolver => !resolver.private)
   }
 
-  clone({name = this.name, omitFields = [], pickFields, mapFields = f => f}) {
+  clone({
+    name = this.name,
+    omitFields = [],
+    pickFields,
+    mapFields = f => f,
+    clean = this._clean,
+    validate = this._validate
+  }) {
     const getSchema = function(_schema) {
       const schema = {}
 
@@ -111,7 +122,19 @@ export default class Model {
       name,
       schema: this._schema,
       getSchema,
-      resolvers: this._resolvers
+      resolvers: this._resolvers,
+      clean,
+      validate
     })
+  }
+
+  async validate(doc, ...options) {
+    const schema = this.schema
+    await validate(schema, doc, ...options)
+  }
+
+  async clean(doc, ...options) {
+    const schema = this.schema
+    await clean(schema, doc, ...options)
   }
 }
