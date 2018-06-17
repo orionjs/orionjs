@@ -211,3 +211,31 @@ test('run deep autovalues', async () => {
     texts: [{s: 'no'}, 'yes']
   })
 })
+
+test('perform custom cleaning', async () => {
+  const person = {
+    name: {
+      type: String
+    },
+    async __clean(value) {
+      if (value.name === 'Joaquin') {
+        return {name: 'Roberto'}
+      } else {
+        return value
+      }
+    }
+  }
+
+  const schema = {
+    persons: {
+      type: [person]
+    }
+  }
+
+  const cleaned = await clean(schema, {
+    persons: [{name: 'Nicolás'}, {name: 'Joaquin'}]
+  })
+  expect(cleaned).toEqual({
+    persons: [{name: 'Nicolás'}, {name: 'Roberto'}]
+  })
+})

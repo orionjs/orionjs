@@ -29,5 +29,12 @@ export default async function({schema, doc, value, currentSchema, keys, options 
     }
   }
 
+  if (currentSchema.type.__validate) {
+    const typeError = await currentSchema.type.__validate(value, info, ...args)
+    if (typeError) {
+      return typeError
+    }
+  }
+
   return null
 }

@@ -156,3 +156,66 @@ test('can check errors in deeply nested keys', async () => {
     'family.mother.children.1.age': Errors.NOT_IN_SCHEMA
   })
 })
+
+test('can validate object type with custom validation', async () => {
+  const person = {
+    name: {
+      type: String
+    },
+    async __validate(value) {
+      return value.name === 'Nicolás' ? null : 'no'
+    }
+  }
+  const schema = {
+    person: {
+      type: person
+    }
+  }
+
+  expect(
+    await getValidationErrors(schema, {
+      person: {name: 'Nicolás'}
+    })
+  ).toBeNull()
+
+  expect(
+    await getValidationErrors(schema, {
+      person: {name: 'Joaquin'}
+    })
+  ).toEqual({
+    person: 'no'
+  })
+})
+
+test('skip child validation if specified', async () => {
+  const person = {
+    firstName: {
+      type: String
+    },
+    lastName: {
+      type: String
+    },
+    async __skipChildValidation(value) {
+      return value.firstName === 'Nicolás'
+    }
+  }
+
+  const schema = {
+    persons: {
+      type: [person]
+    }
+  }
+
+  expect(
+    await getValidationErrors(schema, {
+      persons: [{firstName: 'Nicolás'}]
+    })
+  ).toBeNull()
+
+  const errors = await getValidationErrors(schema, {
+    persons: [{firstName: 'Joaquin'}]
+  })
+  expect(errors).toEqual({
+    'persons.0.lastName': Errors.REQUIRED
+  })
+})

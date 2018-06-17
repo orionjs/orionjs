@@ -2,6 +2,10 @@ import getFieldType from '../getValidationErrors/getError/getFieldType'
 import isNil from 'lodash/isNil'
 
 export default async function(type, fieldSchema, value, info, ...args) {
+  if (typeof fieldSchema.__clean === 'function') {
+    return await fieldSchema.__clean(value, info, ...args)
+  }
+
   const {clean} = await getFieldType(type)
 
   if (clean && !isNil(value)) {

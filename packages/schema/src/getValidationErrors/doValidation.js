@@ -16,7 +16,9 @@ export default async function doValidation({
   options,
   args
 }) {
-  const error = await getError({schema, doc, value, currentSchema, keys, options, args})
+  const info = {schema, doc, value, currentSchema, keys, options, args, addError}
+
+  const error = await getError(info)
   if (error) {
     addError(keys, error)
     return
@@ -28,6 +30,12 @@ export default async function doValidation({
    * Deep validation
    */
   if (isPlainObject(currentSchema.type)) {
+    if (typeof currentSchema.type.__skipChildValidation === 'function') {
+      if (await currentSchema.type.__skipChildValidation(value, info)) {
+        return
+      }
+    }
+
     const schemaKeys = Object.keys(currentSchema.type).filter(key => !key.startsWith('__'))
     for (const key of schemaKeys) {
       const itemSchema = currentSchema.type[key]
@@ -35,14 +43,10 @@ export default async function doValidation({
       const keyItemKeys = clone(keys)
       keyItemKeys.push(key)
       await doValidation({
-        schema,
-        doc,
+        ...info,
         value: itemValue,
         currentSchema: itemSchema,
-        keys: keyItemKeys,
-        addError,
-        options,
-        args
+        keys: keyItemKeys
       })
     }
 
@@ -60,14 +64,10 @@ export default async function doValidation({
       const keyItemKeys = clone(keys)
       keyItemKeys.push(i)
       await doValidation({
-        schema,
-        doc,
+        ...info,
         value: itemValue,
         currentSchema: {type: itemSchema},
-        keys: keyItemKeys,
-        addError,
-        options,
-        args
+        keys: keyItemKeys
       })
     }
   }
