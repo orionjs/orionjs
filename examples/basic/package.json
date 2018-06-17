@@ -1,22 +1,27 @@
 {
-  "name": "orionjs-basic-example",
-  "version": "0.0.1",
+  "name": "orionjs-basic-app",
+  "version": "0.0.26",
   "description": "A basic example for orionjs",
   "main": "index.js",
   "author": "nicolaslopezj",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --exec babel-node ./app"
+    "start": "orion start"
   },
   "dependencies": {
-    "@orion-js/app": "^0.0.2",
-    "@orion-js/auth": "^0.0.5",
-    "babel-plugin-module-resolver": "^3.1.1"
+    "@orion-js/app": "^0.0.26",
+    "@orion-js/auth": "^0.0.26",
+    "@orion-js/file-manager": "^0.0.26",
+    "@orion-js/jobs": "^0.0.26",
+    "@orion-js/mailing": "^0.0.26",
+    "@orion-js/schema": "^0.0.26"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "eslint-config-orionsoft": "^1.2.8"
   }
 }

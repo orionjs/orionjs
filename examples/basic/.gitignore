@@ -1,2 +1,5 @@
 .orion
 node_modules
+yarn-error.log
+# You should add your start.sh here
+real-start.sh

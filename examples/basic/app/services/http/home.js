@@ -1,8 +1,11 @@
 import {route} from '@orion-js/app'
-import registerView from 'app/controllers/Views/registerView'
-import getViews from 'app/controllers/Views/getViews'
+import {sendEmail} from '@orion-js/mailing'
 
-export default route('/', async function() {
-  registerView()
-  return await getViews()
+route('/', async function() {
+  await sendEmail({
+    to: ['anemail@me.com', 'a2email@me.com'],
+    subject: 'testing',
+    text: 'Hello this is a text'
+  })
+  return 'hi'
 })

@@ -5,11 +5,19 @@ export default new Model({
   schema: {
     firstName: {
       type: String,
-      min: 3
+      min: 2,
+      label: {
+        en: 'First name',
+        es: 'Nombre'
+      }
     },
     lastName: {
       type: String,
-      min: 3
+      min: 2,
+      label: {
+        en: 'Last name',
+        es: 'Apellido'
+      }
     }
   },
   resolvers: {

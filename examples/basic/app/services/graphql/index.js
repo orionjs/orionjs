@@ -1,7 +1,9 @@
 import {startGraphQL, setCorsOptions} from '@orion-js/app'
-import controllers from 'app/controllers'
+import resolvers from 'app/resolvers'
 
-startGraphQL({controllers})
+startGraphQL({
+  resolvers
+})
 
 setCorsOptions({
   origin: '*'
