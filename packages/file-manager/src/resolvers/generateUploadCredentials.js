@@ -34,7 +34,6 @@ export default resolver({
   }),
   mutation: true,
   async resolve(params, viewer) {
-    console.log('will create a file', params)
     const {accessKeyId, secretAccessKey, region, bucket, canUpload, basePath} = getAWSCredentials()
     const s3 = new AWS.S3({
       accessKeyId,
@@ -79,8 +78,6 @@ export default resolver({
         }
       )
     })
-
-    console.log(result)
 
     return {
       fileId,

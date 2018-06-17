@@ -3,27 +3,35 @@ export default {
     type: 'ID'
   },
   key: {
-    type: String
+    type: String,
+    optional: true
   },
   bucket: {
-    type: String
+    type: String,
+    optional: true
   },
   name: {
-    type: String
+    type: String,
+    optional: true
   },
   type: {
-    type: String
+    type: String,
+    optional: true
   },
   size: {
-    type: Number
+    type: Number,
+    optional: true
   },
   status: {
-    type: String
+    type: String,
+    optional: true
   },
   createdBy: {
-    type: String
+    type: String,
+    optional: true
   },
   createdAt: {
-    type: Date
+    type: Date,
+    optional: true
   }
 }

@@ -11,8 +11,7 @@ export default createPaginatedResolver({
   },
   returns: File,
   async getCursor({filter}, viewer) {
-    console.log(filter)
-    const query = {}
+    const query = {status: 'uploaded'}
 
     query.createdBy = viewer.userId
 
