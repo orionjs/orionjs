@@ -5,7 +5,11 @@ import isNil from 'lodash/isNil'
 
 const clean = async function(type, fieldSchema, value, {schema, doc, options}, ...args) {
   const info = {schema, doc, options, fieldSchema, type}
-  if (isArray(type) && isArray(value)) {
+  if (isArray(type) && !isNil(value)) {
+    if (!isArray(value)) {
+      value = [value]
+    }
+
     const items = []
     for (let i = 0; i < value.length; i++) {
       const newValue = await clean(type[0], type[0], value[i], info, ...args)
@@ -27,7 +31,11 @@ const clean = async function(type, fieldSchema, value, {schema, doc, options}, .
         throw new Error(`Error cleaning field ${key}, error: ${error.message}`)
       }
     }
-    return await cleanType('plainObject', fieldSchema, fields, info, ...args)
+    if (typeof type.__clean === 'function') {
+      return await type.__clean(value, info, ...args)
+    } else {
+      return await cleanType('plainObject', fieldSchema, fields, info, ...args)
+    }
   } else {
     return await cleanType(type, fieldSchema, value, info, ...args)
   }

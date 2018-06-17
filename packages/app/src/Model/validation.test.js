@@ -47,6 +47,7 @@ it('should allow deep model validation', async () => {
 
 it('allow custom model validation', async () => {
   let called = false
+  let called2 = false
   const model = new Model({
     name: 'AModel',
     schema: {
@@ -56,9 +57,14 @@ it('allow custom model validation', async () => {
     },
     async validate(doc) {
       called = true
+    },
+    async clean(doc) {
+      called2 = true
     }
   })
 
   await model.validate({name: 'Nicolás'})
+  await model.clean({name: 'Nicolás'})
   expect(called).toBe(true)
+  expect(called2).toBe(true)
 })

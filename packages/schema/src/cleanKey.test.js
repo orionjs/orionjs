@@ -33,6 +33,7 @@ test('deep clean fields', async () => {
     }
   }
 
+  expect(await cleanKey(schema, 'car.tags', {name: 12})).toEqual([{name: '12'}])
   expect(await cleanKey(schema, 'car.brand', 'Nissan')).toBe('Nissan')
   expect(await cleanKey(schema, 'car.tags', 'Nice')).toEqual(['Nice'])
   expect(await cleanKey(schema, 'car.tags.$.name', 12)).toBe('12')
@@ -47,4 +48,23 @@ test('clean blackbox key', async () => {
   }
 
   expect(await cleanKey(schema, 'services.password', '123456')).toBe('123456')
+})
+
+test('clean key with custom clean function', async () => {
+  let calls = 0
+  const schema = {
+    services: {
+      type: {
+        password: {type: String},
+        __clean({password}) {
+          calls++
+          console.log('running custom cleaning')
+          return {password: password.slice(0, 2)}
+        }
+      }
+    }
+  }
+
+  expect(await cleanKey(schema, 'services', {password: '123456'})).toEqual({password: '12'})
+  expect(calls).toBe(1)
 })

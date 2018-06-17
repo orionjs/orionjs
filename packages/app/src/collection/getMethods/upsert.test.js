@@ -81,6 +81,7 @@ it('should upsert documents passing cleaning validation', async () => {
     name: {type: String},
     state: {type: String, optional: true}
   }
+
   const schema = {
     _id: {type: 'ID'},
     name: {type: String},

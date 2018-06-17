@@ -156,3 +156,45 @@ it('dont add autovalue when updating', async () => {
   const doc = await Tests.findOne(personId)
   expect(doc).toEqual({_id: personId, name: 'Nicolás López', count: 1})
 })
+
+it('run custom model validation when inserting and updating', async () => {
+  let called = 0
+  let called2 = 0
+  const deepModel = new Model({
+    name: generateId(),
+    schema: {
+      password: {
+        type: String
+      },
+      forgot: {
+        type: String,
+        optional: true
+      }
+    },
+    async validate(value) {
+      called++
+    },
+    async clean(value) {
+      called2++
+      return value
+    }
+  })
+  const model = new Model({
+    name: generateId(),
+    schema: {
+      _id: {type: 'ID'},
+      services: {type: deepModel}
+    }
+  })
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
+
+  const personId = await Tests.insert({services: {password: '123456'}})
+  await Tests.update(personId, {$set: {'services.forgot': 'mypassword'}})
+
+  expect(called).toBe(2)
+  expect(called2).toBe(1)
+})
