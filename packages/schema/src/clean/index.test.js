@@ -239,3 +239,21 @@ test('perform custom cleaning', async () => {
     persons: [{name: 'Nicolás'}, {name: 'Roberto'}]
   })
 })
+
+test('perform non deep custom cleaning', async () => {
+  const schema = {
+    name: {
+      type: String
+    },
+    async __clean(value) {
+      if (value.name === 'Joaquin') {
+        return {name: 'Roberto'}
+      } else {
+        return value
+      }
+    }
+  }
+
+  const cleaned = await clean(schema, {name: 'Joaquin'})
+  expect(cleaned).toEqual({name: 'Roberto'})
+})
