@@ -1,6 +1,12 @@
 import isArray from 'lodash/isArray'
+import isPlainObject from 'lodash/isPlainObject'
 
 export default function(model, item) {
+  if (!isPlainObject(item)) {
+    console.warn(`When initializing a item in ${model.name} recieved a non object value`, item)
+    return
+  }
+
   if (model.resolvers) {
     for (const key of Object.keys(model.resolvers)) {
       const resolver = model.resolvers[key]
