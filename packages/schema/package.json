@@ -8,12 +8,8 @@
     "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib --presets es2015,stage-2",
     "test": "jest src --coverage"
   },
-  "files": [
-    "index.js",
-    "lib/"
-  ],
+  "files": ["index.js", "lib/"],
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
     "lodash": "^4.17.10"
   },
   "devDependencies": {

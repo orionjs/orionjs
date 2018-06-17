@@ -28,33 +28,39 @@ var _safe2 = _interopRequireDefault(_safe);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var run = function run(action) {
-  return (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
-    var _args = arguments;
-    return _regenerator2.default.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            _context.prev = 0;
-            _context.next = 3;
-            return action.apply(undefined, _args);
+  return function () {
+    var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+      var _args = arguments;
+      return _regenerator2.default.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.prev = 0;
+              _context.next = 3;
+              return action.apply(undefined, _args);
 
-          case 3:
-            _context.next = 8;
-            break;
+            case 3:
+              _context.next = 8;
+              break;
 
-          case 5:
-            _context.prev = 5;
-            _context.t0 = _context['catch'](0);
+            case 5:
+              _context.prev = 5;
+              _context.t0 = _context['catch'](0);
 
-            console.error(_safe2.default.red('Error: ' + _context.t0.message));
+              console.error(_safe2.default.red('Error: ' + _context.t0.message));
 
-          case 8:
-          case 'end':
-            return _context.stop();
+            case 8:
+            case 'end':
+              return _context.stop();
+          }
         }
-      }
-    }, _callee, this, [[0, 5]]);
-  }));
+      }, _callee, this, [[0, 5]]);
+    }));
+
+    return function () {
+      return _ref.apply(this, arguments);
+    };
+  }();
 };
 
 _commander2.default.command('start').description('Run the orionjs app').option('-s, --shell', 'Opens a shell in Chrome developer tools').action(run(_start2.default));

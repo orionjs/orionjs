@@ -9,7 +9,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0"
   },
