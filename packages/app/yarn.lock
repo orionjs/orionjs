@@ -16,12 +16,10 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-"@orion-js/schema@^0.0.13":
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.0.13.tgz#c52d0638d13b164a0087c9d578f97acdad58d58f"
+"@orion-js/schema@^0.0.25":
+  version "0.0.25"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.0.25.tgz#08389ebb5914eb989eb363567f9602dc7bb15830"
   dependencies:
-    babel-core "^6.26.0"
-    babel-polyfill "^6.26.0"
     lodash "^4.17.10"
 
 abab@^1.0.4:
