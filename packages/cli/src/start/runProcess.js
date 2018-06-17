@@ -10,6 +10,7 @@ export default async function({restart, options}) {
   const inspect = options.shell ? '--inspect' : ''
   let appProcess = exec(`node ${inspect} .orion/build/index.js`, {
     env: {
+      ...process.env,
       MONGO_URL,
       ORION_DEV: 'local',
       FORCE_COLOR: true
