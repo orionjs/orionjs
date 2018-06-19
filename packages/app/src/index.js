@@ -1,4 +1,3 @@
-import 'babel-core/register'
 import 'babel-polyfill'
 import './Errors/handleErrors'
 import './database/connect'
