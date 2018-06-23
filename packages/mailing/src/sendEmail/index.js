@@ -2,7 +2,7 @@ import transporter from './transporter'
 import logMail from './logMail'
 
 const defaultMailOptions = {
-  from: '"Orionjs App" <app@orionjs.com>'
+  from: process.env.MAIL_FROM || '"Orionjs App" <app@orionjs.com>'
 }
 
 export default async function(options) {
