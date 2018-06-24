@@ -70,3 +70,12 @@ it('validate $push operations', async () => {
     expect(error.code).toBe('validationError')
   }
 })
+
+it('validate $unset operations', async () => {
+  const schema = {
+    _id: {type: 'ID'},
+    name: {type: String, optional: true}
+  }
+
+  await validateModifier(schema, {$unset: {name: ''}})
+})

@@ -153,3 +153,19 @@ it('cleans $push modifier with deep array', async () => {
     $push: {'persons.14321.friends': {name: '1234'}}
   })
 })
+
+it('cleans $unset correctly', async () => {
+  const schema = {
+    _id: {type: 'ID'},
+    name: {type: String, optional: true},
+    info: {type: 'blackbox', optional: true},
+    age: {type: Number, optional: true}
+  }
+
+  const cleaned = await cleanModifier(schema, {
+    $unset: {name: '', info: '', age: ''}
+  })
+  expect(cleaned).toEqual({
+    $unset: {name: '', info: '', age: ''}
+  })
+})
