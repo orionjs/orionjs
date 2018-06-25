@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "jest": "^22.4.3"
   },
   "peerDependencies": {
-    "@orion-js/app": "*"
+    "@orion-js/app": "latest"
   },
   "publishConfig": {
     "access": "public"
