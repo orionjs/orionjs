@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/stripe",
-  "version": "0.0.30",
+  "version": "0.0.32",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
