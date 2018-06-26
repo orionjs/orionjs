@@ -4,6 +4,7 @@ import {GraphQLList, GraphQLObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
 import Model from '../../../Model'
 import getScalar from './getScalar'
+import getArgs from '../getArgs'
 
 export default function getGraphQLType(type) {
   if (!type) {
@@ -35,8 +36,10 @@ export default function getGraphQLType(type) {
         for (const resolver of model.dynamicFields) {
           try {
             const type = getGraphQLType(resolver.returns)
+            const args = getArgs(resolver.params)
             fields[resolver.key] = {
               type,
+              args,
               async resolve(item, params, context) {
                 const result = await resolver.resolve(item, params, context)
                 return result

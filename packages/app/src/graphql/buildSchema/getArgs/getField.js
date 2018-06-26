@@ -20,13 +20,13 @@ const getModelInput = function(model, fields) {
   return storedModelInput[model.name]
 }
 
-export default async function getParams(type) {
+export default function getParams(type) {
   if (!type) {
     throw new Error(`No type specified`)
   }
 
   if (isArray(type)) {
-    const graphQLType = await getParams(type[0])
+    const graphQLType = getParams(type[0])
     return new GraphQLList(graphQLType)
   } else if (!type._isFieldType && (isPlainObject(type) || type instanceof Model)) {
     const model = type.__isModel ? type : type.__model
@@ -36,14 +36,14 @@ export default async function getParams(type) {
 
     for (const field of model.staticFields) {
       fields[field.key] = {
-        type: await getParams(field.type)
+        type: getParams(field.type)
       }
     }
 
     return getModelInput(model, fields)
   } else {
-    const schemaType = await getFieldType(type)
-    const graphQLType = await getScalar(schemaType)
+    const schemaType = getFieldType(type)
+    const graphQLType = getScalar(schemaType)
     return graphQLType
   }
 }
