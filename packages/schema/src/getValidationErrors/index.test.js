@@ -219,3 +219,97 @@ test('skip child validation if specified', async () => {
     'persons.0.lastName': Errors.REQUIRED
   })
 })
+
+test('pass currentDoc validating arrays', async () => {
+  const aItem = {name: 'Nicolás'}
+  const doc = {items: [aItem]}
+
+  const item = {
+    name: {
+      type: String,
+      async custom(name, {currentDoc}) {
+        expect(currentDoc).toBe(aItem)
+      }
+    }
+  }
+
+  const schema = {
+    items: {
+      type: [item],
+      async custom(items, {currentDoc}) {
+        expect(currentDoc).toBe(doc)
+      }
+    }
+  }
+
+  expect.assertions(2)
+  await getValidationErrors(schema, doc)
+})
+
+test('pass currentDoc validating complex schemas', async () => {
+  const aCar = {brand: 'Jeep'}
+  const aMom = {name: 'Paula', car: aCar}
+  const aItem = {name: 'Nicolás', mom: aMom}
+  const doc = {items: [aItem]}
+
+  const car = {
+    brand: {
+      type: String,
+      async custom(value, {currentDoc}) {
+        expect(value).toEqual(aCar.brand)
+        expect(currentDoc).toEqual(aCar)
+      }
+    },
+    async __validate(value, info) {
+      expect(value).toEqual(aMom.car)
+      expect(info.currentDoc).toEqual(aMom)
+    }
+  }
+
+  const mom = {
+    name: {
+      type: String,
+      async custom(value, {currentDoc}) {
+        expect(value).toEqual(aMom.name)
+        expect(currentDoc).toEqual(aMom)
+      }
+    },
+    car: {
+      type: car,
+      async custom(value, {currentDoc, doc}) {
+        expect(value).toEqual(aMom.car)
+        expect(currentDoc).toEqual(aMom)
+      }
+    }
+  }
+
+  const item = {
+    name: {
+      type: String,
+      async custom(value, {currentDoc}) {
+        expect(value).toEqual(aItem.name)
+        expect(currentDoc).toEqual(aItem)
+      }
+    },
+    mom: {
+      type: mom,
+      async custom(value, {currentDoc}) {
+        expect(value).toEqual(aItem.mom)
+        expect(currentDoc).toEqual(aItem)
+      }
+    }
+  }
+
+  const schema = {
+    items: {
+      type: [item],
+      async custom(value, {currentDoc}) {
+        expect(value).toEqual(doc.items)
+        expect(currentDoc).toEqual(doc)
+      }
+    }
+  }
+
+  expect.assertions(14)
+  await getValidationErrors(schema, doc)
+})

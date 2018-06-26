@@ -3,16 +3,29 @@ import isPlainObject from 'lodash/isPlainObject'
 import cleanType from './cleanType'
 import isNil from 'lodash/isNil'
 
-const clean = async function(type, fieldSchema, value, {schema, doc, options}, ...args) {
-  const info = {schema, doc, options, fieldSchema, type}
+const clean = async function(
+  type,
+  fieldSchema,
+  value,
+  {schema, doc, currentDoc, options},
+  ...args
+) {
+  const info = {schema, doc, currentDoc, options, fieldSchema, type}
   if (isArray(type) && !isNil(value)) {
     if (!isArray(value)) {
       value = [value]
     }
 
+    // clean array items
     const items = []
     for (let i = 0; i < value.length; i++) {
-      const newValue = await clean(type[0], type[0], value[i], info, ...args)
+      const newValue = await clean(
+        type[0],
+        type[0],
+        value[i],
+        {...info, currentDoc: value[i]},
+        ...args
+      )
       if (!isNil(newValue)) {
         items.push(newValue)
       }
@@ -20,10 +33,16 @@ const clean = async function(type, fieldSchema, value, {schema, doc, options}, .
     return await cleanType('array', fieldSchema, items, info, ...args)
   } else if (isPlainObject(type) && isPlainObject(value)) {
     const keys = Object.keys(type).filter(key => !key.startsWith('__'))
-    const fields = {}
+    let fields = {}
     for (const key of keys) {
       try {
-        const newValue = await clean(type[key].type, type[key], value[key], info, ...args)
+        const newValue = await clean(
+          type[key].type,
+          type[key],
+          value[key],
+          {...info, currentDoc: value},
+          ...args
+        )
         if (!isNil(newValue)) {
           fields[key] = newValue
         }
@@ -32,10 +51,9 @@ const clean = async function(type, fieldSchema, value, {schema, doc, options}, .
       }
     }
     if (typeof type.__clean === 'function') {
-      return await type.__clean(value, info, ...args)
-    } else {
-      return await cleanType('plainObject', fieldSchema, fields, info, ...args)
+      fields = await type.__clean(fields, info, ...args)
     }
+    return await cleanType('plainObject', fieldSchema, fields, info, ...args)
   } else {
     return await cleanType(type, fieldSchema, value, info, ...args)
   }
@@ -50,5 +68,6 @@ const defaultOptions = {
 
 export default async function(schema, doc = {}, passedOptions = {}, ...args) {
   const options = {...defaultOptions, ...passedOptions}
-  return await clean(schema, schema, doc, {schema, doc, options}, ...args)
+  const currentDoc = doc
+  return await clean(schema, schema, doc, {schema, doc, currentDoc, options}, ...args)
 }

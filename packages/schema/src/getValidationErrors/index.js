@@ -19,6 +19,7 @@ export default async function(schema, doc, passedOptions = {}, ...args) {
   await doValidation({
     schema,
     doc,
+    currentDoc: doc,
     value: doc,
     currentSchema: {type: schema},
     addError,

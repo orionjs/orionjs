@@ -9,6 +9,7 @@ import Errors from '../Errors'
 export default async function doValidation({
   schema,
   doc,
+  currentDoc,
   value,
   currentSchema,
   keys = [],
@@ -16,7 +17,7 @@ export default async function doValidation({
   options,
   args
 }) {
-  const info = {schema, doc, value, currentSchema, keys, options, args, addError}
+  const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
 
   const error = await getError(info)
   if (error) {
@@ -44,6 +45,7 @@ export default async function doValidation({
       keyItemKeys.push(key)
       await doValidation({
         ...info,
+        currentDoc: value,
         value: itemValue,
         currentSchema: itemSchema,
         keys: keyItemKeys
@@ -65,6 +67,7 @@ export default async function doValidation({
       keyItemKeys.push(i)
       await doValidation({
         ...info,
+        currentDoc: value,
         value: itemValue,
         currentSchema: {type: itemSchema},
         keys: keyItemKeys

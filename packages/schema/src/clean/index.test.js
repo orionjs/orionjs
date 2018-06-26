@@ -257,3 +257,104 @@ test('perform non deep custom cleaning', async () => {
   const cleaned = await clean(schema, {name: 'Joaquin'})
   expect(cleaned).toEqual({name: 'Roberto'})
 })
+
+test('pass currentDoc cleaning arrays', async () => {
+  const aItem = {name: 'Nicolás'}
+  const doc = {items: [aItem]}
+
+  const item = {
+    name: {
+      type: String,
+      async autoValue(name, {currentDoc}) {
+        expect(currentDoc).toBe(aItem)
+      }
+    }
+  }
+
+  const schema = {
+    items: {
+      type: [item],
+      async autoValue(items, {currentDoc}) {
+        expect(currentDoc).toBe(doc)
+      }
+    }
+  }
+
+  expect.assertions(2)
+  await clean(schema, doc)
+})
+
+test('pass currentDoc cleaning complex schemas', async () => {
+  const aCar = {brand: 'Jeep'}
+  const aMom = {name: 'Paula', car: aCar}
+  const aItem = {name: 'Nicolás', mom: aMom}
+  const doc = {items: [aItem]}
+
+  const car = {
+    brand: {
+      type: String,
+      async autoValue(value, {currentDoc}) {
+        expect(value).toEqual(aCar.brand)
+        expect(currentDoc).toEqual(aCar)
+        return value
+      }
+    },
+    async __clean(value, info) {
+      expect(value).toEqual(aMom.car)
+      expect(info.currentDoc).toEqual(aMom)
+      return value
+    }
+  }
+
+  const mom = {
+    name: {
+      type: String,
+      async autoValue(value, {currentDoc}) {
+        expect(value).toEqual(aMom.name)
+        expect(currentDoc).toEqual(aMom)
+        return value
+      }
+    },
+    car: {
+      type: car,
+      async autoValue(value, {currentDoc, doc}) {
+        expect(value).toEqual(aMom.car)
+        expect(currentDoc).toEqual(aMom)
+        return value
+      }
+    }
+  }
+
+  const item = {
+    name: {
+      type: String,
+      async autoValue(value, {currentDoc}) {
+        expect(value).toEqual(aItem.name)
+        expect(currentDoc).toEqual(aItem)
+        return value
+      }
+    },
+    mom: {
+      type: mom,
+      async autoValue(value, {currentDoc}) {
+        expect(value).toEqual(aItem.mom)
+        expect(currentDoc).toEqual(aItem)
+        return value
+      }
+    }
+  }
+
+  const schema = {
+    items: {
+      type: [item],
+      async autoValue(value, {currentDoc}) {
+        expect(value).toEqual(doc.items)
+        expect(currentDoc).toEqual(doc)
+        return value
+      }
+    }
+  }
+
+  expect.assertions(14)
+  await clean(schema, doc)
+})

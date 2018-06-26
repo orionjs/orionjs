@@ -58,7 +58,6 @@ test('clean key with custom clean function', async () => {
         password: {type: String},
         __clean({password}) {
           calls++
-          console.log('running custom cleaning')
           return {password: password.slice(0, 2)}
         }
       }

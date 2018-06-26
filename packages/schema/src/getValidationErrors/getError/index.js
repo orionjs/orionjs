@@ -3,8 +3,9 @@ import getFieldValidator from './getFieldValidator'
 import fieldTypes from '../../fieldTypes'
 import Errors from '../../Errors'
 
-export default async function({schema, doc, value, currentSchema, keys, options = {}, args = []}) {
-  const info = {schema, doc, keys, currentSchema, options}
+export default async function(params) {
+  const {schema, doc, currentDoc, value, currentSchema, keys, options = {}, args = []} = params
+  const info = {schema, doc, currentDoc, keys, currentSchema, options}
 
   if (isNil(value)) {
     if (currentSchema.optional || options.omitRequired) {
