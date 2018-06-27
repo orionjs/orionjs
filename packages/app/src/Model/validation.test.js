@@ -1,4 +1,6 @@
 import Model from './index'
+import {resolver} from '../resolvers'
+import ConfigurationError from '../Errors/ConfigurationError'
 
 it('should validate a schema', async () => {
   const model = new Model({
@@ -67,4 +69,32 @@ it('allow custom model validation', async () => {
   await model.clean({name: 'Nicolás'})
   expect(called).toBe(true)
   expect(called2).toBe(true)
+})
+
+it('should throw an error when a model mutation resolver is not private', async () => {
+  const AModel = new Model({
+    name: 'AModel',
+    schema: {
+      name: {
+        type: String
+      }
+    },
+    resolvers: () => ({
+      changeName: resolver({
+        returns: Boolean,
+        mutation: true,
+        async resolve(model, params, viewer) {
+          model.update({$set: {name: 'new name'}})
+        }
+      })
+    })
+  })
+
+  // expect.assertions(1)
+  try {
+    const doc = await AModel.initItem({name: 'name'})
+    await doc.changeName()
+  } catch (error) {
+    expect(error).toEqual(new ConfigurationError('Model mutation resolvers must be private'))
+  }
 })

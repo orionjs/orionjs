@@ -4,6 +4,7 @@ import includes from 'lodash/includes'
 import clone from 'lodash/clone'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
+import checkResolvedResolvers from './checkResolvedResolvers'
 
 export default class Model {
   constructor({name, validate, clean, schema, resolvers, getSchema = f => f}) {
@@ -25,6 +26,7 @@ export default class Model {
   get resolvers() {
     if (this.resolvedResolvers !== 'unresolved') return this.resolvedResolvers
     this.resolvedResolvers = resolveParam(this._resolvers)
+    checkResolvedResolvers(this.resolvedResolvers)
     return this.resolvedResolvers
   }
 
