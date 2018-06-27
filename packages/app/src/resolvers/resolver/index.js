@@ -4,6 +4,7 @@ import {validate, clean} from '@orion-js/schema'
 import getArgs from './getArgs'
 import includes from 'lodash/includes'
 import getSchema from './getSchema'
+import isArray from 'lodash/isArray'
 
 export default function({
   params,
@@ -66,11 +67,22 @@ export default function({
       await validate(schema, callParams, options, viewer)
     }
 
-    if (parent) {
-      return await resolve(parent, callParams, viewer)
-    } else {
-      return await resolve(callParams, viewer)
+    const resolveArgs = parent ? [parent, callParams, viewer] : [callParams, viewer]
+    let result = await resolve(...resolveArgs)
+
+    if (returns) {
+      if (isArray(returns) && returns[0].__isModel) {
+        if (isArray(result)) {
+          result = result.map(item => returns[0].initItem(item))
+        } else {
+          console.warn(`A resolver did not return an array when it should`, result)
+        }
+      } else if (returns.__isModel) {
+        result = returns.initItem(result)
+      }
     }
+
+    return result
   }
 
   resolver.params = params
