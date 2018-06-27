@@ -5,14 +5,12 @@ import resolver from '../../resolvers/resolver'
 
 export default new Model({
   name: 'ResolverParams',
-  schema: {},
+  schema: {
+    name: {
+      type: String
+    }
+  },
   resolvers: {
-    name: resolver({
-      returns: String,
-      resolve: async function({name, resolver}) {
-        return name
-      }
-    }),
     params: resolver({
       returns: 'blackbox',
       resolve: async function({resolver}) {
