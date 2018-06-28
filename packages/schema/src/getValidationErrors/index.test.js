@@ -174,6 +174,61 @@ test('can check errors in deeply nested keys', async () => {
   })
 })
 
+test('run custom validation when field is optional and no value is passed', async () => {
+  const person = {
+    name: {
+      type: String,
+      optional: true,
+      custom(value) {
+        return 'No'
+      }
+    },
+    async __validate(value) {
+      if (!value) return 'No object'
+    }
+  }
+  const schema = {
+    person: {
+      type: person,
+      optional: true
+    },
+    number: {
+      type: Number,
+      custom() {
+        return 'No'
+      }
+    }
+  }
+
+  expect(
+    await getValidationErrors(schema, {
+      person: {name: null}
+    })
+  ).toEqual({
+    number: Errors.REQUIRED,
+    'person.name': 'No'
+  })
+
+  expect(
+    await getValidationErrors(schema, {
+      person: null,
+      number: null
+    })
+  ).toEqual({
+    number: Errors.REQUIRED,
+    person: 'No object'
+  })
+
+  expect(
+    await getValidationErrors(schema, {
+      number: 123
+    })
+  ).toEqual({
+    number: 'No',
+    person: 'No object'
+  })
+})
+
 test('can validate object type with custom validation', async () => {
   const person = {
     name: {

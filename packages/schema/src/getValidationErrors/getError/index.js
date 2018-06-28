@@ -8,19 +8,17 @@ export default async function(params) {
   const info = {schema, doc, currentDoc, keys, currentSchema, options}
 
   if (isNil(value)) {
-    if (currentSchema.optional || options.omitRequired) {
-      return null
-    } else {
+    if (!currentSchema.optional && !options.omitRequired) {
       return Errors.REQUIRED
     }
-  }
+  } else {
+    const validatorKey = getFieldValidator(currentSchema.type)
+    const validator = validatorKey === 'custom' ? currentSchema.type : fieldTypes[validatorKey]
 
-  const validatorKey = getFieldValidator(currentSchema.type)
-  const validator = validatorKey === 'custom' ? currentSchema.type : fieldTypes[validatorKey]
-
-  const error = await validator.validate(value, info, ...args)
-  if (error) {
-    return error
+    const error = await validator.validate(value, info, ...args)
+    if (error) {
+      return error
+    }
   }
 
   if (currentSchema.custom) {
