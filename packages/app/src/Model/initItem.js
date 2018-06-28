@@ -1,7 +1,12 @@
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
+import isNil from 'lodash/isNil'
 
 export default function(model, item) {
+  if (isNil(item)) {
+    return item
+  }
+
   if (!isPlainObject(item)) {
     console.warn(`When initializing a item in ${model.name} recieved a non object value`, item)
     return
