@@ -75,6 +75,23 @@ test('gives error when a document field is not present in schema', async () => {
   })
 })
 
+test('dont give error when array is optional and its not passed', async () => {
+  const schema = {
+    name: {
+      type: String
+    },
+    tags: {
+      type: [String],
+      optional: true
+    }
+  }
+  const errors = await getValidationErrors(schema, {
+    name: 'Nicolás López',
+    tags: []
+  })
+  expect(errors).toBeNull()
+})
+
 test('gives an error if a optional object is present and has missing values', async () => {
   const errors = await getValidationErrors(schema, {
     firstName: 'Nicolás',
