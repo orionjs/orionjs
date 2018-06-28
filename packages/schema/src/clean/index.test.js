@@ -50,6 +50,21 @@ test('dont autoConvert values', async () => {
   })
 })
 
+test('dont remove null values', async () => {
+  const schema = {
+    string: {
+      type: String
+    }
+  }
+  const doc = {
+    string: null
+  }
+  const cleaned = await clean(schema, doc)
+  expect(cleaned).toEqual({
+    string: null
+  })
+})
+
 test('cleans boolean correctly', async () => {
   const type = {type: Boolean}
   const schema = {

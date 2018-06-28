@@ -1,6 +1,7 @@
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import cleanType from './cleanType'
+import isUndefined from 'lodash/isUndefined'
 import isNil from 'lodash/isNil'
 
 const clean = async function(
@@ -26,7 +27,7 @@ const clean = async function(
         {...info, currentDoc: value[i]},
         ...args
       )
-      if (!isNil(newValue)) {
+      if (!isUndefined(newValue)) {
         items.push(newValue)
       }
     }
@@ -43,7 +44,7 @@ const clean = async function(
           {...info, currentDoc: value},
           ...args
         )
-        if (!isNil(newValue)) {
+        if (!isUndefined(newValue)) {
           fields[key] = newValue
         }
       } catch (error) {
