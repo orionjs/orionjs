@@ -1,6 +1,7 @@
 import {cleanKey, clean} from '@orion-js/schema'
 import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
+import isUndefined from 'lodash/isUndefined'
 import isEqual from 'lodash/isEqual'
 import fromDot from '../../database/dot/fromDot'
 
@@ -49,7 +50,7 @@ export default async function validateModifier(schema, modifier) {
         cleaned = !isNil(isPresent) ? '' : null
       }
 
-      if (!isNil(cleaned)) {
+      if (!isUndefined(cleaned)) {
         cleanedModifier[operation][key] = cleaned
       }
     }

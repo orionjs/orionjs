@@ -33,6 +33,19 @@ it('should remove the invalid fields and leave the valid ones', async () => {
   expect(cleaned).toEqual({$set: {lastName: 'López'}})
 })
 
+it('should keep the null values', async () => {
+  const schema = {
+    firstName: {
+      type: String
+    }
+  }
+  const modifier = {
+    $set: {firstName: null}
+  }
+  const cleaned = await cleanModifier(schema, modifier)
+  expect(cleaned).toEqual(modifier)
+})
+
 it('should clean modifier and leave dots', async () => {
   const wife = {
     name: {type: String},
