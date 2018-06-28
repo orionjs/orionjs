@@ -7,7 +7,7 @@ import getScalar from '../buildSchema/getType/getScalar'
 export default async function getParams(field) {
   const {type} = field
   if (isArray(type)) {
-    const serialized = await getParams({type: type[0]})
+    const serialized = await getParams({...field, type: type[0]})
     return {
       ...serialized,
       type: [serialized.type],
