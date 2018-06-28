@@ -7,8 +7,8 @@ export default fieldType({
   validate(value) {
     if (!isArray(value)) return Errors.NOT_AN_ARRAY
   },
-  clean(value, {options: {autoConvert}}) {
-    if (autoConvert) {
+  clean(value, {options}) {
+    if (options.autoConvert) {
       if (!isArray(value)) {
         value = [value]
       }

@@ -8,10 +8,10 @@ export default fieldType({
   validate(value) {
     if (!isPlainObject(value)) return Errors.NOT_AN_OBJECT
   },
-  clean(value, {type, options: {filter} = {}} = {}) {
+  clean(value, {type, options}) {
     if (!isPlainObject(value)) return value
 
-    if (filter) {
+    if (options.filter) {
       const documentKeys = Object.keys(value)
       const schemaKeys = Object.keys(type)
       const notInSchemaKeys = difference(documentKeys, schemaKeys)

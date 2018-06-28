@@ -7,8 +7,8 @@ export default fieldType({
   validate(value) {
     if (!isBoolean(value)) return Errors.NOT_A_BOOLEAN
   },
-  clean(value, {options: {autoConvert}}) {
-    if (autoConvert) {
+  clean(value, {options}) {
+    if (options.autoConvert) {
       if (typeof value === 'string') {
         if (value === 'true') {
           value = true

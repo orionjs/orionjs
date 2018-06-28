@@ -12,6 +12,33 @@ test('return no error when the value is correct', async () => {
   expect(plainObject.validate({name: 'Nicolás'})).toBeFalsy()
 })
 
-test('should return same value when cleaning non-object ', async () => {
+test('should return same value when cleaning non-object', async () => {
   expect(plainObject.clean('a string')).toBe('a string')
+})
+
+test('should filter keys not in schema', async () => {
+  const schema = {
+    yes: {
+      type: String
+    }
+  }
+  const value = {
+    yes: 'yes',
+    no: 'no'
+  }
+  expect(
+    plainObject.clean(value, {
+      type: schema,
+      options: {filter: true}
+    })
+  ).toEqual({
+    yes: 'yes'
+  })
+
+  expect(
+    plainObject.clean(value, {
+      type: schema,
+      options: {filter: false}
+    })
+  ).toEqual(value)
 })

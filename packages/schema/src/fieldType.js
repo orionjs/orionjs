@@ -8,7 +8,15 @@ export default function({name, validate, clean, ...otherFields}) {
       }
       return validate(value, info)
     },
-    clean,
+    clean(value, info = {}) {
+      if (!info.options) {
+        info.options = {}
+      }
+      if (clean) {
+        return clean(value, info)
+      }
+      return value
+    },
     _isFieldType: true
   }
 }
