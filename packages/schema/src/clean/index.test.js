@@ -273,6 +273,23 @@ test('perform non deep custom cleaning', async () => {
   expect(cleaned).toEqual({name: 'Roberto'})
 })
 
+test('Handle errors while cleaning', async () => {
+  const schema = {
+    name: {
+      type: String,
+      async autoValue(value) {
+        throw new Error('an error')
+      }
+    }
+  }
+
+  try {
+    await clean(schema, {name: 'Joaquin'})
+  } catch (error) {
+    expect(error.message).toBe('Error cleaning field name, error: an error')
+  }
+})
+
 test('pass currentDoc cleaning arrays', async () => {
   const aItem = {name: 'Nicolás'}
   const doc = {items: [aItem]}
@@ -297,6 +314,59 @@ test('pass currentDoc cleaning arrays', async () => {
 
   expect.assertions(2)
   await clean(schema, doc)
+})
+
+test('omit undefined items in array', async () => {
+  const doc = {items: [{name: 'Nicolás'}]}
+
+  const item = {
+    name: {
+      type: String
+    },
+    __clean() {}
+  }
+
+  const schema = {
+    items: {
+      type: [item]
+    }
+  }
+
+  const result = await clean(schema, doc)
+  expect(result).toEqual({items: []})
+})
+
+test('passes extra arguments to clean', async () => {
+  const doc = {
+    name: 'Nicolás'
+  }
+
+  const schema = {
+    name: {
+      type: String,
+      autoValue(name, info, arg1, arg2) {
+        expect(arg1).toBe(1)
+        expect(arg2).toBe(2)
+      }
+    }
+  }
+
+  expect.assertions(2)
+  await clean(schema, doc, null, 1, 2)
+})
+
+test('cleans when no argument is passed', async () => {
+  const schema = {
+    name: {
+      type: String,
+      autoValue(name, info, arg1, arg2) {
+        return 'Nicolás'
+      }
+    }
+  }
+
+  const result = await clean(schema)
+  expect(result).toBe({name: 'Nicolás'})
 })
 
 test('pass currentDoc cleaning complex schemas', async () => {
