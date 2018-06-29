@@ -40,6 +40,26 @@ test('deep clean fields', async () => {
   expect(await cleanKey(schema, 'car.tags.100.name', 12)).toBe('12')
 })
 
+test('filters keys not in schema', async () => {
+  const schema = {
+    services: {
+      type: 'blackbox'
+    }
+  }
+
+  expect(await cleanKey(schema, 'person.name', 'Nicolás')).toBe(undefined)
+})
+
+test('dont filter keys not in schema if specified', async () => {
+  const schema = {
+    services: {
+      type: 'blackbox'
+    }
+  }
+
+  expect(await cleanKey(schema, 'person.name', 'Nicolás', {filter: false})).toBe('Nicolás')
+})
+
 test('clean blackbox key', async () => {
   const schema = {
     services: {

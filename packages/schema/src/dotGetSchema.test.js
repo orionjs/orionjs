@@ -27,6 +27,15 @@ test('handle deep schemas', async () => {
   expect(value).toBe(schema.car.type.brand)
 })
 
+test('throw error when no schema is passed', async () => {
+  expect.assertions(1)
+  try {
+    dotGetSchema(null, 'car.brand')
+  } catch (error) {
+    expect(error.message).toBe('You need to pass a schema')
+  }
+})
+
 test('handle invalid paths', async () => {
   const value = dotGetSchema(schema, 'car.brand.name')
   expect(value).toBeNull()

@@ -11,8 +11,7 @@ export default class ValidationError extends Error {
         return `${key}: ${validationErrors[key]}`
       })
       .join(', ')
-    const s = Object.keys(validationErrors).length === 1 ? '' : 's'
-    const message = `Validation Error${s}: {${printableErrors}}`
+    const message = `Validation Error: {${printableErrors}}`
     super(message)
     Error.captureStackTrace(this, this.constructor)
 

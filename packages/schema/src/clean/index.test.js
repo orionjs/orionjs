@@ -366,7 +366,7 @@ test('cleans when no argument is passed', async () => {
   }
 
   const result = await clean(schema)
-  expect(result).toBe({name: 'Nicolás'})
+  expect(result).toEqual({name: 'Nicolás'})
 })
 
 test('pass currentDoc cleaning complex schemas', async () => {

@@ -1,7 +1,7 @@
 import isPlainObject from 'lodash/isPlainObject'
+import isNil from 'lodash/isNil'
 
 const dotGet = function dotGet(object, path) {
-  if (!object) return null
   if (path === '') return object
 
   const pathParts = path.split('.')
@@ -23,10 +23,9 @@ const dotGet = function dotGet(object, path) {
   return null
 }
 
-export default function(object, path) {
-  try {
-    return dotGet({type: object}, path)
-  } catch (e) {
-    return null
+export default function(schema, path) {
+  if (isNil(schema)) {
+    throw new Error('You need to pass a schema')
   }
+  return dotGet({type: schema}, path)
 }

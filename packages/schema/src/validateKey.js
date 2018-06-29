@@ -2,7 +2,9 @@ import dotGetSchema from './dotGetSchema'
 import getValidationErrors from './getValidationErrors'
 import Errors from './Errors'
 
-const defaultOptions = {}
+const defaultOptions = {
+  filter: false
+}
 
 export default async function(schema, key, value, passedOptions = {}, ...args) {
   const options = {...defaultOptions, ...passedOptions}
