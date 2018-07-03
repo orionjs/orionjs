@@ -10,12 +10,12 @@
     "start": "orion start"
   },
   "dependencies": {
-    "@orion-js/app": "^0.0.26",
-    "@orion-js/auth": "^0.0.26",
-    "@orion-js/file-manager": "^0.0.26",
-    "@orion-js/jobs": "^0.0.26",
-    "@orion-js/mailing": "^0.0.26",
-    "@orion-js/schema": "^0.0.26"
+    "@orion-js/app": "^0.0.41",
+    "@orion-js/auth": "^0.0.41",
+    "@orion-js/file-manager": "^0.0.41",
+    "@orion-js/jobs": "^0.0.41",
+    "@orion-js/mailing": "^0.0.41",
+    "@orion-js/schema": "^0.0.41"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
