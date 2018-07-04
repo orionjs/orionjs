@@ -13,7 +13,11 @@ const connect = async function() {
     throw new Error('Mongo URL env is required')
   }
 
-  const client = await MongoClient.connect(uri)
+  const options = {useNewUrlParser: true}
+  const client = await MongoClient.connect(
+    uri,
+    options
+  )
 
   const dbName = client.s.options.dbName
   global.orionMainDatabaseClient = client
