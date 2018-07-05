@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mailing",
-  "version": "0.0.43",
+  "version": "0.1.0",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "nodemailer": "^4.6.6"
   },
   "devDependencies": {
-    "@orion-js/app": "^0.0.43",
+    "@orion-js/app": "^0.1.0",
     "babel-jest": "^22.4.3",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
