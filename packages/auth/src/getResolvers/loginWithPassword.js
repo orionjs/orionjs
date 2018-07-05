@@ -30,7 +30,7 @@ export default ({Users, Session, Sessions}) =>
           const {email} = doc
           const user = await findUserByEmail({email, Users})
           if (!user) {
-            return 'userNotFound'
+            return
           }
           if (!checkPassword(user, password)) {
             return 'incorrectPassword'
