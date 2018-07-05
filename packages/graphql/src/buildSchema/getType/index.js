@@ -2,7 +2,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
-import Model from '../../../Model'
+import {Model} from '@orion-js/app'
 import getScalar from './getScalar'
 import getArgs from '../getArgs'
 

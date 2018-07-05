@@ -1,5 +1,5 @@
 {
-  "name": "@orion-js/app",
+  "name": "@orion-js/graphql",
   "version": "0.0.43",
   "main": "index.js",
   "author": "nicolaslopezj",
@@ -8,28 +8,22 @@
     "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
     "prepare": "yarn run build",
     "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib --presets es2015,stage-2",
-    "test": "jest src --coverage",
-    "test:watch": "jest src --coverage --watch"
+    "test": "jest"
   },
   "dependencies": {
-    "@orion-js/schema": "^0.0.42",
-    "apollo-server-core": "^1.3.6",
-    "babel-polyfill": "^6.26.0",
-    "colors": "^1.2.5",
-    "dot-object": "^1.7.0",
-    "graphql": "^0.13.2",
-    "micro": "^9.3.0",
-    "mongodb": "^3.1.1",
-    "path-match": "^1.2.4",
-    "path-to-regexp": "^2.2.0"
+    "lodash": "^4.17.10",
+    "subscriptions-transport-ws": "^0.9.12"
   },
   "devDependencies": {
-    "babel-jest": "^23.2.0",
+    "@orion-js/app": "^0.0.43",
+    "babel-jest": "^22.4.3",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "eslint-config-orionsoft": "^1.2.8",
-    "jest": "^23.3.0",
-    "mongodb-memory-server": "^1.9.0"
+    "jest": "^22.4.3"
+  },
+  "peerDependencies": {
+    "@orion-js/app": "*"
   },
   "publishConfig": {
     "access": "public"

@@ -1,5 +1,4 @@
-import resolver from '../../resolvers/resolver'
-import UserError from '../../Errors/UserError'
+import {resolver, UserError} from '@orion-js/app'
 
 import ResolverParams from './ResolverParams'
 

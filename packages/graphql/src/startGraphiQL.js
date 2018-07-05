@@ -1,4 +1,4 @@
-import route from '../route'
+import {route} from '@orion-js/app'
 
 // Ensures string values are safe to be used within a <script> tag.
 // TODO: I don't think that's the right escape function

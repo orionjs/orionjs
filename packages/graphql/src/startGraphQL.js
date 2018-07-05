@@ -1,7 +1,7 @@
-import startGraphiQL from './startGraphiQL'
-import route from '../../lib/route'
-import getQuery from './getQuery'
+import {route} from '@orion-js/app'
 import {runHttpQuery} from 'apollo-server-core'
+import startGraphiQL from './startGraphiQL'
+import getQuery from './getQuery'
 import getApolloOptions from './getApolloOptions'
 
 export default async function(options) {
