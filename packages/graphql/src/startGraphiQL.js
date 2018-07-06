@@ -6,17 +6,17 @@ function safeSerialize(data) {
   return data ? JSON.stringify(data).replace(/\//g, '\\/') : null
 }
 
-const getHTML = function(options, data) {
+const getHTML = function(apolloOptions, options, data) {
   // Current latest version of GraphiQL.
   const GRAPHIQL_VERSION = '0.11.11'
 
-  const {endpointURL} = options
+  const {endpointURL, subscriptionsEndpoint} = apolloOptions
 
   const queryString = data.query
   const variablesString = data.variables ? JSON.stringify(data.variables, null, 2) : null
   const operationName = data.operationName
+  const useSubs = !!options.subscriptions
 
-  /* eslint-disable max-len */
   return `
 <!DOCTYPE html>
 <html>
@@ -38,6 +38,12 @@ const getHTML = function(options, data) {
   <script src="//unpkg.com/react-dom@15.6.1/dist/react-dom.min.js"></script>
   <script src="//unpkg.com/graphiql@${GRAPHIQL_VERSION}/graphiql.min.js"></script>
   <script src="//cdn.jsdelivr.net/fetch/2.0.1/fetch.min.js"></script>
+  ${
+    useSubs
+      ? `<script src="//unpkg.com/subscriptions-transport-ws@0.5.4/browser/client.js"></script>
+        <script src="//unpkg.com/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>`
+      : ''
+  }
 </head>
 <body>
   <script>
@@ -120,7 +126,38 @@ const getHTML = function(options, data) {
           }
         });
     }
-    var fetcher = graphQLHttpFetcher
+    ${
+      useSubs
+        ? `
+        let params = {}
+        const publicKey = localStorage.getItem('GraphiQL:publicKey')
+        const secretKey = localStorage.getItem('GraphiQL:secretKey')
+        if (publicKey && secretKey) {
+          const nonce = new Date().getTime() + 500
+          const shaObj = new jsSHA('SHA-512', 'TEXT')
+          shaObj.setHMACKey(secretKey, 'TEXT')
+          shaObj.update(nonce + 'websockethandshake')
+          const signature = shaObj.getHMAC('HEX')
+          params = {
+            nonce,
+            publicKey,
+            signature
+          }
+        }
+
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://'
+        let subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient(protocol + window.location.host + '${subscriptionsEndpoint}', {
+          reconnect: true,
+          connectionParams: params
+        });
+        let myCustomFetcher = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(subscriptionsClient, graphQLHttpFetcher);
+        var fetcher = myCustomFetcher
+        `
+        : `
+        var fetcher = graphQLHttpFetcher
+        `
+    }
+
     // When the query and variables string is edited, update the URL bar so
     // that it can be easily shared.
     function onEditQuery(newQuery) {
@@ -163,8 +200,8 @@ const getHTML = function(options, data) {
 </html>`
 }
 
-export default function(options) {
+export default function(apolloOptions, options) {
   route('/graphiql', async function({query, request}) {
-    return getHTML(options, query, request)
+    return getHTML(apolloOptions, options, query, request)
   })
 }

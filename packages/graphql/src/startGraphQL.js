@@ -3,10 +3,15 @@ import {runHttpQuery} from 'apollo-server-core'
 import startGraphiQL from './startGraphiQL'
 import getQuery from './getQuery'
 import getApolloOptions from './getApolloOptions'
+import startWebsocket from './startWebsocket'
 
 export default async function(options) {
   const apolloOptions = await getApolloOptions(options)
-  startGraphiQL(apolloOptions)
+  startGraphiQL(apolloOptions, options)
+
+  if (options.subscriptions) {
+    startWebsocket(apolloOptions, options)
+  }
 
   route('/graphql', async function({request, response, viewer}) {
     const query = await getQuery(request)
