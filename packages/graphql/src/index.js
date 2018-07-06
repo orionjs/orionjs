@@ -1,4 +1,3 @@
-import createSubscriptionsServer from './createSubscriptionsServer'
 import subscription from './subscription'
 import startGraphQL from './startGraphQL'
 import startGraphiQL from './startGraphiQL'
@@ -14,6 +13,5 @@ export {
   resolversSchemas,
   ResolverParams,
   serializeSchema,
-  createSubscriptionsServer,
   subscription
 }

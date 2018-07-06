@@ -16,16 +16,15 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-"@orion-js/app@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-0.2.0.tgz#bb6c347efe4e952d44514b4c80b77e388ab52ee0"
+"@orion-js/app@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-0.2.1.tgz#5b3aff0e2c89b8490fbe597a8abc67094977d448"
   dependencies:
     "@orion-js/schema" "^0.0.42"
     apollo-server-core "^1.3.6"
     babel-polyfill "^6.26.0"
     colors "^1.2.5"
     dot-object "^1.7.0"
-    graphql "^0.13.2"
     micro "^9.3.0"
     mongodb "^3.1.1"
     path-match "^1.2.4"
