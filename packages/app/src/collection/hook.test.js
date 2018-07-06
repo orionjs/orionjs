@@ -76,3 +76,23 @@ it('run remove hooks in correct order and work correctly', async () => {
   const finalDoc = await Views.findOne()
   expect(finalDoc).toBeNull()
 })
+
+it('accept hooks as functions', async () => {
+  let calls = 0
+
+  Views.hooks = () => {
+    calls++
+    return [
+      hook('before.insert', (doc, options, arg1) => {
+        expect(doc.hello).toEqual('universe')
+      })
+    ]
+  }
+
+  expect.assertions(3)
+
+  await Views.insert({hello: 'universe'})
+  await Views.insert({hello: 'universe'})
+
+  expect(calls).toBe(1)
+})
