@@ -13,7 +13,6 @@ import {resolver, getCrudResolvers, createPaginatedResolver} from './resolvers'
 import {setGetViewer} from './route/setGetViewer'
 import getViewer from './route/handler/getViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
-import * as GraphQL from 'graphql'
 import * as micro from 'micro'
 
 export {
@@ -26,7 +25,6 @@ export {
   PermissionsError,
   Model,
   resolver,
-  GraphQL,
   getCrudResolvers,
   generateId,
   setGetViewer,

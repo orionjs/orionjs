@@ -5,8 +5,10 @@ import startGraphiQL from './startGraphiQL'
 import resolversSchemas from './resolversSchemas'
 import ResolverParams from './resolversSchemas/ResolverParams'
 import serializeSchema from './resolversSchemas/serializeSchema'
+import * as GraphQL from 'graphql'
 
 export {
+  GraphQL,
   startGraphQL,
   startGraphiQL,
   resolversSchemas,

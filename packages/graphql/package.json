@@ -11,6 +11,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "graphql": "^0.13.2",
+    "graphql-subscriptions": "^0.5.8",
     "lodash": "^4.17.10",
     "subscriptions-transport-ws": "^0.9.12"
   },
