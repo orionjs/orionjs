@@ -1,0 +1,36 @@
+{
+  "name": "@orion-js/graphql-client",
+  "version": "0.2.3",
+  "main": "index.js",
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "prepare": "yarn run build",
+    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib --presets es2015,stage-2",
+    "test": "jest"
+  },
+  "dependencies": {
+    "apollo-cache-inmemory": "^1.2.5",
+    "apollo-client": "^2.3.5",
+    "apollo-client-preset": "^1.0.8",
+    "apollo-link": "^1.2.2",
+    "apollo-link-batch-http": "^1.2.2",
+    "apollo-link-error": "^1.1.0",
+    "apollo-link-state": "^0.4.1",
+    "autobind-decorator": "^2.1.0",
+    "graphql": "^0.13.2",
+    "jssha": "^2.3.1",
+    "unfetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "babel-jest": "^23.2.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "eslint-config-orionsoft": "^1.2.8",
+    "jest": "^23.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
