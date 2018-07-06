@@ -5,6 +5,8 @@ import {setOptions} from '../options'
 
 const defaultOptions = {
   endpointURL: 'http://localhost:3000',
+  subscriptionsPath: '/subscriptions',
+  useSubscriptions: true,
   saveSession: () => {
     throw new Error('You must pass a function to save the session')
   },

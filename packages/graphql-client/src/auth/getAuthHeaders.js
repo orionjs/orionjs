@@ -1,5 +1,5 @@
-import JSSHA from 'jssha'
 import getSession from './getSession'
+import getSignature from './getSignature'
 
 export default function(body) {
   const session = getSession()
@@ -8,10 +8,7 @@ export default function(body) {
   if (!publicKey || !secretKey) return {}
 
   const nonce = new Date().getTime()
-  const shaObj = new JSSHA('SHA-512', 'TEXT')
-  shaObj.setHMACKey(secretKey, 'TEXT')
-  shaObj.update(nonce + body)
-  const signature = shaObj.getHMAC('HEX')
+  const signature = getSignature(nonce + body, session)
 
   return {
     'X-ORION-NONCE': nonce,
