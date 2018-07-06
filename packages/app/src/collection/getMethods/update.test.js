@@ -12,6 +12,17 @@ it('updates a document without errors', async () => {
   expect(final.hello).toBe('country')
 })
 
+it('throws an error when no modifier is passed', async () => {
+  const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
+
+  expect.assertions(1)
+  try {
+    await Tests.update('anId')
+  } catch (error) {
+    expect(error.message).toBe('Modifier is required when making an update')
+  }
+})
+
 it('updates multiple document without errors', async () => {
   const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 

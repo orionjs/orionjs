@@ -6,6 +6,7 @@ import register from './register'
 import route from './route'
 import Collection from './collection'
 import generateId from './collection/getMethods/generateId'
+import hook from './collection/hook'
 import UserError from './Errors/UserError'
 import PermissionsError from './Errors/PermissionsError'
 import Model from './Model'
@@ -16,6 +17,7 @@ import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as micro from 'micro'
 
 export {
+  hook,
   micro,
   getServer,
   register,

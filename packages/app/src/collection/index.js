@@ -9,7 +9,8 @@ global.db = {}
 export default function(passedOptions) {
   const defaultOptions = {
     model: new Model({name: 'defaultModelFor_' + passedOptions.name || 'nn'}),
-    passUpdateAndRemove: true
+    passUpdateAndRemove: true,
+    hooks: []
   }
 
   const options = {

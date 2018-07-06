@@ -16,6 +16,17 @@ it('inserts a document without errors', async () => {
   expect(count).toBe(1)
 })
 
+it('should throw an error when no document is passed', async () => {
+  const Tests = await new Collection({name: generateId()}).await()
+
+  expect.assertions(1)
+  try {
+    await Tests.insert()
+  } catch (error) {
+    expect(error.message).toBe('Insert must receive a document')
+  }
+})
+
 it('should insert documents passing deep validation', async () => {
   const wife = {
     name: {type: String}
