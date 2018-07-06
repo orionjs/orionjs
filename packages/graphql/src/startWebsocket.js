@@ -26,10 +26,9 @@ export default function({schema}, options) {
           }
           const viewer = await getViewer(params)
           return viewer
-        } catch (error) {
-          const viewer = await getViewer()
-          return viewer
-        }
+        } catch (error) {}
+        const viewer = await getViewer()
+        return viewer
       }
     },
     {
