@@ -1,10 +1,7 @@
-import PermissionsError from '../../Errors/PermissionsError'
 import checkOptions from './checkOptions'
-import {validate, clean} from '@orion-js/schema'
-import getArgs from './getArgs'
-import includes from 'lodash/includes'
-import getSchema from './getSchema'
-import isArray from 'lodash/isArray'
+import getResolver from './getResolver'
+import generateId from '../../helpers/generateId'
+import getInvalidateCache from './getInvalidateCache'
 
 export default function({
   params,
@@ -15,7 +12,8 @@ export default function({
   resolve,
   checkPermission,
   roles = [],
-  role
+  role,
+  cache
 }) {
   if (role) {
     roles.push(role)
@@ -29,62 +27,24 @@ export default function({
     mutation,
     resolve,
     checkPermission,
-    roles
+    roles,
+    cache
   })
 
-  const resolver = async function(...args) {
-    let {parent, callParams, viewer} = getArgs(...args)
+  const resolverId = generateId()
 
-    if (!viewer.app) {
-      if (requireUserId && !viewer.userId) {
-        throw new PermissionsError('notLoggedIn')
-      }
+  const resolver = getResolver({
+    resolverId,
+    cache,
+    params,
+    returns,
+    resolve,
+    requireUserId,
+    roles,
+    checkPermission
+  })
 
-      if (roles.length) {
-        let hasPermission = false
-        for (const requiredRole of roles) {
-          if (includes(viewer.roles, requiredRole)) {
-            hasPermission = true
-          }
-        }
-        if (!hasPermission) {
-          throw new PermissionsError('missingRoles', {roles})
-        }
-      }
-
-      if (checkPermission) {
-        const error = await checkPermission(callParams, viewer)
-        if (error) {
-          throw new PermissionsError(error)
-        }
-      }
-    }
-
-    if (params) {
-      const options = {}
-      const schema = getSchema(params, callParams, options, viewer)
-      callParams = await clean(schema, callParams, options, viewer)
-      await validate(schema, callParams, options, viewer)
-    }
-
-    const resolveArgs = parent ? [parent, callParams, viewer] : [callParams, viewer]
-    let result = await resolve(...resolveArgs)
-
-    if (returns) {
-      if (isArray(returns) && returns[0].__isModel) {
-        if (isArray(result)) {
-          result = result.map(item => returns[0].initItem(item))
-        } else {
-          console.warn(`A resolver did not return an array when it should`, result)
-        }
-      } else if (returns.__isModel) {
-        result = returns.initItem(result)
-      }
-    }
-
-    return result
-  }
-
+  resolver.resolverId = resolverId
   resolver.params = params
   resolver.requireUserId = requireUserId
   resolver.returns = returns
@@ -92,6 +52,7 @@ export default function({
   resolver.checkPermission = checkPermission
   resolver.private = isPrivate
   resolver.resolve = resolver
+  resolver.invalidateCache = getInvalidateCache(resolver)
 
   return resolver
 }

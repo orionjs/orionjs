@@ -18,6 +18,9 @@ export default function(model, item) {
       item[key] = function(params, context) {
         return resolver.resolve(item, params, context)
       }
+      item[key].invalidateCache = function(params) {
+        return resolver.invalidateCache(params, item)
+      }
     }
   }
 

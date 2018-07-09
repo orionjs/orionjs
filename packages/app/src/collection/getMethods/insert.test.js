@@ -1,6 +1,6 @@
 import createInsert from './insert'
 import Collection from '../index'
-import generateId from './generateId'
+import generateId from '../../helpers/generateId'
 import Model from '../../Model'
 
 it('should return a function', async () => {

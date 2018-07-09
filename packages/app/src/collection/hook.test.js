@@ -1,6 +1,6 @@
 import hook from './hook'
 import Collection from './index'
-import generateId from './getMethods/generateId'
+import generateId from '../helpers/generateId'
 
 const Views = new Collection({
   name: generateId(),

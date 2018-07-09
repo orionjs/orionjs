@@ -1,5 +1,5 @@
 import Collection from '../index'
-import generateId from './generateId'
+import generateId from '../../helpers/generateId'
 import Model from '../../Model'
 
 it('updates a document without errors', async () => {

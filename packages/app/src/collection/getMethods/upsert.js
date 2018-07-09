@@ -1,5 +1,5 @@
 import getSelector from './getSelector'
-import generateId from './generateId'
+import generateId from '../../helpers/generateId'
 import validateUpsert from './validateModifier/validateUpsert'
 import cleanModifier from './cleanModifier'
 import runHooks from './runHooks'
