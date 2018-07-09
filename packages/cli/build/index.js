@@ -25,6 +25,10 @@ var _safe = require('colors/safe');
 
 var _safe2 = _interopRequireDefault(_safe);
 
+var _create = require('./create');
+
+var _create2 = _interopRequireDefault(_create);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var run = function run(action) {
@@ -63,8 +67,10 @@ var run = function run(action) {
   }();
 };
 
-_commander2.default.command('start').description('Run the orionjs app').option('-s, --shell', 'Opens a shell in Chrome developer tools').action(run(_start2.default));
+_commander2.default.command('start').description('Run the Orionjs app').option('-s, --shell', 'Opens a shell in Chrome developer tools').action(run(_start2.default));
 
-_commander2.default.command('build').description('Build a orionjs, exports it to a simple nodejs app').option('-o, --output [output]', 'Output directory').action(run(_build2.default));
+_commander2.default.command('build').description('Compiles an Orionjs app and exports it to a simple nodejs app').option('-o, --output [output]', 'Output directory').action(run(_build2.default));
+
+_commander2.default.command('create').description('Creates a new Orionjs project').option('--name [name]', 'Name of the project').option('--kit [kit]', 'Which starter kit to use').action(run(_create2.default));
 
 _commander2.default.parse(process.argv);
