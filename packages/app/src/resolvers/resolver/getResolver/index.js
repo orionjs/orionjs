@@ -20,7 +20,7 @@ export default function(options) {
 
     callParams = await cleanAndValidate({params, callParams, viewer})
 
-    await checkPermissions({viewer, callParams, requireUserId, roles, checkPermission})
+    await checkPermissions({parent, callParams, viewer, requireUserId, roles, checkPermission})
 
     let result = await getResult({
       cache,

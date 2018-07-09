@@ -1,7 +1,7 @@
 import includes from 'lodash/includes'
 import PermissionsError from '../../../Errors/PermissionsError'
 
-export default async function({viewer, callParams, requireUserId, roles, checkPermission}) {
+export default async function({parent, callParams, viewer, requireUserId, roles, checkPermission}) {
   if (!viewer.app) {
     if (requireUserId && !viewer.userId) {
       throw new PermissionsError('notLoggedIn')
@@ -20,7 +20,8 @@ export default async function({viewer, callParams, requireUserId, roles, checkPe
     }
 
     if (checkPermission) {
-      const error = await checkPermission(callParams, viewer)
+      const resolveArgs = parent ? [parent, callParams, viewer] : [callParams, viewer]
+      const error = await checkPermission(...resolveArgs)
       if (error) {
         throw new PermissionsError(error)
       }
