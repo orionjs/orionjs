@@ -1,5 +1,5 @@
 import resolver from './resolver'
-import getCrudResolvers from './getCrudResolvers'
-import createPaginatedResolver from './createPaginatedResolver'
+import crudResolvers from './crudResolvers'
+import paginatedResolver from './paginatedResolver'
 
-export {resolver, getCrudResolvers, createPaginatedResolver}
+export {resolver, crudResolvers, paginatedResolver}
