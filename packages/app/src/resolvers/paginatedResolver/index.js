@@ -12,8 +12,8 @@ export default function({returns, collection, params, getCursor}) {
   }
 
   return resolver({
-    params: getParams({returns, collection, params}),
-    returns: getModel({returns, collection}),
+    params: getParams({returns, params}),
+    returns: getModel({returns}),
     async resolve(params, viewer) {
       const cursor = await getPaginatedCursor(params, viewer)
 

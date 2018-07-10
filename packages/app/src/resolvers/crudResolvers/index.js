@@ -4,7 +4,7 @@ import deleteResolver from './delete'
 import update from './update'
 import list from './list'
 
-export default function getCrudResolvers({collection, ...otherOptions}) {
+export default function crudResolvers({collection, ...otherOptions}) {
   const Model = collection.model
   const info = {
     collection,
