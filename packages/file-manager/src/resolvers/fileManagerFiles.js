@@ -1,8 +1,8 @@
-import {createPaginatedResolver} from '@orion-js/app'
+import {paginatedResolver} from '@orion-js/app'
 import File from '../File'
 import Files from '../Files'
 
-export default createPaginatedResolver({
+export default paginatedResolver({
   params: {
     filter: {
       type: String,
