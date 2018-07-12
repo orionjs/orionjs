@@ -58,6 +58,18 @@ test('returns an array with the respective errors', async () => {
   })
 })
 
+test('omits required if specified', async () => {
+  const errors = await getValidationErrors(
+    schema,
+    {
+      lastName: 'López',
+      friends: [{}, {firstName: 'Joaquin'}]
+    },
+    {omitRequired: true}
+  )
+  expect(errors).toBeNull()
+})
+
 test('gives error when a document field is not present in schema', async () => {
   const errors = await getValidationErrors(
     {
