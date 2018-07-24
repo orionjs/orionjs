@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/jobs",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "luxon": "^1.2.0"
   },
   "devDependencies": {
-    "@orion-js/app": "^0.5.10",
+    "@orion-js/app": "^0.5.11",
     "babel-jest": "^22.4.3",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
