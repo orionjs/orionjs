@@ -96,3 +96,18 @@ it('accept hooks as functions', async () => {
 
   expect(calls).toBe(1)
 })
+
+it('pass information in this', async () => {
+  Views.hooks = () => {
+    return [
+      hook('after.insert', function(doc, options, arg1) {
+        expect(this.collection).toBe(Views)
+        expect(this.action).toBe('after.insert')
+      })
+    ]
+  }
+
+  expect.assertions(2)
+
+  await Views.insert({hello: 'universe'})
+})
