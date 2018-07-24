@@ -11,7 +11,7 @@ export default ({rawCollection, collection}) =>
     await runHooks(collection, 'before.remove', selector, options, ...otherArgs)
 
     const result = await rawCollection.remove(selector, options)
-    await runHooks(collection, 'before.remove', selector, options, ...otherArgs)
+    await runHooks(collection, 'after.remove', selector, options, ...otherArgs)
 
     return result.result.ok
   }
