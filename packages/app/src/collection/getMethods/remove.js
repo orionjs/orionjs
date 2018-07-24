@@ -8,10 +8,10 @@ export default ({rawCollection, collection}) =>
     let [_, options, ...otherArgs] = args
     if (!options) options = {}
 
-    await runHooks(collection, 'before.upsert', selector, options, ...otherArgs)
+    await runHooks(collection, 'before.remove', selector, options, ...otherArgs)
 
     const result = await rawCollection.remove(selector, options)
-    await runHooks(collection, 'before.upsert', selector, options, ...otherArgs)
+    await runHooks(collection, 'before.remove', selector, options, ...otherArgs)
 
     return result.result.ok
   }

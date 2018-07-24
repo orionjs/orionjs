@@ -60,12 +60,16 @@ it('run remove hooks in correct order and work correctly', async () => {
   const doc = await Views.findOne()
   expect(doc.hello).toBe('house')
 
+  let calls = 0
+
   Views.hooks = [
     hook('before.remove', (selector, options, arg1) => {
+      calls++
       expect(selector).toEqual({_id: doc._id})
       expect(arg1).toBe('arg1')
     }),
     hook('after.remove', async (selector, options, arg1) => {
+      calls++
       const finalDoc = await Views.findOne()
       expect(finalDoc).toBeNull()
     })
@@ -75,6 +79,7 @@ it('run remove hooks in correct order and work correctly', async () => {
 
   const finalDoc = await Views.findOne()
   expect(finalDoc).toBeNull()
+  expect(calls).toBe(2)
 })
 
 it('accept hooks as functions', async () => {
