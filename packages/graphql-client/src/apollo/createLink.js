@@ -5,7 +5,7 @@ import createWsLink from './createWsLink'
 import {getMainDefinition} from 'apollo-utilities'
 
 export default function(options) {
-  const links = [onError]
+  const links = [onError(options)]
 
   if (options.useSubscriptions) {
     const httpLink = createBatchHttpLink(options)
