@@ -222,7 +222,7 @@ test('run deep autovalues', async () => {
   }
   const cleaned = await clean(schema, doc)
   expect(cleaned).toEqual({
-    text: {s: 'no', type: 'text'},
+    text: {s: 'no'},
     texts: [{s: 'no'}, 'yes']
   })
 })

@@ -8,8 +8,11 @@ export default async function(type, fieldSchema, value, info, ...args) {
     value = await clean(value, info, ...args)
   }
 
+  let needReClean = false
+
   const {defaultValue} = fieldSchema
   if (isNil(value) && !isNil(defaultValue)) {
+    needReClean = true
     if (typeof defaultValue === 'function') {
       value = await defaultValue(info, ...args)
     } else {
@@ -19,7 +22,12 @@ export default async function(type, fieldSchema, value, info, ...args) {
 
   const {autoValue} = fieldSchema
   if (autoValue) {
+    needReClean = true
     value = await autoValue(value, info, ...args)
+  }
+
+  if (needReClean && clean && !isNil(value)) {
+    value = await clean(value, info, ...args)
   }
 
   return value
