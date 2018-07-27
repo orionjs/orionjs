@@ -5,7 +5,7 @@ export default async function(user) {
   const customerId = await getCustomerId(user)
   try {
     const customer = await stripe.customers.retrieve(customerId)
-    return customer.subscriptions.data.map(subscription => {
+    const subs = customer.subscriptions.data.map(subscription => {
       const sub = {
         ...subscription,
         plan: {
@@ -22,9 +22,9 @@ export default async function(user) {
           }
         })
       }
-      console.log(sub)
       return sub
     })
+    return subs
   } catch (error) {
     if (error.message === `No such customer: ${customerId}`) {
       console.log('Deleting customerId because was not found')

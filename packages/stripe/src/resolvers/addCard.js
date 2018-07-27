@@ -12,11 +12,8 @@ export default ({Users}) =>
     mutation: true,
     requireUserId: true,
     async resolve({sourceId}, viewer) {
-      console.log(createCard, 'create card')
       const user = await Users.findOne(viewer.userId)
       await createCard(user, sourceId)
-
-      console.log('addded card will return user', user)
 
       return user
     }
