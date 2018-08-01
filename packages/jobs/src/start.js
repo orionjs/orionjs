@@ -1,16 +1,15 @@
 import daemon from './daemon'
 import JobsCollection from './JobsCollection'
 
-export default async function(jobMap) {
+export default async function(jobs) {
   await JobsCollection.await()
 
-  const jobs = Object.keys(jobMap).map(identifier => {
-    const data = jobMap[identifier]
-    return {
-      ...data,
-      identifier
-    }
-  })
+  for (const identifier of Object.keys(jobs)) {
+    jobs[identifier].identifier = identifier
+  }
+
+  global.jobs = jobs
+
   // starts the daemon
   daemon({
     workersCount: 4,

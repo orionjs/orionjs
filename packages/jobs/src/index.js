@@ -1,7 +1,5 @@
 import start from './start'
-import runJob from './api/runJob'
-import JobsCollection from './JobsCollection'
+import Jobs from './JobsCollection'
+import job from './job'
 
-global.runJob = runJob
-
-export {start, runJob, JobsCollection}
+export {start, Jobs, job}
