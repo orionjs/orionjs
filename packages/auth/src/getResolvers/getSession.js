@@ -37,7 +37,7 @@ export default ({Session, Sessions}) => {
       userId: session.userId,
       session,
       locale: session.locale,
-      roles: session.roles,
+      roles: session.roles || [],
       emailVerified: session.emailVerified
     }
   }
