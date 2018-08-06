@@ -1,8 +1,9 @@
 import JSSHA from 'jssha'
 import parseInt from 'lodash/parseInt'
+import isPlainObject from 'lodash/isPlainObject'
 
 export default ({Session, Sessions}) => {
-  return async function({getBody, headers}) {
+  return async function({getBody, headers, nonceName = 'default'}) {
     await Sessions.await() // wait till db is connected
     const body = await getBody()
     const nonce = parseInt(headers['x-orion-nonce'])
@@ -18,11 +19,23 @@ export default ({Session, Sessions}) => {
       throw new Error('sessionNotFound')
     }
 
-    if (nonce < parseInt(session.nonce)) {
+    if (!session.nonce || !isPlainObject(session.nonce)) {
       throw new Error('nonceIsInvalid')
     }
 
-    await Sessions.update({publicKey}, {$set: {nonce: String(nonce)}})
+    if (session.nonce[nonceName] && nonce < parseInt(session.nonce[nonceName])) {
+      throw new Error('nonceIsInvalid')
+    }
+
+    await Sessions.update(
+      {publicKey},
+      {
+        $set: {
+          [`nonce.${nonceName}`]: String(nonce),
+          lastCall: new Date()
+        }
+      }
+    )
 
     var shaObj = new JSSHA('SHA-512', 'TEXT')
     shaObj.setHMACKey(session.secretKey, 'TEXT')

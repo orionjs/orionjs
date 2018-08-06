@@ -12,7 +12,7 @@ export default {
     type: Date
   },
   nonce: {
-    type: String
+    type: 'blackbox'
   },
   lastCall: {
     type: Date,

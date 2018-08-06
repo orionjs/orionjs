@@ -22,7 +22,8 @@ export default function({schema}, options) {
               'x-orion-publickey': connectionParams.publicKey,
               'x-orion-signature': connectionParams.signature
             },
-            getBody: () => 'websockethandshake'
+            getBody: () => 'websockethandshake',
+            nonceName: 'graphqlsubs'
           }
           const viewer = await getViewer(params)
           return viewer

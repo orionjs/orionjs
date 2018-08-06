@@ -14,7 +14,7 @@ export default async function({user, Sessions}) {
     publicKey: generateId() + generateId(),
     secretKey: generateId() + generateId() + generateId() + generateId(),
     createdAt: new Date(),
-    nonce: '0',
+    nonce: {default: '0'},
     lastCall: new Date(),
     userId: user._id,
     locale: user.locale,
