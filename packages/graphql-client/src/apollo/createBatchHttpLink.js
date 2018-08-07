@@ -10,9 +10,9 @@ const customFetch = (uri, options) => {
   return fetch(uri, options)
 }
 
-export default ({endpointURL}) =>
+export default ({endpointURL, batchInterval}) =>
   new BatchHttpLink({
     uri: endpointURL + '/graphql',
     fetch: customFetch,
-    batchInterval: 20
+    batchInterval
   })
