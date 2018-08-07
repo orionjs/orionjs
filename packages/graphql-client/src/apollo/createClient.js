@@ -14,7 +14,8 @@ const defaultOptions = {
     throw new Error('You must pass a function to get the saved session')
   },
   cache: defaultCache,
-  batchInterval: 20
+  batchInterval: 20,
+  canRetry: true
 }
 
 export default function(passedOptions) {
