@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/app",
-  "version": "0.6.5",
+  "version": "0.6.7",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "test:watch": "jest src --coverage --watch"
   },
   "dependencies": {
-    "@orion-js/schema": "^0.6.0",
+    "@orion-js/schema": "^0.6.7",
     "babel-polyfill": "^6.26.0",
     "colors": "^1.2.5",
     "dot-object": "^1.7.0",
