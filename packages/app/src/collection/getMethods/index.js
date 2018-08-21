@@ -8,6 +8,10 @@ import upsert from './upsert'
 import handleError from './handleError'
 import updateItemWithModifier from './updateItemWithModifier'
 import findOneAndUpdate from './findOneAndUpdate'
+import updateOne from './updateOne'
+import updateMany from './updateMany'
+import deleteOne from './deleteOne'
+import deleteMany from './deleteMany'
 
 export default function(collection) {
   const {model, rawCollection, passUpdateAndRemove} = collection
@@ -42,7 +46,11 @@ export default function(collection) {
     findOneAndUpdate: findOneAndUpdate(info),
     insert: handleError(insert(info)),
     update: handleError(update(info)),
+    updateOne: handleError(updateOne(info)),
+    updateMany: handleError(updateMany(info)),
     remove: handleError(remove(info)),
+    deleteOne: handleError(deleteOne(info)),
+    deleteMany: handleError(deleteMany(info)),
     upsert: handleError(upsert(info))
   }
 
