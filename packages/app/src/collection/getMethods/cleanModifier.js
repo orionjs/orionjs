@@ -19,7 +19,10 @@ export default async function validateModifier(schema, modifier) {
     if (operation.slice(0, 1) !== '$') {
       throw new Error(`Expected '${operation}' to be a modifier operator like '$set'`)
     }
-    if (!shouldCheck(operation)) continue
+    if (!shouldCheck(operation)) {
+      cleanedModifier[operation] = operationDoc
+      continue
+    }
 
     for (const key of Object.keys(operationDoc)) {
       const value = operationDoc[key]

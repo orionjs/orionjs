@@ -67,6 +67,30 @@ it('should update documents that have array passing validation', async () => {
   })
 })
 
+it('should do $pull operation', async () => {
+  const schema = {
+    _id: {type: 'ID'},
+    tags: {type: [String]}
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
+
+  const itemId = await Tests.insert({tags: ['1', '2', '3', '4']})
+
+  await Tests.update(itemId, {$pull: {'tags': '1'}})
+  await Tests.update(itemId, {$pull: {'tags': {$in: ['3', '4']}}})
+
+  expect(await Tests.findOne(itemId)).toEqual({
+    _id: itemId,
+    tags: ['2']
+  })
+
+})
+
 it('should update documents passing validation', async () => {
   const wife = {
     name: {type: String},
