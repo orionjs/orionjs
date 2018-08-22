@@ -2,7 +2,6 @@ import {resolver} from '@orion-js/app'
 
 export default options =>
   resolver({
-    name: 'getUserByID',
     private: true,
     params: {
       userId: {

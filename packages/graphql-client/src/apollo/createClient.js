@@ -15,7 +15,9 @@ const defaultOptions = {
   },
   cache: defaultCache,
   batchInterval: 20,
-  canRetry: true
+  canRetry: true,
+  promptTwoFactorCode: () => global.prompt('Please write your two factor code to continue'),
+  onError: () => {}
 }
 
 export default function(passedOptions) {

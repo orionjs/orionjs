@@ -10,10 +10,17 @@ import getSession from './getSession'
 import forgotPassword from './forgotPassword'
 import resetPassword from './resetPassword'
 import verifyEmail from './verifyEmail'
+import generateTwoFactorSecret from './generateTwoFactorSecret'
+import activateTwoFactor from './activateTwoFactor'
+import addTwoFactorUserResolvers from './addTwoFactorUserResolvers'
+import disableTwoFactor from './disableTwoFactor'
+import registerCheckers from './registerCheckers'
+import {setOptions} from '../optionsStore'
 
 export default function(options) {
   options.Sessions = Sessions(options)
   options.Session = options.Sessions.model
+  setOptions(options)
 
   const getViewer = getSession(options)
   setGetViewer(getViewer)
@@ -29,9 +36,22 @@ export default function(options) {
       'x-orion-nonce',
       'x-orion-publickey',
       'x-orion-signature',
-      'x-orion-locale'
+      'x-orion-locale',
+      'x-orion-twofactor'
     ]
   })
+
+  registerCheckers(options)
+
+  let twoFactor = {}
+  if (options.twoFactor) {
+    addTwoFactorUserResolvers(options)
+    twoFactor = {
+      generateTwoFactorSecret: generateTwoFactorSecret(options),
+      activateTwoFactor: activateTwoFactor(options),
+      disableTwoFactor: disableTwoFactor(options)
+    }
+  }
 
   return {
     loginWithPassword: loginWithPassword(options),
@@ -42,6 +62,7 @@ export default function(options) {
     changePassword: changePassword(options),
     forgotPassword: forgotPassword(options),
     resetPassword: resetPassword(options),
-    verifyEmail: verifyEmail(options)
+    verifyEmail: verifyEmail(options),
+    ...twoFactor
   }
 }

@@ -1,7 +1,8 @@
 export default class PermissionsError extends Error {
   constructor(permissionErrorType, otherInfo) {
     // Calling parent constructor of base Error class.
-    const message = `Client is not allowed to perform this action [${permissionErrorType}]`
+    const message =
+      otherInfo.message || `Client is not allowed to perform this action [${permissionErrorType}]`
     super(message)
     Error.captureStackTrace(this, this.constructor)
 

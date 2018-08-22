@@ -37,7 +37,7 @@ export default ({Users, Session}) =>
     returns: Boolean,
     mutation: true,
     resolve: async function({oldPassword, newPassword}, viewer) {
-      Users.update(viewer.userId, {
+      await Users.update(viewer.userId, {
         $set: {
           'services.password': {
             bcrypt: hashPassword(newPassword),

@@ -33,7 +33,7 @@ export default ({Users, Session, Sessions}) =>
     mutation: true,
     resolve: async function({token, password}) {
       const user = await Users.findOne({'services.forgot.token': token})
-      Users.update(user._id, {
+      await Users.update(user._id, {
         $set: {
           'services.password': {
             bcrypt: hashPassword(password),

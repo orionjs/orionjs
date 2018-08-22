@@ -11,7 +11,7 @@ import hook from './collection/hook'
 import UserError from './Errors/UserError'
 import PermissionsError from './Errors/PermissionsError'
 import Model from './Model'
-import {resolver, crudResolvers, paginatedResolver} from './resolvers'
+import {resolver, crudResolvers, paginatedResolver, addPermissionChecker} from './resolvers'
 import {setGetViewer} from './route/setGetViewer'
 import getViewer from './route/handler/getViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
@@ -37,5 +37,6 @@ export {
   getViewer,
   getCorsOptions,
   setCorsOptions,
-  paginatedResolver
+  paginatedResolver,
+  addPermissionChecker
 }

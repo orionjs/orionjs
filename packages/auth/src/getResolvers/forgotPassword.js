@@ -25,7 +25,7 @@ export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
       const token = generateId() + generateId()
       const date = new Date()
 
-      Users.update(user._id, {$set: {'services.forgot': {token, date}}})
+      await Users.update(user._id, {$set: {'services.forgot': {token, date}}})
       if (sendForgotPasswordToken) {
         await sendForgotPasswordToken(user, token)
       }

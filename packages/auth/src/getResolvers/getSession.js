@@ -9,9 +9,10 @@ export default ({Session, Sessions}) => {
     const nonce = parseInt(headers['x-orion-nonce'])
     const publicKey = headers['x-orion-publickey']
     const signature = headers['x-orion-signature']
+    const twoFactorCode = headers['x-orion-twofactor'] || null
 
     if (!nonce || !publicKey || !signature) {
-      return null
+      return {twoFactorCode}
     }
 
     const session = await Sessions.findOne({publicKey})
@@ -49,6 +50,7 @@ export default ({Session, Sessions}) => {
     return {
       userId: session.userId,
       session,
+      twoFactorCode,
       locale: session.locale,
       roles: session.roles || [],
       emailVerified: session.emailVerified

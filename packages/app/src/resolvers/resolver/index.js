@@ -5,30 +5,23 @@ import getInvalidateCache from './getInvalidateCache'
 
 export default function({
   params,
-  requireUserId,
   returns,
   mutation,
   private: isPrivate,
   resolve,
   checkPermission,
-  roles = [],
-  role,
-  cache
+  cache,
+  ...otherOptions
 }) {
-  if (role) {
-    roles.push(role)
-  }
-
   checkOptions({
     params,
-    requireUserId,
     returns,
     isPrivate,
     mutation,
     resolve,
     checkPermission,
-    roles,
-    cache
+    cache,
+    ...otherOptions
   })
 
   const resolverId = generateId()
@@ -39,14 +32,13 @@ export default function({
     params,
     returns,
     resolve,
-    requireUserId,
-    roles,
-    checkPermission
+    checkPermission,
+    ...otherOptions
   })
 
   resolver.resolverId = resolverId
   resolver.params = params
-  resolver.requireUserId = requireUserId
+  resolver.options = otherOptions
   resolver.returns = returns
   resolver.mutation = mutation
   resolver.checkPermission = checkPermission
