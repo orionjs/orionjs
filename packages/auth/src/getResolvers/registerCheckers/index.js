@@ -6,5 +6,7 @@ import requireTwoFactor from './requireTwoFactor'
 export default function(options) {
   addPermissionChecker(roles(options))
   addPermissionChecker(requireUserId(options))
-  addPermissionChecker(requireTwoFactor(options))
+  if (options.twoFactor) {
+    addPermissionChecker(requireTwoFactor(options))
+  }
 }
