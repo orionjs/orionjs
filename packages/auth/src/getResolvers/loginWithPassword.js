@@ -43,7 +43,9 @@ export default ({Users, Session, Sessions, twoFactor}) =>
     mutation: true,
     resolve: async function({email, password}, viewer) {
       const user = await findUserByEmail({email, Users})
-      await requireTwoFactor({userId: user._id, twoFactorCode: viewer.twoFactorCode})
+      if (twoFactor) {
+        await requireTwoFactor({userId: user._id, twoFactorCode: viewer.twoFactorCode})
+      }
 
       return await createSession({user, Sessions})
     }
