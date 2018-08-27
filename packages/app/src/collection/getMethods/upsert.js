@@ -13,8 +13,6 @@ export default ({rawCollection, schema, collection}) =>
 
     modifier.$setOnInsert = {...modifier.$setOnInsert, _id: generateId()}
 
-    await runHooks(collection, 'before.upsert', selector, modifier, options, ...otherArgs)
-
     if (schema) {
       if (options.clean !== false) {
         selector = (await cleanModifier(schema, {$set: selector})).$set
@@ -23,8 +21,8 @@ export default ({rawCollection, schema, collection}) =>
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
 
+    await runHooks(collection, 'before.upsert', selector, modifier, options, ...otherArgs)
     const result = await rawCollection.update(selector, modifier, {...options, upsert: true})
-
     await runHooks(collection, 'after.upsert', selector, modifier, options, ...otherArgs)
     return {
       numberAffected: result.result.nModified,

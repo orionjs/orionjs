@@ -12,6 +12,8 @@ import updateOne from './updateOne'
 import updateMany from './updateMany'
 import deleteOne from './deleteOne'
 import deleteMany from './deleteMany'
+import insertOne from './insertOne'
+import insertMany from './insertMany'
 
 export default function(collection) {
   const {model, rawCollection, passUpdateAndRemove} = collection
@@ -45,6 +47,8 @@ export default function(collection) {
     aggregate: aggregate(info),
     findOneAndUpdate: findOneAndUpdate(info),
     insert: handleError(insert(info)),
+    insertOne: handleError(insertOne(info)),
+    insertMany: handleError(insertMany(info)),
     update: handleError(update(info)),
     updateOne: handleError(updateOne(info)),
     updateMany: handleError(updateMany(info)),

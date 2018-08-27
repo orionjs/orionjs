@@ -14,13 +14,12 @@ export default ({rawCollection, schema, collection}) =>
       throw new Error('Modifier is required when making an update')
     }
 
-    await runHooks(collection, 'before.update', selector, modifier, options, ...otherArgs)
-
     if (schema) {
       modifier = options.clean !== false ? await cleanModifier(schema, modifier) : modifier
       if (options.validate !== false) await validateModifier(schema, modifier)
     }
 
+    await runHooks(collection, 'before.update', selector, modifier, options, ...otherArgs)
     const result = await rawCollection.updateMany(selector, modifier, options)
     await runHooks(collection, 'after.update', selector, modifier, options, ...otherArgs)
 
