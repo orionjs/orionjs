@@ -9,10 +9,7 @@ export default ({Users, Session}) =>
     params: {
       oldPassword: {
         type: String,
-        label: {
-          en: 'Old password',
-          es: 'Contraseña antigua'
-        },
+        label: 'Old password',
         async custom(oldPassword, info, viewer) {
           const user = await Users.findOne(viewer.userId)
           if (!checkPassword(user, oldPassword)) {
@@ -23,10 +20,7 @@ export default ({Users, Session}) =>
       newPassword: {
         type: String,
         min: 8,
-        label: {
-          en: 'New password',
-          es: 'Contraseña nueva'
-        },
+        label: 'New password',
         async custom(newPassword, {doc}, viewer) {
           if (newPassword === doc.oldPassword) {
             return 'samePassword'

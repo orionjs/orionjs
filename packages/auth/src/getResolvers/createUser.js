@@ -10,10 +10,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
     params: {
       email: {
         type: 'email',
-        label: {
-          en: 'Email',
-          es: 'Email'
-        },
+        label: 'Email',
         async custom(email) {
           email = email.toLowerCase()
           const count = await Users.find({'emails.address': email}).count()
@@ -25,10 +22,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
       password: {
         type: String,
         min: 8,
-        label: {
-          en: 'Password',
-          es: 'Contraseña'
-        }
+        label: 'Password'
       },
       ...({profile} || {})
     },

@@ -10,10 +10,7 @@ export default ({Users, Session, Sessions, twoFactor}) =>
     params: {
       email: {
         type: 'email',
-        label: {
-          en: 'Email',
-          es: 'Email'
-        },
+        label: 'Email',
         async custom(email) {
           const user = await findUserByEmail({email, Users})
           if (!user) {
@@ -23,10 +20,7 @@ export default ({Users, Session, Sessions, twoFactor}) =>
       },
       password: {
         type: String,
-        label: {
-          en: 'Password',
-          es: 'Contraseña'
-        },
+        label: 'Password',
         async custom(password, {doc}) {
           const {email} = doc
           const user = await findUserByEmail({email, Users})

@@ -23,10 +23,7 @@ export default ({Users, Session, Sessions}) =>
       password: {
         type: String,
         min: 8,
-        label: {
-          en: 'Password',
-          es: 'Contraseña'
-        }
+        label: 'Password'
       }
     },
     returns: Session,

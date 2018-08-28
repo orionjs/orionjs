@@ -6,10 +6,7 @@ export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
     params: {
       email: {
         type: 'email',
-        label: {
-          en: 'Email',
-          es: 'Email'
-        },
+        label: 'Email',
         async custom(email) {
           const user = await findUserByEmail({email, Users})
           if (!user) {
