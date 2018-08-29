@@ -1,6 +1,6 @@
 {
   "docs": {
-    "Getting started": ["installation", "basics", "structure"],
+    "Getting started": ["installation", "basics", "structure", "deploying"],
     "Basics": ["schema", "models", "resolvers", "collections", "jobs", "cli"],
     "Modules": ["authentication", "graphql", "http", "files", "mailing", "autoform"]
   }
