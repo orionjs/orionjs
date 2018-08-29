@@ -22,8 +22,16 @@ Now that you have the `orion` command you can download a starter kit. Let's star
 orion create --kit graphql-fullstack --name myapp
 ```
 
+## Installing the Atom plugin
+
+The atom plugin named "orionjs", mantained by the Orionjs team, will help you writing your Orionjs app.
+
 ## Running the app
+
+Run the following command:
 
 ```sh
 orion start
 ```
+
+The starter kit comes with a start.sh file that inlcudes some environment variables and the start command.
