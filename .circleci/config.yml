@@ -14,7 +14,8 @@ jobs:
       - image: circleci/node:8.11.1
     steps:
       - checkout
-      - run: npm run test
+      - run: yarn install
+      - run: yarn run test
   deploy-website:
     docker:
       # specify the version you desire here
