@@ -15,6 +15,7 @@ jobs:
     steps:
       - checkout
       - run: yarn install
+      - run: yarn run bootstrap
       - run: yarn test
   deploy-website:
     docker:
@@ -29,9 +30,6 @@ jobs:
             git config --global user.name "Nicolás López"
             echo "machine github.com login nicolaslopezj password $GITHUB_TOKEN" > ~/.netrc
             cd website && yarn install && GIT_USER=nicolaslopezj yarn run publish-gh-pages
-dependencies:
-  post:
-    - yarn run bootstrap
 workflows:
   version: 2
   build_and_deploy:
