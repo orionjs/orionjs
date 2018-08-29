@@ -1,13 +1,12 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-const React = require('react')
+import React from 'react'
+import PropTypes from 'prop-types'
 
 class Footer extends React.Component {
+  static propTypes = {
+    config: PropTypes.object,
+    language: PropTypes.any
+  }
+
   docUrl(doc, language) {
     const baseUrl = this.props.config.baseUrl
     return `${baseUrl}docs/${language ? `${language}/` : ''}${doc}`
@@ -43,17 +42,18 @@ class Footer extends React.Component {
             </a>
           </div>
           <div>
-            <h5>Community</h5>
-            <a href={this.pageUrl('users.html', this.props.language)}>User Showcase</a>
+            <h5>Support</h5>
             <a
-              href="http://stackoverflow.com/questions/tagged/"
+              href="http://stackoverflow.com/questions/tagged/orionjs"
               target="_blank"
               rel="noreferrer noopener">
               Stack Overflow
             </a>
-            <a href="https://discordapp.com/">Project Chat</a>
-            <a href="https://twitter.com/" target="_blank" rel="noreferrer noopener">
-              Twitter
+            <a
+              href={this.props.config.repoUrl + '/issues'}
+              target="_blank"
+              rel="noreferrer noopener">
+              Github issues
             </a>
           </div>
           <div>
@@ -64,7 +64,7 @@ class Footer extends React.Component {
               className="github-button"
               href={this.props.config.repoUrl}
               data-icon="octicon-star"
-              data-count-href="/facebook/docusaurus/stargazers"
+              data-count-href="/orionjs/orionjs/stargazers"
               data-show-count="true"
               data-count-aria-label="# stargazers on GitHub"
               aria-label="Star this project on GitHub">

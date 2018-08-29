@@ -1,0 +1,7 @@
+.homeSplashFade {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
