@@ -85,20 +85,20 @@ const Features = () => (
     {[
       {
         content: "You don't have to write anything twice",
-        image: imgUrl('docusaurus.svg'),
-        imageAlign: 'top',
+        // image: imgUrl('docusaurus.svg'),
+        // imageAlign: 'top',
         title: 'Create reusable code'
       },
       {
         content: 'Embrace GraphQL, MongoDB and more',
-        image: imgUrl('docusaurus.svg'),
-        imageAlign: 'top',
+        // image: imgUrl('docusaurus.svg'),
+        // imageAlign: 'top',
         title: 'Use modern standards'
       },
       {
         content: 'Orionjs focuses on developer speed',
-        image: imgUrl('docusaurus.svg'),
-        imageAlign: 'top',
+        // image: imgUrl('docusaurus.svg'),
+        // imageAlign: 'top',
         title: 'Write at maximum speed'
       }
     ]}
