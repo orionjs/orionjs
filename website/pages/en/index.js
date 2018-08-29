@@ -96,6 +96,11 @@ const Features = () => (
         title: 'Use modern standards'
       },
       {
+        content:
+          "It's not difficult to learn how to use Orionjs and it doesn't propose any change in current standards",
+        title: 'Very intuitive'
+      },
+      {
         content: 'Orionjs focuses on developer speed',
         // image: imgUrl('docusaurus.svg'),
         // imageAlign: 'top',
