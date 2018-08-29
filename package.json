@@ -2,7 +2,6 @@
   "license": "MIT",
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
-    "pretest": "eslint packages",
     "test": "lerna run test"
   },
   "devDependencies": {

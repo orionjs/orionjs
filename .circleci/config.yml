@@ -15,7 +15,7 @@ jobs:
     steps:
       - checkout
       - run: yarn install
-      - run: yarn run test
+      - run: yarn test
   deploy-website:
     docker:
       # specify the version you desire here
@@ -31,7 +31,7 @@ jobs:
             cd website && yarn install && GIT_USER=nicolaslopezj yarn run publish-gh-pages
 dependencies:
   post:
-    - npm run bootstrap
+    - yarn run bootstrap
 workflows:
   version: 2
   build_and_deploy:
