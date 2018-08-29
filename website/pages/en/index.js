@@ -1,6 +1,6 @@
-import React from 'react'
-import CompLibrary from '../../core/CompLibrary.js'
-import PropTypes from 'prop-types'
+const React = require('react')
+const PropTypes = require('prop-types')
+const CompLibrary = require('../../core/CompLibrary.js')
 
 const MarkdownBlock = CompLibrary.MarkdownBlock /* Used to read markdown */
 const Container = CompLibrary.Container

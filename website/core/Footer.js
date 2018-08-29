@@ -1,5 +1,5 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+const React = require('react')
+const PropTypes = require('prop-types')
 
 class Footer extends React.Component {
   static propTypes = {
