@@ -9,11 +9,15 @@
 
 version: 2
 jobs:
+  test:
+    docker:
+      - image: circleci/node:8.11.1
+    steps:
+      - run: lerna run test
   deploy-website:
     docker:
       # specify the version you desire here
       - image: circleci/node:8.11.1
-
     steps:
       - checkout
       - run:
@@ -23,9 +27,14 @@ jobs:
             git config --global user.name "Nicolás López"
             echo "machine github.com login nicolaslopezj password $GITHUB_TOKEN" > ~/.netrc
             cd website && yarn install && GIT_USER=nicolaslopezj yarn run publish-gh-pages
-
+dependencies:
+  post:
+    - npm run bootstrap
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - deploy-website
+  build_and_test:
+    jobs:
+      - test

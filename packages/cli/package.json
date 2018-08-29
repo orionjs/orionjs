@@ -10,7 +10,8 @@
   "scripts": {
     "build": "rm -rf ./build && babel ./src --out-dir ./build",
     "prepare": "yarn run build",
-    "watch": "rm -rf ./build && babel ./src --watch --out-dir ./build"
+    "watch": "rm -rf ./build && babel ./src --watch --out-dir ./build",
+    "test": "exit 0"
   },
   "dependencies": {
     "babel-core": "^6.26.3",
