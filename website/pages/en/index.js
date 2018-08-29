@@ -1,7 +1,6 @@
 const React = require('react')
 const CompLibrary = require('../../core/CompLibrary.js')
 
-const MarkdownBlock = CompLibrary.MarkdownBlock /* Used to read markdown */
 const Container = CompLibrary.Container
 const GridBlock = CompLibrary.GridBlock
 
@@ -66,8 +65,8 @@ class HomeSplash extends React.Component {
         <div className="inner">
           <ProjectTitle />
           <PromoSection>
-            <Button href="">Get started</Button>
-            <Button href={docUrl('doc1.html', language)}>Learn the basics</Button>
+            <Button href={docUrl('installation.html', language)}>Get started</Button>
+            <Button href={docUrl('basics.html', language)}>Learn the basics</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -95,52 +94,6 @@ const Features = () => (
         image: imgUrl('docusaurus.svg'),
         imageAlign: 'top',
         title: 'Feature Two'
-      }
-    ]}
-  </Block>
-)
-
-const FeatureCallout = () => (
-  <div className="productShowcaseSection paddingBottom" style={{textAlign: 'center'}}>
-    <h2>Feature Callout</h2>
-    <MarkdownBlock>These are features of this project</MarkdownBlock>
-  </div>
-)
-
-const LearnHow = () => (
-  <Block background="light">
-    {[
-      {
-        content: 'Talk about learning how to use this',
-        image: imgUrl('docusaurus.svg'),
-        imageAlign: 'right',
-        title: 'Learn How'
-      }
-    ]}
-  </Block>
-)
-
-const TryOut = () => (
-  <Block id="try">
-    {[
-      {
-        content: 'Talk about trying this out',
-        image: imgUrl('docusaurus.svg'),
-        imageAlign: 'left',
-        title: 'Try it Out'
-      }
-    ]}
-  </Block>
-)
-
-const Description = () => (
-  <Block background="dark">
-    {[
-      {
-        content: 'This is another description of how this project is useful',
-        image: imgUrl('docusaurus.svg'),
-        imageAlign: 'right',
-        title: 'Description'
       }
     ]}
   </Block>
@@ -180,10 +133,6 @@ class Index extends React.Component {
         <HomeSplash language={language} />
         <div className="mainContainer">
           <Features />
-          {/* <FeatureCallout /> */}
-          {/* <LearnHow /> */}
-          {/* <TryOut /> */}
-          {/* <Description /> */}
           <Showcase language={language} />
         </div>
       </div>

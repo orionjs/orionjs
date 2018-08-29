@@ -29,8 +29,7 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    {doc: 'doc1', label: 'Docs'},
-    {doc: 'doc4', label: 'API'},
+    {doc: 'installation', label: 'Docs'},
     {page: 'help', label: 'Help'},
     {blog: true, label: 'Blog'}
   ],
@@ -39,9 +38,9 @@ const siteConfig = {
   users,
 
   /* path to images for header/footer */
-  headerIcon: 'img/docusaurus.svg',
-  footerIcon: 'img/docusaurus.svg',
-  favicon: 'img/favicon.png',
+  headerIcon: 'img/logo-white.svg',
+  footerIcon: 'img/logo-white.svg',
+  favicon: 'img/logo-black.png',
 
   /* Colors for website */
   colors: {
@@ -66,8 +65,8 @@ const siteConfig = {
   cleanUrl: true,
 
   // Open Graph and Twitter card images.
-  ogImage: 'img/docusaurus.png',
-  twitterImage: 'img/docusaurus.png',
+  ogImage: 'img/logo-black.png',
+  twitterImage: 'img/logo-black.png',
 
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
