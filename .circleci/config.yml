@@ -13,6 +13,7 @@ jobs:
     docker:
       - image: circleci/node:8.11.1
     steps:
+      - checkout
       - run: npm run test
   deploy-website:
     docker:
