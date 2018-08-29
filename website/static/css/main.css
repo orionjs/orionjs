@@ -1,3 +1,16 @@
 body {
   font-family: 'Titillium Web', sans-serif;
 }
+
+.toc .toggleNav ul li.navListItemActive a {
+  color: rgb(0, 91, 188);
+}
+.toc .toggleNav ul li a:hover,
+.toc .toggleNav ul li a:focus {
+  color: rgb(0, 91, 188);
+}
+
+a {
+  color: rgb(0, 91, 188);
+  text-decoration: none;
+}
