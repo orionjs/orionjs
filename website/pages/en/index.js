@@ -84,16 +84,22 @@ const Features = () => (
   <Block layout="fourColumn">
     {[
       {
-        content: 'This is the content of my feature',
+        content: "You don't have to write anything twice",
         image: imgUrl('docusaurus.svg'),
         imageAlign: 'top',
-        title: 'Feature One'
+        title: 'Create reusable code'
       },
       {
-        content: 'The content of my second feature',
+        content: 'Embrace GraphQL, MongoDB and more',
         image: imgUrl('docusaurus.svg'),
         imageAlign: 'top',
-        title: 'Feature Two'
+        title: 'Use modern standards'
+      },
+      {
+        content: 'Orionjs focuses on developer speed',
+        image: imgUrl('docusaurus.svg'),
+        imageAlign: 'top',
+        title: 'Write at maximum speed'
       }
     ]}
   </Block>
@@ -133,7 +139,7 @@ class Index extends React.Component {
         <HomeSplash language={language} />
         <div className="mainContainer">
           <Features />
-          <Showcase language={language} />
+          {/* <Showcase language={language} /> */}
         </div>
       </div>
     )
