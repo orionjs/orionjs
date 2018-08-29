@@ -12,10 +12,12 @@
 const users = require('./users')
 
 const siteConfig = {
+  cname: 'orionjs.com',
   title: 'Orionjs', // Title for your website.
   tagline: 'A framework for modern Nodejs apps',
   url: 'https://orionjs.com', // Your website URL
   baseUrl: '/', // Base URL for your project */
+  editUrl: 'https://github.com/orionjs/orionjs/edit/master/docs/',
   // For github.io type URLs, you would set the url and baseUrl like:
   //   url: 'https://facebook.github.io',
   //   baseUrl: '/test-site/',
