@@ -1,12 +1,6 @@
 const React = require('react')
-const PropTypes = require('prop-types')
 
 class Footer extends React.Component {
-  static propTypes = {
-    config: PropTypes.object,
-    language: PropTypes.any
-  }
-
   docUrl(doc, language) {
     const baseUrl = this.props.config.baseUrl
     return `${baseUrl}docs/${language ? `${language}/` : ''}${doc}`

@@ -1,5 +1,4 @@
 const React = require('react')
-const PropTypes = require('prop-types')
 const CompLibrary = require('../../core/CompLibrary.js')
 
 const MarkdownBlock = CompLibrary.MarkdownBlock /* Used to read markdown */
@@ -21,16 +20,6 @@ function pageUrl(page, language) {
 }
 
 class Button extends React.Component {
-  static propTypes = {
-    children: PropTypes.node,
-    href: PropTypes.string,
-    target: PropTypes.string
-  }
-
-  static defaultProps = {
-    target: '_self'
-  }
-
   render() {
     return (
       <div className="pluginWrapper buttonWrapper">
@@ -40,6 +29,10 @@ class Button extends React.Component {
       </div>
     )
   }
+}
+
+Button.defaultProps = {
+  target: '_self'
 }
 
 const SplashContainer = props => (
@@ -66,10 +59,6 @@ const PromoSection = props => (
 )
 
 class HomeSplash extends React.Component {
-  static propTypes = {
-    language: PropTypes.string
-  }
-
   render() {
     const language = this.props.language || ''
     return (
@@ -184,10 +173,6 @@ const Showcase = props => {
 }
 
 class Index extends React.Component {
-  static propTypes = {
-    language: PropTypes.string
-  }
-
   render() {
     const language = this.props.language || ''
 
