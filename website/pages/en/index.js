@@ -110,31 +110,6 @@ const Features = () => (
   </Block>
 )
 
-const Showcase = props => {
-  if ((siteConfig.users || []).length === 0) {
-    return null
-  }
-
-  const showcase = siteConfig.users.filter(user => user.pinned).map(user => (
-    <a href={user.infoLink} key={user.infoLink}>
-      <img src={user.image} alt={user.caption} title={user.caption} />
-    </a>
-  ))
-
-  return (
-    <div className="productShowcaseSection paddingBottom">
-      <h2>Who is Using This?</h2>
-      <p>This project is used by all these people</p>
-      <div className="logos">{showcase}</div>
-      <div className="more-users">
-        <a className="button" href={pageUrl('users.html', props.language)}>
-          More {siteConfig.title} Users
-        </a>
-      </div>
-    </div>
-  )
-}
-
 class Index extends React.Component {
   render() {
     const language = this.props.language || ''
