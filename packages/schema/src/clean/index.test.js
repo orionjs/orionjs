@@ -227,6 +227,34 @@ test('run deep autovalues', async () => {
   })
 })
 
+test('perform custom cleaning from clean option in field', async () => {
+  const person = {
+    name: {
+      type: String,
+      async clean(value) {
+        if (value === 'Joaquin') {
+          return 'Roberto'
+        } else {
+          return value
+        }
+      }
+    }
+  }
+
+  const schema = {
+    persons: {
+      type: [person]
+    }
+  }
+
+  const cleaned = await clean(schema, {
+    persons: [{name: 'Nicolás'}, {name: 'Joaquin'}]
+  })
+  expect(cleaned).toEqual({
+    persons: [{name: 'Nicolás'}, {name: 'Roberto'}]
+  })
+})
+
 test('perform custom cleaning', async () => {
   const person = {
     name: {
@@ -353,6 +381,24 @@ test('passes extra arguments to clean', async () => {
 
   expect.assertions(2)
   await clean(schema, doc, null, 1, 2)
+})
+
+test('throws error when cleaning field with no type', async () => {
+  const schema = {
+    name: {
+      type: null,
+      autoValue(name, info, arg1, arg2) {
+        return 'Nicolás'
+      }
+    }
+  }
+
+  expect.assertions(1)
+  try {
+    await clean(schema)
+  } catch (error) {
+    expect(error.message).toBe('Error cleaning field name, error: Cleaning field with no type')
+  }
 })
 
 test('cleans when no argument is passed', async () => {

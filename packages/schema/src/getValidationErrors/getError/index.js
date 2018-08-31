@@ -21,8 +21,11 @@ export default async function(params) {
     }
   }
 
-  if (currentSchema.custom) {
-    const customError = await currentSchema.custom(value, info, ...args)
+  // to not deprecate yet custom field
+  if (currentSchema.custom) currentSchema.validate = currentSchema.custom
+
+  if (currentSchema.validate) {
+    const customError = await currentSchema.validate(value, info, ...args)
     if (customError) {
       return customError
     }
