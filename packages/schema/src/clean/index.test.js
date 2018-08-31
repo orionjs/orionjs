@@ -227,6 +227,34 @@ test('run deep autovalues', async () => {
   })
 })
 
+test('perform custom cleaning from clean option in field', async () => {
+  const person = {
+    name: {
+      type: String,
+      async clean(value) {
+        if (value.name === 'Joaquin') {
+          return {name: 'Roberto'}
+        } else {
+          return value
+        }
+      }
+    }
+  }
+
+  const schema = {
+    persons: {
+      type: [person]
+    }
+  }
+
+  const cleaned = await clean(schema, {
+    persons: [{name: 'Nicolás'}, {name: 'Joaquin'}]
+  })
+  expect(cleaned).toEqual({
+    persons: [{name: 'Nicolás'}, {name: 'Roberto'}]
+  })
+})
+
 test('perform custom cleaning', async () => {
   const person = {
     name: {
