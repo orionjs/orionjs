@@ -186,12 +186,12 @@ test('can check errors in deeply nested keys', async () => {
   })
 })
 
-test('run custom validation when field is optional and no value is passed', async () => {
+test('run validate validation when field is optional and no value is passed', async () => {
   const person = {
     name: {
       type: String,
       optional: true,
-      custom(value) {
+      validate(value) {
         return 'No'
       }
     },
@@ -206,7 +206,7 @@ test('run custom validation when field is optional and no value is passed', asyn
     },
     number: {
       type: Number,
-      custom() {
+      validate() {
         return 'No'
       }
     }
@@ -241,7 +241,7 @@ test('run custom validation when field is optional and no value is passed', asyn
   })
 })
 
-test('can validate object type with custom validation', async () => {
+test('can validate object type with validate validation', async () => {
   const person = {
     name: {
       type: String
@@ -304,6 +304,22 @@ test('skip child validation if specified', async () => {
   })
 })
 
+test('run custom validation with custom key', async () => {
+  const schema = {
+    name: {
+      type: String,
+      async custom(value) {
+        return value
+      }
+    }
+  }
+
+  const errors = await getValidationErrors(schema, {name: 'error'})
+  expect(errors).toEqual({
+    name: 'error'
+  })
+})
+
 test('pass currentDoc validating arrays', async () => {
   const aItem = {name: 'Nicolás'}
   const doc = {items: [aItem]}
@@ -311,7 +327,7 @@ test('pass currentDoc validating arrays', async () => {
   const item = {
     name: {
       type: String,
-      async custom(name, {currentDoc}) {
+      async validate(name, {currentDoc}) {
         expect(currentDoc).toBe(aItem)
       }
     }
@@ -320,7 +336,7 @@ test('pass currentDoc validating arrays', async () => {
   const schema = {
     items: {
       type: [item],
-      async custom(items, {currentDoc}) {
+      async validate(items, {currentDoc}) {
         expect(currentDoc).toBe(doc)
       }
     }
@@ -339,7 +355,7 @@ test('pass currentDoc validating complex schemas', async () => {
   const car = {
     brand: {
       type: String,
-      async custom(value, {currentDoc}) {
+      async validate(value, {currentDoc}) {
         expect(value).toEqual(aCar.brand)
         expect(currentDoc).toEqual(aCar)
       }
@@ -353,14 +369,14 @@ test('pass currentDoc validating complex schemas', async () => {
   const mom = {
     name: {
       type: String,
-      async custom(value, {currentDoc}) {
+      async validate(value, {currentDoc}) {
         expect(value).toEqual(aMom.name)
         expect(currentDoc).toEqual(aMom)
       }
     },
     car: {
       type: car,
-      async custom(value, {currentDoc, doc}) {
+      async validate(value, {currentDoc, doc}) {
         expect(value).toEqual(aMom.car)
         expect(currentDoc).toEqual(aMom)
       }
@@ -370,14 +386,14 @@ test('pass currentDoc validating complex schemas', async () => {
   const item = {
     name: {
       type: String,
-      async custom(value, {currentDoc}) {
+      async validate(value, {currentDoc}) {
         expect(value).toEqual(aItem.name)
         expect(currentDoc).toEqual(aItem)
       }
     },
     mom: {
       type: mom,
-      async custom(value, {currentDoc}) {
+      async validate(value, {currentDoc}) {
         expect(value).toEqual(aItem.mom)
         expect(currentDoc).toEqual(aItem)
       }
@@ -387,7 +403,7 @@ test('pass currentDoc validating complex schemas', async () => {
   const schema = {
     items: {
       type: [item],
-      async custom(value, {currentDoc}) {
+      async validate(value, {currentDoc}) {
         expect(value).toEqual(doc.items)
         expect(currentDoc).toEqual(doc)
       }
