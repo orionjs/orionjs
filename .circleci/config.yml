@@ -1,11 +1,8 @@
-# If you only want circle to run on direct commits to master, you can uncomment this out
-# and uncomment the filters: *filter-only-master down below too
-#
-# aliases:
-#  - &filter-only-master
-#    branches:
-#      only:
-#        - master
+aliases:
+  - &filter-only-master
+    branches:
+      only:
+        - master
 
 version: 2
 jobs:
@@ -20,7 +17,6 @@ jobs:
       - run: yarn test
   deploy-website:
     docker:
-      # specify the version you desire here
       - image: circleci/node:8.11.1
     steps:
       - checkout
@@ -33,9 +29,10 @@ jobs:
             cd website && yarn install && GIT_USER=nicolaslopezj yarn run publish-gh-pages
 workflows:
   version: 2
-  build_and_deploy:
+  deploy_website:
     jobs:
-      - deploy-website
+      - deploy-website:
+          filters: *filter-only-master
   test:
     jobs:
       - test
