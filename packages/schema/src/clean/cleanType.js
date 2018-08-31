@@ -2,13 +2,23 @@ import getFieldType from '../getValidationErrors/getError/getFieldType'
 import isNil from 'lodash/isNil'
 
 export default async function(type, fieldSchema, value, info, ...args) {
-  const {clean} = await getFieldType(type)
+  info.type = fieldSchema.type
+  if (!info.type) {
+    throw new Error('Cleaning field with no type')
+  }
 
-  if (clean && !isNil(value)) {
-    value = await clean(value, info, ...args)
+  const {clean: rootFieldClean} = await getFieldType(type)
+
+  if (rootFieldClean && !isNil(value)) {
+    value = await rootFieldClean(value, info, ...args)
   }
 
   let needReClean = false
+
+  if (fieldSchema.type.__clean) {
+    needReClean = true
+    value = await fieldSchema.type.__clean(value, info, ...args)
+  }
 
   const {defaultValue} = fieldSchema
   if (isNil(value) && !isNil(defaultValue)) {
@@ -26,8 +36,14 @@ export default async function(type, fieldSchema, value, info, ...args) {
     value = await autoValue(value, info, ...args)
   }
 
-  if (needReClean && clean && !isNil(value)) {
+  const {clean} = fieldSchema
+  if (clean) {
+    needReClean = true
     value = await clean(value, info, ...args)
+  }
+
+  if (needReClean && rootFieldClean && !isNil(value)) {
+    value = await rootFieldClean(value, info, ...args)
   }
 
   return value
