@@ -41,7 +41,7 @@ await validate(bookSchema, {title: 'The Book',author: 'The author',releaseDate: 
 
 // The following will throw a ValidationError
 await validate(bookSchema, {title: 'The Book'}) // The author is missing
-await validate(bookSchema, {title: 'The Book',author: 'The author',releaseDate: 3}) // releaseDate should be type date
+await validate(bookSchema, {title: 'The Book', author: 'The author', releaseDate: 3}) // releaseDate should be type date
 ```
 
 ## Schema rules
@@ -50,7 +50,7 @@ There are several options available, the only required is `type`.
 
 The options available are:
 
-### Types
+### type
 
 The `type` has the following options:
 
@@ -98,7 +98,7 @@ Should be an array of values.
 
 Defines the default value for the field if nothing was given.
 
-### validate
+## validate
 
 This receives a function - which could be `async` - with the following arguments:
 
@@ -112,7 +112,7 @@ This receives a function - which could be `async` - with the following arguments
 With this function you can make a custom validation of the value, it should return the error message
 if any and nothing if it has been successfully validated
 
-#### Example, we will make a custom email validation without the use of the type `'email'`
+**Example, we will make a custom email validation without the use of the type `email`**
 
 ```js
 const schema = {
@@ -128,7 +128,7 @@ const schema = {
 }
 ```
 
-### clean
+## clean
 
 This receives a function - which could be `async` - with the following arguments:
 
