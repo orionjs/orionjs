@@ -34,6 +34,7 @@ export default ({returns}) => {
     returns: 'integer',
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
+      if (!paginated.options.limit) return 1
       return Math.ceil(count / paginated.options.limit)
     }
   })
@@ -44,6 +45,7 @@ export default ({returns}) => {
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
       const {skip, limit} = paginated.options
+      if (!limit) return false
       return skip + limit < count
     }
   })
