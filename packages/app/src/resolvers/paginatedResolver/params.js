@@ -7,7 +7,7 @@ export default ({params}) => ({
   limit: {
     type: 'integer',
     defaultValue: 20,
-    min: 1,
+    min: 0,
     max: 200
   },
   ...params
