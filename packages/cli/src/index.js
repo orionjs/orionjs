@@ -4,10 +4,12 @@ import start from './start'
 import build from './build'
 import colors from 'colors/safe'
 import create from './create'
+import checkVersion from './helpers/checkVersion'
 
 const run = function(action) {
   return async function(...args) {
     try {
+      await checkVersion()
       await action(...args)
     } catch (e) {
       console.error(colors.red('Error: ' + e.message))

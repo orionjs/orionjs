@@ -29,6 +29,10 @@ var _create = require('./create');
 
 var _create2 = _interopRequireDefault(_create);
 
+var _checkVersion = require('./helpers/checkVersion');
+
+var _checkVersion2 = _interopRequireDefault(_checkVersion);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var run = function run(action) {
@@ -41,24 +45,28 @@ var run = function run(action) {
             case 0:
               _context.prev = 0;
               _context.next = 3;
-              return action.apply(undefined, _args);
+              return (0, _checkVersion2.default)();
 
             case 3:
-              _context.next = 8;
-              break;
+              _context.next = 5;
+              return action.apply(undefined, _args);
 
             case 5:
-              _context.prev = 5;
+              _context.next = 10;
+              break;
+
+            case 7:
+              _context.prev = 7;
               _context.t0 = _context['catch'](0);
 
               console.error(_safe2.default.red('Error: ' + _context.t0.message));
 
-            case 8:
+            case 10:
             case 'end':
               return _context.stop();
           }
         }
-      }, _callee, this, [[0, 5]]);
+      }, _callee, this, [[0, 7]]);
     }));
 
     return function () {
