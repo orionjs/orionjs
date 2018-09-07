@@ -16,6 +16,7 @@
   "dependencies": {
     "babel-core": "^6.26.3",
     "babel-plugin-source-map-support": "^2.0.1",
+    "chokidar": "^2.0.4",
     "colors": "^1.2.1",
     "commander": "^2.15.1",
     "globby": "^8.0.1",

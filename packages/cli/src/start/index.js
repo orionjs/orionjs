@@ -5,6 +5,7 @@ import colors from 'colors/safe'
 import getModulesToWatch from '../helpers/getModulesToWatch'
 import defer from './defer'
 import startDB from './startDB'
+import watchProject from './watchProject'
 
 let hasChanges = false
 
@@ -22,10 +23,10 @@ const onDependencyChange = defer(async function() {
 }, 2000)
 
 const watch = function() {
-  fs.watch('./app', {recursive: true}, async function(event, file) {
+  watchProject(function(path) {
     if (!hasChanges) console.log('')
     hasChanges = true
-    console.log(colors.bold(`=> File changed -- ${file} -- restarting`))
+    console.log(colors.bold(`=> File changed -- ${path} -- restarting`))
     onAppChange()
   })
 
