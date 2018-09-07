@@ -17,8 +17,10 @@ import getViewer from './route/handler/getViewer'
 import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as micro from 'micro'
 import cache from './cache'
+import sleep from './helpers/sleep'
 
 export {
+  sleep,
   hashObject,
   cache,
   hook,
