@@ -2,17 +2,53 @@
 title: Hello World
 author: Nicolás López
 authorURL: https://github.com/nicolaslopezj
-authorFBID: 1163604637
 ---
 
-Hello world
+## Goodbye Meteor, hello Orionjs.
+
+When I first used Meteor, I was amazed. It was so fast to write, so easy, it
+felt like magic. But after some years, the apps I was creating required more
+complexity, the code base started to get bigger and everything became slow and
+buggy. Then I started to use apollo, without leaving Meteor, but it felt like
+using the wrong tool for the job.
 
 <!--truncate-->
 
-Mauris vestibulum ullamcorper nibh, ut semper purus pulvinar ut. Donec volutpat orci sit amet mauris malesuada, non pulvinar augue aliquam. Vestibulum ultricies at urna ut suscipit. Morbi iaculis, erat at imperdiet semper, ipsum nulla sodales erat, eget tincidunt justo dui quis justo. Pellentesque dictum bibendum diam at aliquet. Sed pulvinar, dolor quis finibus ornare, eros odio facilisis erat, eu rhoncus nunc dui sed ex. Nunc gravida dui massa, sed ornare arcu tincidunt sit amet. Maecenas efficitur sapien neque, a laoreet libero feugiat ut.
+The desition to start a new framework is not easy, you must commit for a long
+time, but I didn't found what I was looking for anywhere. So I decided to create
+Orionjs.
 
-Nulla facilisi. Maecenas sodales nec purus eget posuere. Sed sapien quam, pretium a risus in, porttitor dapibus erat. Sed sit amet fringilla ipsum, eget iaculis augue. Integer sollicitudin tortor quis ultricies aliquam. Suspendisse fringilla nunc in tellus cursus, at placerat tellus scelerisque. Sed tempus elit a sollicitudin rhoncus. Nulla facilisi. Morbi nec dolor dolor. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras et aliquet lectus. Pellentesque sit amet eros nisi. Quisque ac sapien in sapien congue accumsan. Nullam in posuere ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Proin lacinia leo a nibh fringilla pharetra.
+When designing how it will work, how the structure will be, and also thinking
+what was what Meteor did wrong I ended up with the following points.
 
-Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin venenatis lectus dui, vel ultrices ante bibendum hendrerit. Aenean egestas feugiat dui id hendrerit. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur in tellus laoreet, eleifend nunc id, viverra leo. Proin vulputate non dolor vel vulputate. Curabitur pretium lobortis felis, sit amet finibus lorem suscipit ut. Sed non mollis risus. Duis sagittis, mi in euismod tincidunt, nunc mauris vestibulum urna, at euismod est elit quis erat. Phasellus accumsan vitae neque eu placerat. In elementum arcu nec tellus imperdiet, eget maximus nulla sodales. Curabitur eu sapien eget nisl sodales fermentum.
+### Write as little as possible
 
-Phasellus pulvinar ex id commodo imperdiet. Praesent odio nibh, sollicitudin sit amet faucibus id, placerat at metus. Donec vitae eros vitae tortor hendrerit finibus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque vitae purus dolor. Duis suscipit ac nulla et finibus. Phasellus ac sem sed dui dictum gravida. Phasellus eleifend vestibulum facilisis. Integer pharetra nec enim vitae mattis. Duis auctor, lectus quis condimentum bibendum, nunc dolor aliquam massa, id bibendum orci velit quis magna. Ut volutpat nulla nunc, sed interdum magna condimentum non. Sed urna metus, scelerisque vitae consectetur a, feugiat quis magna. Donec dignissim ornare nisl, eget tempor risus malesuada quis.
+The most important thing in Orionjs is that you can achieve big thing with very
+little code, everything is made to be reused. This makes apps less complex and
+fail less.
+
+Orionjs automatically handles the GraphQL schema creation, validation,
+authentication and many more things that make you write code really fast.
+
+### Simple to use and learn
+
+Orionjs must always keep simple. All complex things like subscriptions (using
+GraphQL subscriptions), authentication (singing every request and with man in
+the middle protection) and connection with the server (apollo configuration) are
+handled for you and presented in an easy way.
+
+### Don't do it all
+
+When Meteor was created there was no consensus on a package system for Node, so
+they created their own. Add to that, managing the build system, create the
+communication layer between client and server, and all that pieces of code that
+make Meteor a big layer over Node. It feels like another ecosystem. I think if
+Meteor was created today it would try to do all that things.
+
+That's why Orionjs does only what it's not already done. It uses babel, Apollo,
+micro, MongoDB, and more.
+
+---
+
+I had great time writing with Meteor, but now, six years after it was created,
+it's time to turn the page.
