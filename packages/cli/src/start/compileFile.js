@@ -1,11 +1,12 @@
 import {transformFile} from 'babel-core'
 import writeFile from '../helpers/writeFile'
 import sourceMapSupport from 'babel-plugin-source-map-support'
+import sourceMapTrace from 'babel-plugin-stack-trace-sourcemap'
 import fs from 'fs'
 import path from 'path'
 
-const addSourceMapPath = function(path, code) {
-  const sourceMapPath = `${process.cwd()}/${path}.map`
+const addSourceMapPath = function(filePath, code) {
+  const sourceMapPath = `${path.basename(filePath)}.map`
   return `${code}\n\n//# sourceMappingURL=${sourceMapPath}`
 }
 
@@ -20,8 +21,11 @@ export default async function(relativeFilePath, dirPath = '.orion/build') {
 
   const babelOptions = {
     ast: false,
-    plugins: [sourceMapSupport],
-    sourceMaps: true
+    plugins: [sourceMapSupport, sourceMapTrace],
+    filename: relativeFilePath,
+    sourceMaps: true,
+    sourceRoot: filePath.replace('/' + relativeFilePath, ''),
+    sourceFileName: '/' + relativeFilePath
   }
 
   const {code, map} = await new Promise(function(resolve, reject) {
