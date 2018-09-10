@@ -8,6 +8,7 @@ let appProcess = null
 
 const restart = runOnce(async function() {
   if (appProcess) {
+    console.log('')
     console.log(colors.bold('=> Restarting...'))
     appProcess.kill()
     const port = process.env.PORT || 3000
