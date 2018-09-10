@@ -8,9 +8,16 @@ let appProcess = null
 const restart = runOnce(async function() {
   if (appProcess) {
     console.log(colors.bold('=> Restarting...'))
-    appProcess.kill()
-    await sleep(100)
+    await new Promise(function(resolve) {
+      appProcess.kill()
+      appProcess.on('exit', function(code, signal) {
+        if (signal === 'SIGTERM') {
+          resolve()
+        }
+      })
+    })
   }
+
   const options = global.processOptions
   appProcess = await runProcess({restart, options})
   console.log(colors.bold('=> App started\n'))

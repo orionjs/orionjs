@@ -18,7 +18,7 @@ export default async function({restart, options}) {
       ...process.env
     },
     cwd: process.cwd(),
-    detached: true,
+    detached: false,
     stdio: 'inherit',
     shell: true
   })
