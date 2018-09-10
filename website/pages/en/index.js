@@ -14,10 +14,6 @@ function docUrl(doc, language) {
   return `${siteConfig.baseUrl}docs/${language ? `${language}/` : ''}${doc}`
 }
 
-function pageUrl(page, language) {
-  return siteConfig.baseUrl + (language ? `${language}/` : '') + page
-}
-
 class Button extends React.Component {
   render() {
     return (
@@ -66,7 +62,7 @@ class HomeSplash extends React.Component {
           <ProjectTitle />
           <PromoSection>
             <Button href={docUrl('installation.html', language)}>Get started</Button>
-            <Button href={docUrl('basics.html', language)}>Learn the basics</Button>
+            <Button href={docUrl('basics.html', language)}>Read the docs</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -74,40 +70,64 @@ class HomeSplash extends React.Component {
   }
 }
 
-const Block = props => (
-  <Container padding={['bottom', 'top']} id={props.id} background={props.background}>
-    <GridBlock align="center" contents={props.children} layout={props.layout} />
-  </Container>
-)
-
 const Features = () => (
-  <Block layout="fourColumn">
-    {[
-      {
-        content: "You don't have to write anything twice",
-        // image: imgUrl('docusaurus.svg'),
-        // imageAlign: 'top',
-        title: 'Create reusable code'
-      },
-      {
-        content: 'Embrace GraphQL, MongoDB and more',
-        // image: imgUrl('docusaurus.svg'),
-        // imageAlign: 'top',
-        title: 'Use modern standards'
-      },
-      {
-        content:
-          "It's not difficult to learn how to use Orionjs and it doesn't propose any change in current standards",
-        title: 'Very intuitive'
-      },
-      {
-        content: 'Orionjs focuses on developer speed',
-        // image: imgUrl('docusaurus.svg'),
-        // imageAlign: 'top',
-        title: 'Write at maximum speed'
-      }
-    ]}
-  </Block>
+  <Container padding={['bottom', 'top']}>
+    <GridBlock
+      layout="threeColumn"
+      contents={[
+        {
+          title: 'Light and powerful',
+          image: imgUrl('light.svg'),
+          imageAlign: 'top',
+          content:
+            'Orionjs is a fast and lightweight framework, it does not do more than what it needs. No more bloated libraries.'
+        },
+        {
+          title: 'Solid foundations',
+          image: imgUrl('foundations.svg'),
+          imageAlign: 'top',
+          content:
+            "Orionjs it's created on top of state of the art frameworks for Nodejs, like apollo and micro."
+        },
+        {
+          title: 'Developer focused',
+          image: imgUrl('developer.svg'),
+          imageAlign: 'top',
+          content:
+            "Orionjs it's made for developers, it's very easy to learn and will allow you to create apps faster than ever."
+        }
+      ]}
+    />
+    <br />
+    <br />
+    <br />
+    <GridBlock
+      layout="threeColumn"
+      contents={[
+        {
+          title: 'GraphQL centred',
+          image: imgUrl('graphql.svg'),
+          imageAlign: 'top',
+          content:
+            "Don't write any repeated code. Orionjs creates automatically the GraphQL schema for you."
+        },
+        {
+          title: 'Front-end agnostic',
+          image: imgUrl('frontend.svg'),
+          imageAlign: 'top',
+          content:
+            'You can use Orionjs with any front-end, just connect using Apollo client or other.'
+        },
+        {
+          title: 'Easy to use subscriptions',
+          image: imgUrl('subscriptions.svg'),
+          imageAlign: 'top',
+          content:
+            'Orionjs is GraphQL subscriptions compilant, with a super-easy to use API on the server.'
+        }
+      ]}
+    />
+  </Container>
 )
 
 class Index extends React.Component {
