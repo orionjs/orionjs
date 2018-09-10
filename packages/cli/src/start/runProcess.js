@@ -1,4 +1,4 @@
-import {exec} from 'child_process'
+import {spawn} from 'child_process'
 import colors from 'colors/safe'
 import onExit from '../helpers/onExit'
 import writeFile from '../helpers/writeFile'
@@ -7,20 +7,22 @@ let isExited = false
 
 export default async function({restart, options}) {
   const MONGO_URL = process.env.MONGO_URL || global.localMongoURI
-  const inspect = options.shell ? '--inspect' : ''
 
-  const command = `node ${inspect} .orion/build/index.js`
-  let appProcess = exec(command, {
+  const args = []
+
+  if (options.shell) args.push('--inspect')
+
+  args.push('.orion/build/index.js')
+
+  const appProcess = spawn('node', args, {
     env: {
       MONGO_URL,
       ORION_DEV: 'local',
       ...process.env
     },
-    cwd: process.cwd()
+    cwd: process.cwd(),
+    stdio: 'inherit'
   })
-
-  appProcess.stdout.pipe(process.stdout)
-  appProcess.stderr.pipe(process.stderr)
 
   await writeFile('.orion/process', appProcess.pid)
 

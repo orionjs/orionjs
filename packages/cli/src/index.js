@@ -5,6 +5,7 @@ import build from './build'
 import colors from 'colors/safe'
 import create from './create'
 import checkVersion from './helpers/checkVersion'
+import './handleErrors'
 
 const run = function(action) {
   return async function(...args) {
