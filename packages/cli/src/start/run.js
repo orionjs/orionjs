@@ -6,13 +6,22 @@ import isPortInUse from '../helpers/isPortInUse'
 
 let appProcess = null
 
+const arePortsInUse = async function() {
+  const port = process.env.PORT || 3000
+  if (await isPortInUse(port)) return true
+  if (global.processOptions.shell) {
+    if (await isPortInUse(9229)) return true
+  }
+
+  return false
+}
+
 const restart = runOnce(async function() {
   if (appProcess) {
     console.log('')
     console.log(colors.bold('=> Restarting...'))
     appProcess.kill()
-    const port = process.env.PORT || 3000
-    for (let i = 0; await isPortInUse(port); i++) {
+    for (let i = 0; await arePortsInUse(); i++) {
       await sleep(10)
       // 5 secs
       if (i > 1000 * 5) {
