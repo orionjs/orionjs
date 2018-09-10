@@ -10,8 +10,8 @@ function imgUrl(img) {
   return `${siteConfig.baseUrl}img/${img}`
 }
 
-function docUrl(doc, language) {
-  return `${siteConfig.baseUrl}docs/${language ? `${language}/` : ''}${doc}`
+function docUrl(doc) {
+  return `${siteConfig.baseUrl}docs/${doc}`
 }
 
 class Button extends React.Component {
@@ -55,14 +55,14 @@ const PromoSection = props => (
 
 class HomeSplash extends React.Component {
   render() {
-    const language = this.props.language || ''
     return (
       <SplashContainer>
         <div className="inner">
+          <img className="home-logo" src={imgUrl('logo-black.svg')} alt="Orionjs logo" />
           <ProjectTitle />
           <PromoSection>
-            <Button href={docUrl('installation.html', language)}>Get started</Button>
-            <Button href={docUrl('basics.html', language)}>Read the docs</Button>
+            <Button href={docUrl('installation.html')}>Get started</Button>
+            <Button href={docUrl('basics.html')}>Read the docs</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -132,14 +132,11 @@ const Features = () => (
 
 class Index extends React.Component {
   render() {
-    const language = this.props.language || ''
-
     return (
       <div>
-        <HomeSplash language={language} />
+        <HomeSplash />
         <div className="mainContainer">
           <Features />
-          {/* <Showcase language={language} /> */}
         </div>
       </div>
     )

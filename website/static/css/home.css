@@ -10,3 +10,8 @@
 .imageAlignTop .blockImage {
   max-width: 150px;
 }
+
+.home-logo {
+  height: 80px;
+  margin-bottom: 20px;
+}

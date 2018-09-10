@@ -20,22 +20,22 @@ function docUrl(doc, language) {
 
 class Help extends React.Component {
   render() {
-    const language = this.props.language || ''
     const supportLinks = [
       {
-        content: `Learn more using the [documentation on this site.](${docUrl(
-          'doc1.html',
-          language
-        )})`,
-        title: 'Browse Docs'
+        title: 'Browse Docs',
+        content: `Learn more using the [documentation on this site](${docUrl(
+          'basics.html'
+        )}), maybe you are just missing something.`
       },
       {
-        content: 'Ask questions about the documentation and project',
-        title: 'Join the community'
+        title: 'Ask on stackoverflow',
+        content:
+          '[Stack overflow](https://stackoverflow.com/questions/tagged/orionjs) is the fastest way to get answers. Use the tag [orionjs](https://stackoverflow.com/questions/tagged/orionjs) to let people find your question faster.'
       },
       {
-        content: "Find out what's new with this project",
-        title: 'Stay up to date'
+        title: 'Open an issue on Github',
+        content:
+          'If you think it you found a bug, please open a [new issue](https://github.com/orionjs/orionjs/issues/new) on the Orionjs repository.'
       }
     ]
 
@@ -46,8 +46,12 @@ class Help extends React.Component {
             <header className="postHeader">
               <h1>Need help?</h1>
             </header>
-            <p>This project is maintained by a dedicated group of people.</p>
             <GridBlock contents={supportLinks} layout="threeColumn" />
+            <br />
+            <br />
+            <div>
+              <p>If you need paid support, please contact admin@orionsoft.io.</p>
+            </div>
           </div>
         </Container>
       </div>
