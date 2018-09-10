@@ -9,7 +9,6 @@ export default function({error, send, response}) {
     const statusCode = 500
     const data = {error: 500, message: 'Internal server error'}
 
-    console.error('Unhandled error in route')
     console.error(error)
     send(response, statusCode, data)
   }
