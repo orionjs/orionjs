@@ -5,7 +5,8 @@ export default function(callback) {
   const options = {
     ignoreInitial: true
   }
-  chokidar.watch('./app', options).on('all', (event, filepath) => {
+  const projectPath = path.resolve('./app')
+  chokidar.watch(projectPath, options).on('all', (event, filepath) => {
     const relative = path.relative(process.cwd(), filepath)
     callback(relative)
   })
