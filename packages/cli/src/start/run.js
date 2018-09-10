@@ -14,7 +14,7 @@ const restart = runOnce(async function() {
     for (let i = 0; await isPortInUse(port); i++) {
       await sleep(10)
       // 5 secs
-      if (i > 100 * 5) {
+      if (i > 1000 * 5) {
         throw new Error('Port is in use')
       }
     }
