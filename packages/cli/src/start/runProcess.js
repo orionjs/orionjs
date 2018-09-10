@@ -13,13 +13,14 @@ export default async function({restart, options}) {
   const [first, ...args] = command.split(' ')
   let appProcess = spawn(first, args, {
     env: {
-      ...process.env,
       MONGO_URL,
-      ORION_DEV: 'local'
+      ORION_DEV: 'local',
+      ...process.env
     },
     cwd: process.cwd(),
     detached: true,
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell: true
   })
 
   await writeFile('.orion/process', appProcess.pid)
