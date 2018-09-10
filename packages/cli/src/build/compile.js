@@ -7,7 +7,7 @@ import compileFile from '../start/compileFile'
 export default async function(dirPath) {
   const finalDirPath = path.join(dirPath, 'app')
   await execute(`rm -rf ${finalDirPath}`)
-  const files = await globby('app/**/*.js')
+  const files = await globby('app/**/*')
   try {
     await Promise.all(files.map(file => compileFile(file, finalDirPath)))
     return true

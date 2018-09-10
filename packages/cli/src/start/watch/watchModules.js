@@ -1,6 +1,6 @@
 import chokidar from 'chokidar'
-import path from 'path'
-import getModulesToWatch from '../helpers/getModulesToWatch'
+import getModulesToWatch from '../../helpers/getModulesToWatch'
+import colors from 'colors/safe'
 
 export default function(callback) {
   const options = {
@@ -11,8 +11,8 @@ export default function(callback) {
 
   for (const modulePath of paths) {
     chokidar.watch(modulePath, options).on('all', (event, filepath) => {
-      const relative = path.relative(process.cwd(), filepath)
-      callback(relative)
+      console.log(colors.bold(`=> Modules updated -- restarting`))
+      callback()
     })
   }
 }
