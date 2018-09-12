@@ -105,7 +105,7 @@ const Features = () => (
       layout="threeColumn"
       contents={[
         {
-          title: 'GraphQL centred',
+          title: 'GraphQL centered',
           image: imgUrl('graphql.svg'),
           imageAlign: 'top',
           content:
