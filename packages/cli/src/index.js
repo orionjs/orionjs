@@ -37,4 +37,10 @@ program
   .option('--kit [kit]', 'Which starter kit to use')
   .action(run(create))
 
+program.version(require('../package.json').version, '-v --version')
+
 program.parse(process.argv)
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp()
+}
