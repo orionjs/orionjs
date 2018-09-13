@@ -3,7 +3,7 @@ import getModel from './getModel'
 import getParams from './params'
 import setOptions from './setOptions'
 
-export default function({returns, collection, params, getCursor}) {
+export default function({returns, collection, params, getCursor, ...otherOptions}) {
   const getPaginatedCursor = async (params, viewer) => {
     if (getCursor) {
       return await getCursor(params, viewer)
@@ -25,6 +25,7 @@ export default function({returns, collection, params, getCursor}) {
         viewer,
         options
       }
-    }
+    },
+    ...otherOptions
   })
 }
