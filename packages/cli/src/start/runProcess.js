@@ -28,7 +28,6 @@ export default async function({restart, options}) {
   await writeFile('.orion/process', appProcess.pid)
 
   appProcess.on('exit', function(code, signal) {
-    console.log('exited with signal', signal)
     if (code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
     } else {
       console.log(colors.bold('Exit code: ' + code))
