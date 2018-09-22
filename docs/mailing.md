@@ -31,4 +31,4 @@ await sendEmail({
 })
 ```
 
-All options will be passed to [nodemailer `sendMail` function](https://nodemailer.com/usage/#sending-mail).
+All options will be passed to [nodemailer `sendMail` function](https://nodemailer.com/message/).
