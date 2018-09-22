@@ -1,7 +1,5 @@
 # Orionjs
 
-A framework for modern Nodejs apps
-
-Deeply integrated with GraphQL.
+A Node framework to build GraphQL server apps.
 
 [orionjs.com](https://orionjs.com)
