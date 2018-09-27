@@ -40,7 +40,8 @@ export default ({Users, Session, twoFactor}) =>
         throw new ConfigurationError('Two factor issuer is required in configuration')
       }
 
-      const url = `otpauth://totp/${issuer}:${email}?secret=${base32}&issuer=${issuer}`
+      const encoded = encodeURIComponent(`${issuer}:${email}`)
+      const url = `otpauth://totp/${encoded}?secret=${base32}&issuer=${issuer}`
 
       const qrCode = qr.imageSync(url, {type: 'svg'})
 
