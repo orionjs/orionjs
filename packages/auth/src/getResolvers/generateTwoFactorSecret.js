@@ -41,7 +41,8 @@ export default ({Users, Session, twoFactor}) =>
       }
 
       const encoded = encodeURIComponent(`${issuer}:${email}`)
-      const url = `otpauth://totp/${encoded}?secret=${base32}&issuer=${issuer}`
+      const urlIssuer = encodeURIComponent(issuer)
+      const url = `otpauth://totp/${encoded}?secret=${base32}&issuer=${urlIssuer}`
 
       const qrCode = qr.imageSync(url, {type: 'svg'})
 
