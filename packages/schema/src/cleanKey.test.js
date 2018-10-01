@@ -87,3 +87,22 @@ test('clean key with custom clean function', async () => {
   expect(await cleanKey(schema, 'services', {password: '123456'})).toEqual({password: '12'})
   expect(calls).toBe(1)
 })
+
+test('should handle $ correctly', async () => {
+  const Email = {
+    address: {
+      type: String
+    },
+    verified: {
+      type: Boolean
+    }
+  }
+  const user = {
+    emails: {
+      type: [Email]
+    }
+  }
+
+  const cleaned = await cleanKey(user, 'emails.$.verified', 'true')
+  expect(cleaned).toEqual(true)
+})

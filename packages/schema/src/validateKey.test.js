@@ -63,3 +63,21 @@ test('dont filter keys not in schema if specified', async () => {
     Errors.NOT_IN_SCHEMA
   )
 })
+
+test('should handle $ correctly', async () => {
+  const Email = {
+    address: {
+      type: String
+    },
+    verified: {
+      type: Boolean
+    }
+  }
+  const user = {
+    emails: {
+      type: [Email]
+    }
+  }
+
+  expect(await validateKey(user, 'emails.$.verified', true)).toBeNull()
+})

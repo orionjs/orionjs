@@ -1,8 +1,7 @@
 import validatePush from './validatePush'
 import validateUnset from './validateUnset'
 import validateInc from './validateInc'
-import fromDot from '../../../database/dot/fromDot'
-import {validate} from '@orion-js/schema'
+import validateSet from './validateSet'
 
 const shouldCheck = function(key) {
   if (key === '$pushAll') throw new Error('$pushAll is not supported, use $push + $each')
@@ -13,7 +12,7 @@ export default async function({schema, operationDoc, operation}) {
   if (!shouldCheck(operation)) return
 
   if (operation === '$set') {
-    await validate(schema, fromDot(operationDoc), {omitRequired: true})
+    await validateSet({schema, operationDoc, operation})
   } else if (operation === '$unset') {
     await validateUnset({schema, operationDoc, operation})
   } else if (operation === '$inc') {

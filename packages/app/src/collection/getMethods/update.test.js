@@ -81,14 +81,13 @@ it('should do $pull operation', async () => {
 
   const itemId = await Tests.insert({tags: ['1', '2', '3', '4']})
 
-  await Tests.update(itemId, {$pull: {'tags': '1'}})
-  await Tests.update(itemId, {$pull: {'tags': {$in: ['3', '4']}}})
+  await Tests.update(itemId, {$pull: {tags: '1'}})
+  await Tests.update(itemId, {$pull: {tags: {$in: ['3', '4']}}})
 
   expect(await Tests.findOne(itemId)).toEqual({
     _id: itemId,
     tags: ['2']
   })
-
 })
 
 it('should update documents passing validation', async () => {
@@ -232,4 +231,47 @@ it('run custom model validation when inserting and updating', async () => {
 
   expect(called).toBe(2)
   expect(called2).toBe(1)
+})
+
+it('should handle $ correctly', async () => {
+  const Email = {
+    address: {type: String},
+    verified: {type: Boolean}
+  }
+  const schema = {
+    _id: {type: 'ID'},
+    emails: {type: [Email]}
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
+
+  const userId = await Tests.insert({
+    emails: [
+      {
+        address: 'nicolas@orionsoft.io',
+        verified: false
+      }
+    ]
+  })
+
+  await Tests.update(
+    {_id: userId, 'emails.address': 'nicolas@orionsoft.io'},
+    {
+      $set: {'emails.$.verified': 'true'}
+    }
+  )
+
+  expect(await Tests.findOne(userId)).toEqual({
+    _id: userId,
+    emails: [
+      {
+        address: 'nicolas@orionsoft.io',
+        verified: true
+      }
+    ]
+  })
 })

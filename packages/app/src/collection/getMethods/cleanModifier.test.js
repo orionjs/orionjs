@@ -182,3 +182,22 @@ it('cleans $unset correctly', async () => {
     $unset: {name: '', info: '', age: ''}
   })
 })
+
+it('should handle $ correctly', async () => {
+  const Email = {
+    address: {type: String},
+    verified: {type: Boolean}
+  }
+  const schema = {
+    _id: {type: 'ID'},
+    emails: {type: [Email]}
+  }
+
+  const cleaned = await cleanModifier(schema, {
+    $set: {'emails.$.verified': 'true'}
+  })
+
+  expect(cleaned).toEqual({
+    $set: {'emails.$.verified': true}
+  })
+})

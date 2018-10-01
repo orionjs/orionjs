@@ -16,6 +16,7 @@ import addTwoFactorUserResolvers from './addTwoFactorUserResolvers'
 import disableTwoFactor from './disableTwoFactor'
 import registerCheckers from './registerCheckers'
 import {setOptions} from '../optionsStore'
+import sendVerificationEmail from './sendVerificationEmail'
 
 export default function(options) {
   options.Sessions = Sessions(options)
@@ -59,6 +60,7 @@ export default function(options) {
     getUserByID: getUserByID(options),
     getUserByEmail: getUserByEmail(options),
     createUser: createUser(options),
+    sendVerificationEmail: sendVerificationEmail(options),
     changePassword: changePassword(options),
     forgotPassword: forgotPassword(options),
     resetPassword: resetPassword(options),
