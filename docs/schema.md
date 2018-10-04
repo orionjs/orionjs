@@ -104,7 +104,7 @@ This receives a function - which could be `async` - with the following arguments
 
 - `fieldValue`: It's the value for the given field.
 - `options`: An object with the following keys:
-  - `schema`: Tthe full schema you are validating against.
+  - `schema`: The full schema you are validating against.
   - `currentSchema`: The subpart of the schema you are validating.
   - `doc`: The full object you are validating.
   - `currentDoc`: The subpart of the object you are validating.
