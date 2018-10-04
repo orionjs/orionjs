@@ -18,7 +18,7 @@ Resolvers in Orionjs are the controllers or main functions to execute routines, 
 ```
 
 - `resolvers`: The directory of the set of resolvers.
-- `Resolver1` represents the set of resolvers belonging to a specific collection, resolving to the index in charge of importing them all for its call and execution.
+- `Resolver1`: Represents the set of resolvers belonging to a specific collection, resolving to the index in charge of importing them all for its call and execution.
 
 ### Example of the resolvers directory index
 
