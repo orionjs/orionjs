@@ -4,8 +4,6 @@ title: Resolvers
 sidebar_label: Resolvers
 ---
 
-## Resolvers
-
 Resolvers in Orionjs are the controllers or main functions to execute routines, query the database and return data with defined structures. These are divided into two large types of resolvers, the resolvers of the application and the resolvers of models. In the case of the resolvers of the application are generally defined to return data with the structures of the database, and the resolvers of models return dynamic information, generally not defined in the schemas of the application.
 
 ### The structure of the main resolvers of the application
