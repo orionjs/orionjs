@@ -4,10 +4,10 @@ title: Schema
 sidebar_label: Schema
 ---
 
-Orionjs schema has two main purposes. First, it describes the structure of each Model, with this
-you automatically get the GraphQL schema. Second, if you specify a Model in the setup of
-a Collection, it will validate the structure before it's get inserted or updated into the MongoDB.
-You can also use the `validate` function which will throw a `ValidationError` if the object doesn't
+Orionjs schema has two main purposes. First, it describes the structure of each Model, which will set
+automatically the GraphQL schema for that Model. Second, if you specify a Model in the setup of
+a Collection, it will validate the structure of a document before it's get inserted or updated into the MongoDB.
+You can also use the [`validate`](https://orionjs.com/docs/models#validate-and-clean) Model function which will throw a `ValidationError` if the object doesn't
 fit the given schema. It's important to note that `validate` is `async`.
 
 ## Basic Usage
@@ -50,16 +50,16 @@ There are several options available, the only required is `type`.
 
 The options available are:
 
-### type
+### Type
 
-The `type` has the following options:
+The `type` property has the following options:
 
 - `String` or `'string'`.
 - `Number` or `'number'`.
 - `Date` or `'date'`.
 - `Boolean` or `'boolean'`.
-- `'ID'` allows you to save an id which could be a string or an integer.
-- `'email'` checks if the email has a valid format.
+- `'ID'` allows you to save an id, which could be a string or an integer.
+- `'email'` checks if the email inserted has a valid format.
 - `'integer'` allows you to save integers.
 - `'blackbox'` allows you to save any object.
 - Custom, you can set as a type any Model.
@@ -67,13 +67,13 @@ The `type` has the following options:
 All the types can be used as array, for example if you want an array of `String` you should use
 `[String]`.
 
-### label
+### Label
 
-The `label` should be a `String`, it's used by [orionjs-react-autoform](https://github.com/orionjs/orionjs-react-autoform 'orionjs-react-autoform').
+The `label` should be a `String`. It's used by [orionjs-react-autoform](https://github.com/orionjs/orionjs-react-autoform 'orionjs-react-autoform').
 
 ### description
 
-The `description` should be a `String`, it will be the description for GraphQL and it's used by [orionjs-react-autoform](https://github.com/orionjs/orionjs-react-autoform 'orionjs-react-autoform')
+The `description` should be a `String`. It will be the description for GraphQL and it's used by [orionjs-react-autoform](https://github.com/orionjs/orionjs-react-autoform 'orionjs-react-autoform')
 .
 
 ### optional
@@ -102,12 +102,12 @@ Defines the default value for the field if nothing was given.
 
 This receives a function - which could be `async` - with the following arguments:
 
-- `fieldValue`: it's the value for the given field.
-- `options`: an object with the following keys:
-  - `schema`: the full schema you are validating against.
+- `fieldValue`: It's the value for the given field.
+- `options`: An object with the following keys:
+  - `schema`: The full schema you are validating against.
   - `currentSchema`: The subpart of the schema you are validating.
-  - `doc`: the full object you are validating.
-  - `currentDoc`: the subpart of the object you are validating.
+  - `doc`: The full object you are validating.
+  - `currentDoc`: The subpart of the object you are validating.
 
 With this function you can make a custom validation of the value, it should return the error message
 if any and nothing if it has been successfully validated
@@ -132,10 +132,10 @@ const schema = {
 
 This receives a function - which could be `async` - with the following arguments:
 
-- `fieldValue`: it's the value for the given field.
-- `options`: an object with the following keys:
-  - `doc`: the full object you are validating.
-  - `currentDoc`: the subpart of the object you are validating.
+- `fieldValue`: It's the value for the given field.
+- `options`: An object with the following keys:
+  - `doc`: The full object you are validating.
+  - `currentDoc`: The subpart of the object you are validating.
 
 With this function you can make a custom clean of the value, it should return the new value for this
 field
