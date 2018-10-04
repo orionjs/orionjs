@@ -26,7 +26,7 @@ export default ({endpointURL, batchInterval, canRetry}) => {
       return !!error
     },
     delay(count, operation, error) {
-      return 1000 * Math.random()
+      return count * 1000 * Math.random()
     }
   })
 
