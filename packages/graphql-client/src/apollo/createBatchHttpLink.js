@@ -17,16 +17,16 @@ export default ({endpointURL, batchInterval, canRetry}) => {
     attempts(count, operation, error) {
       if (!canRetry) return false
       if (typeof canRetry === 'function') return canRetry(count, operation, error)
-      if (count > 10) return false
       if (error && error.result && error.result.error === 'AuthError') {
         if (error.result.message === 'nonceIsInvalid') {
           return count < 10
         }
       }
+      if (count > 4) return false
       return !!error
     },
     delay(count, operation, error) {
-      return count * 1000 * Math.random()
+      return 1000 * Math.random()
     }
   })
 
