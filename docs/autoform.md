@@ -45,7 +45,7 @@ export default Autoform
 
 ## Usage
 
-#### Client-side
+### Client-side
 
 `Autoform` can be called as a React Component:
 
@@ -124,7 +124,16 @@ export default class Create extends React.Component {
 }
 ```
 
-#### Server-side
+Other props that Autoform can use are:
+
+- `schema`: It allows to specify a schema directly from an object in the React Component.
+- `clean`: By default, `Autoform` uses the [`clean`](https://orionjs.com/docs/models#validate-and-clean) method from OrionJS, but it can receive a custom `clean` method.
+- `validate`: By default, `Autoform` uses the [`validate`](https://orionjs.com/docs/models#validate-and-validate) method from OrionJS, but it can receive a custom `validate` method.
+- `omit`: It receives an array containing the names of the elements in the schema you don't want to render as fields.
+- `only`: It receives an array containing only the names of the elements in the schema you want to render.
+- `fragment`: Only use this property when using the Autoform component inside a [`React.Fragment`](https://reactjs.org/docs/fragments.html).
+
+### Server-side
 
 For this example, the `insertMovie` mutation should already be declared in the `index.js` file in the root of the `resolvers` folder, and have this structure:
 
