@@ -6,7 +6,7 @@ sidebar_label: Models
 
 ## Create a model
 
-The models in Orionjs define the structure of a collection which are its variables and types and at the same time it validates that the data entering or leaving the collection are correct, that they comply with the defined structure, but also the models have resolvers that can do direct queries to the database in Mongo to obtain custom data.
+The models in Orionjs define the structure of a collection which are its variables and types. It validates that the data entering or leaving the collection is coherent with the defined structure in the schema, and allows queries and operations to the database in Mongo through the use of resolvers.
 
 ```
 --- models
@@ -23,7 +23,7 @@ By convention the models are created in the app/models folder, but you can creat
 import {Model} from '@orion-js/app'
 
 export default new Model({
-  name: 'MyModel',
+  name: 'Model1',
   schema: () => require('./schema'),
   resolvers: () => require('./resolvers')
 })
@@ -35,7 +35,7 @@ export default new Model({
 
 ### Schema
 
-The schema you pass to the model represents the static data. For exmaple, the data saved in the database.
+The schema you pass to the model represents the static data, like the data saved in the database.
 
 If you pass a model to a collection, when you insert or update an item it will be validated against the model schema.
 
@@ -62,7 +62,7 @@ export default {
 
 ### Resolvers
 
-Model resolvers represents dynamic variables, you can create them to obtain custom data that aren't directly in the database and not represented in the model schema.
+Model resolvers represents dynamic variables. You can create them to obtain custom data that aren't directly present in the database or represented in the model schema.
 Taking the previous example of the credit card, this would be a resolver to obtain user specific data.
 
 #### Obtain the owner name example.
@@ -80,13 +80,13 @@ export default resolver({
 })
 ```
 
-- `card` : It contains the data of an especific credit card `(_id, userId, last4, isDefault)`.
+- `card` : Variable that contains the data of an especific credit card `(_id, userId, last4, isDefault)`.
 - `params` : This resolver can be called as a function and receive parameters.
-- `viewer` : Contains meta data from the user's session. For example `userId`.
+- `viewer` : Contains meta data from the user's session. For example, `userId`.
 
 ## Clone a model
 
-Sometimes you need a copy of your model with some changes. For example when creating a update resolver, you want to create a new model that has all fields except `_id` or `createdAt`.
+Sometimes you need a copy of your model with some changes. For example when creating a update resolver, you want to create a new model that has all the model fields except `_id` or `createdAt`.
 
 ```js
 Model.clone({
@@ -98,9 +98,22 @@ Model.clone({
 ```
 
 - `name`: The new name of the model.
-- `omitFields`: An array of the schema fields you want to omit in the new model.
-- `pickFields`: An array of the schema fields you want to pass to the new model. You must use `omitFields` or `pickFields` but not both.
-- `mapFields`: Optional, a function that receives a field of the schema and returns a replacement for that field. This can be used to update the `optional` option for example
+- `omitFields`: Optional. An array of the schema fields you want to omit in the new model.
+- `pickFields`: Optional. An array of the schema fields you want to pass to the new model. You may use `omitFields` or `pickFields`, but not both at the same time.
+- `mapFields`: Optional. A function that receives a field of the schema and returns a replacement for that field.
+
+#### Clone model example
+
+```js
+Model.clone({
+  name: 'ModelClone',
+  omitFields: ['_id, last4'],
+  mapFields(field, key) {
+    field.optional = true
+    return field
+  }
+})
+```
 
 ## Init item
 
@@ -109,3 +122,19 @@ Orionjs initializes items automatically when they come from the database, but if
 ## Validate and clean
 
 The model exposes method to validate items directly against it's schema. `Model.validate(data)` and `Model.clean(data)`.
+
+#### Examples
+
+`Model.validate(data)` can be use to check the legitimacy of an object according to the schema
+
+```js
+import Model1 from 'app/models/Model1'
+
+try {
+  await Model1.validate(data)
+} catch (error) {
+  return 'missing Option'
+}
+```
+
+On the other side, `Model1.clean(data)` removes all information inconsistent with the schema.
