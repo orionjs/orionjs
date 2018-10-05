@@ -35,9 +35,9 @@ await sendEmail({
 
 All options will be passed to [nodemailer `sendMail` function](https://nodemailer.com/message/).
 
-### React
+### ReactDomServer
 
-Alternatively, instead of `text`, you can set a `html` property that can receive a `React Component` template, allowing a more custom style to the sended emails.
+Alternatively, instead of `text`, you can set a `html` property that can receive a [`React Component`](https://reactjs.org/docs/react-dom-server.html) template, allowing a more custom style to the sended emails.
 
 ```js
 import {sendEmail} from '@orion-js/mailing'
