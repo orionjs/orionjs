@@ -1,7 +1,8 @@
----
+basic---
 id: resolvers
 title: Resolvers
 sidebar_label: Resolvers
+
 ---
 
 Resolvers in Orionjs are the controllers or main functions to execute routines, query the database and return data with defined structures. These are divided into two large types of resolvers, the resolvers of the application and the resolvers of models. In the case of the resolvers of the application are generally defined to return data with the structures of the database, and the resolvers of models return dynamic information, generally not defined in the schemas of the application.
@@ -30,13 +31,13 @@ export default {
 }
 ```
 
-`resolversSchemas` is responsible for validating both the existence and the correct structure of the imported resolvers, since they can be of type [`simpleResolver`](https://orionjs.com/docs/resolvers#simple-resolver), [`mutation`](https://orionjs.com/docs/resolvers#mutation), [`crudResolver`](https://orionjs.com/docs/resolvers#crud-resolver), and [`paginatedResolver`](https://orionjs.com/docs/resolvers#paginated-resolver).
+`resolversSchemas` is responsible for validating both the existence and the correct structure of the imported resolvers, since they can be of type [`basic resolver`](https://orionjs.com/docs/resolvers#basic-resolver), [`mutation`](https://orionjs.com/docs/resolvers#mutation), [`crudResolver`](https://orionjs.com/docs/resolvers#crud-resolver), and [`paginatedResolver`](https://orionjs.com/docs/resolvers#paginated-resolver).
 
 ## Resolver types
 
-### Simple resolver
+### Basic resolver
 
-simpleResolvers are controllers that can receive parameters and use them for a specific calculation, or to make a GraphQL Query to the database to return an element with its defined schema or of some other specific type.
+Basic resolvers are controllers that can receive parameters and use them for a specific calculation, or to make a GraphQL Query to the database to return an element with its defined schema or of some other specific type.
 
 ```js
 import {resolver} from '@orion-js/app'
@@ -60,7 +61,7 @@ export default resolver({
 
 ### Paginated resolver
 
-paginatedResolvers are used to get MongoDB cursors for a GraphQL Query, into a paginated list. Notice the `async getCursor()` function with respect to the `async resolve()` function in the [`simpleResolver`](https://orionjs.com/docs/resolvers#simple-resolver).
+paginatedResolvers are used to get MongoDB cursors for a GraphQL Query, into a paginated list. Notice the `async getCursor()` function with respect to the `async resolve()` function in the [`basicResolver`](https://orionjs.com/docs/resolvers#basic-resolver).
 
 ```js
 import {paginatedResolver} from '@orion-js/app'
@@ -77,7 +78,7 @@ export default paginatedResolver({
 })
 ```
 
-`paginatedResolvers` also can receive parameters like in `simpleResolvers`:
+`paginatedResolvers` also can receive parameters like in `basicResolvers`:
 
 ```js
 import {paginatedResolver} from '@orion-js/app'
