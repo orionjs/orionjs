@@ -6,7 +6,20 @@ sidebar_label: Files
 
 ## Initializing
 
-OrionJS provides file upload and management through the [`file-manager package`](https://github.com/orionjs/orionjs/blob/master/packages/file-manager)
+OrionJS provides file upload and management through the [`file-manager package`](https://github.com/orionjs/orionjs/blob/master/packages/file-manager).
+
+```sh
+yarn install @orion-js/file-manager
+```
+
+## Configuration
+
+The configuration of `file-manager` is done by setting the following environment variables:
+
+- `AWS_S3_ACCESS_KEY_ID`: A valid AWS Access Key used along with the AWS_S3_SECRET_ACCESS_KEY to cryptographically sign programmatic AWS requests.
+- `AWS_S3_SECRET_ACCESS_KEY`: A valid AWS Secret Access Key corresponding to the previous key.
+- `AWS_S3_BUCKETNAME`: The name of the bucket where uploaded files will be storaged into.
+- `AWS_S3_REGION`: The region where the bucket resides.
 
 To enable file management you must pass the options when initializing the File-Manager resolvers.
 
@@ -14,10 +27,10 @@ To enable file management you must pass the options when initializing the File-M
 import {resolvers, setupFileManager} from '@orion-js/file-manager'
 
 const options = {
-  accessKeyId: AWS_S3_ACCESS_KEY_ID,
-  secretAccessKey: AWS_S3_SECRET_ACCESS_KEY,
-  bucket: AWS_S3_BUCKETNAME,
-  region: AWS_S3_REGION,
+  accessKeyId: <AWS_S3_ACCESS_KEY_ID>,
+  secretAccessKey: <AWS_S3_SECRET_ACCESS_KEY>
+  bucket: <AWS_S3_BUCKETNAME>,
+  region: <AWS_S3_REGION>,
   basePath: 'basePath',
   canUpload: function(params, viewer) {
     return true
