@@ -15,7 +15,7 @@ yarn install @orion-js/mailing
 The configuration of `mailing` is done by setting the following environment variables:
 
 - `MAIL_URL`: You must pass a valid SMTP url. If you don't pass any, all mails sent will be logged in the console.
-- `MAIL_FROM`: A valid from address. You can also the pass `from` option when calling `sendEmail`.
+- `MAIL_FROM`: A valid from address. You can also pass the `from` option when calling `sendEmail`.
 
 ## Sending emails
 
