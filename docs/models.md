@@ -12,12 +12,13 @@ The models in Orionjs define the structure of a collection which are its variabl
 --- models
     --- Model1
         --- schema
-        --- model
+        --- index.js
         --- resolvers
             --- resolver1
+            --- index.js
 ```
 
-By convention the models are created in the app/models folder, but you can create a model anywhere. Here is an example for a Model.
+By convention the models are created in the app/models folder, but you can create a model anywhere. Here is an example of the `index.js` file of a Model.
 
 ```js
 import {Model} from '@orion-js/app'
@@ -63,7 +64,7 @@ export default {
 ### Resolvers
 
 Model resolvers represents dynamic variables. You can create them to obtain custom data that aren't directly present in the database or represented in the model schema.
-Taking the previous example of the credit card, this would be a resolver to obtain user specific data.
+Taking the previous example of the credit card, the next example would be a resolver to obtain user specific data. This new resolver should be saved in the `Card/resolvers` folder of the model and declared in the containing `index.js` file.
 
 #### Obtain the owner name example.
 
@@ -83,6 +84,25 @@ export default resolver({
 - `card` : Variable that contains the data of an especific credit card `(_id, userId, last4, isDefault)`.
 - `params` : This resolver can be called as a function and receive parameters.
 - `viewer` : Contains meta data from the user's session. For example, `userId`.
+
+Resulting `Card/resolvers/index.js` file:
+
+```js
+import resolver1 from './resolver1'
+import cardUser from './cardUser'
+
+export default {
+  resolver1,
+  cardUser
+}
+```
+
+When trying to get information from a Model resolver, refer to the resolver as if it were a Model function property:
+
+```js
+const card = await Cards.findOne(cardId)
+return await card.cardUser()
+```
 
 ## Clone a model
 
@@ -137,4 +157,4 @@ try {
 }
 ```
 
-On the other side, `Model1.clean(data)` removes all information inconsistent with the schema.
+On the other side, `Model1.clean(data)` removes all information from `data` inconsistent with the schema.
