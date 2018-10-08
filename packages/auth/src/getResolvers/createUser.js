@@ -54,7 +54,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
         const token = await generateVerifyEmailToken(user)
         await sendEmailVerificationToken(user, token)
       }
-      return await createSession({user, Sessions})
+      return await createSession(user)
     }
   })
 }
