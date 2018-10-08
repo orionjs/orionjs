@@ -6,7 +6,7 @@ sidebar_label: Files
 
 ## Initializing
 
-OrionJS provides file upload and management through the [`file-manager package`](https://github.com/orionjs/orionjs/blob/master/packages/file-manager).
+OrionJS provides file upload and management through the [`file-manager`](https://github.com/orionjs/orionjs/blob/master/packages/file-manager) package.
 
 ```sh
 yarn install @orion-js/file-manager
