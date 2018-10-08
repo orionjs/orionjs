@@ -1,4 +1,5 @@
 import {generateId} from '@orion-js/app'
+import {getOptions} from '../optionsStore'
 
 const hasEmailsVerified = function(user) {
   if (!user.emails) return true
@@ -8,7 +9,9 @@ const hasEmailsVerified = function(user) {
   return true
 }
 
-export default async function({user, Sessions}) {
+export default async function(user, options) {
+  const {Sessions} = getOptions()
+
   if (!user) throw new Error('User not found')
   const session = {
     publicKey: generateId() + generateId(),
@@ -19,7 +22,8 @@ export default async function({user, Sessions}) {
     userId: user._id,
     locale: user.locale,
     roles: user.roles,
-    emailVerified: hasEmailsVerified(user)
+    emailVerified: hasEmailsVerified(user),
+    options
   }
   const sessionId = await Sessions.insert(session)
   session._id = sessionId

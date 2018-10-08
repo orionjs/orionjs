@@ -32,5 +32,9 @@ export default {
   emailVerified: {
     type: Boolean,
     optional: true
+  },
+  options: {
+    type: 'blackbox',
+    optional: true
   }
 }

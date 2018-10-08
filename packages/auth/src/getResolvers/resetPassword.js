@@ -48,6 +48,6 @@ export default ({Users, Session, Sessions}) =>
           'services.forgot': ''
         }
       })
-      return await createSession({user, Sessions})
+      return await createSession(user)
     }
   })

@@ -25,13 +25,7 @@ export default ({Users, Session, Sessions}) =>
     resolve: async function({token}) {
       const user = await Users.findOne({'services.emailVerify.token': token})
       const {email} = user.services.emailVerify
-      console.log(
-        {_id: user._id, 'emails.address': email},
-        {
-          $set: {'emails.$.verified': true},
-          $unset: {'services.emailVerify': ''}
-        }
-      )
+
       await Users.update(
         {_id: user._id, 'emails.address': email},
         {
@@ -39,7 +33,6 @@ export default ({Users, Session, Sessions}) =>
           $unset: {'services.emailVerify': ''}
         }
       )
-      console.log(await Users.findOne(user._id))
-      return await createSession({user, Sessions})
+      return await createSession(user)
     }
   })

@@ -41,6 +41,6 @@ export default ({Users, Session, Sessions, twoFactor}) =>
         await requireTwoFactor({userId: user._id, twoFactorCode: viewer.twoFactorCode})
       }
 
-      return await createSession({user, Sessions})
+      return await createSession(user)
     }
   })
