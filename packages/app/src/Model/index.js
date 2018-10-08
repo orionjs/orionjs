@@ -1,10 +1,10 @@
 import initItem from './initItem'
-import isArray from 'lodash/isArray'
 import includes from 'lodash/includes'
 import clone from 'lodash/clone'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import checkResolvedResolvers from './checkResolvedResolvers'
+import modelToSchema from './modelToSchema'
 
 export default class Model {
   constructor({name, validate, clean, schema, resolvers, getSchema = f => f}) {
@@ -46,23 +46,7 @@ export default class Model {
   get schema() {
     const schema = this.getSchema()
     if (!schema) return
-    const keys = Object.keys(schema)
-    for (const key of keys) {
-      if (isArray(schema[key].type)) {
-        if (schema[key].type[0] instanceof Model) {
-          schema[key].type[0] = schema[key].type[0].schema
-        }
-      }
-      if (schema[key].type instanceof Model) {
-        schema[key].type = schema[key].type.schema
-      }
-    }
-    return {
-      ...schema,
-      __model: this,
-      __validate: this._validate,
-      __clean: this._clean
-    }
+    return modelToSchema.call(this, schema)
   }
 
   get staticFields() {

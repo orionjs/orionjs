@@ -11,6 +11,7 @@ import hook from './collection/hook'
 import UserError from './Errors/UserError'
 import PermissionsError from './Errors/PermissionsError'
 import Model from './Model'
+import modelToSchema from './Model/modelToSchema'
 import {resolver, crudResolvers, paginatedResolver, addPermissionChecker} from './resolvers'
 import {setGetViewer} from './route/setGetViewer'
 import getViewer from './route/handler/getViewer'
@@ -20,6 +21,7 @@ import cache from './cache'
 import sleep from './helpers/sleep'
 
 export {
+  modelToSchema,
   sleep,
   hashObject,
   cache,
