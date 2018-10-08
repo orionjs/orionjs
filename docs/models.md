@@ -14,10 +14,10 @@ server
     └── models
         └── Model1
             ├── schema
-            ├── index.js
-            └── resolvers
-                ├── resolver1
-                └── index.js
+            ├── resolvers
+            │   ├── resolver1
+            │   └── index.js
+            └── index.js
 ```
 
 By convention the models are created in the app/models folder, but you can create a model anywhere. Here is an example of the `index.js` file of a Model.
