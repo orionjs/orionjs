@@ -4,22 +4,23 @@ title: Autoform
 sidebar_label: Autoform
 ---
 
-[Autoform](https://github.com/orionjs/orionjs-react-autoform) is an OrionJS package, available to import in any React project and usable as a React Component. It allows to specify the name of a `mutation` as a prop and automatically setting a form for it, allowing faster developing.
+[Autoform](https://github.com/orionjs/orionjs-react-autoform) is an Orionjs package, available to import in any React project and usable as a React Component. It allows to specify the name of a `mutation` as a prop and automatically setting a form for it, allowing faster developing.
 
 ## Background
 
-The client side provided by the [OrionJS Full-stack Boilerplate](https://github.com/orionjs/boilerplate-graphql-fullstack) has this structure:
+The client side provided by the [Orionjs Full-stack Boilerplate](https://github.com/orionjs/boilerplate-graphql-fullstack) has this structure:
 
 ```
---- App
-    --- Pages
-    --- Root
-    --- components
-        --- AutoForm
-        --- fields
-    --- helpers
-    --- i18n
-    --- index.js
+web
+└── App
+    ├── Pages
+    ├── Root
+    ├── components
+    │   ├── AutoForm
+    │   └── fields
+    ├── helpers
+    ├── i18n
+    └── index.js
 ```
 
 By default, the `components` folder will have a folder called `AutoForm` containing a `index.js` with the next structure:
@@ -127,8 +128,8 @@ export default class Create extends React.Component {
 Other props that Autoform can use are:
 
 - `schema`: It allows to specify a schema directly from an object in the React Component.
-- `clean`: By default, `Autoform` uses the [`clean`](https://orionjs.com/docs/models#validate-and-clean) method from OrionJS, but it can receive a custom `clean` method.
-- `validate`: By default, `Autoform` uses the [`validate`](https://orionjs.com/docs/models#validate-and-validate) method from OrionJS, but it can receive a custom `validate` method.
+- `clean`: By default, `Autoform` uses the [`clean`](https://orionjs.com/docs/models#validate-and-clean) method from Orionjs, but it can receive a custom `clean` method.
+- `validate`: By default, `Autoform` uses the [`validate`](https://orionjs.com/docs/models#validate-and-validate) method from Orionjs, but it can receive a custom `validate` method.
 - `omit`: It receives an array containing the names of the elements in the schema you don't want to render as fields.
 - `only`: It receives an array containing only the names of the elements in the schema you want to render.
 - `fragment`: Only use this property when using the Autoform component inside a [`React.Fragment`](https://reactjs.org/docs/fragments.html).
