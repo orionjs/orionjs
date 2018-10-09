@@ -8,7 +8,7 @@ export default function(schema) {
         schema[key].type[0] = schema[key].type[0].schema
       }
     }
-    if (schema[key].type.__isModel) {
+    if (schema[key].type && schema[key].type.__isModel) {
       schema[key].type = schema[key].type.schema
     }
   }
