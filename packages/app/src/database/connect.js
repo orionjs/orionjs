@@ -1,3 +1,5 @@
+import getDbName from './getDbName'
+
 const {MongoClient} = require('mongodb')
 
 global.orionMainDatabase = null
@@ -19,7 +21,7 @@ const connect = async function() {
     options
   )
 
-  const dbName = client.s.options.dbName
+  const dbName = getDbName(uri)
   global.orionMainDatabaseClient = client
   global.orionMainDatabase = client.db(dbName)
   for (const resolve of resolvers) {
