@@ -1,6 +1,5 @@
-import getDbName from './getDbName'
-
 const {MongoClient} = require('mongodb')
+const getDbName = require('./getDbName')
 
 global.orionMainDatabase = null
 global.orionMainDatabaseClient = null

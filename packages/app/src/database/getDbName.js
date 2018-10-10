@@ -1,4 +1,4 @@
-export default function(url) {
+module.exports = function(url) {
   let dbName = 'admin'
   let connectionPart = ''
 
