@@ -10,8 +10,6 @@ module.exports = function(url) {
     connectionPart = url.substring(startConnectionPart)
   }
 
-  console.log(connectionPart)
-
   if (connectionPart.indexOf('.sock') !== -1) {
     if (connectionPart.indexOf('.sock/') !== -1) {
       dbName = connectionPart.split('.sock/')[1]
