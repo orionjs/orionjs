@@ -2,9 +2,10 @@ import checkOptions from './checkOptions'
 import getResolver from './getResolver'
 import generateId from '../../helpers/generateId'
 import getInvalidateCache from './getInvalidateCache'
+import cleanParams from './cleanParams'
 
 export default function({
-  params,
+  params: rawParams,
   returns,
   mutation,
   private: isPrivate,
@@ -13,6 +14,8 @@ export default function({
   cache,
   ...otherOptions
 }) {
+  const params = cleanParams(rawParams)
+
   checkOptions({
     params,
     returns,
