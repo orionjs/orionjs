@@ -4,7 +4,21 @@ title: HTTP
 sidebar_label: HTTP
 ---
 
-Orionjs comes with a http modules that's powered by [micro](https://github.com/zeit/micro).
+Orionjs comes with a `http` module, powered by [micro](https://github.com/zeit/micro).
+
+### Routes location
+
+Orionjs provides an example for routes management in the `services/http` folder:
+
+```
+server
+└── app
+    └── services
+        ├── http
+        │   ├── home.js
+        │   └── index.js
+        └── index.js
+```
 
 ## Defining a route
 
@@ -32,7 +46,7 @@ Function arguments:
 
 ## CORS
 
-You can define cors options to all routes by calling this function:
+You can define [`CORS`](https://developer.mozilla.org/es/docs/Web/HTTP/Access_control_CORS) options to all routes by calling this function:
 
 ```js
 import {setCorsOptions} from '@orion-js/app'
@@ -41,6 +55,27 @@ setCorsOptions({
   origin: '*'
 })
 ```
+
+By default, Orionjs provides this functionality in the `index` file of the `services/graphql` folder:
+
+```
+server
+└── app
+    └── services
+        ├── graphql
+        │   └── index.js
+        └── index.js
+```
+
+### Configuration
+
+The configuration of `CORS` is done by setting the following variables:
+
+- [`maxAge`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age) Default value: 86400
+- [`origin`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Allow-Origin) Default value: '\*'
+- [`allowHeaders`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Allow-Headers) Default value: ['X-Requested-With', 'Access-Control-Allow-Origin', 'X-HTTP-Method-Override', 'Content-Type', 'Authorization', 'Accept']
+- [`exposeHeaders`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Expose-Headers) Default value: []
+- [`allowMethods`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Allow-Methods) Default value: ['POST', 'GET', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 
 ## Custom viewer
 
