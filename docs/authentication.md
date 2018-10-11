@@ -21,7 +21,7 @@ export default getAuthResolvers({
 })
 ```
 
-By doing this, the two factor code will be required when loggin in and the resolvers to activate and deactivate the code will be created.
+By doing this, the two factor code will be required when signing in, and the resolvers to activate and deactivate the code will be created.
 
 ### Requesting two factor code
 
