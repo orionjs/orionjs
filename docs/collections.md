@@ -4,8 +4,20 @@ title: Collections
 sidebar_label: Collections
 ---
 
-Orionjs is made to work with MongoDB de default. To connect to MongoDB and execute queries
-you must create `Collections`.
+Orionjs is made to work with MongoDB de default. To connect to MongoDB and execute queries you must create `Collections`.
+
+### The structure of the main collections of the application
+
+```
+server
+└── app
+    └── collections
+        └── Collection1
+            └── index.js
+```
+
+- `resolvers`: The directory of the set of collections.
+- `Collection1`: Represents the collection use to manage its respective documents.
 
 ## Create a collection
 
@@ -22,16 +34,18 @@ const MyCollection = new Collection({
 ```
 
 - `name`: The name of the collection in MongoDB.
-- `model`: A model that it's schema will be used to validate inserts and updates and it will be initialized when using findOne and find.
+- `model`: A model assigned to the collection. The schema of the model will be used to validate inserts and updates into the collection, and it will be initialized when using find methods.
 - `indexes`: An array of indexes for this collection. Each item will be passed to the `collection.createIndex(keys, options)` function from MongoDB.
   - `keys`: An object containing the keys.
   - `options` An object with the options of the index.
 
 ---
 
+## Methods
+
 The Orionjs collection API is an abstraction of the Nodejs MongoDB Driver. It has the following methods:
 
-## Find one
+### Find one
 
 Returns a document initializing it with the passed model.
 
@@ -39,7 +53,7 @@ Returns a document initializing it with the passed model.
 const item = await collection.findOne(selector)
 ```
 
-## Find
+### Find
 
 Returns a MongoDB cursor.
 
@@ -55,7 +69,7 @@ const items = await collection.find(selector).toArray()
 const count = await collection.find(selector).count()
 ```
 
-## Insert
+### Insert
 
 Inserts documents to the DB. Each document will be cleaned and verified using the passed model's schema. This function will return the `_id` of the inserted item
 
@@ -64,7 +78,7 @@ const docId = await collection.insertOne(document)
 const docsIds = await collection.insertMany([document1, document2])
 ```
 
-## Update
+### Update
 
 Updates documents in the DB. The changes will be verified using the passed model's schema. The fields that are not changed will not be verified.
 
@@ -73,7 +87,7 @@ await updateOne(selector, modifier)
 await updateMany(selector, modifier)
 ```
 
-## Delete
+### Delete
 
 Deletes one or many documents.
 
@@ -82,7 +96,7 @@ await deleteOne(selector)
 await deleteMany(selector)
 ```
 
-## Aggregate
+### Aggregate
 
 Returns a MongoDB cursor using the MongoDB aggregate function. This will not initialize items when returning.
 
