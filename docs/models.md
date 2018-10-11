@@ -9,13 +9,15 @@ sidebar_label: Models
 The models in Orionjs define the structure of a collection which are its variables and types. It validates that the data entering or leaving the collection is coherent with the defined structure in the schema, and allows queries and operations to the database in Mongo through the use of resolvers.
 
 ```
---- models
-    --- Model1
-        --- schema
-        --- index.js
-        --- resolvers
-            --- resolver1
-            --- index.js
+server
+└── app
+    └── models
+        └── Model1
+            ├── schema
+            ├── resolvers
+            │   ├── resolver1
+            │   └── index.js
+            └── index.js
 ```
 
 By convention the models are created in the app/models folder, but you can create a model anywhere. Here is an example of the `index.js` file of a Model.
