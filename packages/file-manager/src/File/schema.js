@@ -2,6 +2,11 @@ export default {
   _id: {
     type: 'ID'
   },
+  externalUrl: {
+    type: String,
+    optional: true,
+    private: true
+  },
   key: {
     type: String,
     optional: true
