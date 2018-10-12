@@ -22,7 +22,7 @@ export default ({rawCollection, schema, collection}) =>
     }
 
     await runHooks(collection, 'before.upsert', selector, modifier, options, ...otherArgs)
-    const result = await rawCollection.update(selector, modifier, {...options, upsert: true})
+    const result = await rawCollection.updateOne(selector, modifier, {...options, upsert: true})
     await runHooks(collection, 'after.upsert', selector, modifier, options, ...otherArgs)
     return {
       numberAffected: result.result.nModified,
