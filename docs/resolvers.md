@@ -9,10 +9,14 @@ Resolvers in Orionjs are the controllers or main functions to execute routines, 
 ### The structure of the main resolvers of the application
 
 ```
---- resolvers
-    --- Resolver1
-        --- resolver → index
-        --- resolver1
+server
+└── app
+    └── resolvers
+        ├── ResolverGroup
+        │   ├── resolver1
+        │   │   └── index.js
+        │   └── index.js
+        └── index.js
 ```
 
 - `resolvers`: The directory of the set of resolvers.
@@ -30,7 +34,7 @@ export default {
 }
 ```
 
-`resolversSchemas` is responsible for validating both the existence and the correct structure of the imported resolvers, since they can be of type [`basic resolver`](https://orionjs.com/docs/resolvers#basic-resolver), [`mutation`](https://orionjs.com/docs/resolvers#mutation), [`crudResolver`](https://orionjs.com/docs/resolvers#crud-resolver), and [`paginatedResolver`](https://orionjs.com/docs/resolvers#paginated-resolver).
+`resolversSchemas` is responsible for validating both the existence and the correct structure of the imported resolvers, since they can be of type [`Basic Resolver`](https://orionjs.com/docs/resolvers#basic-resolver), [`mutation`](https://orionjs.com/docs/resolvers#mutation), [`crudResolver`](https://orionjs.com/docs/resolvers#crud-resolver), and [`paginatedResolver`](https://orionjs.com/docs/resolvers#paginated-resolver).
 
 ## Resolver types
 
@@ -128,7 +132,7 @@ export default resolver({
 
 ### Crud resolver
 
-`crudResolvers` have the peculiarity of be called from `CRUD`, a React Component created for the [OrionJS fullstack Boilerplate](https://github.com/orionjs/boilerplate-graphql-fullstack).
+`crudResolvers` have the peculiarity of be called from `CRUD`, a React Component created for the [Orionjs fullstack Boilerplate](https://github.com/orionjs/boilerplate-graphql-fullstack).
 
 #### React App
 

@@ -9,11 +9,13 @@ sidebar_label: Jobs
 ## Structure of the main jobs of the application
 
 ```
---- jobs
-    --- job1
-        --- index.js
-    --- job2
-    --- index.js
+server
+└── app
+    └── jobs
+        ├── job1
+        │   └── index.js
+        ├── job2
+        └── index.js
 ```
 
 ## Example of the jobs directory index
