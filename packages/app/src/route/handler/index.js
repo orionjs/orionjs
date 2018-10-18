@@ -1,6 +1,6 @@
 import {getRoute} from '../routes'
 import {parse} from 'url'
-import {send, text} from 'micro'
+import {send, text, json} from 'micro'
 import getViewer from './getViewer'
 import onError from './onError'
 import cors from './cors'
@@ -23,7 +23,8 @@ export default async function(request, response) {
       request,
       headers: request.headers,
       response,
-      getBody: async () => await text(request)
+      getBody: async () => await text(request),
+      getBodyJSON: async () => await json(request)
     }
 
     cors(funcParams)
