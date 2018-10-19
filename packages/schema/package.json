@@ -11,6 +11,7 @@
     "test": "jest src"
   },
   "dependencies": {
+    "dot-object": "^1.7.0",
     "lodash": "^4.17.10"
   },
   "devDependencies": {

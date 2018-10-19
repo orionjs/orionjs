@@ -1,3 +1,5 @@
+import dot from 'dot-object'
+
 export default function(validationErrors) {
   if (validationErrors.length === 0) return null
 
@@ -7,5 +9,5 @@ export default function(validationErrors) {
     errors[validationError.key] = validationError.code
   }
 
-  return errors
+  return dot.dot(errors)
 }

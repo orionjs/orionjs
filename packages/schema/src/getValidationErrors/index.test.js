@@ -320,6 +320,48 @@ test('run custom validation with custom key', async () => {
   })
 })
 
+test('allow custom validation to pass an error object', async () => {
+  const schema = {
+    person: {
+      type: 'blackbox',
+      async validate(person) {
+        return {
+          name: 'required',
+          lastName: 'tooShort'
+        }
+      }
+    }
+  }
+
+  const errors = await getValidationErrors(schema, {person: {lastName: 'López'}})
+  expect(errors).toEqual({
+    'person.name': 'required',
+    'person.lastName': 'tooShort'
+  })
+})
+
+test('allow custom validation to pass an complex error object', async () => {
+  const schema = {
+    person: {
+      type: 'blackbox',
+      async validate(person) {
+        return {
+          name: 'required',
+          'car.name': 'required',
+          friends: [{name: 'required'}]
+        }
+      }
+    }
+  }
+
+  const errors = await getValidationErrors(schema, {person: {lastName: 'López'}})
+  expect(errors).toEqual({
+    'person.name': 'required',
+    'person.car.name': 'required',
+    'person.friends.0.name': 'required'
+  })
+})
+
 test('pass currentDoc validating arrays', async () => {
   const aItem = {name: 'Nicolás'}
   const doc = {items: [aItem]}
