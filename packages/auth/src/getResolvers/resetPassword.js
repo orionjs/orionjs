@@ -30,24 +30,30 @@ export default ({Users, Session, Sessions}) =>
     mutation: true,
     resolve: async function({token, password}) {
       const user = await Users.findOne({'services.forgot.token': token})
-      await Users.update(user._id, {
+
+      const modifier = {
         $set: {
           'services.password': {
             bcrypt: hashPassword(password),
             createdAt: new Date()
           }
         },
-        $push: {
+        $unset: {
+          'services.forgot': ''
+        }
+      }
+
+      if (user.services.password) {
+        modifier.$push = {
           'services.oldPasswords': {
             bcrypt: user.services.password.bcrypt,
             changedAt: new Date(),
             forgotten: true
           }
-        },
-        $unset: {
-          'services.forgot': ''
         }
-      })
+      }
+
+      await Users.update(user._id, modifier)
       return await createSession(user)
     }
   })
