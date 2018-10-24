@@ -18,14 +18,21 @@ export default async function({resolvers, mutation}) {
 
   for (const {resolver, name} of filteredResolvers) {
     global.graphQLResolvers[name] = resolver
+
     const type = await getType(resolver.returns)
     const args = await getArgs(resolver.params)
+
     fields[name] = {
       type,
       args,
       async resolve(root, params, context) {
-        const result = await resolver.resolve(params, context)
-        return result
+        try {
+          const result = await resolver(params, context)
+          return result
+        } catch (error) {
+          console.error('Error at resolver "' + name + '":')
+          throw error
+        }
       }
     }
   }

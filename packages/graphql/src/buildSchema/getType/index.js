@@ -41,8 +41,15 @@ export default function getGraphQLType(type) {
               type,
               args,
               async resolve(item, params, context) {
-                const result = await resolver.resolve(item, params, context)
-                return result
+                try {
+                  const result = await resolver.resolve(item, params, context)
+                  return result
+                } catch (error) {
+                  console.error(
+                    'Error at resolver "' + resolver.key + '" of model "' + model.name + '":'
+                  )
+                  throw error
+                }
               }
             }
           } catch (error) {
