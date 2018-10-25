@@ -1,11 +1,9 @@
 import {getPubsub} from '../pubsub'
 import getChannelName from './getChannelName'
-import checkPermissions from './checkPermissions'
+import {checkResolverPermissions} from '@orion-js/app'
 
-export default function({params, returns, requireUserId, checkPermission, roles = [], role}) {
-  if (role) {
-    roles.push(role)
-  }
+export default function(options) {
+  const {params, returns, checkPermission, ...otherOptions} = options
 
   // the publish function
   const subscription = function publish(params, data) {
@@ -14,11 +12,12 @@ export default function({params, returns, requireUserId, checkPermission, roles 
     pubsub.publish(channelName, {[subscription.key]: data})
   }
 
-  subscription.subscribe = async function(params, viewer) {
+  subscription.subscribe = async function(callParams, viewer) {
     const pubsub = getPubsub()
     try {
-      await checkPermissions({roles, requireUserId, checkPermission}, params, viewer)
-      const channelName = getChannelName(subscription.key, params)
+      await checkResolverPermissions({callParams, viewer, checkPermission, otherOptions})
+
+      const channelName = getChannelName(subscription.key, callParams)
       return pubsub.asyncIterator(channelName)
     } catch (error) {
       // console.log('Unauthorized user', error)
