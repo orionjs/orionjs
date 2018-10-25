@@ -27,7 +27,7 @@ export default function(passedOptions) {
   let onReady = () => resolvers.map(resolve => resolve(collection))
   collection.await = async () => (isReady ? null : new Promise(resolve => resolvers.push(resolve)))
 
-  connect().then(db => {
+  connect().then(async db => {
     checkOptions(options)
     global.db[options.name] = collection
 
@@ -39,7 +39,7 @@ export default function(passedOptions) {
       collection[key] = methods[key]
     }
 
-    loadIndexes(collection)
+    await loadIndexes(collection)
 
     onReady()
     isReady = true
