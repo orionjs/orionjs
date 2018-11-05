@@ -10,7 +10,7 @@ export default ({Users, Session, Sessions}) =>
         label: 'Token',
         async custom(token) {
           const maxDate = DateTime.local()
-            .minus({minutes: 30})
+            .minus({weeks: 2})
             .toJSDate()
           const exists = await Users.find({
             'services.emailVerify.token': token,
