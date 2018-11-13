@@ -4,6 +4,6 @@ export default resolver({
   returns: String,
   async resolve(file, viewer) {
     if (file.externalUrl) return file.externalUrl
-    return `https://s3.amazonaws.com/${file.bucket}/${file.key.replace(/ /, '%20')}`
+    return `https://s3.amazonaws.com/${file.bucket}/${file.key.replace(/ /g, '%20')}`
   }
 })
