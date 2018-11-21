@@ -1,4 +1,5 @@
 import {BatchHttpLink} from 'apollo-link-batch-http'
+import {HttpLink} from 'apollo-link-http'
 import fetch from 'unfetch'
 import getAuthHeaders from '../auth/getAuthHeaders'
 import {RetryLink} from 'apollo-link-retry'
@@ -12,7 +13,7 @@ const customFetch = (uri, options) => {
   return fetch(uri, options)
 }
 
-export default ({endpointURL, batchInterval, canRetry}) => {
+export default ({endpointURL, batchInterval, canRetry, batch}) => {
   const retryLink = new RetryLink({
     attempts(count, operation, error) {
       if (!canRetry) return false
@@ -30,11 +31,16 @@ export default ({endpointURL, batchInterval, canRetry}) => {
     }
   })
 
-  const httpLink = new BatchHttpLink({
-    uri: endpointURL + '/graphql',
-    fetch: customFetch,
-    batchInterval
-  })
+  const httpLink = batch
+    ? new BatchHttpLink({
+        uri: endpointURL + '/graphql',
+        fetch: customFetch,
+        batchInterval
+      })
+    : new HttpLink({
+        uri: endpointURL + '/graphql',
+        fetch: customFetch
+      })
 
   return ApolloLink.from([retryLink, httpLink])
 }

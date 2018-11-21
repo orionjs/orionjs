@@ -1,5 +1,5 @@
 import {ApolloLink, split} from 'apollo-link'
-import createBatchHttpLink from './createBatchHttpLink'
+import createHttpLink from './createHttpLink'
 import onError from './onError'
 import createWsLink from './createWsLink'
 import {getMainDefinition} from 'apollo-utilities'
@@ -8,7 +8,7 @@ export default function(options) {
   const links = [onError(options)]
 
   if (options.useSubscriptions) {
-    const httpLink = createBatchHttpLink(options)
+    const httpLink = createHttpLink(options)
     const wsLink = createWsLink(options)
     const link = split(
       ({query}) => {
@@ -20,7 +20,7 @@ export default function(options) {
     )
     links.push(link)
   } else {
-    links.push(createBatchHttpLink(options))
+    links.push(createHttpLink(options))
   }
 
   return ApolloLink.from(links)
