@@ -1,6 +1,7 @@
 import 'babel-polyfill'
 import './Errors/handleErrors'
-import './database/connect'
+import connect from './database/connect'
+import disconnect from './database/disconnect'
 import getServer from './route/start'
 import register from './register'
 import route from './route'
@@ -22,6 +23,8 @@ import cache from './cache'
 import sleep from './helpers/sleep'
 
 export {
+  connect,
+  disconnect,
   modelToSchema,
   sleep,
   hashObject,

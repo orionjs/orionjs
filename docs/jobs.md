@@ -18,7 +18,45 @@ server
         └── index.js
 ```
 
-## Example of the jobs directory index
+## Types of jobs
+
+There are two types of jobs. All jobs have cluster support (run only once on any server) and the execution of the jobs may not be in the same server from which it was called.
+
+### Event jobs
+
+```js
+const myJob = job({
+  type: 'event',
+  async run(params) {
+    // execute something
+  }
+})
+
+myJob(params, {
+  waitToRun: 1000 // run after 1000 ms
+})
+```
+
+To call a event job you must call the job function returned from the initialization.
+
+### Recurrent jobs
+
+```js
+export default job({
+  type: 'recurrent',
+  runEvery: 1000 // runs every 1000 ms
+  async getNextRun () { // return the date of the next execution
+    return moment().add(1, 'day').toDate()
+  },
+  async run(params) {
+    // execute something
+  }
+})
+```
+
+This jobs will be called automatically. You can only specify `runEvery` or `getNextRun` in a job.
+
+## Example
 
 ```js
 import {start} from '@orion-js/jobs'

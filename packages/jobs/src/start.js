@@ -1,12 +1,11 @@
 import daemon from './daemon'
 import JobsCollection from './JobsCollection'
+import initJobs from './initJobs'
 
 export default async function(jobs) {
   await JobsCollection.await()
 
-  for (const identifier of Object.keys(jobs)) {
-    jobs[identifier].identifier = identifier
-  }
+  await initJobs(jobs)
 
   global.jobs = jobs
 

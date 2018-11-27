@@ -1,9 +1,8 @@
-import sleep from '../helpers/sleep'
 import getJobToRun from './getJobToRun'
 import getFreeWorker from './getFreeWorker'
 import createJobExecutor from './createJobExecutor'
 
-const loop = async function({jobs, workers}) {
+export default async function({jobs, workers, runLoop}) {
   const freeWorker = getFreeWorker(workers)
   if (!freeWorker) {
     return runLoop({jobs, workers}, 100)
@@ -21,12 +20,3 @@ const loop = async function({jobs, workers}) {
 
   return runLoop({jobs, workers})
 }
-
-const runLoop = async function({jobs, workers}, delay) {
-  if (delay) {
-    await sleep(delay)
-  }
-  process.nextTick(() => loop({jobs, workers}))
-}
-
-export default runLoop

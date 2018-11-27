@@ -7,6 +7,10 @@ export default async function(params, {identifier, waitToRun} = {}) {
   }
   identifier = identifier || generateId()
 
+  if (this.type !== 'event') {
+    throw new Error('You can only call event jobs, not ' + this.type)
+  }
+
   let runAfter = new Date()
   if (waitToRun) {
     runAfter = new Date(Date.now() + waitToRun)
