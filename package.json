@@ -2,7 +2,8 @@
   "license": "MIT",
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "test": "lerna run test"
+    "test": "lerna run test",
+    "publish-all": "lerna publish --force-publish=*"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
