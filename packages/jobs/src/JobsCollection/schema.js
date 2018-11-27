@@ -9,8 +9,7 @@ export default {
     type: String
   },
   runAfter: {
-    type: Date,
-    optional: true
+    type: Date
   },
   lockedAt: {
     type: Date,

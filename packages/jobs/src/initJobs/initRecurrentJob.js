@@ -5,7 +5,10 @@ export default async function(job) {
   const inDb = await JobsCollection.findOne({job: job.identifier})
 
   if (job.runEvery) {
-    job.getNextRun = () => new Date(Date.now() + job.runEvery)
+    job.getNextRun = previous => {
+      const date = previous ? previous.date : new Date()
+      return new Date(date.getTime() + job.runEvery)
+    }
   }
 
   if (!job.getNextRun) {
@@ -14,12 +17,16 @@ export default async function(job) {
 
   if (!inDb) {
     // create next run
+    const runAfter = await job.getNextRun()
+    if (!runAfter) {
+      throw new Error('You must specify getNextRun or runEvery for the job ' + job.identifier)
+    }
     await JobsCollection.upsert(
       {job: job.identifier},
       {
         $set: {
           identifier: generateId(),
-          runAfter: job.getNextRun()
+          runAfter
         }
       }
     )
