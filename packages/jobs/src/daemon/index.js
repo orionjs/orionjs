@@ -1,4 +1,4 @@
-import {runLoop} from './loop'
+import runLoop from './runLoop'
 import range from 'lodash/range'
 import Worker from '../Worker'
 
