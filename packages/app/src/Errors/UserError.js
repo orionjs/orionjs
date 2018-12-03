@@ -1,6 +1,10 @@
 export default class UserError extends Error {
   constructor(code, message, extra) {
     // Calling parent constructor of base Error class.
+    if (!message && code) {
+      message = code
+      code = 'error'
+    }
     super(message)
     Error.captureStackTrace(this, this.constructor)
 
