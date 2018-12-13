@@ -5,6 +5,10 @@ process
     console.error(colors.red(reason), colors.red('Unhandled promise rejection'))
   })
   .on('uncaughtException', error => {
-    console.error(colors.red(error))
-    process.exit(1)
+    if (error.code === 'MODULE_NOT_FOUND') {
+      console.error(colors.red(error.message))
+    } else {
+      console.error(colors.red(error))
+      process.exit(1)
+    }
   })
