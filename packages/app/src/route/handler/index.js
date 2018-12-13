@@ -5,9 +5,12 @@ import getViewer from './getViewer'
 import onError from './onError'
 import cors from './cors'
 import connect from '../../database/connect'
+import hasMongoURL from '../../database/hasMongoURL'
 
 export default async function(request, response) {
-  await connect()
+  if (hasMongoURL) {
+    await connect()
+  }
 
   const {pathname, query} = parse(request.url, true)
   const route = getRoute(pathname)
