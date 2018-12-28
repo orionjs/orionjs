@@ -18,7 +18,8 @@ const defaultOptions = {
   batch: true,
   canRetry: true,
   promptTwoFactorCode: () => global.prompt('Please write your two factor code to continue'),
-  onError: () => {}
+  onError: () => {},
+  getHeaders: () => {}
 }
 
 export default function(passedOptions) {

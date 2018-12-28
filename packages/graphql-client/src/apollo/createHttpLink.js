@@ -5,15 +5,15 @@ import getAuthHeaders from '../auth/getAuthHeaders'
 import {RetryLink} from 'apollo-link-retry'
 import {ApolloLink} from 'apollo-link'
 
-const customFetch = (uri, options) => {
-  const authHeaders = getAuthHeaders(options.body)
-  for (const key of Object.keys(authHeaders)) {
-    options.headers[key] = authHeaders[key]
+export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
+  const customFetch = (uri, options) => {
+    const authHeaders = getAuthHeaders(options.body, getHeaders)
+    for (const key of Object.keys(authHeaders)) {
+      options.headers[key] = authHeaders[key]
+    }
+    return fetch(uri, options)
   }
-  return fetch(uri, options)
-}
 
-export default ({endpointURL, batchInterval, canRetry, batch}) => {
   const retryLink = new RetryLink({
     attempts(count, operation, error) {
       if (!canRetry) return false
