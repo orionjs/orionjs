@@ -23,8 +23,7 @@ export default function(options) {
   options.Session = options.Sessions.model
   setOptions(options)
 
-  const getViewer = getSession(options)
-  setGetViewer(getViewer)
+  setGetViewer(getSession)
 
   setCorsOptions({
     allowHeaders: [

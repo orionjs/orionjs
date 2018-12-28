@@ -4,8 +4,10 @@ import hashPassword from './helpers/hashPassword'
 import createSession from './helpers/createSession'
 import requireTwoFactor from './helpers/requireTwoFactor'
 import {getOptions} from './optionsStore'
+import getSession from './getResolvers/getSession'
 
 export {
+  getSession,
   getAuthResolvers,
   createSession,
   generateVerifyEmailToken,
