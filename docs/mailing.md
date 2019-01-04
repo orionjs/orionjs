@@ -15,6 +15,9 @@ yarn install @orion-js/mailing
 The configuration of `mailing` is done by setting the following environment variables:
 
 - `MAIL_URL`: You must pass a valid SMTP url. If you don't pass any, all mails sent will be logged in the console.
+    * Note 1: The smtp url format looks like:  `smtp://<user>:<password>@<smtp-server-url>:<port>`
+    * Note 2: If your `username / API Key` or `password` include characters like `/` or `\` or any other invalid url character, as in Amazon Web Services Simple Email Service, you must encode them to be valid.
+      You can use tools like [urlencoder](https://www.urlencoder.org/) to encode your `username` and `password`.
 - `MAIL_FROM`: A valid from address. You can also pass the `from` option when calling `sendEmail`.
 
 ## Sending emails
