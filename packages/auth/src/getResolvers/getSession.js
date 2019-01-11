@@ -6,7 +6,6 @@ import {getOptions} from '../optionsStore'
 export default async function({getBody, headers, nonceName = 'default'}) {
   const {Sessions} = getOptions()
   await Sessions.await() // wait till db is connected
-  const body = await getBody()
   const nonce = parseInt(headers['x-orion-nonce'])
   const publicKey = headers['x-orion-publickey']
   const signature = headers['x-orion-signature']
@@ -39,7 +38,8 @@ export default async function({getBody, headers, nonceName = 'default'}) {
     }
   )
 
-  var shaObj = new JSSHA('SHA-512', 'TEXT')
+  const body = await getBody()
+  const shaObj = new JSSHA('SHA-512', 'TEXT')
   shaObj.setHMACKey(session.secretKey, 'TEXT')
   shaObj.update(nonce + body)
   const calculatedSignature = shaObj.getHMAC('HEX')
