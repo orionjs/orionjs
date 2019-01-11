@@ -26,11 +26,20 @@ export default ({name, collection, Model, canUpdate}) => {
     returns: Model,
     mutation: true,
     resolve: async function(params, viewer) {
-      if (canUpdate) await canUpdate(params, viewer)
-      const itemId = params[idParam]
-      const data = params[dataParam]
-      await collection.update(itemId, {$set: data})
-      return await collection.findOne(itemId)
+      try {
+        if (canUpdate) await canUpdate(params, viewer)
+        const itemId = params[idParam]
+        const data = params[dataParam]
+        await collection.update(itemId, {$set: data})
+        return await collection.findOne(itemId)
+      } catch (error) {
+        console.log(error)
+        if (error.isValidationError) {
+          throw error.prependKey(dataParam)
+        }
+
+        throw error
+      }
     }
   })
 }

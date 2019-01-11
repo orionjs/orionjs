@@ -61,6 +61,24 @@ export default resolver({
   }
 })
 ```
+#### Cache
+You can add cache policy to your resolvers by adding a `cache` property specifying a number of milliseconds:
+``cache: 1000 * 60 * 60, // Cache 1 hour in milliseconds``
+
+#### Permissions
+You can check if the user perfoming the query or mutation has permission (or any condition) adding a `checkPermission` function to the resolver configuration object.
+- This function receives the resolvers `parameters` and the `current viwer`, an object representing the user executing this resolver, as parameters.  
+- If the user does not have permission or the condition you check is not valid, you should throw an error.
+```js
+  ...
+  checkPermission (params, viewer) {
+  // Check permissions or any condition here.
+  // Throw an error if viewer is not allowed or conditions are not met.
+  },
+  ...
+```
+
+
 
 ### Paginated resolver
 
