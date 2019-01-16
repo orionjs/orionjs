@@ -30,7 +30,7 @@ import {route} from '@orion-js/app'
 route(path, func)
 ```
 
-- `path`: A string that compilant with [path-to-regexp](https://github.com/pillarjs/path-to-regexp).
+- `path`: A string that compilant with [path-to-regexp](https://github.com/pillarjs/path-to-regexp). To setup a route that responds when no other route is found, set `path` to `null`.
 - `func`: The function that will be executed when the route is visited. It must be a function, the result of this function will be the response.
 
 Function arguments:
