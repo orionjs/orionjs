@@ -1,4 +1,4 @@
-import {getRoute} from '../routes'
+import {getRoute, getNotFoundRoute} from '../routes'
 import {parse} from 'url'
 import {send, text, json} from 'micro'
 import getViewer from './getViewer'
@@ -13,10 +13,10 @@ export default async function(request, response) {
   }
 
   const {pathname, query} = parse(request.url, true)
-  const route = getRoute(pathname)
+  let route = getRoute(pathname) || getNotFoundRoute()
   if (!route) return 'Not found'
 
-  const params = route.match(pathname)
+  const params = route.match ? route.match(pathname) : {}
 
   try {
     const funcParams = {
