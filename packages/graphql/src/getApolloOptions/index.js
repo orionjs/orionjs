@@ -9,6 +9,6 @@ export default async function(options) {
     subscriptionsEndpoint: `/subscriptions`,
     schema,
     formatError,
-    graphiql: options.graphiql || true
+    useGraphiql: options.useGraphiql || true
   }
 }
