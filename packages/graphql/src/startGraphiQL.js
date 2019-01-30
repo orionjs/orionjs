@@ -201,7 +201,7 @@ const getHTML = function(apolloOptions, options, data) {
 }
 
 export default function(apolloOptions, options) {
-  if (options.graphiql) {
+  if (options.useGraphiql) {
     route('/graphiql', async function({query, request}) {
       return getHTML(apolloOptions, options, query, request)
     })
