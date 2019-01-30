@@ -17,13 +17,15 @@ import resolvers from 'app/resolvers'
 startGraphQL({
   resolvers,
   subscriptions,
-  pubsub
+  pubsub,
+  graphiql
 })
 ```
 
 - `resolvers`: An object with all the resolvers of your app. If you pass the option `private: true` when creating the resolver, it will be omitted (see [`Resolvers`](https://orionjs.com/docs/resolvers)).
 - `subscriptions`: An object containing all the subscriptions of your app.
 - `pubsub`: Only required if you use subscriptions. A pubsub implementation compatible with [apollo-subscriptions](https://github.com/apollographql/graphql-subscriptions#pubsub-implementations).
+- `graphiql`: A boolean to set up the graphiQL in-browser IDE for exploring GraphQL. Defaults to `true`.
 
 By default, Orionjs provides this functionality in the `index` file of the `services/graphql` folder:
 

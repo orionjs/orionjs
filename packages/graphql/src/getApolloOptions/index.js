@@ -8,6 +8,7 @@ export default async function(options) {
     endpointURL: '/graphql',
     subscriptionsEndpoint: `/subscriptions`,
     schema,
-    formatError
+    formatError,
+    graphiql: options.graphiql || true
   }
 }
