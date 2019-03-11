@@ -3,19 +3,21 @@ import runOnce from './runOnce'
 import colors from 'colors/safe'
 import sleep from '../helpers/sleep'
 import waitForPorts from './waitForPorts'
+import killProcess from './killProcess'
+import waitAppStopped from './waitAppStopped'
+import {setOnExit} from '../helpers/onExit'
 
-let appProcess = null
+setOnExit(async () => {
+  await waitAppStopped()
+})
+
+global.appProcess = null
 
 const restart = runOnce(async function() {
-  if (appProcess) {
+  if (global.appProcess) {
     console.log('')
     console.log(colors.bold('=> Restarting...'))
-    appProcess.kill()
-    if (!(await waitForPorts())) {
-      console.log(colors.bold.red('\n=> Error stopping app. Please start the app again'))
-      process.exit()
-      return
-    }
+    await killProcess()
   } else {
     if (!(await waitForPorts())) {
       const port = process.env.PORT || 3000
@@ -26,7 +28,7 @@ const restart = runOnce(async function() {
   }
 
   const options = global.processOptions
-  appProcess = await runProcess({restart, options})
+  global.appProcess = await runProcess({restart, options})
   console.log(colors.bold('=> App started\n'))
 
   await sleep(100)

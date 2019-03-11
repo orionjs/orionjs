@@ -15,7 +15,7 @@ const arePortsInUse = async function() {
 export default async function() {
   for (let i = 0; await arePortsInUse(); i++) {
     await sleep(10)
-    // 5 secs
+    // 10 secs
     if (i > 100) {
       return false
     }

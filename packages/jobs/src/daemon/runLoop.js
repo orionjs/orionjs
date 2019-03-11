@@ -1,9 +1,26 @@
 import sleep from '../helpers/sleep'
 import loop from './loop'
+import {setOnExit} from '@orion-js/app'
 
-export default async function runLoop({jobs, workers}, delay) {
-  if (delay) {
-    await sleep(delay)
+export default async function runAgain({jobs, workers}) {
+  let exited = false
+  let currentLoop = null
+
+  setOnExit(async () => {
+    exited = true
+
+    if (currentLoop) {
+      await currentLoop
+    }
+  })
+
+  while (true) {
+    if (exited) return
+    currentLoop = loop({jobs, workers})
+
+    const delay = await currentLoop
+    if (delay) {
+      await sleep(delay)
+    }
   }
-  process.nextTick(() => loop({jobs, workers, runLoop}))
 }

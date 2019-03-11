@@ -1,15 +1,24 @@
+import {setOnExit} from '@orion-js/app'
+
 export default class Worker {
   constructor({index}) {
     this.index = index
+    setOnExit(this.onExit)
+  }
+
+  onExit = async () => {
+    if (this.currentExecution) {
+      await this.currentExecution
+    }
   }
 
   itsFree() {
-    return !this.running
+    return !this.currentExecution
   }
 
   async execute(func) {
-    this.running = true
-    await func()
-    this.running = false
+    this.currentExecution = func()
+    await this.currentExecution
+    this.currentExecution = null
   }
 }

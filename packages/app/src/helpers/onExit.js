@@ -22,5 +22,8 @@ exitHook(async onReady => {
       }
     })
   )
+  try {
+    require('inspector').close()
+  } catch (error) {}
   onReady()
 })

@@ -25,11 +25,12 @@
   dependencies:
     regenerator-runtime "^0.12.0"
 
-"@orion-js/schema@^0.7.26":
-  version "0.7.26"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.7.26.tgz#b6ad276c6f8de9fc1d25645c23ba8847bec73fd8"
-  integrity sha512-iopRdLAeK9F1Rgqhxg/bMaOhOg2tfK6uEdNbBLiHi821WSDFzxUlEL80eu5wM8OPFSNt1hyT47JsA5JG0ee0uw==
+"@orion-js/schema@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.9.0.tgz#08a1c7f50c61852eb9a43be5bf03d316afb5f292"
+  integrity sha512-tosb5i1Tq1UQKU4wdRTsBAJG0G5ytbr0POjtOSuLoxEpk2FLY/7Z+8nK2LVgvjV+bnjBnxauuxSKg6dNf1ysHQ==
   dependencies:
+    dot-object "^1.7.0"
     lodash "^4.17.10"
 
 abab@^1.0.4:
@@ -270,6 +271,11 @@ astral-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/astral-regex/-/astral-regex-1.0.0.tgz#6c8c3fb827dd43ee3918f27b82782ab7658a6fd9"
   integrity sha512-+Ryf6g3BKoRc7jfp7ad8tM4TtMiaWvbF/1/sQcZPkkS7ag3D5nMBCe2UfOTONtAkaG0tO0ij3C5Lwmf1EiyjHg==
+
+async-exit-hook@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/async-exit-hook/-/async-exit-hook-2.0.1.tgz#8bd8b024b0ec9b1c01cccb9af9db29bd717dfaf3"
+  integrity sha512-NW2cX8m1Q7KPA7a5M2ULQeZ2wR5qI5PAbw5L0UOMxdioVk9PMZ0h1TmyZEkPYrCvYjDlFICusOu1dlEKAAeXBw==
 
 async-limiter@~1.0.0:
   version "1.0.0"

@@ -1,10 +1,10 @@
-import onExit from '../helpers/onExit'
+import {setOnExit} from '../helpers/onExit'
 
 export default function(func, time) {
   let callbacks = []
   let timeout = null
 
-  onExit(() => {
+  setOnExit(async () => {
     if (timeout) {
       clearTimeout(timeout)
     }

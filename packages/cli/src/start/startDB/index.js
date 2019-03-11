@@ -1,9 +1,10 @@
-import {exec} from 'child_process'
+import {spawn} from 'child_process'
 import colors from 'colors/safe'
 import ensureDirectory from '../../helpers/ensureDirectory'
 import sleep from '../../helpers/sleep'
 import fs from 'fs'
-import onExit from '../../helpers/onExit'
+import waitAppStopped from '../waitAppStopped'
+import {setOnExit} from '../../helpers/onExit'
 
 export default async function() {
   ensureDirectory('.orion/db/logs/mongolog.log')
@@ -11,18 +12,28 @@ export default async function() {
 
   const appPort = process.env.PORT || 3000
   const dbPort = appPort + 1
-  const command = `mongod --dbpath=.orion/db/data --port=${dbPort} --logpath .orion/db/logs/mongolog.log`
+  const args = `--dbpath=.orion/db/data --port=${dbPort} --logpath .orion/db/logs/mongolog.log`.split(
+    ' '
+  )
 
   const dbProcess = await new Promise(async function(resolve, reject) {
     let error = false
-    const dbProcess = exec(command, {}, function(error, stdout, stderr) {
-      console.error(stderr)
-      if (error) {
-        const logs = fs.readFileSync('.orion/db/logs/mongolog.log')
-        reject(new Error(logs))
-        error = true
+    const dbProcess = spawn(
+      'mongod',
+      args,
+      {
+        cwd: process.cwd(),
+        detached: true
+      },
+      function(error, stdout, stderr) {
+        console.error(stderr)
+        if (error) {
+          const logs = fs.readFileSync('.orion/db/logs/mongolog.log')
+          reject(new Error(logs))
+          error = true
+        }
       }
-    })
+    )
     await sleep(2000)
     if (!error) {
       resolve(dbProcess)
@@ -36,7 +47,8 @@ export default async function() {
     }
   })
 
-  onExit(() => {
+  setOnExit(async () => {
+    await waitAppStopped()
     console.log(colors.bold('\n=> Stopping database...'))
     dbProcess.kill()
   })
