@@ -4,6 +4,7 @@ const callbacks = []
 
 export const setOnExit = function(callback) {
   callbacks.push(callback)
+  return callback
 }
 
 export const clearOnExit = function(callback) {
