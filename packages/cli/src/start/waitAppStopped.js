@@ -11,8 +11,9 @@ export default async function() {
     }
 
     await sleep(100)
-    // 60 secs
-    if (i > 10 * 60) {
+    // 10 min
+    if (i > 10 * 60 * 10) {
+      console.log('App stop timeout')
       return
     }
   }
