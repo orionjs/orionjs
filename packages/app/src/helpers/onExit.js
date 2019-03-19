@@ -14,6 +14,9 @@ export const clearOnExit = function(callback) {
 }
 
 exitHook(async onReady => {
+  try {
+    require('inspector').close()
+  } catch (error) {}
   await Promise.all(
     callbacks.map(async callback => {
       try {
@@ -23,8 +26,5 @@ exitHook(async onReady => {
       }
     })
   )
-  try {
-    require('inspector').close()
-  } catch (error) {}
   onReady()
 })
