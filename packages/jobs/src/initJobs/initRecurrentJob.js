@@ -6,7 +6,8 @@ export default async function(job) {
 
   if (job.runEvery) {
     job.getNextRun = previous => {
-      const date = previous ? previous.date : new Date()
+      if (!previous) return new Date()
+      const date = previous.date
       return new Date(date.getTime() + job.runEvery)
     }
   }
