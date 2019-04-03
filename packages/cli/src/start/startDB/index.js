@@ -23,7 +23,7 @@ export default async function() {
       args,
       {
         cwd: process.cwd(),
-        detached: true
+        detached: false
       },
       function(error, stdout, stderr) {
         console.error(stderr)
