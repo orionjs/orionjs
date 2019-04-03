@@ -115,7 +115,9 @@ Model.clone({
   name,
   omitFields,
   pickFields,
-  mapFields
+  mapFields,
+  extendSchema,
+  extendResolvers
 })
 ```
 
@@ -123,6 +125,8 @@ Model.clone({
 - `omitFields`: Optional. An array of the schema fields you want to omit in the new model.
 - `pickFields`: Optional. An array of the schema fields you want to pass to the new model. You may use `omitFields` or `pickFields`, but not both at the same time.
 - `mapFields`: Optional. A function that receives a field of the schema and returns a replacement for that field.
+- `extendSchema`: Optional. Add fields to the cloned model.
+- `extendResolvers`: Optional. Add resolvers to the cloned model.
 
 #### Clone model example
 

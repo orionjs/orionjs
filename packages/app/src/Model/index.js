@@ -30,6 +30,17 @@ export default class Model {
     return this.resolvedResolvers
   }
 
+  set resolvers(resolvers) {
+    this._resolvers = resolvers
+    this.resolvedResolvers = 'unresolved'
+  }
+
+  get schema() {
+    const schema = this.getSchema()
+    if (!schema) return
+    return modelToSchema.call(this, schema)
+  }
+
   set schema(schema) {
     this._schema = schema
     this.resolvedSchema = 'unresolved'
@@ -41,12 +52,6 @@ export default class Model {
 
     this.resolvedSchema = this._getSchema(schema)
     return this.resolvedSchema
-  }
-
-  get schema() {
-    const schema = this.getSchema()
-    if (!schema) return
-    return modelToSchema.call(this, schema)
   }
 
   get staticFields() {
@@ -86,7 +91,9 @@ export default class Model {
     pickFields,
     mapFields = f => f,
     clean = this._clean,
-    validate = this._validate
+    validate = this._validate,
+    extendSchema = {},
+    extendResolvers = {}
   }) {
     const getSchema = function(_schema) {
       const schema = {}
@@ -104,14 +111,55 @@ export default class Model {
       return schema
     }
 
+    let resolvers = this._resolvers
+
+    if (extendResolvers) {
+      const prevResolvers = this._resolvers
+      resolvers = () => {
+        return {
+          ...resolveParam(prevResolvers),
+          ...extendResolvers
+        }
+      }
+    }
+
+    let schema = this._schema
+
+    if (extendSchema) {
+      const prevSchema = this._schema
+      schema = () => {
+        return {
+          ...resolveParam(prevSchema),
+          ...extendSchema
+        }
+      }
+    }
+
     return new Model({
       name,
-      schema: this._schema,
+      schema,
       getSchema,
-      resolvers: this._resolvers,
+      resolvers,
       clean,
       validate
     })
+  }
+
+  extend({schema = {}, resolvers = {}}) {
+    const newSchema = {
+      ...this.schema,
+      ...schema
+    }
+
+    const newResolvers = {
+      ...this.resolvers,
+      ...resolvers
+    }
+
+    this.schema = newSchema
+    this.resolvers = newResolvers
+
+    return this
   }
 
   async validate(doc, ...options) {
