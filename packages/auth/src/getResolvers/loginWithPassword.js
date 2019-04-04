@@ -1,6 +1,7 @@
 import {resolver} from '@orion-js/app'
 import findUserByEmail from '../helpers/findUserByEmail'
 import checkPassword from '../helpers/checkPassword'
+import hasPassword from '../helpers/hasPassword'
 import createSession from '../helpers/createSession'
 import requireTwoFactor from '../helpers/requireTwoFactor'
 
@@ -26,6 +27,9 @@ export default ({Users, Session, Sessions, twoFactor}) =>
           const user = await findUserByEmail({email, Users})
           if (!user) {
             return
+          }
+          if (!hasPassword(user)) {
+            return 'noPassword'
           }
           if (!checkPassword(user, password)) {
             return 'incorrectPassword'
