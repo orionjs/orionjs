@@ -1,8 +1,8 @@
-import connect from '../database/connect'
 import getMethods from './getMethods'
 import checkOptions from './checkOptions'
 import loadIndexes from './loadIndexes'
 import Model from '../Model'
+import connect from '../database/connect'
 
 global.db = {}
 
@@ -10,7 +10,9 @@ export default function(passedOptions) {
   const defaultOptions = {
     model: new Model({name: 'defaultModelFor_' + passedOptions.name || 'nn'}),
     passUpdateAndRemove: true,
-    hooks: []
+    hooks: [],
+    // dont make the request if its not using the default
+    connection: passedOptions.connection ? null : connect().then(database => ({database}))
   }
 
   const options = {
@@ -27,11 +29,11 @@ export default function(passedOptions) {
   let onReady = () => resolvers.map(resolve => resolve(collection))
   collection.await = async () => (isReady ? null : new Promise(resolve => resolvers.push(resolve)))
 
-  connect().then(async db => {
+  options.connection.then(async ({database}) => {
     checkOptions(options)
     global.db[options.name] = collection
 
-    const rawCollection = db.collection(options.name)
+    const rawCollection = database.collection(options.name)
     collection.rawCollection = rawCollection
 
     const methods = getMethods(collection)

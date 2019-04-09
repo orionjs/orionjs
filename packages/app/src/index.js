@@ -2,6 +2,7 @@ import 'babel-polyfill'
 import './Errors/handleErrors'
 import connect from './database/connect'
 import disconnect from './database/disconnect'
+import connectToDatabase from './database/connectToDatabase'
 import getServer from './route/start'
 import register from './register'
 import route from './route'
@@ -24,6 +25,7 @@ import sleep from './helpers/sleep'
 import {setOnExit, clearOnExit} from './helpers/onExit'
 
 export {
+  connectToDatabase,
   setOnExit,
   clearOnExit,
   connect,
