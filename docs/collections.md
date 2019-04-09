@@ -29,7 +29,8 @@ import {Collection} from '@orion-js/app'
 const MyCollection = new Collection({
   name,
   model,
-  indexes
+  indexes,
+  connection
 })
 ```
 
@@ -38,6 +39,7 @@ const MyCollection = new Collection({
 - `indexes`: An array of indexes for this collection. Each item will be passed to the `collection.createIndex(keys, options)` function from MongoDB.
   - `keys`: An object containing the keys.
   - `options` An object with the options of the index.
+- `connection`: Specify another database connection ([see more](#connecting-to-multiple-databases)).
 
 ---
 
@@ -106,6 +108,38 @@ const result = await collection.aggregate(pipeline).toArray()
 
 ---
 
+## Connecting to multiple databases
+
+You can specify another database connection when initializing a collection. To connect to other database call the `connectToDatabase` function.
+
+```js
+import {connectToDatabase} from '@orion-js/app'
+
+const mongoURL = process.env.OTHER_MONGO_URL
+
+export default connectToDatabase(mongoURL)
+```
+
+Then use the object returned by that function on the connection param for the collection.
+
+```js
+import {Collection} from '@orion-js/app'
+import User from 'app/models/User'
+import otherDatabaseConnection from '../otherDatabaseConnection'
+
+export default new Collection({
+  name: 'users',
+  model: User,
+  connection: otherDatabaseConnection
+})
+```
+
+---
+
 ## Using MongoDB node API
 
 If you need to use the native MongoDB collection api you can get it from the `rawCollection` variable of the collection.
+
+```
+
+```
