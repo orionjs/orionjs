@@ -4,6 +4,7 @@ const getDbName = require('./getDbName')
 const connections = {}
 
 const connect = async function(mongoURL) {
+  console.log('connecting to ', mongoURL)
   connections[mongoURL].connecting = true
 
   const options = {useNewUrlParser: true}
@@ -35,6 +36,10 @@ module.exports = async function connectToDatabase(mongoURL) {
     resolvers: [],
     client: null,
     database: null
+  }
+
+  if (connections[mongoURL].database) {
+    return connections[mongoURL]
   }
 
   if (!connections[mongoURL].connecting) {
