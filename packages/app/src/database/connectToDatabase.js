@@ -4,7 +4,6 @@ const getDbName = require('./getDbName')
 const connections = {}
 
 const connect = async function(mongoURL) {
-  console.log('connecting to ', mongoURL)
   connections[mongoURL].connecting = true
 
   const options = {useNewUrlParser: true}
