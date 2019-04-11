@@ -17,12 +17,12 @@ const connect = async function(mongoURL) {
   const dbName = getDbName(mongoURL)
   connections[mongoURL].client = client
   connections[mongoURL].database = client.db(dbName)
+  connections[mongoURL].connecting = false
 
   for (const resolve of connections[mongoURL].resolvers) {
     resolve(connections[mongoURL])
   }
 
-  connections[mongoURL].connecting = false
   return connections[mongoURL]
 }
 
