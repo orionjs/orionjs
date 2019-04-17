@@ -1,3 +1,4 @@
+require('@babel/polyfill')
 const {default: MongodbMemoryServer} = require('mongodb-memory-server')
 const connect = require('../database/connect')
 

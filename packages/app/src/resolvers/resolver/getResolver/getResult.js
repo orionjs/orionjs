@@ -6,14 +6,11 @@ export default async function({cache: cacheTTL, resolverId, parent, callParams, 
 
   if (cacheTTL) {
     const key = getCacheKey({parent, callParams, resolverId})
-    const result = await cache.get(key)
-    if (result) {
-      return result.value
-    } else {
-      const newResult = await resolve(...resolveArgs)
-      cache.set(key, newResult, {ttl: cacheTTL})
-      return newResult
-    }
+    const result = await cache.get(key, {
+      fallback: () => resolve(...resolveArgs),
+      ttl: cacheTTL
+    })
+    return result.value
   } else {
     return await resolve(...resolveArgs)
   }
