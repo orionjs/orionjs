@@ -1,7 +1,7 @@
 const promises = {}
 
 export default function(store) {
-  const getData = async function(key, {fallback, ttl}) {
+  const getData = async function(key, {fallback, ttl} = {}) {
     const saved = await store.get(key)
     if (saved) return saved
     if (!fallback) return null
