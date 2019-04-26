@@ -2,7 +2,7 @@ import Model from '../../Model'
 import hash from './hash'
 import resolver from '../resolver'
 
-export default ({returns}) => {
+export default ({returns, modelName}) => {
   const getTotalCount = async function(paginated) {
     if (typeof paginated.count === 'undefined') {
       paginated.count = await paginated.cursor.count()
@@ -69,7 +69,7 @@ export default ({returns}) => {
   })
 
   return new Model({
-    name: `Paginated${returns.name}`,
+    name: modelName || `Paginated${returns.name}`,
     resolvers: {
       _id,
       totalCount,

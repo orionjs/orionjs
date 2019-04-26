@@ -17,17 +17,21 @@ export default async function getParams(field) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
 
+    if (model.__graphQLSchema) return model.__graphQLSchema
+
     const fields = {}
 
     for (const field of model.staticFields) {
       fields[field.key] = await getParams(field)
     }
 
-    return {
+    model.__graphQLSchema = {
       ...omit(field, 'key'),
       type: fields,
       __graphQLType: model.name + 'Input'
     }
+
+    return model.__graphQLSchema
   } else {
     const schemaType = await getFieldType(type)
     const graphQLType = await getScalar(schemaType)
