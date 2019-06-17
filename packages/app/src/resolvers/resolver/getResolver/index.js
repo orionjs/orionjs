@@ -5,7 +5,16 @@ import initResult from './initResult'
 import getResult from './getResult'
 
 export default function(options) {
-  const {cache, resolverId, params, returns, resolve, checkPermission, ...otherOptions} = options
+  const {
+    cache,
+    getCacheKey,
+    resolverId,
+    params,
+    returns,
+    resolve,
+    checkPermission,
+    ...otherOptions
+  } = options
   return async function(...args) {
     let {parent, callParams, viewer} = getArgs(...args)
 
@@ -15,6 +24,7 @@ export default function(options) {
 
     let result = await getResult({
       cache,
+      getCacheKey,
       resolverId,
       parent,
       callParams,

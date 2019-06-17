@@ -12,6 +12,7 @@ export default function({
   resolve,
   checkPermission,
   cache,
+  getCacheKey,
   ...otherOptions
 }) {
   const params = cleanParams(rawParams)
@@ -24,6 +25,7 @@ export default function({
     resolve,
     checkPermission,
     cache,
+    getCacheKey,
     ...otherOptions
   })
 
@@ -32,6 +34,7 @@ export default function({
   const resolver = getResolver({
     resolverId,
     cache,
+    getCacheKey,
     params,
     returns,
     resolve,
@@ -47,6 +50,7 @@ export default function({
   resolver.checkPermission = checkPermission
   resolver.private = isPrivate
   resolver.resolve = resolver
+  resolver.getCacheKey = getCacheKey
   resolver.invalidateCache = getInvalidateCache(resolver)
 
   return resolver
