@@ -10,7 +10,7 @@ test('return an error when the value is incorrect', async () => {
 })
 
 test('return no error when the value is correct', async () => {
-  expect(ID.validate(1234)).toBeFalsy()
+  expect(ID.clean(1234)).toBe('1234')
   expect(ID.validate('helloworld')).toBeFalsy()
   expect(ID.validate('123456')).toBeFalsy()
 })
