@@ -22,7 +22,8 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
       password: {
         type: String,
         min: 8,
-        label: 'Password'
+        label: 'Password',
+        optional: true
       },
       ...({profile} || {})
     },
@@ -36,24 +37,29 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
             verified: false
           }
         ],
-        services: {
-          password: {
-            bcrypt: hashPassword(password),
-            createdAt: new Date()
-          }
-        },
+        services: {},
         profile: profile || {},
         createdAt: new Date()
       }
+
+      if (password) {
+        newUser.services.password = {
+          bcrypt: hashPassword(password),
+          createdAt: new Date()
+        }
+      }
+
       const userId = await Users.insert(newUser)
       const user = await Users.findOne(userId)
       if (onCreateUser) {
         await onCreateUser(user)
       }
+
       if (sendEmailVerificationToken) {
         const token = await generateVerifyEmailToken(user)
         await sendEmailVerificationToken(user, token)
       }
+
       return await createSession(user)
     }
   })

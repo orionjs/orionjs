@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 
-var UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
+var UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghjkmnopqrstuvwxyz'
 
 const hexString = function(digits) {
   var numBytes = Math.ceil(digits / 2)

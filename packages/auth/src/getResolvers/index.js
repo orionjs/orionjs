@@ -17,6 +17,8 @@ import disableTwoFactor from './disableTwoFactor'
 import registerCheckers from './registerCheckers'
 import {setOptions} from '../optionsStore'
 import sendVerificationEmail from './sendVerificationEmail'
+import loginWithCode from './loginWithCode'
+import requestLoginCode from './requestLoginCode'
 
 export default function(options) {
   options.Sessions = Sessions(options)
@@ -53,7 +55,7 @@ export default function(options) {
     }
   }
 
-  return {
+  const resolvers = {
     loginWithPassword: loginWithPassword(options),
     logout: logout(options),
     getUserByID: getUserByID(options),
@@ -66,4 +68,11 @@ export default function(options) {
     verifyEmail: verifyEmail(options),
     ...twoFactor
   }
+
+  if (options.sendLoginCode) {
+    resolvers.loginWithCode = loginWithCode(options)
+    resolvers.requestLoginCode = requestLoginCode(options)
+  }
+
+  return resolvers
 }
