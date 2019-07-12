@@ -22,7 +22,7 @@ export default ({Users, Session, Sessions}) =>
     },
     returns: Session,
     mutation: true,
-    resolve: async function({token}) {
+    resolve: async function({token}, viewer) {
       const user = await Users.findOne({'services.emailVerify.token': token})
       const {email} = user.services.emailVerify
 
@@ -33,6 +33,6 @@ export default ({Users, Session, Sessions}) =>
           $unset: {'services.emailVerify': ''}
         }
       )
-      return await createSession(user)
+      return await createSession(user, viewer)
     }
   })

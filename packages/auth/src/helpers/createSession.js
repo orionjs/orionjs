@@ -9,8 +9,8 @@ const hasEmailsVerified = function(user) {
   return true
 }
 
-export default async function(user, options) {
-  const {Sessions} = getOptions()
+export default async function(user, viewer) {
+  const {Sessions, onCreateSession} = getOptions()
 
   if (!user) throw new Error('User not found')
   const session = {
@@ -22,10 +22,14 @@ export default async function(user, options) {
     userId: user._id,
     locale: user.locale,
     roles: user.roles,
-    emailVerified: hasEmailsVerified(user),
-    options
+    emailVerified: hasEmailsVerified(user)
   }
   const sessionId = await Sessions.insert(session)
   session._id = sessionId
+
+  if (onCreateSession) {
+    await onCreateSession(session, viewer)
+  }
+
   return session
 }

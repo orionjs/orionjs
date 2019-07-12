@@ -28,7 +28,7 @@ export default ({Users, Session, Sessions}) =>
     },
     returns: Session,
     mutation: true,
-    resolve: async function({token, password}) {
+    resolve: async function({token, password}, viewer) {
       const user = await Users.findOne({'services.forgot.token': token})
 
       const modifier = {
@@ -54,6 +54,6 @@ export default ({Users, Session, Sessions}) =>
       }
 
       await Users.update(user._id, modifier)
-      return await createSession(user)
+      return await createSession(user, viewer)
     }
   })

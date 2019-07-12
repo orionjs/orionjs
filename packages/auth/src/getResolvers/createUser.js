@@ -29,7 +29,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, password, profile}) {
+    resolve: async function({email, password, profile}, viewer) {
       const newUser = {
         emails: [
           {
@@ -60,7 +60,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
         await sendEmailVerificationToken(user, token)
       }
 
-      return await createSession(user)
+      return await createSession(user, viewer)
     }
   })
 }
