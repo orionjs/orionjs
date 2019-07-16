@@ -72,7 +72,12 @@ const siteConfig = {
 
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
-  repoUrl: 'https://github.com/orionjs/orionjs'
+  repoUrl: 'https://github.com/orionjs/orionjs',
+  algolia: {
+    apiKey: 'c7383946eb91c665407697fcf1b4ec3a',
+    indexName: 'orionjs',
+    algoliaOptions: {} // Optional, if provided by Algolia
+  }
 }
 
 module.exports = siteConfig
