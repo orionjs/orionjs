@@ -33,7 +33,8 @@ const siteConfig = {
   headerLinks: [
     {doc: 'installation', label: 'Docs'},
     {page: 'help', label: 'Help'},
-    {blog: true, label: 'Blog'}
+    {blog: true, label: 'Blog'},
+    {search: true}
   ],
 
   // If you have users set above, you add it here:
