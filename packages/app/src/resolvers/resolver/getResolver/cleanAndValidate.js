@@ -3,7 +3,10 @@ import {validate, clean} from '@orion-js/schema'
 
 export default async function({params, callParams, viewer}) {
   if (params) {
-    const options = {}
+    const options = {
+      filter: false,
+      removeEmptyStrings: false
+    }
     const schema = getSchema(params, callParams, options, viewer)
     const cleaned = await clean(schema, callParams, options, viewer)
     await validate(schema, cleaned, options, viewer)
