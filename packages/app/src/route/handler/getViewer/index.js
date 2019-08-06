@@ -6,6 +6,7 @@ export default async function(params) {
   try {
     const getViewer = getGetViewer()
     const viewer = params && getViewer ? (await getViewer(params)) || {} : {}
+    viewer.roles = viewer.roles || []
     viewer.locale = viewer.locale || (params && params.headers['x-orion-locale']) || 'en'
     viewer.ip = getIp(params.request)
     viewer.headers = params.headers
