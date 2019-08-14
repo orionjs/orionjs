@@ -123,10 +123,10 @@ export default class Model {
       }
     }
 
-    let schema = this._schema
+    let schema = this.getSchema(this._schema)
 
     if (extendSchema) {
-      const prevSchema = this._schema
+      const prevSchema = schema
       schema = () => {
         return {
           ...resolveParam(prevSchema),
