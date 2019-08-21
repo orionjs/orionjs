@@ -23,6 +23,6 @@ export default async function(options) {
       query
     })
 
-    return gqlResponse
+    return gqlResponse.graphqlResponse
   })
 }
