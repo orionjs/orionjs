@@ -6,12 +6,18 @@ import {RetryLink} from 'apollo-link-retry'
 import {ApolloLink} from 'apollo-link'
 
 export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
-  const customFetch = (uri, options) => {
+  const customFetch = async (uri, options) => {
     const authHeaders = getAuthHeaders(options.body, getHeaders)
     for (const key of Object.keys(authHeaders)) {
       options.headers[key] = authHeaders[key]
     }
-    return fetch(uri, options)
+    try {
+      const result = await fetch(uri, options)
+      return result
+    } catch (error) {
+      console.warn('GraphQL request error:', error)
+      throw error
+    }
   }
 
   const retryLink = new RetryLink({
