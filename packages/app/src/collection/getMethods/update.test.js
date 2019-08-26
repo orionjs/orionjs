@@ -6,8 +6,8 @@ it('updates a document without errors', async () => {
   const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
   const docId = await Tests.insert({hello: 'world'})
-  const modifiedCount = await Tests.update(docId, {$set: {hello: 'country'}})
-  expect(modifiedCount).toBe(1)
+  const result = await Tests.update(docId, {$set: {hello: 'country'}})
+  expect(result.nModified).toBe(1)
   const final = await Tests.findOne(docId)
   expect(final.hello).toBe('country')
 })
@@ -28,8 +28,8 @@ it('updates multiple document without errors', async () => {
 
   await Tests.insert({hello: 'world'})
   await Tests.insert({hello: 'world'})
-  const modifiedCount = await Tests.update({}, {$set: {hello: 'country'}}, {multi: true})
-  expect(modifiedCount).toBe(2)
+  const result = await Tests.update({}, {$set: {hello: 'country'}}, {multi: true})
+  expect(result.nModified).toBe(2)
   const items = await Tests.find().toArray()
   for (const item of items) {
     expect(item.hello).toBe('country')

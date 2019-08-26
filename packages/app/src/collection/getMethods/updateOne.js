@@ -23,5 +23,5 @@ export default ({rawCollection, schema, collection}) =>
     const result = await rawCollection.updateOne(selector, modifier, options)
     await runHooks(collection, 'after.update', selector, modifier, options, ...otherArgs)
 
-    return result.result.nModified
+    return result.result
   }

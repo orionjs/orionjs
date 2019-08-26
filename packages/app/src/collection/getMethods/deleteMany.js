@@ -13,5 +13,5 @@ export default ({rawCollection, collection}) =>
     const result = await rawCollection.deleteMany(selector, options)
     await runHooks(collection, 'after.remove', selector, options, ...otherArgs)
 
-    return result.result.ok
+    return result.result
   }

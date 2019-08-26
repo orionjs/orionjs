@@ -26,6 +26,7 @@ export default ({rawCollection, schema, collection}) =>
     await runHooks(collection, 'after.upsert', selector, modifier, options, ...otherArgs)
     return {
       numberAffected: result.result.nModified,
-      insertedId: (result.result.upserted || []).map(item => item._id)[0] || null
+      insertedId: (result.result.upserted || []).map(item => item._id)[0] || null,
+      ...result.result
     }
   }

@@ -22,7 +22,6 @@ it('cloned model should pick fields correctly', async () => {
   })
 
   const keys = Object.keys(model3.schema).filter(key => !key.startsWith('__'))
-  console.log(keys)
 
   expect(keys).toEqual(['a'])
 })
