@@ -9,7 +9,7 @@ export default function({returns, result}) {
       } else if (isArray(result)) {
         return result.map(item => returns[0].initItem(item))
       } else {
-        console.warn(`A resolver did not return an array when it should`, result)
+        console.warn(`A resolver did not return an array when it should. Result:`, result)
         return result
       }
     } else if (returns.__isModel) {
