@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "0.17.3",
+  "version": "0.17.5",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "subscriptions-transport-ws": "^0.9.16"
   },
   "devDependencies": {
-    "@orion-js/app": "^0.17.3",
+    "@orion-js/app": "^0.17.5",
     "babel-jest": "^22.4.3",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
