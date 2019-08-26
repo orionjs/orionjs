@@ -31,6 +31,7 @@ export default async function({resolvers, mutation}) {
           return result
         } catch (error) {
           console.error('Error at resolver "' + name + '":')
+          console.error(error)
           throw error
         }
       }
