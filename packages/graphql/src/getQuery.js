@@ -6,7 +6,7 @@ const {json} = micro
 export default async function(request) {
   if (request.method === 'POST') {
     try {
-      return await json(request)
+      return await json(request, { limit: (process.env.MICRO_BODY_LIMIT || '1mb') })
     } catch (error) {
       console.error(error)
     }
