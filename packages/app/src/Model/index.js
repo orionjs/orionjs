@@ -164,11 +164,11 @@ export default class Model {
 
   async validate(doc, ...options) {
     const schema = this.schema
-    await validate(schema, doc, ...options)
+    return await validate(schema, doc, ...options)
   }
 
   async clean(doc, ...options) {
     const schema = this.schema
-    await clean(schema, doc, ...options)
+    return await clean(schema, doc, ...options)
   }
 }
