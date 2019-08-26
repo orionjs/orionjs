@@ -12,6 +12,17 @@ it('updates a document without errors', async () => {
   expect(final.hello).toBe('country')
 })
 
+it('updates an item with modifier', async () => {
+  const Tests = await new Collection({name: generateId(), passUpdateAndRemove: true}).await()
+
+  const docId = await Tests.insert({hello: 'world'})
+  const doc = await Tests.findOne(docId)
+  await doc.update({$set: {hello: 'city'}})
+  expect(doc.hello).toBe('city')
+  const final = await Tests.findOne(docId)
+  expect(final.hello).toBe('city')
+})
+
 it('throws an error when no modifier is passed', async () => {
   const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 

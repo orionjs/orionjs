@@ -30,7 +30,7 @@ export default function(collection) {
       }
       item.update = async function(modifier) {
         const result = await funcs.update(doc._id, modifier)
-        if (result === 1) {
+        if (result.modifiedCount === 1) {
           updateItemWithModifier(item, modifier)
         }
         return result
