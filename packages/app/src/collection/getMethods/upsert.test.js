@@ -6,12 +6,12 @@ it('updates a document if exists', async () => {
   const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
   const docId = await Tests.insert({hello: 'world'})
-  const {numberAffected, insertedId} = await Tests.upsert(
+  const {modifiedCount, upsertedId} = await Tests.upsert(
     {hello: 'world'},
     {$set: {hello: 'country'}}
   )
-  expect(numberAffected).toBe(1)
-  expect(insertedId).toBeNull()
+  expect(modifiedCount).toBe(1)
+  expect(upsertedId).toBeNull()
   const final = await Tests.findOne(docId)
   expect(final.hello).toBe('country')
 })
@@ -19,12 +19,12 @@ it('updates a document if exists', async () => {
 it('inserts a document if it does not exists', async () => {
   const Tests = await new Collection({name: generateId(), passUpdateAndRemove: false}).await()
 
-  const {numberAffected, insertedId} = await Tests.upsert(
+  const {modifiedCount, upsertedId} = await Tests.upsert(
     {hello: 'world'},
     {$set: {hello: 'country'}}
   )
-  expect(numberAffected).toBe(0)
-  expect(typeof insertedId).toBe('string')
+  expect(modifiedCount).toBe(0)
+  expect(typeof upsertedId).toBe('string')
   const final = await Tests.findOne()
   expect(final.hello).toBe('country')
 })
@@ -60,16 +60,16 @@ it('adds autovalue when creating docs', async () => {
     model
   }).await()
 
-  const {numberAffected, insertedId} = await Tests.upsert(
+  const {modifiedCount, upsertedId} = await Tests.upsert(
     {firstName: 'Bastian'},
     {$set: {lastName: 'Ermann'}}
   )
-  expect(numberAffected).toBe(0)
+  expect(modifiedCount).toBe(0)
   expect(calls).toBe(1)
-  expect(typeof insertedId).toBe('string')
+  expect(typeof upsertedId).toBe('string')
   const final = await Tests.findOne()
   expect(final).toEqual({
-    _id: insertedId,
+    _id: upsertedId,
     firstName: 'Nicolás',
     lastName: 'Ermann',
     createdAt: now
@@ -97,7 +97,7 @@ it('should upsert documents passing cleaning validation', async () => {
     model
   }).await()
 
-  const {insertedId} = await Tests.upsert(
+  const {upsertedId} = await Tests.upsert(
     {name: 'Nicolás', label: 1234},
     {
       $set: {'wife.state': 'Hungry', 'wife.name': 'Francisca'},
@@ -105,11 +105,11 @@ it('should upsert documents passing cleaning validation', async () => {
     }
   )
 
-  await Tests.update(insertedId, {$set: {'wife.state': 'Full'}})
+  await Tests.update(upsertedId, {$set: {'wife.state': 'Full'}})
 
-  const doc = await Tests.findOne(insertedId)
+  const doc = await Tests.findOne(upsertedId)
   expect(doc).toEqual({
-    _id: insertedId,
+    _id: upsertedId,
     name: 'Nicolás',
     label: '1234',
     wife: {state: 'Full', name: 'Francisca'},

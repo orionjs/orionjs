@@ -6,12 +6,9 @@ const connections = {}
 const connect = async function(mongoURL) {
   connections[mongoURL].connecting = true
 
-  const options = {useNewUrlParser: true}
+  const options = {useNewUrlParser: true, useUnifiedTopology: true}
 
-  const client = await MongoClient.connect(
-    mongoURL,
-    options
-  )
+  const client = await MongoClient.connect(mongoURL, options)
 
   const dbName = getDbName(mongoURL)
   connections[mongoURL].client = client

@@ -1,5 +1,6 @@
 import getSelector from './getSelector'
 import runHooks from './runHooks'
+import cleanResult from './cleanResult'
 
 export default ({rawCollection, collection}) =>
   async function remove(...args) {
@@ -13,5 +14,5 @@ export default ({rawCollection, collection}) =>
     const result = await rawCollection.deleteMany(selector, options)
     await runHooks(collection, 'after.remove', selector, options, ...otherArgs)
 
-    return result.result
+    return cleanResult(result)
   }

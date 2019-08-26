@@ -2,6 +2,7 @@ import getSelector from './getSelector'
 import validateModifier from './validateModifier'
 import cleanModifier from './cleanModifier'
 import runHooks from './runHooks'
+import cleanResult from './cleanResult'
 
 export default ({rawCollection, schema, collection}) =>
   async function update(...args) {
@@ -23,5 +24,5 @@ export default ({rawCollection, schema, collection}) =>
     const result = await rawCollection.updateMany(selector, modifier, options)
     await runHooks(collection, 'after.update', selector, modifier, options, ...otherArgs)
 
-    return result.result
+    return cleanResult(result)
   }
