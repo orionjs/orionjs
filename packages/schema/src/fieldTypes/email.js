@@ -11,5 +11,12 @@ export default fieldType({
     const regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
     if (!regex.test(value)) return Errors.NOT_AN_EMAIL
+  },
+  clean(value) {
+    if (typeof value === 'string') {
+      value = value.toLowerCase()
+    }
+
+    return value
   }
 })
