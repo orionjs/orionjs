@@ -7,7 +7,7 @@ export default async function({userId, twoFactorCode} = {}) {
   if (!options.twoFactor) throw new Error('Two factor is disabled in this app')
   if (!userId) return
 
-  const user = await options.Users.findOne(userId, {fields: {'services.twoFactor': 1}})
+  const user = await options.Users.findOne(userId, {projection: {'services.twoFactor': 1}})
   const has = await user.hasTwoFactor()
   if (!has) return
   if (!twoFactorCode) {
