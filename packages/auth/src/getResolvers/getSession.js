@@ -24,8 +24,12 @@ export default async function({getBody, headers, nonceName = 'default'}) {
     throw new Error('nonceIsInvalid')
   }
 
-  if (session.nonce[nonceName] && nonce < parseInt(session.nonce[nonceName])) {
-    throw new Error('nonceIsInvalid')
+  const savedNonce = session.nonce[nonceName] && parseInt(session.nonce[nonceName])
+
+  if (savedNonce) {
+    if (savedNonce >= nonce) {
+      throw new Error('nonceIsInvalid')
+    }
   }
 
   await Sessions.update(
