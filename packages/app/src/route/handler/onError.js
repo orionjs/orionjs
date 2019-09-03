@@ -1,6 +1,9 @@
 export default function({error, send, response}) {
   if (error.isOrionError) {
-    const statusCode = 400
+    let statusCode = 400
+    if (error.code === 'AuthError') {
+      statusCode = 401
+    }
     const data = error.getInfo()
     send(response, statusCode, data)
   } else if (error.isGraphQLError) {

@@ -47,11 +47,15 @@ export default options =>
     }
 
     if (networkError) {
-      if (networkError.statusCode === 400 && networkError.result.error === 'AuthError') {
-        const session = getSession()
-        console.log('Resetting session', session)
-        if (session) {
-          setSession(null)
+      if (networkError.statusCode === 401 && networkError.result.error === 'AuthError') {
+        if (networkError.result.message !== 'nonceIsInvalid') {
+          const session = getSession()
+          console.log('Resetting session: ' + JSON.stringify(networkError.result, null, 2))
+          if (session) {
+            setSession(null)
+          }
+        } else {
+          console.warn('Received too many nonce is invalid')
         }
       } else {
         console.warn('Network error:', networkError)

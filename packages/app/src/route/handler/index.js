@@ -18,23 +18,23 @@ export default async function(request, response) {
 
   const params = route.match ? route.match(pathname) : {}
 
+  const funcParams = {
+    params,
+    query,
+    pathname,
+    request,
+    headers: request.headers,
+    response,
+    getBody: async () => await text(request),
+    getBodyJSON: async () => await json(request)
+  }
+
+  cors(funcParams)
+  if (request.method === 'OPTIONS') {
+    return {}
+  }
+
   try {
-    const funcParams = {
-      params,
-      query,
-      pathname,
-      request,
-      headers: request.headers,
-      response,
-      getBody: async () => await text(request),
-      getBodyJSON: async () => await json(request)
-    }
-
-    cors(funcParams)
-    if (request.method === 'OPTIONS') {
-      return {}
-    }
-
     funcParams.viewer = await getViewer(funcParams)
     return await route.func(funcParams)
   } catch (error) {
