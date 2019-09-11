@@ -32,7 +32,7 @@ export default async function({resolvers, mutation, options}) {
         } catch (error) {
           console.error('Error at resolver "' + name + '":')
           console.error(error)
-          if (options.pm2io) {
+          if (options && options.pm2io) {
             options.pm2io.notifyError(error, {
               // or anything that you can like an user id
               custom: {
