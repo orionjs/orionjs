@@ -6,13 +6,13 @@ import {Model} from '@orion-js/app'
 import getScalar from './getScalar'
 import getArgs from '../getArgs'
 
-export default function getGraphQLType(type) {
+export default function getGraphQLType(type, options) {
   if (!type) {
     throw new Error('Type is undefined')
   }
 
   if (isArray(type)) {
-    const graphQLType = getGraphQLType(type[0])
+    const graphQLType = getGraphQLType(type[0], options)
     return new GraphQLList(graphQLType)
   } else if (!type._isFieldType && (isPlainObject(type) || type instanceof Model)) {
     const model = type.__isModel ? type : type.__model
@@ -26,7 +26,7 @@ export default function getGraphQLType(type) {
         for (const field of model.staticFields) {
           try {
             fields[field.key] = {
-              type: getGraphQLType(field.type)
+              type: getGraphQLType(field.type, options)
             }
           } catch (error) {
             throw new Error(`Error getting type for ${field.key} ${error.message}`)
@@ -35,7 +35,7 @@ export default function getGraphQLType(type) {
 
         for (const resolver of model.dynamicFields) {
           try {
-            const type = getGraphQLType(resolver.returns)
+            const type = getGraphQLType(resolver.returns, options)
             const args = getArgs(resolver.params)
             fields[resolver.key] = {
               type,
@@ -48,6 +48,17 @@ export default function getGraphQLType(type) {
                   console.error(
                     'Error at resolver "' + resolver.key + '" of model "' + model.name + '":'
                   )
+                  if (options.pm2io) {
+                    options.pm2io.notifyError(error, {
+                      // or anything that you can like an user id
+                      custom: {
+                        resolver: resolver.key,
+                        model: model.name,
+                        user: context.userId,
+                        websiteId: context.websiteId
+                      }
+                    })
+                  }
                   throw error
                 }
               }
