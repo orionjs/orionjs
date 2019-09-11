@@ -26,14 +26,14 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
       if (typeof canRetry === 'function') return canRetry(count, operation, error)
       if (error && error.result && error.result.error === 'AuthError') {
         if (error.result.message === 'nonceIsInvalid') {
-          return count < 40
+          return count < 30
         }
       }
       if (count > 10) return false
       return !!error
     },
     delay(count, operation, error) {
-      return count * 1000 * Math.random()
+      return count * 100 * Math.random()
     }
   })
 
