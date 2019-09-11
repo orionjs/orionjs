@@ -8,16 +8,25 @@ let isExited = false
 
 export default async function({restart, options}) {
   const MONGO_URL = process.env.MONGO_URL || global.localMongoURI
+  let startCommand = process.env.START_COMMAND || 'node'
 
   const args = []
 
-  if (options.shell) {
+  if (process.env.START_COMMAND) {
+    const [first, ...otherArgs] = process.env.START_COMMAND.split(' ')
+    startCommand = first
+    args.push(...otherArgs)
+  } else if (options.shell) {
     args.push('--inspect')
   }
 
   args.push('.orion/build/index.js')
 
-  const appProcess = spawn('node', args, {
+  if (process.env.START_COMMAND) {
+    console.log('Using custom command: ' + [startCommand, ...args].join(' '))
+  }
+
+  const appProcess = spawn(startCommand, args, {
     env: {
       MONGO_URL,
       ORION_DEV: 'local',

@@ -6,8 +6,8 @@ export default function(dirPath) {
   delete packageJSON.devDependencies
 
   packageJSON.scripts = {
-    ...packageJSON.scripts,
-    start: 'node app/index.js'
+    start: 'node app/index.js',
+    ...packageJSON.scripts
   }
 
   writeFile(`${dirPath}/package.json`, JSON.stringify(packageJSON, null, 2))
