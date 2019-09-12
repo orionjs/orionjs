@@ -7,6 +7,7 @@ export default class PermissionsError extends Error {
     Error.captureStackTrace(this, this.constructor)
 
     this.isOrionError = true
+    this.isPermissionsError = true
     this.code = PermissionsError
     this.otherInfo = otherInfo
 

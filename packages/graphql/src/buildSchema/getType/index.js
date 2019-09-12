@@ -5,6 +5,7 @@ import {getFieldType} from '@orion-js/schema'
 import {Model} from '@orion-js/app'
 import getScalar from './getScalar'
 import getArgs from '../getArgs'
+import reportError from '../../reportError'
 
 export default function getGraphQLType(type, options) {
   if (!type) {
@@ -48,17 +49,12 @@ export default function getGraphQLType(type, options) {
                   console.error(
                     'Error at resolver "' + resolver.key + '" of model "' + model.name + '":'
                   )
-                  if (options && options.pm2io) {
-                    options.pm2io.notifyError(error, {
-                      // or anything that you can like an user id
-                      custom: {
-                        resolver: resolver.key,
-                        model: model.name,
-                        user: context.userId,
-                        websiteId: context.websiteId
-                      }
-                    })
-                  }
+                  reportError(options, error, {
+                    user: context.userId,
+                    websiteId: context.websiteId,
+                    resolver: resolver.key,
+                    model: model.name
+                  })
                   throw error
                 }
               }

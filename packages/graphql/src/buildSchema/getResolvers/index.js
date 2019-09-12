@@ -1,5 +1,6 @@
 import getType from '../getType'
 import getArgs from '../getArgs'
+import reportError from '../../reportError'
 
 global.graphQLResolvers = {}
 
@@ -32,16 +33,11 @@ export default async function({resolvers, mutation, options}) {
         } catch (error) {
           console.error('Error at resolver "' + name + '":')
           console.error(error)
-          if (options && options.pm2io) {
-            options.pm2io.notifyError(error, {
-              // or anything that you can like an user id
-              custom: {
-                resolver: name,
-                user: context.userId,
-                websiteId: context.websiteId
-              }
-            })
-          }
+          reportError(options, error, {
+            user: context.userId,
+            websiteId: context.websiteId,
+            resolver: resolver.key
+          })
 
           throw error
         }

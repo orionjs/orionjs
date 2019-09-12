@@ -9,6 +9,7 @@ export default class UserError extends Error {
     Error.captureStackTrace(this, this.constructor)
 
     this.isOrionError = true
+    this.isUserError = true
     this.code = code
     this.extra = extra
 
