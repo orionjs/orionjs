@@ -7,14 +7,14 @@ import {setPubsub} from './pubsub'
 export default function({schema}, options) {
   setPubsub(options.pubsub || new PubSub())
 
-  let currentConnections = null
-
-  if (options.pm2io) {
-    currentConnections = options.pm2io.counter({
-      name: 'Connections to WebSocket',
-      type: 'counter'
-    })
-  }
+  // let currentConnections = null
+  //
+  // if (options.pm2io) {
+  //   currentConnections = options.pm2io.counter({
+  //     name: 'Connections to WebSocket',
+  //     type: 'counter'
+  //   })
+  // }
 
   const server = getServer()
   const path = '/subscriptions'
@@ -24,9 +24,9 @@ export default function({schema}, options) {
       subscribe,
       schema,
       async onConnect(connectionParams, webSocket) {
-        if (currentConnections) {
-          currentConnections.inc()
-        }
+        // if (currentConnections) {
+        //   currentConnections.inc()
+        // }
         try {
           const params = {
             headers: {
@@ -39,14 +39,15 @@ export default function({schema}, options) {
           }
           const viewer = await getViewer(params)
           return viewer
-        } catch (error) {}
-        const viewer = await getViewer()
-        return viewer
+        } catch (error) {
+          const viewer = await getViewer()
+          return viewer
+        }
       },
       onDisconnect() {
-        if (currentConnections) {
-          currentConnections.dec()
-        }
+        // if (currentConnections) {
+        //   currentConnections.dec()
+        // }
       }
     },
     {
