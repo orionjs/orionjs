@@ -19,7 +19,8 @@ const defaultOptions = {
   canRetry: true,
   promptTwoFactorCode: () => global.prompt('Please write your two factor code to continue'),
   onError: () => {},
-  getHeaders: () => {}
+  getHeaders: () => {},
+  resolvers: null
 }
 
 export default function(passedOptions) {
@@ -28,7 +29,7 @@ export default function(passedOptions) {
 
   const link = createLink(options)
 
-  const client = new ApolloClient({link, cache: options.cache})
+  const client = new ApolloClient({link, cache: options.cache, resolvers: options.resolvers})
 
   global.apolloClient = client
 
