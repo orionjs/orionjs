@@ -49,6 +49,7 @@ export default function getGraphQLType(type, options) {
                   console.error(
                     'Error at resolver "' + resolver.key + '" of model "' + model.name + '":'
                   )
+                  console.error(error)
                   reportError(options, error, {
                     user: context.userId,
                     websiteId: context.websiteId,
