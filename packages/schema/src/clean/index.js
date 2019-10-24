@@ -4,7 +4,7 @@ const defaultOptions = {
   autoConvert: true,
   filter: true,
   trimStrings: true,
-  removeEmptyStrings: true
+  removeEmptyStrings: false
 }
 
 export default async function(schema, doc = {}, passedOptions = {}, ...args) {
