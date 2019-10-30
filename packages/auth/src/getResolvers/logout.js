@@ -13,6 +13,8 @@ export default ({Users, Session, Sessions}) =>
     returns: Boolean,
     mutation: true,
     resolve: async function({sessionId}, viewer) {
+      if (!viewer.session) return false
+
       if (!sessionId) {
         sessionId = viewer.session._id
       }
