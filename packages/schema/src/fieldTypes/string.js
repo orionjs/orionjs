@@ -26,8 +26,17 @@ export default fieldType({
         return Errors.NOT_AN_ALLOWED_VALUE
       }
     }
+
+    if (value === '' && !currentSchema.optional) {
+      return Errors.REQUIRED
+    }
   },
-  clean(value, {options: {autoConvert, trimStrings, removeEmptyStrings}}) {
+  clean(
+    value,
+    {
+      options: {autoConvert, trimStrings, removeEmptyStrings}
+    }
+  ) {
     if (autoConvert) {
       value = String(value)
     }
