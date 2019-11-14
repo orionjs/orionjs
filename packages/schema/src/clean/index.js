@@ -12,7 +12,7 @@ export default async function(schema, doc = {}, passedOptions = {}, ...args) {
   const params = {
     schema: {type: schema},
     value: doc,
-    doc,
+    doc: options.forceDoc || doc,
     currentDoc: doc,
     options,
     args

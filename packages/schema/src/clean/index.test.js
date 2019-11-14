@@ -102,7 +102,7 @@ test('trims strings and filter them', async () => {
     aString: ' 123 321 \n 123 \n\t d\t',
     otherString: ' '
   }
-  const cleaned = await clean(schema, doc)
+  const cleaned = await clean(schema, doc, {trimStrings: true, removeEmptyStrings: true})
   expect(cleaned).toEqual({
     aString: '123 321 \n 123 \n\t d'
   })

@@ -106,3 +106,23 @@ test('should handle $ correctly', async () => {
   const cleaned = await cleanKey(user, 'emails.$.verified', 'true')
   expect(cleaned).toEqual(true)
 })
+
+test('should inject doc on cleanKey', async () => {
+  const item = {data: 20}
+
+  const user = {
+    data: {
+      type: String,
+      clean(value, {doc}) {
+        console.log(value, doc)
+        expect(doc).toEqual(item)
+        return value
+      }
+    }
+  }
+
+  const cleaned = await cleanKey(user, 'data', item.data, {forceDoc: item})
+  expect(cleaned).toBe('20')
+
+  expect.assertions(2)
+})

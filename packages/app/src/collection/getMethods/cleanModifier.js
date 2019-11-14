@@ -26,30 +26,32 @@ export default async function validateModifier(schema, modifier) {
 
     for (const key of Object.keys(operationDoc)) {
       const value = operationDoc[key]
+      const cleanOptions = {forceDoc: operationDoc}
+
       let cleaned = null
       if (operation === '$push' || operation === '$addToSet') {
         if (typeof value === 'object' && '$each' in value) {
-          const $each = await cleanKey(schema, key, value.$each)
+          const $each = await cleanKey(schema, key, value.$each, cleanOptions)
           cleaned = {...value, $each}
         } else {
-          cleaned = await cleanKey(schema, `${key}.0`, value)
+          cleaned = await cleanKey(schema, `${key}.0`, value, cleanOptions)
         }
       }
 
       if (operation === '$set') {
-        cleaned = await cleanKey(schema, key, value)
+        cleaned = await cleanKey(schema, key, value, cleanOptions)
       }
 
       if (operation === '$setOnInsert') {
-        cleaned = await cleanKey(schema, key, value)
+        cleaned = await cleanKey(schema, key, value, cleanOptions)
       }
 
       if (operation === '$inc') {
-        cleaned = await cleanKey(schema, key, value)
+        cleaned = await cleanKey(schema, key, value, cleanOptions)
       }
 
       if (operation === '$unset') {
-        const isPresent = await cleanKey(schema, key, 'anyvalue')
+        const isPresent = await cleanKey(schema, key, 'anyvalue', cleanOptions)
         cleaned = !isNil(isPresent) ? '' : null
       }
 

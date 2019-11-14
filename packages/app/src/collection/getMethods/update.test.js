@@ -286,3 +286,31 @@ it('should handle $ correctly', async () => {
     ]
   })
 })
+
+it('should pass full doc on clean as well as validate', async () => {
+  const item = {_id: '1234', name: 'Nico'}
+  const model = new Model({
+    name: generateId(),
+    schema: {
+      _id: {type: 'ID'},
+      name: {
+        type: String,
+        clean(value, {doc}) {
+          expect(doc).toEqual({name: item.name})
+          return value
+        },
+        validate(value, {doc}) {
+          expect(doc).toEqual({name: item.name})
+        }
+      }
+    }
+  })
+
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
+
+  await Tests.update({}, {$set: {name: 'Nico'}})
+})
