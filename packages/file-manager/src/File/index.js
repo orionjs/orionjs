@@ -9,7 +9,7 @@ export default new Model({
   schema,
   resolvers: () => require('./resolvers'),
   // this is only called when its child
-  async clean(value, ...args) {
+  async clean(value) {
     if (!value) return null
     const fileId = value._id
     const file = await Files.findOne(fileId)
