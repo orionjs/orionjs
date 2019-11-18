@@ -38,10 +38,10 @@ const randomString = function(charsCount, alphabet) {
   return digits.join('')
 }
 
-export default function(charsCount) {
+export default function generateId(charsCount, chars = UNMISTAKABLE_CHARS) {
   if (!charsCount) {
     charsCount = 17
   }
 
-  return randomString(charsCount, UNMISTAKABLE_CHARS)
+  return randomString(charsCount, chars)
 }
