@@ -11,6 +11,7 @@ export default function(passedOptions) {
     model: new Model({name: 'defaultModelFor_' + passedOptions.name || 'nn'}),
     passUpdateAndRemove: true,
     hooks: [],
+    hasCustomConnection: !!passedOptions.connection,
     // dont make the request if its not using the default
     connection: passedOptions.connection ? null : connect().then(database => ({database}))
   }

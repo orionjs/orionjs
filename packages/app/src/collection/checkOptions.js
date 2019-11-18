@@ -1,19 +1,19 @@
 import ConfigurationError from '../Errors/ConfigurationError'
 
-export default function({model, name}) {
-  if (!name) {
+export default function(options) {
+  if (!options.name) {
     throw new ConfigurationError('Collection name is required')
   }
 
-  if (model && model.schema) {
-    if (!model.schema._id || model.schema._id.type !== 'ID') {
+  if (options.model && options.model.schema) {
+    if (!options.model.schema._id || options.model.schema._id.type !== 'ID') {
       throw new ConfigurationError(
         'Field _id type "ID" on schema is required in collection ' + name
       )
     }
   }
 
-  if (global.db[name]) {
-    throw new ConfigurationError(`Collection with name "${name}" already exists`)
+  if (!options.hasCustomConnection && global.db[options.name]) {
+    throw new ConfigurationError(`Collection with name "${options.name}" already exists`)
   }
 }
