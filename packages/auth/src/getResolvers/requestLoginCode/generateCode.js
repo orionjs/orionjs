@@ -1,7 +1,8 @@
 import {generateId} from '@orion-js/app'
 
 export default async function(user) {
-  const code = generateId(6).toLowerCase()
+  const chars = 'abcdefghjkmnopqrstuvwxyz'
+  const code = generateId(6, chars)
   const token = generateId()
 
   const data = {
