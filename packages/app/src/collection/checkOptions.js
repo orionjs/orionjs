@@ -14,6 +14,6 @@ export default function(options) {
   }
 
   if (!options.hasCustomConnection && global.db[options.name]) {
-    throw new ConfigurationError(`Collection with name "${options.name}" already exists`)
+    console.warn(`Collection with name "${options.name}" already exists`)
   }
 }
