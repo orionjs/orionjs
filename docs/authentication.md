@@ -62,3 +62,13 @@ For more information about how to use it, check the graphql-fullstack starter ki
 
 - [Custom prompt](https://github.com/orionjs/boilerplate-graphql-fullstack/blob/master/web/src/App/Root/apollo.js)
 - [Two factor setup](https://github.com/orionjs/boilerplate-graphql-fullstack/blob/master/web/src/App/Pages/App/Settings/Security/TwoFactor/index.js)
+
+## Omit Nonce check
+
+By default Orionjs checks for nonce. This can create some unwanted errors when 2 or more requests fire at similar time. You can disable nonce checking by passing the option `omitNonceCheck` when initializing authentication resolvers. Nonce is a extremely high security measure, many apps don't need it.
+
+```js
+getAuthResolvers({
+  omitNonceCheck: true
+})
+```

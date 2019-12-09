@@ -4,7 +4,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import {getOptions} from '../optionsStore'
 
 export default async function({getBody, headers, nonceName = 'default'}) {
-  const {Sessions} = getOptions()
+  const {Sessions, omitNonceCheck} = getOptions()
   await Sessions.await() // wait till db is connected
   const nonce = parseInt(headers['x-orion-nonce'])
   const publicKey = headers['x-orion-publickey']
@@ -20,27 +20,29 @@ export default async function({getBody, headers, nonceName = 'default'}) {
     throw new Error('sessionNotFound')
   }
 
-  if (!session.nonce || !isPlainObject(session.nonce)) {
-    throw new Error('nonceIsInvalid')
-  }
-
-  const savedNonce = session.nonce[nonceName] && parseInt(session.nonce[nonceName])
-
-  if (savedNonce) {
-    if (savedNonce >= nonce) {
+  if (!omitNonceCheck) {
+    if (!session.nonce || !isPlainObject(session.nonce)) {
       throw new Error('nonceIsInvalid')
     }
-  }
 
-  await Sessions.update(
-    {publicKey},
-    {
-      $set: {
-        [`nonce.${nonceName}`]: String(nonce),
-        lastCall: new Date()
+    const savedNonce = session.nonce[nonceName] && parseInt(session.nonce[nonceName])
+
+    if (savedNonce) {
+      if (savedNonce >= nonce) {
+        throw new Error('nonceIsInvalid')
       }
     }
-  )
+
+    await Sessions.update(
+      {publicKey},
+      {
+        $set: {
+          [`nonce.${nonceName}`]: String(nonce),
+          lastCall: new Date()
+        }
+      }
+    )
+  }
 
   const body = await getBody()
   const shaObj = new JSSHA('SHA-512', 'TEXT')
