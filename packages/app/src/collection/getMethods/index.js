@@ -9,6 +9,7 @@ import handleError from './handleError'
 import updateItemWithModifier from './updateItemWithModifier'
 import findOneAndUpdate from './findOneAndUpdate'
 import updateOne from './updateOne'
+import watch from './watch'
 import updateMany from './updateMany'
 import deleteOne from './deleteOne'
 import deleteMany from './deleteMany'
@@ -45,6 +46,7 @@ export default function(collection) {
     find: find(info),
     findOne: findOne(info),
     aggregate: aggregate(info),
+    watch: watch(info),
     findOneAndUpdate: findOneAndUpdate(info),
     insert: handleError(insert(info)),
     insertOne: handleError(insertOne(info)),
