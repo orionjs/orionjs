@@ -21,7 +21,8 @@ const run = function(action) {
 program
   .command('start')
   .description('Run the Orionjs app')
-  .option('-s, --shell', 'Opens a shell in Chrome developer tools')
+  .option('--shell', 'Opens a shell in Chrome developer tools')
+  .option('--skip-compilation', 'Skip inital compilation')
   .action(run(start))
 
 program

@@ -20,7 +20,7 @@ export default async function(options) {
     }
   }
 
-  const success = await compileAll()
+  const success = await compileAll(options)
   if (success) {
     await run()
   }

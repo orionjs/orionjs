@@ -4,7 +4,11 @@ import compileFile from './compileFile'
 import colors from 'colors/safe'
 import runOnce from './runOnce'
 
-export default runOnce(async function() {
+export default runOnce(async function(options = {}) {
+  if (options.skipCompilation) {
+    console.log(colors.bold('=> Skiping initial compilation...'))
+    return true
+  }
   console.log(colors.bold('=> Compiling...'))
   await execute('rm -rf .orion/build')
   const files = await globby('app/**/*')
