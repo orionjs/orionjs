@@ -13,6 +13,7 @@ export default async function(user, viewer) {
   const {Sessions, onCreateSession} = getOptions()
 
   if (!user) throw new Error('User not found')
+
   const session = {
     publicKey: generateId() + generateId(),
     secretKey: generateId() + generateId() + generateId() + generateId(),
@@ -24,6 +25,7 @@ export default async function(user, viewer) {
     roles: user.roles,
     emailVerified: hasEmailsVerified(user)
   }
+
   const sessionId = await Sessions.insert(session)
   session._id = sessionId
 
