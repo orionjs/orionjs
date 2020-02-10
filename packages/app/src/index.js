@@ -11,6 +11,7 @@ import generateId from './helpers/generateId'
 import hashObject from './helpers/hashObject'
 import hook from './collection/hook'
 import UserError from './Errors/UserError'
+import ValidationError from './Errors/ValidationError'
 import PermissionsError from './Errors/PermissionsError'
 import Model from './Model'
 import modelToSchema from './Model/modelToSchema'
@@ -42,6 +43,7 @@ export {
   Collection,
   UserError,
   PermissionsError,
+  ValidationError,
   Model,
   resolver,
   crudResolvers,
