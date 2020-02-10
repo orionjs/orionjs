@@ -111,13 +111,13 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@orion-js/app@^0.18.16":
-  version "0.18.16"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-0.18.16.tgz#eb893537aed89148423c978d9bb878108637b163"
-  integrity sha512-OO1u9KA8hjOSXLHdmz9zEMrMU1WA43lRlrczEbnXIDRPa4rDpshbOOIqX2IqrezcrH7at/bD96y9JEAVs4ts9A==
+"@orion-js/app@^0.19.1":
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-0.19.1.tgz#2772776b18cfd9e0afefae5951501c12508d82a4"
+  integrity sha512-GLEUuOCfdb0Da3LY2LhT38Fc9Ba6kwapEnHf9O+zXcSDVNlSnim8qzOgaiO8D159bUpCu2RwKrcdGg+/5uIuGw==
   dependencies:
     "@babel/polyfill" "^7.4.4"
-    "@orion-js/schema" "^0.18.13"
+    "@orion-js/schema" "^0.19.0"
     async-exit-hook "^2.0.1"
     colors "^1.3.3"
     dot-object "^1.9.0"
@@ -127,10 +127,10 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
-"@orion-js/schema@^0.18.13":
-  version "0.18.13"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.18.13.tgz#046814e1488ae9c0ffb01c1fea6560006501d463"
-  integrity sha512-rmeSOCdjlR5cxEZqMlhjoXb6gKwbF8/ErLa1uTPxzeMYEIh8Rh8mTCkqJj490tInJckYZMN+uqmlDG0ykt8Y/w==
+"@orion-js/schema@^0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.19.0.tgz#3e4c9a1c162fb75480db016ccc4c5de327d676aa"
+  integrity sha512-mS/XgPg4nIwsgzuPOaZHuKieLL3WQPmDDL7OAJlCuSxkKRncwslhtHfMm7gVbqxJh9i9A2MROKCcRv5++M73lA==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -2614,9 +2614,9 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
 
 handlebars@^4.0.3:
-  version "4.5.3"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.5.3.tgz#5cf75bd8714f7605713511a56be7c349becb0482"
-  integrity sha512-3yPecJoJHK/4c6aZhSvxOyG4vJKDshV36VHp0iVCDVh7o9w2vwi3NSnL2MMPj3YdduqaBcu7cGbggJQM0br9xA==
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.3.tgz#8ece2797826886cf8082d1726ff21d2a022550ee"
+  integrity sha512-SRGwSYuNfx8DwHD/6InAPzD6RgeruWLT+B8e8a7gGs8FWgHzlExpTFMEq2IA6QpAfOClpKHy6+8IqTjeBCu6Kg==
   dependencies:
     neo-async "^2.6.0"
     optimist "^0.6.1"
@@ -5180,9 +5180,9 @@ type-fest@^0.5.2:
   integrity sha512-DWkS49EQKVX//Tbupb9TFa19c7+MK1XmzkrZUR8TAktmE/DizXoaoJV6TZ/tSIPXipqNiRI6CyAe7x69Jb6RSw==
 
 uglify-js@^3.1.4:
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.7.2.tgz#cb1a601e67536e9ed094a92dd1e333459643d3f9"
-  integrity sha512-uhRwZcANNWVLrxLfNFEdltoPNhECUR3lc+UdJoG9CBpMcSnKyWA94tc3eAujB1GcMY5Uwq8ZMp4qWpxWYDQmaA==
+  version "3.7.7"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.7.7.tgz#21e52c7dccda80a53bf7cde69628a7e511aec9c9"
+  integrity sha512-FeSU+hi7ULYy6mn8PKio/tXsdSXN35lm4KgV2asx00kzrLU9Pi3oAslcJT70Jdj7PHX29gGUPOT6+lXGBbemhA==
   dependencies:
     commander "~2.20.3"
     source-map "~0.6.1"
