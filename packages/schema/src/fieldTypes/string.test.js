@@ -8,7 +8,8 @@ test('return an error when the value is incorrect', async () => {
 })
 
 test('return no error when the value is correct', async () => {
-  expect(string.validate('')).toBeFalsy()
+  const info = {currentSchema: {optional: true}}
+  expect(string.validate('', info)).toBeFalsy()
   expect(string.validate('Nicolás')).toBeFalsy()
 })
 

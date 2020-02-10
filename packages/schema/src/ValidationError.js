@@ -23,7 +23,7 @@ export default class ValidationError extends Error {
     this.getInfo = () => {
       return {
         error: 'validationError',
-        message: message,
+        message: 'Validation Error',
         validationErrors: validationErrors
       }
     }

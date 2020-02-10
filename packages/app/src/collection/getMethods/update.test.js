@@ -125,6 +125,27 @@ it('should update documents passing validation', async () => {
   expect(doc).toEqual({_id: personId, wife: {state: 'Full', name: 'Francisca'}})
 })
 
+it('should handle $inc operator on blackbox', async () => {
+  const schema = {
+    _id: {type: 'ID'},
+    services: {type: 'blackbox'}
+  }
+  const model = new Model({name: generateId(), schema})
+  const Tests = await new Collection({
+    name: generateId(),
+    passUpdateAndRemove: false,
+    model
+  }).await()
+
+  const userId = await Tests.insert({services: {phoneVerification: {tries: 1}}})
+
+  await Tests.update(userId, {$inc: {'services.phoneVerification.tries': 1}})
+
+  const doc = await Tests.findOne(userId)
+
+  expect(doc).toEqual({_id: userId, services: {phoneVerification: {tries: 2}}})
+})
+
 it('should update documents passing validation with blackbox field', async () => {
   const schema = {
     _id: {type: 'ID'},

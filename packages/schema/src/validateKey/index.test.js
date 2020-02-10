@@ -1,5 +1,5 @@
-import validateKey from './validateKey'
-import Errors from './Errors'
+import validateKey from './index'
+import Errors from '../Errors'
 
 test('autoconvert value', async () => {
   const schema = {
@@ -80,4 +80,14 @@ test('should handle $ correctly', async () => {
   }
 
   expect(await validateKey(user, 'emails.$.verified', true)).toBeNull()
+})
+
+test('validate blackbox child', async () => {
+  const schema = {
+    _id: {type: 'ID'},
+    services: {type: 'blackbox'}
+  }
+
+  console.log('will validtea blackbox')
+  expect(await validateKey(schema, 'services.phoneVerification.tries', 1)).toBeNull()
 })

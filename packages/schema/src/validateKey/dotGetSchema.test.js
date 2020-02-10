@@ -50,3 +50,14 @@ test('replaces numbers to $', async () => {
   expect(dotGetSchema(schema, 'car.tags.0.name')).toBe(tag.name)
   expect(dotGetSchema(schema, 'car.tags.1123.name')).toBe(tag.name)
 })
+
+test('returns information when is blackbox child', async () => {
+  const schema = {
+    services: {
+      type: 'blackbox'
+    }
+  }
+  expect(dotGetSchema(schema, 'services')).toBe(schema.services)
+  expect(dotGetSchema(schema, 'services').isBlackboxChild).toBeUndefined()
+  expect(dotGetSchema(schema, 'services.phoneVerification').isBlackboxChild).toBe(true)
+})

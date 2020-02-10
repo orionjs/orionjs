@@ -1,6 +1,6 @@
 import dotGetSchema from './dotGetSchema'
-import getValidationErrors from './getValidationErrors'
-import Errors from './Errors'
+import getValidationErrors from '../getValidationErrors'
+import Errors from '../Errors'
 
 const defaultOptions = {
   filter: false
@@ -16,6 +16,10 @@ export default async function(schema, key, value, passedOptions = {}, ...args) {
     } else {
       return null
     }
+  }
+
+  if (keySchema.isBlackboxChild) {
+    return null
   }
 
   const result = await getValidationErrors(
