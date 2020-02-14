@@ -27,6 +27,8 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
       if (error && error.result && error.result.error === 'AuthError') {
         if (error.result.message === 'nonceIsInvalid') {
           return count < 20
+        } else {
+          return false
         }
       }
       if (count > 10) return false
