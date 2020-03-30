@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/cli",
-  "version": "0.19.0",
+  "version": "0.19.5",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -14,10 +14,10 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "babel-plugin-stack-trace-sourcemap": "^1.0.2",
     "async-exit-hook": "^2.0.1",
     "babel-core": "^6.26.3",
     "babel-plugin-source-map-support": "^2.1.1",
+    "babel-plugin-stack-trace-sourcemap": "^1.0.2",
     "chokidar": "^2.0.4",
     "colors": "^1.4.0",
     "commander": "^2.19.0",
