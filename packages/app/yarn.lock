@@ -965,10 +965,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@orion-js/schema@^0.19.0":
-  version "0.19.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.19.0.tgz#3e4c9a1c162fb75480db016ccc4c5de327d676aa"
-  integrity sha512-mS/XgPg4nIwsgzuPOaZHuKieLL3WQPmDDL7OAJlCuSxkKRncwslhtHfMm7gVbqxJh9i9A2MROKCcRv5++M73lA==
+"@orion-js/schema@^0.19.2":
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.19.2.tgz#a86208089d33cd6151ddd8d0eff1fac6b2cd2038"
+  integrity sha512-hGQc7Xl1kYiHJUYZbjbv4a46v6biQ1Ge2Url9uiVM1cU4uAV14jHkmRqVOrqhsuvQVZJ7HV7Hz4RHiSJa+3h8g==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -1586,11 +1586,6 @@ combined-stream@1.0.6, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@^2.10.0:
-  version "2.15.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
-  integrity sha512-VlfT9F3V0v+jr4yxPc5gg9s62/fIVWsd2Bk2iD435um1NlGMYdVCq+MjcXnhYq2icNOizHr1kK+5TI6H0Hy0ag==
-
 commander@^2.20.0, commander@^2.8.1:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
@@ -1878,15 +1873,7 @@ domexception@^1.0.0:
   dependencies:
     webidl-conversions "^4.0.2"
 
-dot-object@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/dot-object/-/dot-object-1.7.0.tgz#3b8ecda78b0f2aa52b8871c180fe1b3e09926a41"
-  integrity sha512-X91KaxzQmhQvfokXCdM8EkJVDHe5HlffhT4eaS6CsLk8Nhs9ChA6KWmrt8kgCz5rmLKzoOEP2tmRK/kBvomFwg==
-  dependencies:
-    commander "^2.10.0"
-    glob "^7.1.2"
-
-dot-object@^1.9.0:
+dot-object@^1.7.0, dot-object@^1.9.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/dot-object/-/dot-object-1.9.0.tgz#6e3d6d8379f794c5174599ddf05528f5990f076e"
   integrity sha512-7MPN6y7XhAO4vM4eguj5+5HNKLjJYfkVG1ZR1Aput4Q4TR6SYeSjhpVQ77IzJHoSHffKbDxBC+48aCiiRurDPw==
