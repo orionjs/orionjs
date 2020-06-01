@@ -7,14 +7,18 @@ import cors from './cors'
 import connect from '../../database/connect'
 import hasMongoURL from '../../database/hasMongoURL'
 
-export default async function(request, response) {
+export default async function (request, response) {
   if (hasMongoURL) {
     await connect()
   }
 
   const {pathname, query} = parse(request.url, true)
   let route = getRoute(pathname) || getNotFoundRoute()
-  if (!route) return 'Not found'
+  if (!route) {
+    response.writeHead(404)
+    response.end('Not found')
+    return
+  }
 
   const params = route.match ? route.match(pathname) : {}
 
