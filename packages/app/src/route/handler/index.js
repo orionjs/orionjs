@@ -16,7 +16,7 @@ export default async function (request, response) {
   let route = getRoute(pathname) || getNotFoundRoute()
   if (!route) {
     response.writeHead(404)
-    response.end('Not found')
+    response.end('Not Found')
     return
   }
 
