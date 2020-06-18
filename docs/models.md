@@ -53,7 +53,7 @@ export default {
     type: 'ID'
   },
   last4: {
-    type: String
+    type: String,
     label: 'Last 4 digits'
   },
   isDefault: {
