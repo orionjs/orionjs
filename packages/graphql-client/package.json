@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql-client",
-  "version": "0.19.3",
+  "version": "0.19.8",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -28,13 +28,12 @@
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/runtime": "^7.5.5",
-    "babel-jest": "^23.6.0",
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/runtime": "^7.5.5",
+    "babel-jest": "^23.6.0",
     "jest": "^23.6.0"
   },
   "publishConfig": {

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/app",
-  "version": "0.19.7",
+  "version": "0.19.8",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
-    "@orion-js/schema": "^0.19.2",
+    "@orion-js/schema": "^0.19.8",
     "async-exit-hook": "^2.0.1",
     "colors": "^1.3.3",
     "dot-object": "^1.9.0",
