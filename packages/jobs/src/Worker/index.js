@@ -3,10 +3,10 @@ import {setOnExit} from '@orion-js/app'
 export default class Worker {
   constructor({index}) {
     this.index = index
-    setOnExit(this.onExit)
+    setOnExit(() => this.onExit())
   }
 
-  onExit = async () => {
+  async onExit() {
     if (this.currentExecution) {
       await this.currentExecution
     }
