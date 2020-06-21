@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-export default function(dirPath) {
+export default function (dirPath) {
   const filesToCopy = ['.npmrc']
 
   for (const fileName of filesToCopy) {

@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-const getDirectories = function(dir) {
+const getDirectories = function (dir) {
   return fs
     .readdirSync(dir)
     .map(file => `${dir}/${file}`)
@@ -10,7 +10,7 @@ const getDirectories = function(dir) {
     })
 }
 
-const getSymlinks = function() {
+const getSymlinks = function () {
   const symlinks = []
   const dirs = getDirectories('./node_modules')
   for (const dir of dirs) {
@@ -31,7 +31,7 @@ const getSymlinks = function() {
   return symlinks
 }
 
-export default function() {
+export default function () {
   const paths = ['node_modules']
   const symlinks = getSymlinks()
   return [...paths, ...symlinks]

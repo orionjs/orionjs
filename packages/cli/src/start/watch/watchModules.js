@@ -2,7 +2,7 @@ import chokidar from 'chokidar'
 import getModulesToWatch from '../../helpers/getModulesToWatch'
 import colors from 'colors/safe'
 
-export default function(callback) {
+export default function (callback) {
   const options = {
     ignoreInitial: true
   }

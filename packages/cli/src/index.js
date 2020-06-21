@@ -7,8 +7,8 @@ import create from './create'
 import checkVersion from './helpers/checkVersion'
 import './handleErrors'
 
-const run = function(action) {
-  return async function(...args) {
+const run = function (action) {
+  return async function (...args) {
     try {
       await checkVersion()
       await action(...args)

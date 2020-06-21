@@ -5,7 +5,7 @@ import sleep from '../../helpers/sleep'
 import waitAppStopped from '../waitAppStopped'
 import {setOnExit} from '../../helpers/onExit'
 
-export default async function() {
+export default async function () {
   ensureDirectory('.orion/db/logs/mongolog.log')
   ensureDirectory('.orion/db/data/file.txt')
 
@@ -15,7 +15,7 @@ export default async function() {
     ' '
   )
 
-  const dbProcess = await new Promise(async function(resolve, reject) {
+  const dbProcess = await new Promise(async function (resolve, reject) {
     let error = false
 
     const dbProcess = spawn('mongod', args, {
@@ -41,7 +41,7 @@ export default async function() {
     }
   })
 
-  dbProcess.on('exit', function(code, signal) {
+  dbProcess.on('exit', function (code, signal) {
     if (code === 0 || signal === 'SIGTERM') {
     } else {
       console.log(colors.bold('\n=> Error running database'))

@@ -4,7 +4,7 @@ import createPackageJSON from './createPackageJSON'
 import colors from 'colors/safe'
 import copyFiles from './copyFiles'
 
-export default async function({output}) {
+export default async function ({output}) {
   if (!output) {
     throw new Error('Output dir is required')
   }

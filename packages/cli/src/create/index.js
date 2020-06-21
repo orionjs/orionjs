@@ -1,6 +1,6 @@
 import execute from '../helpers/execute'
 
-export default async function({name, kit}) {
+export default async function ({name, kit}) {
   if (!name) {
     throw new Error('Please set the name of the app')
   }

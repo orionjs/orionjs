@@ -1,6 +1,6 @@
 import rp from 'request-promise'
 
-export default async function() {
+export default async function () {
   try {
     const url = 'http://registry.npmjs.org/@orion-js/cli'
     const response = await rp({

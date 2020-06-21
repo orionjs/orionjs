@@ -2,11 +2,11 @@ import exitHook from 'async-exit-hook'
 
 const callbacks = []
 
-export const setOnExit = function(callback) {
+export const setOnExit = function (callback) {
   callbacks.push(callback)
 }
 
-export const clearOnExit = function(callback) {
+export const clearOnExit = function (callback) {
   const index = callbacks.indexOf(callback)
   if (index === -1) return
   callbacks.splice(index, 1)
