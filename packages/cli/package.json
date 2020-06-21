@@ -26,14 +26,14 @@
     "process-exists": "^3.1.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.5",
-    "walk-sync": "^0.3.3"
+    "walk-sync": "^0.3.3",
+    "@babel/runtime": "^7.5.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5"
+    "@babel/preset-env": "^7.5.5"
   },
   "publishConfig": {
     "access": "public"
