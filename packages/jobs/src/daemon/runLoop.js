@@ -17,7 +17,6 @@ export default async function runAgain({jobs, workers}) {
   // eslint-disable-next-line
   while (true) {
     if (exited) return
-    global.lastJobLoopDate = new Date()
 
     currentLoop = loop({jobs, workers})
 
