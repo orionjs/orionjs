@@ -29,8 +29,20 @@ export default async function (request, response) {
     request,
     headers: request.headers,
     response,
-    getBody: async () => await text(request),
-    getBodyJSON: async () => await json(request)
+    getBody: async () => {
+      if (global.globalMicro) {
+        return await global.globalMicro.text(request)
+      }
+
+      return await text(request)
+    },
+    getBodyJSON: async () => {
+      if (global.globalMicro) {
+        return await global.globalMicro.json(request)
+      }
+
+      return await json(request)
+    }
   }
 
   cors(funcParams)

@@ -9,6 +9,10 @@ export default async function (options) {
     subscriptionsEndpoint: `/subscriptions`,
     schema,
     formatError,
-    useGraphiql: options.useGraphiql || true
+    useGraphiql: options.useGraphiql || true,
+    engine: options.engine,
+    context: integrationContext => {
+      return integrationContext.req._orionjsViewer
+    }
   }
 }

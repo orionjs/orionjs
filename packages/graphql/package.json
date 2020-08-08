@@ -13,6 +13,7 @@
   "dependencies": {
     "@orion-js/schema": "^0.19.8",
     "apollo-server-core": "^2.16.1",
+    "apollo-server-micro": "^2.16.1",
     "deep-sort-object": "^1.0.2",
     "graphql": "^14.4.2",
     "graphql-iso-date": "^3.6.1",

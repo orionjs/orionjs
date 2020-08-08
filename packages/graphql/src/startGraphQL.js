@@ -1,9 +1,11 @@
 import {route} from '@orion-js/app'
-import {runHttpQuery} from 'apollo-server-core'
+import {ApolloServer} from 'apollo-server-micro'
 import startGraphiQL from './startGraphiQL'
-import getQuery from './getQuery'
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
+import micro from 'micro'
+
+global.globalMicro = micro
 
 export default async function (options) {
   const apolloOptions = await getApolloOptions(options)
@@ -13,17 +15,11 @@ export default async function (options) {
     startWebsocket(apolloOptions, options)
   }
 
+  const apolloServer = new ApolloServer(apolloOptions)
+  const handler = apolloServer.createHandler() // highlight-line
+
   route('/graphql', async function ({request, response, viewer}) {
-    const query = await getQuery(request)
-
-    apolloOptions.context = viewer
-
-    const gqlResponse = await runHttpQuery([request, response], {
-      method: request.method,
-      options: apolloOptions,
-      query
-    })
-
-    return gqlResponse.graphqlResponse
+    request._orionjsViewer = viewer
+    handler(request, response)
   })
 }
