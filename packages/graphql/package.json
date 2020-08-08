@@ -12,23 +12,23 @@
   },
   "dependencies": {
     "@orion-js/schema": "^0.19.8",
-    "apollo-server-core": "^2.8.2",
+    "apollo-server-core": "^2.16.1",
     "deep-sort-object": "^1.0.2",
-    "graphql": "^14.4.2",
+    "graphql": "^15.3.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^1.1.0",
-    "lodash": "^4.17.15",
-    "subscriptions-transport-ws": "^0.9.16"
+    "lodash": "^4.17.19",
+    "subscriptions-transport-ws": "^0.9.17"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.11.1",
+    "@babel/plugin-transform-runtime": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/runtime": "^7.11.2",
     "@orion-js/app": "^0.19.8",
-    "babel-jest": "^22.4.3",
-    "jest": "^22.4.3"
+    "babel-jest": "^26.2.2",
+    "jest": "^26.2.2"
   },
   "peerDependencies": {
     "@orion-js/app": "*"
