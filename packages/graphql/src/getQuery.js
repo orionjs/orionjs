@@ -3,10 +3,10 @@ import {parse} from 'url'
 
 const {json} = micro
 
-export default async function(request) {
+export default async function (request) {
   if (request.method === 'POST') {
     try {
-      return await json(request, { limit: (process.env.MICRO_BODY_LIMIT || '1mb') })
+      return await json(request, {limit: process.env.MICRO_BODY_LIMIT || '1mb'})
     } catch (error) {
       console.error(error)
     }

@@ -7,7 +7,7 @@ import getScalar from '../getType/getScalar'
 
 const storedModelInput = {}
 
-const getModelInput = function(model, fields) {
+const getModelInput = function (model, fields) {
   if (storedModelInput[model.name]) {
     return storedModelInput[model.name]
   }

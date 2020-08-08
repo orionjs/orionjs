@@ -1,7 +1,7 @@
 import buildSchema from '../buildSchema'
 import formatError from './formatError'
 
-export default async function(options) {
+export default async function (options) {
   const schema = await buildSchema(options)
 
   return {

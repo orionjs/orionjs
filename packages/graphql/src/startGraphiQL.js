@@ -6,7 +6,7 @@ function safeSerialize(data) {
   return data ? JSON.stringify(data).replace(/\//g, '\\/') : null
 }
 
-const getHTML = function(apolloOptions, options, data) {
+const getHTML = function (apolloOptions, options, data) {
   // Current latest version of GraphiQL.
   const GRAPHIQL_VERSION = '0.11.11'
 
@@ -200,9 +200,9 @@ const getHTML = function(apolloOptions, options, data) {
 </html>`
 }
 
-export default function(apolloOptions, options) {
+export default function (apolloOptions, options) {
   if (options.useGraphiql) {
-    route('/graphiql', async function({query, request}) {
+    route('/graphiql', async function ({query, request}) {
       return getHTML(apolloOptions, options, query, request)
     })
   }
