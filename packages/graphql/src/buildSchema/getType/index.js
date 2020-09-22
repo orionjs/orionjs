@@ -4,8 +4,7 @@ import {GraphQLList, GraphQLObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
 import {Model} from '@orion-js/app'
 import getScalar from './getScalar'
-import getArgs from '../getArgs'
-import reportError from '../../reportError'
+import getTypeAsResolver from './getTypeAsResolver'
 
 export default function getGraphQLType(type, options) {
   if (!type) {
@@ -26,8 +25,20 @@ export default function getGraphQLType(type, options) {
         const fields = {}
         for (const field of model.staticFields) {
           try {
-            fields[field.key] = {
-              type: getGraphQLType(field.type, options)
+            /**
+             * For fields that have custom "to client" resolvers and serverside are static
+             */
+            if (field.graphQLResolver) {
+              fields[field.key] = getTypeAsResolver({
+                resolver: field.graphQLResolver,
+                getGraphQLType,
+                options,
+                model
+              })
+            } else {
+              fields[field.key] = {
+                type: getGraphQLType(field.type, options)
+              }
             }
           } catch (error) {
             throw new Error(`Error getting type for ${field.key} ${error.message}`)
@@ -36,30 +47,7 @@ export default function getGraphQLType(type, options) {
 
         for (const resolver of model.dynamicFields) {
           try {
-            const type = getGraphQLType(resolver.returns, options)
-            const args = getArgs(resolver.params)
-            fields[resolver.key] = {
-              type,
-              args,
-              async resolve(item, params, context) {
-                try {
-                  const result = await resolver.resolve(item, params, context)
-                  return result
-                } catch (error) {
-                  console.error(
-                    'Error at resolver "' + resolver.key + '" of model "' + model.name + '":'
-                  )
-                  console.error(error)
-                  reportError(options, error, {
-                    user: context.userId,
-                    websiteId: context.websiteId,
-                    resolver: resolver.key,
-                    model: model.name
-                  })
-                  throw error
-                }
-              }
-            }
+            fields[resolver.key] = getTypeAsResolver({resolver, getGraphQLType, options, model})
           } catch (error) {
             throw new Error(
               `Error getting resolver type for resolver "${resolver.key}": ${error.message}`
