@@ -106,6 +106,36 @@ const card = await Cards.findOne(cardId)
 return await card.cardUser()
 ```
 
+### To GraphQL
+
+Orionjs will automatically convert this Model to a GraphQL model if it's referenced by any global resolver.
+Schema fields will be converted to simple resolvers (just gets the value) and resolvers will be converted to GraphQL resolvers.
+
+If you need to convert a schema field to resolver only for GraphQL you can pass the resolver in the `graphQLResolver` key.
+
+**Example:**
+
+```js
+import {resolver} from '@orion-js/app'
+
+export default {
+  _id: {
+    type: 'ID'
+  },
+  secretData: {
+    type: String,
+    // this will only be executed in GraphQL and not when accesing the value serverside
+    graphQLResolver: resolver({
+      returns: String,
+      async resolve(item, params, viewer) {
+        if (!viewer.roles.includes('admin')) return null
+        return item.secretData
+      }
+    })
+  }
+}
+```
+
 ## Clone a model
 
 Sometimes you need a copy of your model with some changes. For example when creating a update resolver, you want to create a new model that has all the model fields except `_id` or `createdAt`.
