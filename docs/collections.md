@@ -4,7 +4,7 @@ title: Collections
 sidebar_label: Collections
 ---
 
-Orionjs is made to work with MongoDB de default. To connect to MongoDB and execute queries you must create `Collections`.
+Orionjs is made to work with MongoDB by default. To connect to MongoDB and execute queries you must create `Collections`.
 
 ### The structure of the main collections of the application
 
