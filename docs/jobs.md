@@ -56,6 +56,9 @@ export default job({
 
 This jobs will be called automatically. You can only specify `runEvery` or `getNextRun` in a job.
 
+`runEvery`, Run the next job after the specified time has passed since the current job started.
+`getNextRun`, Run the next job at the specified time when the current job ends
+
 ## Example
 
 ```js
