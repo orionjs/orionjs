@@ -10,6 +10,11 @@ export default new Collection({
         key: 1,
         bucket: 1
       }
+    },
+    {
+      keys: {
+        hash: 1
+      }
     }
   ]
 })
