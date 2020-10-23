@@ -29,19 +29,19 @@ export default async function (request, response) {
     request,
     headers: request.headers,
     response,
-    getBody: async () => {
+    getBody: async options => {
       if (global.globalMicro) {
-        return await global.globalMicro.text(request)
+        return await global.globalMicro.text(request, options)
       }
 
       return await text(request)
     },
-    getBodyJSON: async () => {
+    getBodyJSON: async options => {
       if (global.globalMicro) {
-        return await global.globalMicro.json(request)
+        return await global.globalMicro.json(request, options)
       }
 
-      return await json(request)
+      return await json(request, options)
     }
   }
 
