@@ -1,7 +1,5 @@
-import {transformFile} from 'babel-core'
+import * as babel from '@babel/core'
 import writeFile from '../helpers/writeFile'
-import sourceMapSupport from 'babel-plugin-source-map-support'
-import sourceMapTrace from 'babel-plugin-stack-trace-sourcemap'
 import fs from 'fs'
 import path from 'path'
 
@@ -21,19 +19,13 @@ export default async function (relativeFilePath, dirPath = '.orion/build') {
 
   const babelOptions = {
     ast: false,
-    plugins: [sourceMapSupport, sourceMapTrace],
     filename: relativeFilePath,
     sourceMaps: true,
     sourceRoot: filePath.replace('/' + relativeFilePath, ''),
     sourceFileName: '/' + relativeFilePath
   }
 
-  const {code, map} = await new Promise(function (resolve, reject) {
-    transformFile(filePath, babelOptions, function (error, result) {
-      if (error) reject(error)
-      else resolve(result)
-    })
-  })
+  const {code, map} = await babel.transformFileAsync(filePath, babelOptions)
 
   await writeFile(finalPath, addSourceMapPath(finalPath, code))
   await writeFile(finalPath + '.map', JSON.stringify(map, null, 2))

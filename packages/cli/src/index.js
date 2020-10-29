@@ -5,6 +5,7 @@ import build from './build'
 import colors from 'colors/safe'
 import create from './create'
 import checkVersion from './helpers/checkVersion'
+import test from './test'
 import './handleErrors'
 
 const run = function (action) {
@@ -24,6 +25,8 @@ program
   .option('--shell', 'Opens a shell in Chrome developer tools')
   .option('--skip-compilation', 'Skip inital compilation')
   .action(run(start))
+
+program.command('test').allowUnknownOption().description('Runs Jest').action(run(test))
 
 program
   .command('build')
