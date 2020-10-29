@@ -23,9 +23,8 @@ export default async function (program) {
     }
   })
 
-  child.on('exit', function (e, code) {
+  child.on('exit', function (code) {
     mongod.stop()
-
-    process.exit()
+    process.exit(code)
   })
 }
