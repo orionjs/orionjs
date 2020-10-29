@@ -1,6 +1,6 @@
 import ConfigurationError from '../Errors/ConfigurationError'
 
-export default function(options) {
+export default function (options) {
   if (!options.name) {
     throw new ConfigurationError('Collection name is required')
   }
@@ -14,6 +14,7 @@ export default function(options) {
   }
 
   if (!options.hasCustomConnection && global.db[options.name]) {
-    console.warn(`Collection with name "${options.name}" already exists`)
+    // this should not be a problem really
+    // console.warn(`Collection with name "${options.name}" already exists`)
   }
 }
