@@ -1,11 +1,13 @@
 import {getOptions} from '../options'
 
-export default async function(session) {
+export default async function (session, resetStore = true) {
   const {apolloClient, saveSession, wsClient} = getOptions()
 
   await saveSession(session)
 
-  await apolloClient.resetStore()
+  if (resetStore) {
+    await apolloClient.resetStore()
+  }
 
   if (wsClient) {
     wsClient.tryReconnect()
