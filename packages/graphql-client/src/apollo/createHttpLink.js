@@ -28,7 +28,7 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
         if (error.result.message === 'nonceIsInvalid') {
           return count < 20
         } else {
-          return false
+          return count < 2 // session should be reseted
         }
       }
       if (count > 10) return false
