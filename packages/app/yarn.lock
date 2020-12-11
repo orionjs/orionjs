@@ -965,10 +965,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@orion-js/schema@^0.19.8":
-  version "0.19.8"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.19.8.tgz#dc273300d64f93c13345967a2f7207c9b7216ead"
-  integrity sha512-p5dq8tTrK/JjQIL3NmY4adexnnVDH8311BzvDBclO4o3+M774pU+rqMS1xPRbBukVMXh9Ed8G//jy8PiPu7qng==
+"@orion-js/schema@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.0.0.tgz#63d43fa628923d4b54ae7dbf59f661ae92628899"
+  integrity sha512-81Fqp4fQizyZD/+47KEDxUfVllgrIuMBC7WiD7Xtst/AuJjwcDWSyizCMLz28sEc4o8ru8J/5QSx547zFmPtSA==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -2526,9 +2526,9 @@ inherits@2.0.1:
   integrity sha1-sX0I0ya0Qj5Wjv9xn5GwscvfafE=
 
 ini@~1.3.0:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
-  integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.7.tgz#a09363e1911972ea16d7a8851005d84cf09a9a84"
+  integrity sha512-iKpRpXP+CrP2jyrxvg1kMUpXDyRUFDWurxbnVT1vQPx+Wz9uCYsMIqYuSBLV+PAaZG/d7kRLKRFc9oDMsH+mFQ==
 
 invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"
