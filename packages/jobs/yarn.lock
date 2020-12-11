@@ -844,13 +844,13 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@orion-js/app@^0.19.7":
-  version "0.19.7"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-0.19.7.tgz#4f120f3d3a9ab6bd664cfaebb8765d7dd5692369"
-  integrity sha512-8U0U3w1VFby+9ccv8xzLHqUkrh1kovV7kiHzOBci6y198bimb5BYw0BrkkH6cDSu5608+Re+/91RS9Ku+KzIbg==
+"@orion-js/app@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-1.0.3.tgz#ea8ffaf7eb12bda4e09dc7fbe48ea2c03128e05b"
+  integrity sha512-2VI6hfxywmVf9lDkfQXKkp3gwu9GGtSbLfR0XMn70NAzl/1l7LIkTMo20LW1eM530OvueQUY3PVBV47tI9RwcQ==
   dependencies:
     "@babel/polyfill" "^7.4.4"
-    "@orion-js/schema" "^0.19.2"
+    "@orion-js/schema" "^1.0.0"
     async-exit-hook "^2.0.1"
     colors "^1.3.3"
     dot-object "^1.9.0"
@@ -860,10 +860,10 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
-"@orion-js/schema@^0.19.2":
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.19.2.tgz#a86208089d33cd6151ddd8d0eff1fac6b2cd2038"
-  integrity sha512-hGQc7Xl1kYiHJUYZbjbv4a46v6biQ1Ge2Url9uiVM1cU4uAV14jHkmRqVOrqhsuvQVZJ7HV7Hz4RHiSJa+3h8g==
+"@orion-js/schema@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.0.0.tgz#63d43fa628923d4b54ae7dbf59f661ae92628899"
+  integrity sha512-81Fqp4fQizyZD/+47KEDxUfVllgrIuMBC7WiD7Xtst/AuJjwcDWSyizCMLz28sEc4o8ru8J/5QSx547zFmPtSA==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -2475,8 +2475,9 @@ inherits@2.0.1:
   integrity sha1-sX0I0ya0Qj5Wjv9xn5GwscvfafE=
 
 ini@~1.3.0:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.7.tgz#a09363e1911972ea16d7a8851005d84cf09a9a84"
+  integrity sha512-iKpRpXP+CrP2jyrxvg1kMUpXDyRUFDWurxbnVT1vQPx+Wz9uCYsMIqYuSBLV+PAaZG/d7kRLKRFc9oDMsH+mFQ==
 
 invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"
