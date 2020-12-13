@@ -3,7 +3,7 @@ import parseInt from 'lodash/parseInt'
 import isPlainObject from 'lodash/isPlainObject'
 import {getOptions} from '../optionsStore'
 
-export default async function({getBody, headers, nonceName = 'default'}) {
+export default async function ({getBody, headers, nonceName = 'default'}) {
   const {Sessions, omitNonceCheck} = getOptions()
   await Sessions.await() // wait till db is connected
   const nonce = parseInt(headers['x-orion-nonce'])
