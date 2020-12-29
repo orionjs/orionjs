@@ -10,9 +10,9 @@ export default async function (options) {
     schema,
     formatError,
     useGraphiql: options.useGraphiql || true,
-    engine: options.engine,
     context: integrationContext => {
       return integrationContext.req._orionjsViewer
-    }
+    },
+    ...options
   }
 }
