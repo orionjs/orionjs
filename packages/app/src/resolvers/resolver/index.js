@@ -6,6 +6,7 @@ import cleanParams from './cleanParams'
 import defaultCacheProvider from '../../cache'
 
 export default function ({
+  resolverId,
   params: rawParams,
   returns,
   mutation,
@@ -23,6 +24,10 @@ export default function ({
     cacheProvider = defaultCacheProvider
   }
 
+  if (!resolverId) {
+    resolverId = generateId()
+  }
+
   checkOptions({
     params,
     returns,
@@ -35,8 +40,6 @@ export default function ({
     cacheProvider,
     ...otherOptions
   })
-
-  const resolverId = generateId()
 
   const resolver = getResolver({
     resolverId,
