@@ -1,9 +1,9 @@
-import cache from '../../../cache'
 import getCacheKey from '../getCacheKey'
 
-export default async function({
+export default async function ({
   cache: cacheTTL,
   getCacheKey: customGetCacheKey,
+  cacheProvider,
   resolverId,
   parent,
   callParams,
@@ -14,7 +14,7 @@ export default async function({
 
   if (cacheTTL) {
     const key = await getCacheKey({parent, customGetCacheKey, viewer, callParams, resolverId})
-    const result = await cache.get(key, {
+    const result = await cacheProvider.get(key, {
       fallback: () => resolve(...resolveArgs),
       ttl: cacheTTL
     })

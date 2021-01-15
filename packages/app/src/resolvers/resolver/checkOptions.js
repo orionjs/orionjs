@@ -2,7 +2,16 @@ import ConfigurationError from '../../../lib/Errors/ConfigurationError'
 import isPlainObject from 'lodash/isPlainObject'
 import isNumber from 'lodash/isNumber'
 
-export default function({cache, params, isPrivate, returns, mutation, resolve, checkPermission}) {
+export default function ({
+  cache,
+  cacheProvider,
+  params,
+  isPrivate,
+  returns,
+  mutation,
+  resolve,
+  checkPermission
+}) {
   if (!returns && !isPrivate) {
     throw new ConfigurationError('Resolver returns is undefined')
   }

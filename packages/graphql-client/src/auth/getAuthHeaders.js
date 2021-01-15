@@ -1,7 +1,7 @@
 import getSession from './getSession'
 import getSignature from './getSignature'
 
-export default function(body, getHeaders = () => {}) {
+export default function (body, getHeaders = () => {}) {
   const session = getSession()
   const headers = getHeaders(body)
   if (!session) return {...headers}

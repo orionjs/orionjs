@@ -3,8 +3,9 @@ import getResolver from './getResolver'
 import generateId from '../../helpers/generateId'
 import getInvalidateCache from './getInvalidateCache'
 import cleanParams from './cleanParams'
+import defaultCacheProvider from '../../cache'
 
-export default function({
+export default function ({
   params: rawParams,
   returns,
   mutation,
@@ -13,9 +14,14 @@ export default function({
   checkPermission,
   cache,
   getCacheKey,
+  cacheProvider,
   ...otherOptions
 }) {
   const params = cleanParams(rawParams)
+
+  if (!cacheProvider) {
+    cacheProvider = defaultCacheProvider
+  }
 
   checkOptions({
     params,
@@ -26,6 +32,7 @@ export default function({
     checkPermission,
     cache,
     getCacheKey,
+    cacheProvider,
     ...otherOptions
   })
 
@@ -35,6 +42,7 @@ export default function({
     resolverId,
     cache,
     getCacheKey,
+    cacheProvider,
     params,
     returns,
     resolve,
@@ -51,6 +59,7 @@ export default function({
   resolver.private = isPrivate
   resolver.resolve = resolver
   resolver.getCacheKey = getCacheKey
+  resolver.cacheProvider = cacheProvider
   resolver.invalidateCache = getInvalidateCache(resolver)
 
   return resolver

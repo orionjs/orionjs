@@ -1,8 +1,7 @@
-import cache from '../../cache'
 import getCacheKey from './getCacheKey'
 
-export default function(resolver) {
-  return async function(params, parent, viewer) {
+export default function (resolver) {
+  return async function (params, parent, viewer) {
     const cacheKey = await getCacheKey({
       parent,
       callParams: params,
@@ -10,6 +9,6 @@ export default function(resolver) {
       customGetCacheKey: resolver.getCacheKey,
       resolverId: resolver.resolverId
     })
-    await cache.invalidate(cacheKey)
+    await resolver.cacheProvider.invalidate(cacheKey)
   }
 }
