@@ -3,8 +3,7 @@ import JobsCollection from '../JobsCollection'
 const findJob = function (jobs, identifier) {
   const def = jobs[identifier]
   if (!def) {
-    console.log(`Job named "${identifier}" not found. Will stop trying to execute`)
-    JobsCollection.deleteMany({job: identifier})
+    console.log(`Job named "${identifier}" not found.`)
     return
   }
   return def.execute
