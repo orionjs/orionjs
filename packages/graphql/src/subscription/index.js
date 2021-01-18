@@ -2,7 +2,7 @@ import {getPubsub} from '../pubsub'
 import getChannelName from './getChannelName'
 import {checkResolverPermissions} from '@orion-js/app'
 
-export default function(options) {
+export default function (options) {
   const {params, returns, checkPermission, ...otherOptions} = options
 
   // the publish function
@@ -12,7 +12,7 @@ export default function(options) {
     pubsub.publish(channelName, {[subscription.key]: data})
   }
 
-  subscription.subscribe = async function(callParams, viewer) {
+  subscription.subscribe = async function (callParams, viewer) {
     const pubsub = getPubsub()
     try {
       await checkResolverPermissions({callParams, viewer, checkPermission, otherOptions})

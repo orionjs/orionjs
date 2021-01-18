@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-export default function(relativePath) {
+export default function (relativePath) {
   const buildPath = relativePath.replace('app/', './.orion/build/')
   const absolutePath = path.resolve(buildPath)
 

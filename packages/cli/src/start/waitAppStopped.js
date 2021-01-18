@@ -1,7 +1,7 @@
 import sleep from '../helpers/sleep'
 import processExists from 'process-exists'
 
-export default async function() {
+export default async function () {
   if (!global.appProcess) return
   const pid = global.appProcess.pid
   for (let i = 0; true; i++) {

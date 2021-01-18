@@ -14,8 +14,10 @@ export default async function runAgain({jobs, workers}) {
     }
   })
 
+  // eslint-disable-next-line
   while (true) {
     if (exited) return
+
     currentLoop = loop({jobs, workers})
 
     const delay = await currentLoop

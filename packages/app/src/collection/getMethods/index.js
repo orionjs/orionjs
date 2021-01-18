@@ -15,21 +15,22 @@ import deleteOne from './deleteOne'
 import deleteMany from './deleteMany'
 import insertOne from './insertOne'
 import insertMany from './insertMany'
+import dataLoader from './dataLoader'
 
-export default function(collection) {
+export default function (collection) {
   const {model, rawCollection, passUpdateAndRemove} = collection
   const {schema} = model || {}
 
   let funcs
 
-  const initItem = function(doc) {
+  const initItem = function (doc) {
     const item = model ? model.initItem(doc) : doc
     if (passUpdateAndRemove) {
-      item.remove = async function() {
+      item.remove = async function () {
         const result = await funcs.remove(doc._id)
         return result
       }
-      item.update = async function(modifier) {
+      item.update = async function (modifier) {
         const result = await funcs.update(doc._id, modifier)
         if (result.modifiedCount === 1) {
           updateItemWithModifier(item, modifier)
@@ -43,6 +44,7 @@ export default function(collection) {
   const info = {model, schema, initItem, collection, rawCollection}
 
   funcs = {
+    ...dataLoader(info),
     find: find(info),
     findOne: findOne(info),
     aggregate: aggregate(info),

@@ -12,19 +12,19 @@ export default new Model({
   resolvers: {
     params: resolver({
       returns: 'blackbox',
-      resolve: async function({resolver}) {
+      resolve: async function ({resolver}) {
         return await serializeSchema(resolver.params)
       }
     }),
     result: resolver({
       returns: String,
-      resolve: async function({resolver}) {
+      resolve: async function ({resolver}) {
         return resolver.returns.name
       }
     }),
     basicResultQuery: resolver({
       returns: String,
-      resolve: async function({resolver}) {
+      resolve: async function ({resolver}) {
         return await getBasicResultQuery({type: resolver.returns.schema})
       }
     })

@@ -1,7 +1,7 @@
 import buildSchema from '../buildSchema'
 import formatError from './formatError'
 
-export default async function(options) {
+export default async function (options) {
   const schema = await buildSchema(options)
 
   return {
@@ -9,6 +9,10 @@ export default async function(options) {
     subscriptionsEndpoint: `/subscriptions`,
     schema,
     formatError,
-    useGraphiql: options.useGraphiql || true
+    useGraphiql: options.useGraphiql || true,
+    context: integrationContext => {
+      return integrationContext.req._orionjsViewer
+    },
+    ...options
   }
 }

@@ -1,6 +1,6 @@
 import getField from './getField'
 
-export default function(params) {
+export default function (params) {
   if (!params) return
   if (Object.keys(params).length === 0) return
 

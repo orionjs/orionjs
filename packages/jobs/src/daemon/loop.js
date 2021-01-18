@@ -2,11 +2,13 @@ import getJobToRun from './getJobToRun'
 import getFreeWorker from './getFreeWorker'
 import createJobExecutor from './createJobExecutor'
 
-export default async function({jobs, workers}) {
+export default async function ({jobs, workers}) {
   const freeWorker = getFreeWorker(workers)
   if (!freeWorker) {
     return 100
   }
+
+  global.lastJobLoopDate = new Date()
 
   const jobData = await getJobToRun()
   if (!jobData) {

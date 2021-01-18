@@ -13,7 +13,7 @@ setOnExit(async () => {
 
 global.appProcess = null
 
-const restart = runOnce(async function() {
+const restart = runOnce(async function () {
   if (global.appProcess) {
     console.log('')
     console.log(colors.bold('=> Restarting...'))

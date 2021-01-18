@@ -6,7 +6,7 @@ import waitAppStopped from './waitAppStopped'
 
 let isExited = false
 
-export default async function({restart, options}) {
+export default async function ({restart, options}) {
   const MONGO_URL = process.env.MONGO_URL || global.localMongoURI
   let startCommand = process.env.START_COMMAND || 'node'
 
@@ -39,7 +39,7 @@ export default async function({restart, options}) {
 
   await writeFile('.orion/process', appProcess.pid)
 
-  appProcess.on('exit', function(code, signal) {
+  appProcess.on('exit', function (code, signal) {
     if (!code || code === 143 || code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
     } else {
       console.log(colors.bold('Exit code: ' + code))

@@ -4,6 +4,7 @@ import fetch from 'unfetch'
 import getAuthHeaders from '../auth/getAuthHeaders'
 import {RetryLink} from 'apollo-link-retry'
 import {ApolloLink} from 'apollo-link'
+import onNetworkError from './onNetworkError'
 
 export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
   const customFetch = async (uri, options) => {
@@ -24,11 +25,14 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
     attempts(count, operation, error) {
       if (!canRetry) return false
       if (typeof canRetry === 'function') return canRetry(count, operation, error)
+
       if (error && error.result && error.result.error === 'AuthError') {
         if (error.result.message === 'nonceIsInvalid') {
           return count < 20
         } else {
-          return false
+          console.log('got an auth error and will retry')
+          onNetworkError(error) // session should be reseted
+          return count < 5
         }
       }
       if (count > 10) return false

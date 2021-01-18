@@ -1,7 +1,6 @@
 import {onError} from 'apollo-link-error'
 import {Observable} from 'apollo-link'
-import setSession from '../auth/setSession'
-import getSession from '../auth/getSession'
+import onNetworkError from './onNetworkError'
 
 export default options =>
   onError(({graphQLErrors, networkError, response, operation, forward}) => {
@@ -47,19 +46,7 @@ export default options =>
     }
 
     if (networkError) {
-      if (networkError.statusCode === 401 && networkError.result.error === 'AuthError') {
-        if (networkError.result.message !== 'nonceIsInvalid') {
-          const session = getSession()
-          console.log('Resetting session: ' + JSON.stringify(networkError.result, null, 2))
-          if (session) {
-            setSession(null)
-          }
-        } else {
-          console.warn('Received too many nonce is invalid')
-        }
-      } else {
-        console.warn('Network error:', networkError)
-      }
+      onNetworkError(networkError)
     }
 
     return options.onError({graphQLErrors, networkError, response, operation, forward})

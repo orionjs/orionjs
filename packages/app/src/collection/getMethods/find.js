@@ -1,6 +1,6 @@
 import getSelector from './getSelector'
 
-export default ({rawCollection, initItem, odel}) =>
+export default ({rawCollection, initItem}) =>
   function find(...args) {
     const options = args[1]
     const selector = getSelector(args)

@@ -4,7 +4,7 @@ import colors from 'colors/safe'
 import path from 'path'
 import compileFile from '../start/compileFile'
 
-export default async function(dirPath) {
+export default async function (dirPath) {
   const finalDirPath = path.join(dirPath, 'app')
   await execute(`rm -rf ${finalDirPath}`)
   const files = await globby('app/**/*')

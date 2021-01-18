@@ -965,10 +965,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@orion-js/schema@^0.19.2":
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-0.19.2.tgz#a86208089d33cd6151ddd8d0eff1fac6b2cd2038"
-  integrity sha512-hGQc7Xl1kYiHJUYZbjbv4a46v6biQ1Ge2Url9uiVM1cU4uAV14jHkmRqVOrqhsuvQVZJ7HV7Hz4RHiSJa+3h8g==
+"@orion-js/schema@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.0.0.tgz#63d43fa628923d4b54ae7dbf59f661ae92628899"
+  integrity sha512-81Fqp4fQizyZD/+47KEDxUfVllgrIuMBC7WiD7Xtst/AuJjwcDWSyizCMLz28sEc4o8ru8J/5QSx547zFmPtSA==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -1701,6 +1701,11 @@ data-urls@^1.0.0:
     abab "^1.0.4"
     whatwg-mimetype "^2.0.0"
     whatwg-url "^6.4.0"
+
+dataloader@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-2.0.0.tgz#41eaf123db115987e21ca93c005cd7753c55fe6f"
+  integrity sha512-YzhyDAwA4TaQIhM5go+vCLmU0UikghC/t9DTQYZR2M/UvZ1MdOhPezSDZcjj9uqQJOMqjLcpWtyW2iNINdlatQ==
 
 debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"

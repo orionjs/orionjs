@@ -1,7 +1,7 @@
 import isPortInUse from '../helpers/isPortInUse'
 import sleep from '../helpers/sleep'
 
-const arePortsInUse = async function() {
+const arePortsInUse = async function () {
   const port = process.env.PORT || 3000
   if (await isPortInUse(port)) return true
 
@@ -12,7 +12,7 @@ const arePortsInUse = async function() {
   return false
 }
 
-export default async function() {
+export default async function () {
   for (let i = 0; await arePortsInUse(); i++) {
     await sleep(10)
     // 10 secs

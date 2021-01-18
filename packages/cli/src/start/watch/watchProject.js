@@ -6,7 +6,7 @@ import deleteFile from './deleteFile'
 import createFolder from './createFolder'
 import deleteFolder from './deleteFolder'
 
-export default function(callback) {
+export default function (callback) {
   const options = {
     ignoreInitial: true
   }

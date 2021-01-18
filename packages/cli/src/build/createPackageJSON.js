@@ -1,7 +1,7 @@
 import fs from 'fs'
 import writeFile from '../helpers/writeFile'
 
-export default function(dirPath) {
+export default function (dirPath) {
   const packageJSON = JSON.parse(fs.readFileSync('./package.json').toString())
   delete packageJSON.devDependencies
 

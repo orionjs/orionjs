@@ -3,7 +3,7 @@ import getArgs from '../getArgs'
 
 global.graphQLSubscriptions = {}
 
-export default async function({subscriptions, options}) {
+export default async function ({subscriptions, options}) {
   const fields = {}
 
   for (const key of Object.keys(subscriptions)) {

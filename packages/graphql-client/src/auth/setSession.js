@@ -1,11 +1,17 @@
 import {getOptions} from '../options'
 
-export default async function(session) {
+export default async function (session, resetStore = true) {
   const {apolloClient, saveSession, wsClient} = getOptions()
+
+  if (resetStore) {
+    await apolloClient.clearStore()
+  }
 
   await saveSession(session)
 
-  await apolloClient.resetStore()
+  if (resetStore) {
+    await apolloClient.reFetchObservableQueries()
+  }
 
   if (wsClient) {
     wsClient.tryReconnect()

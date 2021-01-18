@@ -1,4 +1,4 @@
-export default function(apolloError) {
+export default function (apolloError) {
   let response = {...apolloError}
   const error = apolloError.originalError
 

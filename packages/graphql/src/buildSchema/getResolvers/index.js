@@ -4,7 +4,7 @@ import reportError from '../../reportError'
 
 global.graphQLResolvers = {}
 
-export default async function({resolvers, mutation, options}) {
+export default async function ({resolvers, mutation, options}) {
   const filteredResolvers = Object.keys(resolvers)
     .map(key => {
       return {

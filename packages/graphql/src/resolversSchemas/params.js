@@ -13,7 +13,7 @@ export default resolver({
   },
   returns: ResolverParams,
   mutation: false,
-  resolve: async function({mutation, name}, viewer) {
+  resolve: async function ({mutation, name}, viewer) {
     const resolver = global.graphQLResolvers[name]
     if (!resolver) {
       throw new UserError(

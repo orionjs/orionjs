@@ -14,7 +14,7 @@ const fieldMap = {
   blackbox: JSONScalar
 }
 
-export default function(fieldType) {
+export default function (fieldType) {
   if (fieldMap[fieldType.name]) {
     return fieldMap[fieldType.name]
   }
