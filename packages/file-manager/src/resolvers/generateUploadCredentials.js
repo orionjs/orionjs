@@ -13,6 +13,11 @@ export default resolver({
     },
     type: {
       type: String
+    },
+    cacheControl: {
+      type: String,
+      description: 'Cache policy for the uploaded asset. Should comply with the HTTP standard',
+      optional: true
     }
   },
   returns: new Model({
@@ -69,7 +74,8 @@ export default resolver({
           ],
           Fields: {
             key: key,
-            'Content-Type': params.type
+            'Content-Type': params.type,
+            ...(params.cacheControl && {'Cache-Control': params.cacheControl})
           }
         },
         function(error, data) {
