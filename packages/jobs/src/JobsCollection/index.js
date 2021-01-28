@@ -13,7 +13,8 @@ export default new Collection({
     },
     {
       keys: {runAfter: 1}
-    }
+    },
+    {keys: {priority: 1}}
   ],
   model: new Model({
     name: 'OrionJob',
