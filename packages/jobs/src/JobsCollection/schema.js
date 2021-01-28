@@ -22,7 +22,6 @@ export default {
   priority: {
     type: Number,
     allowedValues: [0, 1, 2, 3], // 0 = Urgent, 1 = High, 2 = Medium , 3 = Low
-    defaultValue: 3,
     optional: true
   }
 }

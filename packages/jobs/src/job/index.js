@@ -2,7 +2,7 @@ import runJob from './runJob'
 import cancelExecution from './cancelExecution'
 import getExecute from './getExecute'
 
-export default function({name, type, run, getNextRun, runEvery}) {
+export default function ({name, type, run, getNextRun, runEvery, priority}) {
   const job = (...args) => runJob.apply(job, args)
 
   job.runJob = (...args) => runJob.apply(job, args)
@@ -12,6 +12,7 @@ export default function({name, type, run, getNextRun, runEvery}) {
   job.getNextRun = getNextRun
   job.runEvery = runEvery
   job.cancelExecution = cancelExecution
+  job.priority = priority ? priority : 3
 
   return job
 }
