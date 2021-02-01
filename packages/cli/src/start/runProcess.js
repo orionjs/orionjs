@@ -1,8 +1,6 @@
 import {spawn} from 'child_process'
 import colors from 'colors/safe'
 import writeFile from '../helpers/writeFile'
-import {setOnExit} from '../helpers/onExit'
-import waitAppStopped from './waitAppStopped'
 
 let isExited = false
 
@@ -34,13 +32,14 @@ export default async function ({restart, options}) {
     },
     cwd: process.cwd(),
     stdio: 'inherit',
-    detached: true
+    detached: false
   })
 
   await writeFile('.orion/process', appProcess.pid)
 
   appProcess.on('exit', function (code, signal) {
     if (!code || code === 143 || code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
+      isExited = true
     } else {
       console.log(colors.bold('Exit code: ' + code))
       console.log(colors.bold('\n=> Error running app, restarting...'))
@@ -50,14 +49,6 @@ export default async function ({restart, options}) {
           restart()
         }
       }, 2000)
-    }
-  })
-
-  setOnExit(async () => {
-    isExited = true
-    if (appProcess) {
-      appProcess.kill()
-      await waitAppStopped()
     }
   })
 

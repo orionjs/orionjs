@@ -2,8 +2,6 @@ import {spawn} from 'child_process'
 import colors from 'colors/safe'
 import ensureDirectory from '../../helpers/ensureDirectory'
 import sleep from '../../helpers/sleep'
-import waitAppStopped from '../waitAppStopped'
-import {setOnExit} from '../../helpers/onExit'
 
 export default async function () {
   ensureDirectory('.orion/db/logs/mongolog.log')
@@ -46,12 +44,6 @@ export default async function () {
     } else {
       console.log(colors.bold('\n=> Error running database'))
     }
-  })
-
-  setOnExit(async () => {
-    await waitAppStopped()
-    console.log(colors.bold('\n=> Stopping database...'))
-    dbProcess.kill()
   })
 
   global.localMongoURI = `mongodb://127.0.0.1:${dbPort}/orionlocal`

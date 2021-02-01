@@ -4,12 +4,6 @@ import colors from 'colors/safe'
 import sleep from '../helpers/sleep'
 import waitForPorts from './waitForPorts'
 import killProcess from './killProcess'
-import waitAppStopped from './waitAppStopped'
-import {setOnExit} from '../helpers/onExit'
-
-setOnExit(async () => {
-  await waitAppStopped()
-})
 
 global.appProcess = null
 
