@@ -24,6 +24,7 @@ import * as micro from 'micro'
 import cache from './cache'
 import sleep from './helpers/sleep'
 import {setOnExit, clearOnExit} from './helpers/onExit'
+import config from './config'
 
 export {
   connectToDatabase,
@@ -54,5 +55,6 @@ export {
   setCorsOptions,
   paginatedResolver,
   addPermissionChecker,
-  checkResolverPermissions
+  checkResolverPermissions,
+  config
 }
