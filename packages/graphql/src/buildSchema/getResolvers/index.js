@@ -1,11 +1,10 @@
 import getType from '../getType'
 import getArgs from '../getArgs'
-import {config} from '@orion-js/app'
+import errorHandler from '../../errorHandler'
 
 global.graphQLResolvers = {}
 
 export default async function ({resolvers, mutation, options}) {
-  const {graphql: graphqlConfig} = config()
   const filteredResolvers = Object.keys(resolvers)
     .map(key => {
       return {
@@ -32,8 +31,7 @@ export default async function ({resolvers, mutation, options}) {
           const result = await resolver(params, context)
           return result
         } catch (error) {
-          if (graphqlConfig.errorHandler)
-            graphqlConfig.errorHandler(error, {context, resolver, options, name})
+          errorHandler(error, {context, resolver, options, name})
           throw error
         }
       }

@@ -1,8 +1,7 @@
 import getArgs from '../getArgs'
-import {config} from '@orion-js/app'
+import errorHandler from '../../errorHandler'
 
 export default function ({resolver, getGraphQLType, options, model}) {
-  const {graphql: graphqlConfig} = config()
   const type = getGraphQLType(resolver.returns, options)
   const args = getArgs(resolver.params)
   return {
@@ -13,8 +12,7 @@ export default function ({resolver, getGraphQLType, options, model}) {
         const result = await resolver.resolve(item, params, context)
         return result
       } catch (error) {
-        if (graphqlConfig.errorHandler)
-          graphqlConfig.errorHandler(error, {context, resolver, options, model})
+        errorHandler(error, {context, resolver, options, model})
         throw error
       }
     }
