@@ -20,7 +20,6 @@ export default function (options) {
       const channelName = getChannelName(subscription.key, callParams)
       return pubsub.asyncIterator(channelName)
     } catch (error) {
-      // console.log('Unauthorized user', error)
       return pubsub.asyncIterator('unauthorized')
     }
   }
