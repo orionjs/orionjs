@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer'
 import {config} from '@orion-js/app'
 
-const {mailing} = config()
+const {mailing, logger} = config()
 
 const transportConfig = mailing ||
   process.env.MAIL_URL || {
@@ -12,7 +12,7 @@ const transportConfig = mailing ||
 const transporter = nodemailer.createTransport(transportConfig)
 transporter.verify(function (error, success) {
   if (error) {
-    console.log('Error connecting to mailing transport:', error)
+    logger.error('Error connecting to mailing transport:', error)
   }
 })
 

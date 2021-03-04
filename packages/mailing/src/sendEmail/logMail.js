@@ -1,13 +1,13 @@
-export default function(options) {
-  console.log('=== Email Sent ===')
-  console.log(`From: ${options.from}`)
-  console.log(`To: ${options.to}`)
-  console.log(`Subject: ${options.subject}`)
-  console.log('')
-  if (options.text) {
-    console.log(options.text)
-  } else if (options.html) {
-    console.log(options.html)
-  }
-  console.log('==================')
+import {config} from '@orion-js/app'
+
+export default function (options) {
+  const {logger} = config()
+  logger.info(`
+    === Email Sent ===
+    From: ${options.from}
+    To: ${options.to}
+    Subject: ${options.subject}
+
+    ${options.text ? options.text : options.html}
+    ==================`)
 }
