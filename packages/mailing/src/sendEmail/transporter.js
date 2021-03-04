@@ -1,21 +1,19 @@
 import nodemailer from 'nodemailer'
+import {config} from '@orion-js/app'
 
-const mailURL = process.env.MAIL_URL
+const {mailing} = config()
 
-let transporter = null
-
-if (mailURL) {
-  transporter = nodemailer.createTransport(mailURL)
-  transporter.verify(function(error, success) {
-    if (error) {
-      console.log('Error connecting to SMTP:', error)
-    }
-  })
-} else {
-  transporter = nodemailer.createTransport({
+const transportConfig = mailing ||
+  process.env.MAIL_URL || {
     streamTransport: true,
     newline: 'unix'
-  })
-}
+  }
+
+const transporter = nodemailer.createTransport(transportConfig)
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log('Error connecting to mailing transport:', error)
+  }
+})
 
 export default transporter
