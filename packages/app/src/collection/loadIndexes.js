@@ -1,21 +1,22 @@
-export default async function(collection) {
+import config from '../config'
+
+export default async function loadIndexes(collection) {
   if (!collection.indexes) return
   for (const {keys, options} of collection.indexes) {
     try {
       await collection.rawCollection.createIndex(keys, options)
     } catch (error) {
+      const {logger} = config()
       if (error.code === 85) {
-        console.log('Will delete index to create the new version')
+        logger.info('Will delete index to create the new version')
         const indexName = error.message.split('name: ')[1].split(' ')[0]
         await collection.rawCollection.dropIndex(indexName)
-        console.log('Index was deleted')
-        console.log('Creating new index')
+        logger.info('Index was deleted, creating new index')
         await collection.rawCollection.createIndex(keys, options)
-        console.log('Index updated correctly')
+        logger.info('Index updated correctly')
       } else {
-        console.error('Error creating index for collection ' + collection.name)
-        console.error(error.message)
-        console.error(JSON.stringify(error, null, 2))
+        logger.error(`Error creating index for collection ${collection.name}: ${error.message}`)
+        logger.error(error)
       }
     }
   }

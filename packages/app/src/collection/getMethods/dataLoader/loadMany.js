@@ -1,4 +1,5 @@
 import createMapArray from '../../../helpers/createMapArray'
+import config from '../../../config'
 
 export default function (dataLoad) {
   return async options => {
@@ -29,8 +30,8 @@ export default function (dataLoad) {
         }
 
         if (options.debug) {
-          console.log(`Will execute data loading query now on ${collection.name}:`)
-          console.log(query)
+          const {logger} = config()
+          logger.info(`Will execute data loading query now on ${collection.name}: `, query)
         }
 
         const items = await cursor.toArray()
