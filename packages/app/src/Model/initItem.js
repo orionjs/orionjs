@@ -10,7 +10,7 @@ export default function (model, item) {
   }
 
   if (!isPlainObject(item)) {
-    logger.warn(`When initializing a item in ${model.name} recieved a non object value`, item)
+    logger.warn(`When initializing an item in ${model.name} received a non object value`, item)
     return
   }
 
