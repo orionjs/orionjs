@@ -1,6 +1,8 @@
 import resolver from '../resolver'
+import config from '../../config'
 
 export default ({name, collection, Model, canUpdate}) => {
+  const {logger} = config()
   const InputModel = collection.model.clone({
     name: `Update${Model.name}`,
     omitFields: ['_id'],
@@ -25,7 +27,7 @@ export default ({name, collection, Model, canUpdate}) => {
     },
     returns: Model,
     mutation: true,
-    resolve: async function(params, viewer) {
+    resolve: async function (params, viewer) {
       try {
         if (canUpdate) await canUpdate(params, viewer)
         const itemId = params[idParam]
@@ -33,7 +35,7 @@ export default ({name, collection, Model, canUpdate}) => {
         await collection.update(itemId, {$set: data})
         return await collection.findOne(itemId)
       } catch (error) {
-        console.log(error)
+        logger.warn('Error in crudResolver update: ', error)
         if (error.isValidationError) {
           throw error.prependKey(dataParam)
         }
