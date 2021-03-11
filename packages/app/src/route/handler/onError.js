@@ -1,4 +1,5 @@
 import config from '../../config'
+import crypto from 'crypto'
 
 export default function ({error, send, response}) {
   const {logger} = config()
@@ -14,9 +15,15 @@ export default function ({error, send, response}) {
     send(response, error.statusCode, error.message)
     logger.warn('[route/handler] GraphQLError: ', error)
   } else {
+    const hash = crypto
+      .createHash('sha1')
+      .update(error.message, 'utf8')
+      .digest('hex')
+      .substring(0, 10)
     const statusCode = 500
-    const data = {error: 500, message: 'Internal server error'}
+    const data = {error: 500, message: 'Internal server error', hash}
     send(response, statusCode, data)
+    error.hash = hash
     logger.error('[route/handler] Internal server error: ', error)
   }
 }
