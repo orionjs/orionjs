@@ -9,6 +9,5 @@ export default function (apolloError) {
   if (error && error.getInfo) {
     response = error.getInfo()
   }
-
   return response
 }
