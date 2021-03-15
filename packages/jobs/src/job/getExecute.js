@@ -1,7 +1,7 @@
 import JobsCollection from '../JobsCollection'
 import {generateId} from '@orion-js/app'
 
-export default function(job) {
+export default function (job) {
   return async (params, jobData) => {
     try {
       const result = {}
@@ -23,7 +23,8 @@ export default function(job) {
             $set: {
               lockedAt: null,
               identifier: generateId(),
-              runAfter: await job.getNextRun(previousInfo)
+              runAfter: await job.getNextRun(previousInfo),
+              priority: job.priority
             }
           }
         )

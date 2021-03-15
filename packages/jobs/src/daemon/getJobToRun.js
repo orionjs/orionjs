@@ -5,7 +5,7 @@ const defaultLockTime = {
   minutes: 10
 }
 
-export default async function() {
+export default async function () {
   const job = await JobsCollection.findOneAndUpdate(
     {
       runAfter: {$lte: new Date()},
@@ -15,15 +15,16 @@ export default async function() {
         },
         {
           lockedAt: {
-            $lte: DateTime.local()
-              .minus(defaultLockTime)
-              .toJSDate()
+            $lte: DateTime.local().minus(defaultLockTime).toJSDate()
           }
         }
       ]
     },
     {
       $set: {lockedAt: new Date()}
+    },
+    {
+      $sort: {priority: 1}
     }
   )
 

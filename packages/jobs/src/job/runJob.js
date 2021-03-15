@@ -1,7 +1,10 @@
 import JobsCollection from '../JobsCollection'
 import {generateId} from '@orion-js/app'
 
-export default async function(params, {identifier, waitToRun} = {}) {
+/**
+ * Job type 'event'
+ */
+export default async function (params, {identifier, waitToRun} = {}) {
   if (!this.identifier) {
     throw new Error('Job must be initialized in "start()" to be able to run')
   }
@@ -12,6 +15,7 @@ export default async function(params, {identifier, waitToRun} = {}) {
   }
 
   let runAfter = new Date()
+
   if (waitToRun) {
     runAfter = new Date(Date.now() + waitToRun)
   }
@@ -20,7 +24,8 @@ export default async function(params, {identifier, waitToRun} = {}) {
     job: this.identifier,
     identifier,
     params,
-    runAfter
+    runAfter,
+    priority: this.priority
   })
 
   return identifier

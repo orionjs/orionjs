@@ -6,6 +6,14 @@ sidebar_label: Jobs
 
 `Jobs` are pre-programmed background processes that can be scheduled to run after a certain period of time.
 
+## Install exclusive package
+
+If you only want to install the jobs package, just run the following command in your project:
+
+```sh
+yarn add @orion-js/jobs
+```
+
 ## Structure of the main jobs of the application
 
 ```
@@ -44,8 +52,9 @@ To call a event job you must call the job function returned from the initializat
 ```js
 export default job({
   type: 'recurrent',
-  runEvery: 1000 // runs every 1000 ms
-  async getNextRun () { // return the date of the next execution
+  runEvery: 1000, // runs every 1000 ms
+  async getNextRun() {
+    // return the date of the next execution
     return moment().add(1, 'day').toDate()
   },
   async run(params) {
@@ -56,7 +65,39 @@ export default job({
 
 This jobs will be called automatically. You can only specify `runEvery` or `getNextRun` in a job.
 
-## Example
+## Priority
+
+Execution of the job will depend first on the moment in which it must be executed and then on the order of priority.
+
+There are 4 types of priorities when executing a job, the priorities are:
+
+- 0 = Urgent
+- 1 = High
+- 2 = Medium
+- 3 = Low (default)
+
+Where 0 is the most urgent and 3 is the lowest priority.
+
+### The default priority
+
+Default priority is priority number 3 (Low), if you want to modify it, you only have to pass the _priority: number_ parameter in the job Object structure.
+
+### Using priority
+
+Following example of a priority 1 job, when the time comes it will be executed first before those of priority 2 and 3.
+
+```js
+export default job({
+  type: 'recurrent',
+  priority: 1, // High
+  getNextRun: () => moment().add(3, 'seconds').toDate(),
+  async run(params) {
+    // ...
+  }
+})
+```
+
+## Complete Example
 
 ```js
 import {start} from '@orion-js/jobs'
@@ -103,6 +144,7 @@ import Orders from 'app/collections/Orders'
 
 export default job({
   type: 'event',
+  priority: 2,
   async run({orderId}) {
     const order = await Orders.findOne(orderId)
     const delivery = await order.delivery()
