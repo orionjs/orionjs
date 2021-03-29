@@ -1,11 +1,12 @@
 import JobsCollection from '../JobsCollection'
 import {DateTime} from 'luxon'
+import lockConfig from '../lockConfig'
 
 const defaultLockTime = {
-  minutes: 10
+  minutes: lockConfig.lockDuration
 }
 
-export default async function() {
+export default async function () {
   const job = await JobsCollection.findOneAndUpdate(
     {
       runAfter: {$lte: new Date()},
@@ -15,15 +16,16 @@ export default async function() {
         },
         {
           lockedAt: {
-            $lte: DateTime.local()
-              .minus(defaultLockTime)
-              .toJSDate()
+            $lte: DateTime.local().minus(defaultLockTime).toJSDate()
           }
         }
       ]
     },
     {
-      $set: {lockedAt: new Date()}
+      $set: {lockedAt: new Date(), lastExecution: new Date()}
+    },
+    {
+      sort: {lastExecution: 1}
     }
   )
 

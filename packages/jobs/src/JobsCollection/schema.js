@@ -15,6 +15,10 @@ export default {
     type: Date,
     optional: true
   },
+  lastExecution: {
+    type: Date,
+    optional: true
+  },
   params: {
     type: 'blackbox',
     optional: true

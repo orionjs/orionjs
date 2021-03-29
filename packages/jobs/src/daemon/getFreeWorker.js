@@ -1,5 +1,9 @@
-export default function(workers) {
-  for (const worker of workers) {
-    if (worker.itsFree()) return worker
-  }
+function returnWorkerOnExecutionFinished(worker) {
+  return worker.currentExecution
+    ? worker.currentExecution.then(() => worker).catch(() => worker)
+    : worker
+}
+
+export default function (workers) {
+  return Promise.race(workers.map(returnWorkerOnExecutionFinished))
 }
