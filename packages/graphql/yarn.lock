@@ -1176,13 +1176,13 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@orion-js/app@^1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-1.2.4.tgz#cc277379e13a322ce5599d23d2890f3a11000624"
-  integrity sha512-VCmBGbvw10wCJ72rYPk6EPbNKlm/PaQGBxAxi2atBbWIx9sqhRTl481Kh62fhxveFiqelzwyX4msik1M0GGvCg==
+"@orion-js/app@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-1.4.3.tgz#846f31c9f05163708afe650488f25e4ce3d25e6e"
+  integrity sha512-WoVtLx6duzfFK54V+MZOTYKYsSau/98H5lMjGOlvcUsLy/nawic+k0f0tfFt8+LboMwaoREMA5eJMmXtueq1Sg==
   dependencies:
     "@babel/polyfill" "^7.4.4"
-    "@orion-js/schema" "^1.2.0"
+    "@orion-js/schema" "^1.4.0"
     async-exit-hook "^2.0.1"
     colors "^1.3.3"
     dataloader "^2.0.0"
@@ -1193,10 +1193,10 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
-"@orion-js/schema@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.2.0.tgz#d5eb812aa2f9f46e478ca64da94ac1e70127c943"
-  integrity sha512-oVsgAM960FIdoXavroo/4zKv7zEr/qRSsS8ZzrWiXi/imj0JyNVkaJ89quye3LWoyqAvzJA2ajhneALrHIlA5A==
+"@orion-js/schema@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.4.0.tgz#a8ed4ef412df2378c818856e4abfc8106e957822"
+  integrity sha512-6y6U1RKojc8wusq1vmI7Xel9RcLOrp0IaQVYiVPGbfMMHKs99QboXRb7y/3GrCaMdYGLXUeu1STmuBcSaUjUbA==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -5479,9 +5479,9 @@ xss@^1.0.6:
     cssfilter "0.0.10"
 
 y18n@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-4.0.0.tgz#95ef94f85ecc81d007c264e190a120f0a3c8566b"
-  integrity sha512-r9S/ZyXu/Xu9q1tYlpsLIsa3EeLXXk0VwlxqTcFRfg9EhMW+17kbt9G0NrgCmhGb5vT2hyhJZLfDGx+7+5Uj/w==
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-4.0.1.tgz#8db2b83c31c5d75099bb890b23f3094891e247d4"
+  integrity sha512-wNcy4NvjMYL8gogWWYAO7ZFWFfHcbdbE57tZO8e4cbpj8tfUcwrwqSl3ad8HxpYWCdXcJUCeKKZS62Av1affwQ==
 
 yallist@^3.0.2:
   version "3.0.2"
