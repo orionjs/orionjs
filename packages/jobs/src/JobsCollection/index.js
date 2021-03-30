@@ -9,9 +9,6 @@ export default new Collection({
       options: {unique: true}
     },
     {
-      keys: {createdAt: -1}
-    },
-    {
       keys: {runAfter: 1}
     }
   ],

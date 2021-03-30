@@ -22,10 +22,10 @@ export default async function () {
       ]
     },
     {
-      $set: {lockedAt: new Date(), lastExecution: new Date()}
+      $set: {lockedAt: new Date()}
     },
     {
-      sort: {lastExecution: 1}
+      sort: {runAfter: 1}
     }
   )
 
