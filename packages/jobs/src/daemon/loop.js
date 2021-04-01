@@ -1,4 +1,4 @@
-import getJobToRun from './getJobToRun'
+import JobRepository from './JobsRepository'
 import getFreeWorker from './getFreeWorker'
 import createJobExecutor from './createJobExecutor'
 import {config} from '@orion-js/app'
@@ -8,7 +8,7 @@ export default async function ({jobs, workers}) {
 
   global.lastJobLoopDate = new Date()
 
-  const jobData = await getJobToRun()
+  const jobData = await JobRepository.getJobAndLock()
   if (!jobData) {
     return 1000
   }

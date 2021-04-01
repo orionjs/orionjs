@@ -1,10 +1,19 @@
 import JobsCollection from '../JobsCollection'
 import {generateId} from '@orion-js/app'
 
-export default async function(params, {identifier, waitToRun} = {}) {
-  if (!this.identifier) {
-    throw new Error('Job must be initialized in "start()" to be able to run')
-  }
+export default async function (params, {identifier, waitToRun} = {}) {
+  const getIdentifier = maxRetries =>
+    new Promise((resolve, reject) => {
+      if (this.identifier) return resolve(this.identifier)
+      if (maxRetries <= 0)
+        return reject(new Error('Job must be initialized in "start()" to be able to run'))
+      setTimeout(() => {
+        resolve(getIdentifier(maxRetries - 1))
+      }, 1000)
+    })
+
+  await getIdentifier(5)
+
   identifier = identifier || generateId()
 
   if (this.type !== 'event') {
