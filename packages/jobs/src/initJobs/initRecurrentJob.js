@@ -30,9 +30,6 @@ export default async function (job) {
           runAfter
         }
       }
-    ).catch(err => {
-      console.log('error in insert')
-      throw err
-    })
+    )
   }
 }
