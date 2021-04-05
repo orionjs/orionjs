@@ -1,8 +1,9 @@
 import sleep from '../helpers/sleep'
 import loop from './loop'
 import {setOnExit} from '@orion-js/app'
+import DeamonStats from './DeamonStats'
 
-export default async function runAgain({jobs, workers}) {
+export default async function runAgain({jobs, workers, enableStats}) {
   let exited = false
   let currentLoop = null
 
@@ -14,10 +15,11 @@ export default async function runAgain({jobs, workers}) {
     }
   })
 
-  // eslint-disable-next-line
-  while (true) {
-    if (exited) return
+  const stats = new DeamonStats()
 
+  if (enableStats) stats.start()
+
+  while (!exited) {
     currentLoop = loop({jobs, workers})
 
     const delay = await currentLoop
@@ -25,4 +27,5 @@ export default async function runAgain({jobs, workers}) {
       await sleep(delay)
     }
   }
+  stats.stop()
 }

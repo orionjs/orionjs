@@ -2,7 +2,7 @@ import runJob from './runJob'
 import cancelExecution from './cancelExecution'
 import getExecute from './getExecute'
 
-export default function({name, type, run, getNextRun, runEvery}) {
+export default function ({name, type, run, getNextRun, runEvery}) {
   const job = (...args) => runJob.apply(job, args)
 
   job.runJob = (...args) => runJob.apply(job, args)

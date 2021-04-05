@@ -1,7 +1,8 @@
 import JobsCollection from '../JobsCollection'
-import {generateId} from '@orion-js/app'
+import {generateId, config} from '@orion-js/app'
 
-export default function(job) {
+export default function (job) {
+  const {logger} = config()
   return async (params, jobData) => {
     try {
       const result = {}
@@ -10,7 +11,7 @@ export default function(job) {
         // eslint-disable-next-line
         result.result = await job.run.call(job, params, jobData)
       } catch (error) {
-        console.log('Error running job:', error)
+        logger.error('Error running job:', error)
         result.error = error
       }
 
@@ -33,7 +34,7 @@ export default function(job) {
 
       return result
     } catch (error) {
-      console.error(`Error running job named "${jobData.job}"`, error)
+      logger.error(`Error running job named "${jobData.job}"`, error)
     }
   }
 }
