@@ -1,7 +1,7 @@
 import JobsCollection from '../JobsCollection'
 import {generateId} from '@orion-js/app'
 
-export default async function(job) {
+export default async function (job) {
   const inDb = await JobsCollection.findOne({job: job.identifier})
 
   if (job.runEvery) {
@@ -30,6 +30,9 @@ export default async function(job) {
           runAfter
         }
       }
-    )
+    ).catch(err => {
+      console.log('error in insert')
+      throw err
+    })
   }
 }

@@ -24,7 +24,7 @@ export default async function (params, {identifier, waitToRun} = {}) {
   if (waitToRun) {
     runAfter = new Date(Date.now() + waitToRun)
   }
-
+  await JobsCollection.await()
   await JobsCollection.insert({
     job: this.identifier,
     identifier,

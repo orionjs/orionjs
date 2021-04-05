@@ -7,7 +7,6 @@ export default async function ({jobs, workers}) {
   const freeWorker = await getFreeWorker(workers)
 
   global.lastJobLoopDate = new Date()
-
   const jobData = await JobRepository.getJobAndLock()
   if (!jobData) {
     return 1000

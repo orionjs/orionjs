@@ -12,7 +12,8 @@ const deleteUnclaimedJobsTime = {
 
 class JobRepository {
   setJobs(jobs) {
-    this.jobs = jobs
+    if (Array.isArray(jobs)) this.jobs = jobs
+    else this.jobs = Object.keys(jobs)
   }
   getJobAndLock() {
     return JobsCollection.findOneAndUpdate(
