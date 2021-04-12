@@ -35,43 +35,43 @@ class JobRepository {
         $set: {lockedAt: new Date()}
       },
       {
-        sort: {runAfter: 1}
+        sort: {priority: 1, runAfter: 1}
       }
     )
   }
 
-  getPendingJobsCount() {
-    return JobsCollection.find({
-      runAfter: {$lte: new Date()},
-      job: {$in: this.jobs},
-      $or: [
-        {
-          lockedAt: null
-        },
-        {
-          lockedAt: {
-            $lte: DateTime.local().minus(defaultLockTime).toJSDate()
-          }
+  getStats() {
+    return JobsCollection.aggregate([
+      {
+        $match: {job: {$in: this.jobs}}
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              {
+                $gt: ['$runAfter', new Date()]
+              },
+              'delayed',
+              {
+                $cond: [
+                  {
+                    $lte: ['$lockedAt', DateTime.local().minus(defaultLockTime).toJSDate()]
+                  },
+                  'pending',
+                  'running'
+                ]
+              }
+            ]
+          },
+          total: {$sum: 1}
         }
-      ]
-    }).count()
-  }
-
-  getRunningJobsCount() {
-    return JobsCollection.find({
-      job: {$in: this.jobs},
-      lockedAt: {
-        $gt: DateTime.local().minus(defaultLockTime).toJSDate()
       }
-    }).count()
-  }
-
-  getDelayedJobsCount() {
-    return JobsCollection.find({
-      job: {$in: this.jobs},
-      runAfter: {$gt: new Date()},
-      lockedAt: null
-    }).count()
+    ])
+      .toArray()
+      .then(arr => {
+        return arr.reduce((obj, current) => ({[current._id]: current.total, ...obj}), {})
+      })
   }
 
   deleteUnclaimedJobs() {

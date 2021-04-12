@@ -18,5 +18,13 @@ export default {
   params: {
     type: 'blackbox',
     optional: true
+  },
+  result: {
+    type: 'blackbox',
+    optional: true
+  },
+  priority: {
+    type: Number,
+    optional: true
   }
 }

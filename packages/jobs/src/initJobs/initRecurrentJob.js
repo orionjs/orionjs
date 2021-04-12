@@ -27,7 +27,8 @@ export default async function (job) {
       {
         $set: {
           identifier: generateId(),
-          runAfter
+          runAfter,
+          priority: job.priority
         }
       }
     )
