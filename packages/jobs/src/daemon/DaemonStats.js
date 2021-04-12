@@ -2,12 +2,13 @@ import {config} from '@orion-js/app'
 import JobsRepository from './JobsRepository'
 
 export default class DaemonStats {
-  constructor() {
+  constructor(jobs) {
     this.logger = config().logger
     this.step = 1
     this.factor = 8
     this.count = 0
     this.goingUp = false
+    JobsRepository.setJobs(jobs)
   }
 
   start() {

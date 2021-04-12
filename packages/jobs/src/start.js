@@ -15,7 +15,7 @@ export default async function (jobs, workersCountParam = 4) {
 
   global.jobs = jobs
 
-  const stats = new DaemonStats()
+  const stats = new DaemonStats(jobs)
 
   if (jobsConfig && jobsConfig.disabled) return stats.start()
   logger.info(`Starting jobs with ${workersCount} workers`)
