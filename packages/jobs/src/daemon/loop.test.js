@@ -65,12 +65,6 @@ describe('loop test', () => {
     //  expect.assertions(3)
     await JobsCollection.await()
 
-    const getStats = async () => [
-      await JobsRepository.getRunningJobsCount(),
-      await JobsRepository.getPendingJobsCount(),
-      await JobsRepository.getDelayedJobsCount()
-    ]
-
     await new Promise(resolve => {
       const longRunningJob = job({
         type: 'recurrent',
@@ -83,15 +77,23 @@ describe('loop test', () => {
       return initJobs({longRunningJob}).then(async jobs => {
         JobsRepository.setJobs(jobs)
 
-        await expect(getStats()).resolves.toEqual([0, 1, 0]) // before loop, one pending
+        await expect(JobsRepository.getStats()).resolves.toEqual({
+          pending: 1
+        })
         await loop({jobs, workers})
         jest.advanceTimersByTime(5 * 1000 * 60)
-        await expect(getStats()).resolves.toEqual([1, 0, 0]) // 5 minutes pass, the job is running
+        await expect(JobsRepository.getStats()).resolves.toEqual({
+          running: 1
+        })
         jest.advanceTimersByTime(10 * 1000 * 60)
-        await expect(getStats()).resolves.toEqual([1, 0, 0]) // 15 minutes pass, the job is still running
+        await expect(JobsRepository.getStats()).resolves.toEqual({
+          running: 1
+        })
         jest.advanceTimersByTime(10 * 1000 * 60)
         await new Promise(resolve => setImmediate(resolve)) // to avoid conflict between mock timer and promises.
-        await expect(getStats()).resolves.toEqual([0, 0, 1]) // 25 minutes pass, the job is not running, a new job is delayed state.
+        await expect(JobsRepository.getStats()).resolves.toEqual({
+          delayed: 1
+        })
         resolve()
       })
     })

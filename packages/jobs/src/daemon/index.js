@@ -4,7 +4,7 @@ import Worker from '../Worker'
 import JobRepository from './JobsRepository'
 import {config} from '@orion-js/app'
 
-export default function ({jobs, workersCount, enableStats}) {
+export default function ({jobs, workersCount}) {
   const {logger} = config()
 
   JobRepository.setJobs(Object.keys(jobs))
@@ -15,7 +15,7 @@ export default function ({jobs, workersCount, enableStats}) {
     .catch(error => logger.warn('error deleting unclaimed jobs', error))
 
   const workers = range(workersCount).map(index => new Worker({index}))
-  runLoop({jobs, workers, enableStats})
+  runLoop({jobs, workers})
 
   global.jobWorkers = workers
 }

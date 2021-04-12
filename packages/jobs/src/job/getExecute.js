@@ -24,7 +24,11 @@ export default function (job) {
             $set: {
               lockedAt: null,
               identifier: generateId(),
-              runAfter: await job.getNextRun(previousInfo)
+              runAfter: await job.getNextRun(previousInfo),
+              priority: job.priority,
+              ...(job.persistResults && !result.error && result.result
+                ? {result: result.result}
+                : {})
             }
           }
         )

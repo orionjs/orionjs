@@ -29,7 +29,8 @@ export default async function (params, {identifier, waitToRun} = {}) {
     job: this.identifier,
     identifier,
     params,
-    runAfter
+    runAfter,
+    priority: this.priority
   })
 
   return identifier
