@@ -1,14 +1,16 @@
-import colors from 'colors/safe'
+import config from '../config'
 
 process
   .on('unhandledRejection', (reason, promise) => {
-    console.error(colors.red(reason), colors.red('Unhandled promise rejection'))
+    const {logger} = config()
+    logger.error('Unhandled promise rejection', reason)
   })
   .on('uncaughtException', error => {
+    const {logger} = config()
     if (error.code === 'MODULE_NOT_FOUND') {
-      console.error(colors.red(error.message))
+      logger.error('Module not found', error)
     } else {
-      console.error(colors.red(error))
+      logger.error('Uncaught Exception: ', error)
       process.exit(1)
     }
   })

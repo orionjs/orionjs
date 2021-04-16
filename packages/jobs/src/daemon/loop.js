@@ -1,24 +1,23 @@
-import getJobToRun from './getJobToRun'
+import JobRepository from './JobsRepository'
 import getFreeWorker from './getFreeWorker'
 import createJobExecutor from './createJobExecutor'
+import {config} from '@orion-js/app'
 
 export default async function ({jobs, workers}) {
-  const freeWorker = getFreeWorker(workers)
-  if (!freeWorker) {
-    return 100
-  }
+  const freeWorker = await getFreeWorker(workers)
 
   global.lastJobLoopDate = new Date()
-
-  const jobData = await getJobToRun()
+  const jobData = await JobRepository.getJobAndLock()
   if (!jobData) {
     return 1000
   }
+  if (jobData.lockedAt) {
+    const {logger} = config()
+    logger.info('Resuming stalled job: ' + jobData.job)
+  }
 
   const func = createJobExecutor({jobData, jobs})
-  freeWorker.execute(func)
-
-  // console.log(`did execute job ${jobData.job} in worker ${freeWorker.index}`)
+  freeWorker.execute(func, jobData, jobs[jobData.job])
 
   return 0
 }

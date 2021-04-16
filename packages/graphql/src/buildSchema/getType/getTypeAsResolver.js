@@ -1,5 +1,5 @@
 import getArgs from '../getArgs'
-import reportError from '../../reportError'
+import errorHandler from '../../errorHandler'
 
 export default function ({resolver, getGraphQLType, options, model}) {
   const type = getGraphQLType(resolver.returns, options)
@@ -12,14 +12,7 @@ export default function ({resolver, getGraphQLType, options, model}) {
         const result = await resolver.resolve(item, params, context)
         return result
       } catch (error) {
-        console.error('Error at resolver "' + resolver.key + '" of model "' + model.name + '":')
-        console.error(error)
-        reportError(options, error, {
-          user: context.userId,
-          websiteId: context.websiteId,
-          resolver: resolver.key,
-          model: model.name
-        })
+        errorHandler(error, {context, resolver, options, model})
         throw error
       }
     }

@@ -965,10 +965,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@orion-js/schema@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.0.0.tgz#63d43fa628923d4b54ae7dbf59f661ae92628899"
-  integrity sha512-81Fqp4fQizyZD/+47KEDxUfVllgrIuMBC7WiD7Xtst/AuJjwcDWSyizCMLz28sEc4o8ru8J/5QSx547zFmPtSA==
+"@orion-js/schema@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.2.0.tgz#d5eb812aa2f9f46e478ca64da94ac1e70127c943"
+  integrity sha512-oVsgAM960FIdoXavroo/4zKv7zEr/qRSsS8ZzrWiXi/imj0JyNVkaJ89quye3LWoyqAvzJA2ajhneALrHIlA5A==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"

@@ -1,24 +1,26 @@
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import isNil from 'lodash/isNil'
+import config from '../config'
 
-export default function(model, item) {
+export default function (model, item) {
+  const {logger} = config()
   if (isNil(item)) {
     return item
   }
 
   if (!isPlainObject(item)) {
-    console.warn(`When initializing a item in ${model.name} recieved a non object value`, item)
+    logger.warn(`When initializing an item in ${model.name} received a non object value`, item)
     return
   }
 
   if (model.resolvers) {
     for (const key of Object.keys(model.resolvers)) {
       const resolver = model.resolvers[key]
-      item[key] = function(params, context) {
+      item[key] = function (params, context) {
         return resolver.resolve(item, params, context)
       }
-      item[key].invalidateCache = function(params) {
+      item[key].invalidateCache = function (params) {
         return resolver.invalidateCache(params, item)
       }
     }

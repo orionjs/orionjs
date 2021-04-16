@@ -1,6 +1,6 @@
 import getType from '../getType'
 import getArgs from '../getArgs'
-import reportError from '../../reportError'
+import errorHandler from '../../errorHandler'
 
 global.graphQLResolvers = {}
 
@@ -31,14 +31,7 @@ export default async function ({resolvers, mutation, options}) {
           const result = await resolver(params, context)
           return result
         } catch (error) {
-          console.error('Error at resolver "' + name + '":')
-          console.error(error)
-          reportError(options, error, {
-            user: context.userId,
-            websiteId: context.websiteId,
-            resolver: resolver.key
-          })
-
+          errorHandler(error, {context, resolver, options, name})
           throw error
         }
       }
