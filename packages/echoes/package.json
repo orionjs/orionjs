@@ -1,0 +1,26 @@
+{
+  "name": "@orion-js/echoes",
+  "version": "1.2.4",
+  "main": "index.js",
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "prepare": "yarn run build",
+    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib",
+    "test": "jest src",
+    "test:watch": "jest src --coverage --watch"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/runtime": "^7.5.5",
+    "@orion-js/app": "^1.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
