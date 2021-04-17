@@ -4,16 +4,15 @@ import publish from '../publish'
 export default function (options) {
   return {
     ...options,
-    onMessage: async ({topic, partition, message}) => {
+    onMessage: async messageData => {
+      const {message} = messageData
       const key = message.key.toString()
       if (key !== 'pink_floyd') return // not made by this library
 
       const data = deserialize(message.value.toString())
 
       const context = {
-        topic,
-        partition,
-        message,
+        ...messageData,
         data
       }
 

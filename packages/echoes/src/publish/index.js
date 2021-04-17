@@ -19,6 +19,8 @@ export default async function (options) {
   }
 
   return await config.producer.send({
+    acks: options.acks,
+    timeout: options.timeout,
     topic: options.topic,
     messages: [
       {

@@ -3,14 +3,10 @@ import config from '../config'
 import replyEcho from '../request/replyEcho'
 
 export default async function (options) {
-  const kafka = new Kafka({
-    clientId: options.clientId,
-    brokers: options.brokers,
-    ...options.clientOptions
-  })
+  const kafka = new Kafka(options.client)
 
-  config.producer = kafka.producer()
-  config.consumer = kafka.consumer({groupId: options.namespace})
+  config.producer = kafka.producer(options.producer)
+  config.consumer = kafka.consumer(options.consumer)
 
   await config.producer.connect()
   await config.consumer.connect()
