@@ -8,8 +8,8 @@ export default ({rawCollection, initItem}) =>
 
     const cursor = {
       rawCursor,
-      readPref(...args) {
-        cursor.rawCursor.readPref(...args)
+      setReadPreference(...args) {
+        cursor.rawCursor.setReadPreference(...args)
         return cursor
       },
       sort(...args) {
