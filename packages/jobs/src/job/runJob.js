@@ -2,19 +2,19 @@ import JobsCollection from '../JobsCollection'
 import {generateId} from '@orion-js/app'
 
 export default async function (params, {identifier, waitToRun} = {}) {
-  const getIdentifier = maxRetries =>
+  const getJobId = maxRetries =>
     new Promise((resolve, reject) => {
       if (this.identifier) return resolve(this.identifier)
       if (maxRetries <= 0)
         return reject(new Error('Job must be initialized in "start()" to be able to run'))
       setTimeout(() => {
-        resolve(getIdentifier(maxRetries - 1))
+        resolve(getJobId(maxRetries - 1))
       }, 1000)
     })
 
-  await getIdentifier(5)
+  await getJobId(5)
 
-  identifier = identifier || generateId()
+  const eventId = identifier || generateId()
 
   if (this.type !== 'event') {
     throw new Error('You can only call event jobs, not ' + this.type)
@@ -27,11 +27,10 @@ export default async function (params, {identifier, waitToRun} = {}) {
   await JobsCollection.await()
   await JobsCollection.insert({
     job: this.identifier,
-    identifier,
+    identifier: eventId,
     params,
-    runAfter,
-    priority: this.priority
+    runAfter
   })
 
-  return identifier
+  return eventId
 }

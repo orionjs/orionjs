@@ -35,7 +35,7 @@ class JobRepository {
         $set: {lockedAt: new Date()}
       },
       {
-        sort: {priority: 1, runAfter: 1}
+        sort: {runAfter: 1}
       }
     )
   }
