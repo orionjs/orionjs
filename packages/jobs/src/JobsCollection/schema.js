@@ -22,9 +22,5 @@ export default {
   result: {
     type: 'blackbox',
     optional: true
-  },
-  priority: {
-    type: Number,
-    optional: true
   }
 }

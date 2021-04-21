@@ -5,6 +5,7 @@ export default function (job) {
   const {logger} = config()
   return async (params, jobData) => {
     try {
+      const startedAt = new Date()
       const result = {}
       try {
         params = job.type === 'recurrent' ? jobData : params
@@ -16,7 +17,7 @@ export default function (job) {
       }
 
       if (job.type === 'recurrent') {
-        const previousInfo = {...result, date: jobData.runAfter, endedAt: new Date()}
+        const previousInfo = {...result, date: startedAt, endedAt: new Date()}
 
         await JobsCollection.upsert(
           {job: job.identifier},
@@ -25,7 +26,6 @@ export default function (job) {
               lockedAt: null,
               identifier: generateId(),
               runAfter: await job.getNextRun(previousInfo),
-              priority: job.priority,
               ...(job.persistResults && !result.error && result.result
                 ? {result: result.result}
                 : {})
