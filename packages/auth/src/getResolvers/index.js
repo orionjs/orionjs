@@ -20,9 +20,9 @@ import sendVerificationEmail from './sendVerificationEmail'
 import loginWithCode from './loginWithCode'
 import requestLoginCode from './requestLoginCode'
 
-export default function(options) {
+export default function (options) {
   options.Sessions = Sessions(options)
-  options.Session = options.Sessions.model
+  options.Session = options.customSessionModel || options.Sessions.model
   setOptions(options)
 
   setGetViewer(getSession)
