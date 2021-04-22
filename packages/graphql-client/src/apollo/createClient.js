@@ -2,6 +2,7 @@ import {ApolloClient} from 'apollo-client'
 import defaultCache from './defaultCache'
 import createLink from './createLink'
 import {setOptions} from '../options'
+import refreshJWT from './refreshJWT'
 
 const defaultOptions = {
   endpointURL: 'http://localhost:3000',
@@ -20,14 +21,30 @@ const defaultOptions = {
   promptTwoFactorCode: () => global.prompt('Please write your two factor code to continue'),
   onError: () => {},
   getHeaders: () => {},
-  resolvers: null
+  resolvers: null,
+  getJWT: () => {},
+  upgradeJWT: () => {},
+  refreshJWT: () => {}
 }
 
-export default function(passedOptions) {
+export default function (passedOptions) {
   const options = {...defaultOptions, ...passedOptions}
   setOptions(options)
 
   const link = createLink(options)
+
+  if (options.refreshJWT) {
+    // initial upgrade
+    if (options.upgradeJWT) {
+      setTimeout(() => {
+        if (!options.getJWT()) {
+          console.log('Performing initial JWT upgrade...')
+          refreshJWT(options)
+        }
+      }, 1000)
+    }
+    setInterval(() => refreshJWT(options), 5 * 60 * 1000) // every 5 minutes
+  }
 
   const client = new ApolloClient({link, cache: options.cache, resolvers: options.resolvers})
 

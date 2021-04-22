@@ -1,11 +1,17 @@
 import {SubscriptionClient} from 'subscriptions-transport-ws'
+import getJWT from '../auth/getJWT'
 import getSession from '../auth/getSession'
 import getSignature from '../auth/getSignature'
 
-const getConnectionParams = function() {
+const getConnectionParams = function () {
   let params = {}
   const session = getSession()
-  if (session) {
+  const jwt = getJWT()
+  if (jwt) {
+    params = {
+      jwt
+    }
+  } else if (session) {
     const {publicKey, secretKey} = session
     if (publicKey && secretKey) {
       const nonce = new Date().getTime()
@@ -20,7 +26,7 @@ const getConnectionParams = function() {
   return params
 }
 
-export default function(options) {
+export default function (options) {
   const {endpointURL, subscriptionsPath} = options
   const uri = endpointURL.replace('http', 'ws') + subscriptionsPath
 

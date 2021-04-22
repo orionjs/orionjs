@@ -1,6 +1,6 @@
 import {onError} from 'apollo-link-error'
-import {Observable} from 'apollo-link'
 import onNetworkError from './onNetworkError'
+import handleTwoFactor from './handleTwoFactor'
 
 export default options =>
   onError(({graphQLErrors, networkError, response, operation, forward}) => {
@@ -12,32 +12,13 @@ export default options =>
           graphQLError.type === 'needsTwoFactorCode'
         ) {
           if (options.promptTwoFactorCode) {
-            return new Observable(observer => {
-              Promise.resolve(options.promptTwoFactorCode())
-                .then(code => {
-                  operation.setContext(({headers = {}}) => ({
-                    headers: {
-                      // Re-add old headers
-                      ...headers,
-                      // Switch out old access token for new one
-                      'X-ORION-TWOFACTOR': code
-                    }
-                  }))
-                })
-                .then(() => {
-                  const subscriber = {
-                    next: observer.next.bind(observer),
-                    error: observer.error.bind(observer),
-                    complete: observer.complete.bind(observer)
-                  }
-
-                  // Retry last failed request
-                  forward(operation).subscribe(subscriber)
-                })
-                .catch(error => {
-                  // No refresh or client token available, we force user to login
-                  observer.error(error)
-                })
+            return handleTwoFactor({
+              options,
+              graphQLErrors,
+              networkError,
+              response,
+              operation,
+              forward
             })
           }
         }
@@ -46,7 +27,8 @@ export default options =>
     }
 
     if (networkError) {
-      onNetworkError(networkError)
+      const result = onNetworkError({graphQLErrors, networkError, response, operation, forward})
+      if (result) return result
     }
 
     return options.onError({graphQLErrors, networkError, response, operation, forward})

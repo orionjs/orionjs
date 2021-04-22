@@ -27,11 +27,13 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
       if (typeof canRetry === 'function') return canRetry(count, operation, error)
 
       if (error && error.result && error.result.error === 'AuthError') {
-        if (error.result.message === 'nonceIsInvalid') {
+        if (error.result.message.toLowerCase().includes('jwt')) {
+          return false
+        } else if (error.result.message === 'nonceIsInvalid') {
           return count < 20
         } else {
           console.log('got an auth error and will retry')
-          onNetworkError(error) // session should be reseted
+          onNetworkError({networkError: error}) // session should be reseted
           return count < 5
         }
       }

@@ -20,7 +20,8 @@ export default function ({schema}, options) {
             headers: {
               'x-orion-nonce': connectionParams.nonce,
               'x-orion-publickey': connectionParams.publicKey,
-              'x-orion-signature': connectionParams.signature
+              'x-orion-signature': connectionParams.signature,
+              'x-orion-jwt': connectionParams.jwt
             },
             getBody: () => 'websockethandshake',
             nonceName: 'graphqlsubs'

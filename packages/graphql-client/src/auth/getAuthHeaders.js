@@ -1,9 +1,19 @@
 import getSession from './getSession'
 import getSignature from './getSignature'
+import getJWT from './getJWT'
 
 export default function (body, getHeaders = () => {}) {
-  const session = getSession()
+  const jwt = getJWT()
   const headers = getHeaders(body)
+
+  if (jwt) {
+    return {
+      'X-ORION-JWT': jwt,
+      ...headers
+    }
+  }
+
+  const session = getSession()
   if (!session) return {...headers}
 
   const {publicKey, secretKey} = session
