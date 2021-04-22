@@ -32,7 +32,10 @@ export default function (options) {
 
   const client = new SubscriptionClient(uri, {
     reconnect: true,
-    connectionParams: getConnectionParams
+    lazy: true,
+    reconnectionAttempts: 10,
+    connectionParams: getConnectionParams,
+    ...options.wsOptions
   })
 
   options.wsClient = client

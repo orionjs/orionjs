@@ -22,6 +22,7 @@ const defaultOptions = {
   onError: () => {},
   getHeaders: () => {},
   resolvers: null,
+  wsOptions: {},
   getJWT: () => {},
   upgradeJWT: () => {},
   refreshJWT: () => {}
