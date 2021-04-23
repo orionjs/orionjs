@@ -1,10 +1,11 @@
 import {BatchHttpLink} from 'apollo-link-batch-http'
 import {HttpLink} from 'apollo-link-http'
 import fetch from 'unfetch'
-import getAuthHeaders from '../auth/getAuthHeaders'
+import getAuthHeaders from '../../auth/getAuthHeaders'
 import {RetryLink} from 'apollo-link-retry'
 import {ApolloLink} from 'apollo-link'
-import onNetworkError from './onNetworkError'
+import onNetworkError from '../onNetworkError'
+import getUri from './getUri'
 
 export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
   const customFetch = async (uri, options) => {
@@ -13,7 +14,8 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
       options.headers[key] = authHeaders[key]
     }
     try {
-      const result = await fetch(uri, options)
+      const finalUri = getUri(uri, options)
+      const result = await fetch(finalUri, options)
       return result
     } catch (error) {
       console.warn('GraphQL request error:', error)
