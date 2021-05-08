@@ -965,10 +965,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@orion-js/schema@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.2.0.tgz#d5eb812aa2f9f46e478ca64da94ac1e70127c943"
-  integrity sha512-oVsgAM960FIdoXavroo/4zKv7zEr/qRSsS8ZzrWiXi/imj0JyNVkaJ89quye3LWoyqAvzJA2ajhneALrHIlA5A==
+"@orion-js/schema@^1.7.2":
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-1.7.2.tgz#43d75481dc8eff9dc92eb0176ed404cfa41578c8"
+  integrity sha512-Oqer4OCXwSCtlkR/wheOPFpLjbGjRIt3L+Qyv8z6lRkO+NgcaW7ksxY0P9jlYqheAtbSpdx5AMSrjPaMGpd3iw==
   dependencies:
     dot-object "^1.7.0"
     lodash "^4.17.10"
@@ -1380,9 +1380,9 @@ bser@^2.0.0:
     node-int64 "^0.4.0"
 
 bson@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-1.1.1.tgz#4330f5e99104c4e751e7351859e2d408279f2f13"
-  integrity sha512-jCGVYLoYMHDkOsbwJZBCqwMHyH4c+wzgI9hG7Z6SZJRXWr+x58pdIbm2i9a/jFGCkRJqRUr8eoI7lDWa0hTkxg==
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-1.1.6.tgz#fb819be9a60cd677e0853aee4ca712a785d6618a"
+  integrity sha512-EvVNVeGo4tHxwi8L6bPj3y3itEvStdwvvlojVxxbyYfoaxJ6keLgrTuKdyfEAszFK+H3olzBuafE0yoh0D1gdg==
 
 buffer-alloc-unsafe@^1.1.0:
   version "1.1.0"
