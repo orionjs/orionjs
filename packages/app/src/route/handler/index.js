@@ -54,6 +54,6 @@ export default async function (request, response) {
     funcParams.viewer = await getViewer(funcParams)
     return await route.func(funcParams)
   } catch (error) {
-    onError({error, send, response})
+    onError({error, send, response, request})
   }
 }
