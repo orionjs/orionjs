@@ -12,5 +12,6 @@ export default function () {
   server.listen(port)
   const {logger} = config()
   logger.info(`HTTP server started at port ${port}`)
+  global.orionServer = server
   return server
 }
