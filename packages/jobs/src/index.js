@@ -1,5 +1,8 @@
 import start from './start'
 import Jobs from './JobsCollection'
 import job from './job'
+import Daemon from './daemon'
 
-export {start, Jobs, job}
+const stop = () => Daemon.stop()
+
+export {start, Jobs, job, stop}

@@ -1,4 +1,4 @@
-import daemon from './daemon'
+import Daemon from './daemon'
 import JobsCollection from './JobsCollection'
 import initJobs from './initJobs'
 import {config} from '@orion-js/app'
@@ -15,14 +15,12 @@ export default async function (jobs, workersCountParam = 4) {
 
   global.jobs = jobs
 
-  const stats = new DaemonStats(jobs)
-
-  if (jobsConfig && jobsConfig.disabled) return stats.start()
   logger.info(`Starting jobs with ${workersCount} workers`)
 
   // starts the daemon
-  daemon({
+  Daemon.init({
     workersCount,
-    jobs
+    jobs,
+    statsOn: jobsConfig && jobsConfig.disabled
   })
 }

@@ -1,4 +1,3 @@
-import {setOnExit} from '@orion-js/app'
 import lockConfig from '../lockConfig'
 import JobsCollection from '../JobsCollection'
 import {config} from '@orion-js/app'
@@ -6,12 +5,16 @@ import {config} from '@orion-js/app'
 export default class Worker {
   constructor({index}) {
     this.index = index
-    setOnExit(() => this.onExit())
   }
 
-  async onExit() {
+  async close() {
+    const {logger} = config()
     if (this.currentExecution) {
+      const waitingJobData = this.currentJobData
+      logger.info('Waiting for job to finish...', waitingJobData)
       await this.currentExecution
+      if (this.interval) clearInterval(this.interval)
+      logger.info('Job finished', waitingJobData)
     }
   }
 

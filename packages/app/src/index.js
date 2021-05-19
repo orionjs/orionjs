@@ -23,13 +23,10 @@ import {getCorsOptions, setCorsOptions} from './route/corsOptions'
 import * as micro from 'micro'
 import cache from './cache'
 import sleep from './helpers/sleep'
-import {setOnExit, clearOnExit} from './helpers/onExit'
 import config from './config'
 
 export {
   connectToDatabase,
-  setOnExit,
-  clearOnExit,
   connect,
   disconnect,
   modelToSchema,
