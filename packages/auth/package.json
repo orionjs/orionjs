@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/auth",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/runtime": "^7.5.5",
-    "@orion-js/app": "^1.7.8",
+    "@orion-js/app": "^1.7.9",
     "babel-jest": "^23.4.2",
     "jest": "^23.5.0"
   },
