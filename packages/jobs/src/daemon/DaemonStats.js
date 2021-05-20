@@ -12,12 +12,14 @@ export default class DaemonStats {
   }
 
   start() {
-    this.interval = setInterval(() => this.run(), 30 * 1000)
+    this.logger.info('Jobs stats started')
+    this.interval = setInterval(() => this.run(), 60 * 1000)
   }
 
   stop() {
     if (this.interval) clearInterval(this.interval)
     this.interval = null
+    this.logger.info('Jobs stats stopped')
   }
 
   bounds() {

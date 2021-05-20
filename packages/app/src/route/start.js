@@ -12,6 +12,14 @@ export default function () {
   server.listen(port)
   const {logger} = config()
   logger.info(`HTTP server started at port ${port}`)
+  server.closeServer = () =>
+    new Promise((resolve, reject) =>
+      server.close(error => {
+        if (error) return reject(error)
+        logger.info(`HTTP server closed`)
+        resolve()
+      })
+    )
   global.orionServer = server
   return server
 }
