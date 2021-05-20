@@ -2,21 +2,24 @@ import {config} from '@orion-js/app'
 import JobsRepository from './JobsRepository'
 
 export default class DaemonStats {
-  constructor() {
+  constructor(jobs) {
     this.logger = config().logger
     this.step = 1
     this.factor = 8
     this.count = 0
     this.goingUp = false
+    JobsRepository.setJobs(jobs)
   }
 
   start() {
-    this.interval = setInterval(() => this.run(), 30 * 1000)
+    this.logger.info('Jobs stats started')
+    this.interval = setInterval(() => this.run(), 60 * 1000)
   }
 
   stop() {
     if (this.interval) clearInterval(this.interval)
     this.interval = null
+    this.logger.info('Jobs stats stopped')
   }
 
   bounds() {

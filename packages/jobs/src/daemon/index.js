@@ -4,14 +4,16 @@ import JobRepository from './JobsRepository'
 import sleep from '../helpers/sleep'
 import loop from './loop'
 import {config} from '@orion-js/app'
-import DaemonStats from './DaemonStats'
 
 class Daemon {
   constructor() {
     this.running = false
+    this.workers = []
   }
 
-  init({jobs, workersCount, statsOn}) {
+  init({jobs, workersCount}) {
+    if (this.running) return
+    this.running = true
     this.jobs = jobs
     const {logger} = config()
     JobRepository.setJobs(jobs)
@@ -21,19 +23,13 @@ class Daemon {
       })
       .catch(error => logger.warn('error deleting unclaimed jobs', error))
 
-    if (statsOn) {
-      this.stats = new DaemonStats()
-      this.stats.start()
-    }
-
-    const workers = range(workersCount).map(index => new Worker({index}))
-    this.workers = workers
-    global.jobWorkers = workers
+    this.workers = range(workersCount).map(index => new Worker({index}))
+    global.jobWorkers = this.workers
+    logger.info(`Starting jobs with ${workersCount} workers`)
     this.run()
   }
 
   async run() {
-    this.running = true
     while (this.running) {
       this.currentLoop = loop(this)
       const delay = await this.currentLoop
@@ -44,14 +40,11 @@ class Daemon {
   }
 
   async stop() {
+    if (!this.running) return
+    this.running = false
     const {logger} = config()
     logger.info('Stopping jobs...')
-    this.running = false
-    await Promise.all([
-      this.currentLoop,
-      this.stats && this.stats.stop(),
-      ...this.workers.map(worker => worker.close())
-    ])
+    await Promise.all([this.currentLoop, ...this.workers.map(worker => worker.close())])
     logger.info('Jobs stopped')
   }
 }
