@@ -3,10 +3,11 @@ import checkOptions from './checkOptions'
 import loadIndexes from './loadIndexes'
 import Model from '../Model'
 import connect from '../database/connect'
+import checkIndexes from './checkIndexes'
 
 global.db = {}
 
-export default function(passedOptions) {
+export default function (passedOptions) {
   const defaultOptions = {
     model: new Model({name: 'defaultModelFor_' + passedOptions.name || 'nn'}),
     passUpdateAndRemove: true,
@@ -41,8 +42,8 @@ export default function(passedOptions) {
     for (const key of Object.keys(methods)) {
       collection[key] = methods[key]
     }
-
     await loadIndexes(collection)
+    await checkIndexes(collection)
 
     onReady()
     isReady = true
