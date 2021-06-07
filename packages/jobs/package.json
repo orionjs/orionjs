@@ -12,14 +12,14 @@
   },
   "dependencies": {
     "lodash": "^4.17.10",
-    "luxon": "^1.2.0"
+    "luxon": "^1.2.0",
+    "@babel/runtime": "^7.5.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
     "@orion-js/app": "^1.7.10",
     "babel-jest": "^26.6.3",
     "jest": "^26.6.3",
