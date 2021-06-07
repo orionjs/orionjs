@@ -1,4 +1,4 @@
-import '@babel/polyfill'
+// import '@babel/polyfill'
 import './Errors/handleErrors'
 import connect from './database/connect'
 import disconnect from './database/disconnect'
