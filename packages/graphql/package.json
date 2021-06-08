@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@orion-js/schema": "^1.7.2",
+    "@orion-js/schema": "^2.0.0-beta.2",
     "apollo-server-core": "^2.16.1",
     "apollo-server-micro": "^2.16.1",
     "deep-sort-object": "^1.0.2",
