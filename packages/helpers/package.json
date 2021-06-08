@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/helpers",
-  "version": "1.7.2",
+  "version": "2.0.0-beta.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",

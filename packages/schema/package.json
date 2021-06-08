@@ -11,9 +11,9 @@
     "test": "jest src"
   },
   "dependencies": {
+    "@babel/runtime": "^7.5.5",
     "dot-object": "^1.7.0",
-    "lodash": "^4.17.10",
-    "@babel/runtime": "^7.5.5"
+    "lodash": "^4.17.10"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
