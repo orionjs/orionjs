@@ -29,7 +29,8 @@ export default async function (params, {identifier, waitToRun} = {}) {
     job: this.identifier,
     identifier: eventId,
     params,
-    runAfter
+    runAfter,
+    timesExecuted: 0
   })
 
   return eventId
