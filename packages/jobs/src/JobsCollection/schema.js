@@ -22,5 +22,10 @@ export default {
   result: {
     type: 'blackbox',
     optional: true
+  },
+  timesExecuted: {
+    type: Number,
+    optional: true,
+    defaultValue: 0
   }
 }
