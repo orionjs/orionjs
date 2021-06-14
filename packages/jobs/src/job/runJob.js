@@ -37,7 +37,7 @@ export default async function(params, {identifier, waitToRun, ignoreDuplicationE
   } catch (error) {
     if (!ignoreDuplicationError) throw error
 
-    if (error.error === 'validationError' && Object.values(error.validationErrors).includes('notUnique')) {
+    if (error.isValidationError && Object.values(error.validationErrors).includes('notUnique')) {
       logger.warn('The job already exists in database, ignoring this error', {
         error,
         job: {job: this.identifier, identifier: eventId}
