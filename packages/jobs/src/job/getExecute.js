@@ -33,7 +33,21 @@ export default function (job) {
           }
         )
       } else {
-        await JobsCollection.remove(jobData._id)
+        if (result.error && job.maxRetries > jobData.timesExecuted) {
+          const timesExecuted = (jobData.timesExecuted || 0) + 1
+          const getNextRun = job.getNextRun || function() {
+            return new Date((new Date).getTime() + (5000 * timesExecuted))
+          }
+          await JobsCollection.updateOne({job: jobData.job, identifier: jobData.identifier}, {
+            $set: {
+              lockedAt: null,
+              runAfter: await getNextRun({...jobData, result, timesExecuted}),
+              timesExecuted
+            }
+          })
+        } else {
+          await JobsCollection.remove(jobData._id)
+        }
       }
 
       return result
