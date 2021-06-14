@@ -1,7 +1,8 @@
 import JobsCollection from '../JobsCollection'
-import {generateId} from '@orion-js/app'
+import {generateId, config} from '@orion-js/app'
 
-export default async function (params, {identifier, waitToRun} = {}) {
+export default async function(params, {identifier, waitToRun, ignoreDuplicationError = false} = {}) {
+  const {logger} = config()
   const getJobId = maxRetries =>
     new Promise((resolve, reject) => {
       if (this.identifier) return resolve(this.identifier)
@@ -25,13 +26,25 @@ export default async function (params, {identifier, waitToRun} = {}) {
     runAfter = new Date(Date.now() + waitToRun)
   }
   await JobsCollection.await()
-  await JobsCollection.insert({
-    job: this.identifier,
-    identifier: eventId,
-    params,
-    runAfter,
-    timesExecuted: 0
-  })
+  try {
+    await JobsCollection.insert({
+      job: this.identifier,
+      identifier: eventId,
+      params,
+      runAfter,
+      timesExecuted: 0
+    })
+  } catch (error) {
+    if (!ignoreDuplicationError) throw error
+
+    if (error.error === 'validationError' && Object.values(error.validationErrors).includes('notUnique')) {
+      logger.warn('The job already exists in database, ignoring this error', {
+        error,
+        job: {job: this.identifier, identifier: eventId}
+      })
+      return eventId
+    }
+  }
 
   return eventId
 }

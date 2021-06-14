@@ -18,6 +18,15 @@ describe('runJob tests', function() {
         expect(error.message).toBe('You can only call event jobs, not otherType')
       }
     })
+
+    it('should throw error when there is a duplicated event job and ignoreDuplicationError = false', function() {
+      const jobDefinition = {identifier: 'jobIdentifierError', type: 'event'}
+      const jobImplementationParams = {param: 'test'}
+      const jobOptions = {identifier: 2, waitToRun: 10, ignoreDuplicationError: false}
+
+      expect(runJob.apply(jobDefinition, [jobImplementationParams, jobOptions])).resolves.toBeTruthy()
+      expect(runJob.apply(jobDefinition, [jobImplementationParams, jobOptions])).rejects.toBeTruthy()
+    })
   })
 
   describe('Successful scenarios', function() {
@@ -32,6 +41,15 @@ describe('runJob tests', function() {
       expect(jobCreated).not.toBeFalsy()
       expect(jobCreated.identifier).toBe(jobOptions.identifier.toString())
       expect(jobCreated.params).toEqual(expect.objectContaining(jobImplementationParams))
+    })
+
+    it('should not throw error when there is a duplicated event job and ignoreDuplicationError = true', function() {
+      const jobDefinition = {identifier: 'jobIdentifierError', type: 'event'}
+      const jobImplementationParams = {param: 'test'}
+      const jobOptions = {identifier: 2, waitToRun: 10, ignoreDuplicationError: true}
+
+      expect(runJob.apply(jobDefinition, [jobImplementationParams, jobOptions])).resolves.toBe(2)
+      expect(runJob.apply(jobDefinition, [jobImplementationParams, jobOptions])).resolves.toBe(2)
     })
   })
 })
