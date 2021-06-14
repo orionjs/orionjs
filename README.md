@@ -4,7 +4,7 @@ A Node framework to build GraphQL server apps.
 
 [orionjs.com](https://orionjs.com)
 
-##Development
+## Development
 In order to deploy orionjs in your local you have to do the following:
 
 1. Fork the repo
