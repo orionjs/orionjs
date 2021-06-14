@@ -36,7 +36,7 @@ export default function (job) {
       } else {
         if (result.error && job.maxRetries > jobData.timesExecuted) {
           const timesExecuted = (jobData.timesExecuted || 0) + 1
-          const getNextRun = job.getNextRun || defaultGetNextRun(timesExecuted)
+          const getNextRun = job.getNextRun || defaultGetNextRun
           await JobsCollection.updateOne({job: jobData.job, identifier: jobData.identifier}, {
             $set: {
               lockedAt: null,
