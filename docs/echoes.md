@@ -75,18 +75,3 @@ await publish({
   }
 })
 ```
-
-## `request`
-
-It's the same as publish but expects a response. It uses the _request-response_ method. You can pass a timeout (defaults to `60000`)
-
-```js
-import {request} from '@orion-js/echoes'
-
-const result = await request({
-  topic: 'onDeliveryOrderAlertUpdated',
-  params: {
-    hello: 'world'
-  }
-})
-```
