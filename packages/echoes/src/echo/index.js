@@ -1,5 +1,4 @@
 import deserialize from './deserialize'
-import publish from '../publish'
 
 export default function (options) {
   return {
@@ -16,17 +15,7 @@ export default function (options) {
         data
       }
 
-      const response = await options.resolve(data.params, context)
-
-      if (!data.replyTo) return
-
-      await publish({
-        topic: data.replyTo,
-        params: {
-          requestId: data.requestId,
-          response
-        }
-      })
+      await options.resolve(data.params, context)
     }
   }
 }

@@ -1,6 +1,5 @@
 import {Kafka} from 'kafkajs'
 import config from '../config'
-import replyEcho from '../request/replyEcho'
 
 export default async function (options) {
   const kafka = new Kafka(options.client)
@@ -10,9 +9,6 @@ export default async function (options) {
 
   await config.producer.connect()
   await config.consumer.connect()
-
-  const replyTo = `reply_${config.serverId}`
-  options.echoes[replyTo] = replyEcho
 
   for (const topic in options.echoes) {
     await config.consumer.subscribe({topic})
