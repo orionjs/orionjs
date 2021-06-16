@@ -1,4 +1,5 @@
 import JobsCollection from '../JobsCollection'
+import defaultGetNextRun from '../helpers/defaultGetNextRun'
 import {generateId, config} from '@orion-js/app'
 
 export default function (job) {
@@ -33,7 +34,19 @@ export default function (job) {
           }
         )
       } else {
-        await JobsCollection.remove(jobData._id)
+        if (result.error && job.maxRetries > jobData.timesExecuted) {
+          const timesExecuted = (jobData.timesExecuted || 0) + 1
+          const getNextRun = job.getNextRun || defaultGetNextRun
+          await JobsCollection.updateOne({job: jobData.job, identifier: jobData.identifier}, {
+            $set: {
+              lockedAt: null,
+              runAfter: await getNextRun({...jobData, result, timesExecuted}),
+              timesExecuted
+            }
+          })
+        } else {
+          await JobsCollection.remove(jobData._id)
+        }
       }
 
       return result
