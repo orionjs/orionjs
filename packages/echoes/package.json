@@ -1,7 +1,7 @@
 {
   "name": "@orion-js/echoes",
-  "version": "1.7.2",
-  "main": "index.js",
+  "version": "2.0.0",
+  "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -12,7 +12,7 @@
     "test:watch": "jest src --coverage --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "^1.7.2",
+    "@orion-js/helpers": "^2.0.0",
     "kafkajs": "^1.15.0",
     "serialize-javascript": "^5.0.1"
   },
@@ -25,5 +25,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
 }

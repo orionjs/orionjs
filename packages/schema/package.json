@@ -1,7 +1,7 @@
 {
   "name": "@orion-js/schema",
-  "version": "1.7.2",
-  "main": "index.js",
+  "version": "2.0.0",
+  "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -11,7 +11,8 @@
     "test": "jest src"
   },
   "dependencies": {
-    "dot-object": "^1.7.0",
+    "@babel/runtime": "^7.5.5",
+    "dot-object": "^1.9.0",
     "lodash": "^4.17.10"
   },
   "devDependencies": {
@@ -19,11 +20,11 @@
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
     "babel-jest": "^23.4.0",
     "jest": "^23.4.1"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
 }
