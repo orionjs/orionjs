@@ -82,7 +82,7 @@ By default, all keys are required. Set `optional: true` to make a field optional
 
 ### private
 
-It is not exposed in Graphql, this attribute cannot be queried from the front.
+This attribute cannot be queried from the API, not exposed in Graphql.
 
 By default, all keys are not private. Set `private: true` to make a field private.
 
