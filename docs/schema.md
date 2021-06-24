@@ -80,6 +80,12 @@ The `description` should be a `String`. It will be the description for GraphQL a
 
 By default, all keys are required. Set `optional: true` to make a field optional.
 
+### private
+
+It is not exposed in Graphql, this attribute cannot be queried from the front.
+
+By default, all keys are not private. Set `private: true` to make a field private.
+
 ### min/max
 
 - If `type` is `Number` or `'integer'`, these rules define the minimum and maximum numeric value.
