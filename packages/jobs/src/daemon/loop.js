@@ -3,7 +3,7 @@ import getFreeWorker from './getFreeWorker'
 import createJobExecutor from './createJobExecutor'
 import {config} from '@orion-js/app'
 
-export default async function ({jobs, workers}) {
+export default async function({jobs, workers}) {
   const {logger, jobs: jobsConfig} = config()
   const defaultConfig = {
     polling: 5000,
@@ -18,10 +18,10 @@ export default async function ({jobs, workers}) {
     return defaultConfig.polling
   }
   if (jobData.lockedAt) {
-    logger.info('Resuming stalled job: ' + jobData.job)
+    logger.info('Resuming stalled job: ' + jobData.job, jobData)
   }
 
   const func = createJobExecutor({jobData, jobs})
-  freeWorker.execute(func, jobData, jobs[jobData.job])
+  await freeWorker.execute(func, jobData, jobs[jobData.job])
   return defaultConfig.delay
 }

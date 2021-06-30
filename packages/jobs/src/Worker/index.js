@@ -9,29 +9,28 @@ export default class Worker {
 
   async close() {
     const {logger} = config()
-    if (this.currentExecution) {
-      const waitingJobData = this.currentJobData
+    if (this.jobData) {
+      const waitingJobData = this.jobData
       logger.info('Waiting for job to finish...', waitingJobData)
       await this.currentExecution
-      if (this.interval) clearInterval(this.interval)
       logger.info('Job finished', waitingJobData)
     }
   }
 
   itsFree() {
-    return !this.currentExecution
+    return !this.jobData
   }
 
-  hearbeat() {
+  hearbeat({initTime, jobData}) {
     const {logger} = config()
     const now = new Date()
-    const elapsedTime = Math.floor((now.getTime() - this.currentInitTime.getTime()) / 1000)
+    const elapsedTime = Math.floor((now.getTime() - initTime.getTime()) / 1000)
     if (elapsedTime > lockConfig.lockTimeoutAlert * 60)
       logger.warn(
-        `Job ${this.currentJobData.job} id:${this.currentJobData._id} is taking too long to complete: ${elapsedTime}s`
+        `Job ${jobData.job} id:${jobData._id} is taking too long to complete: ${elapsedTime}s`
       )
     JobsCollection.updateOne(
-      {_id: this.currentJobData._id, lockedAt: {$ne: null}},
+      {_id: jobData._id, lockedAt: {$ne: null}},
       {$set: {lockedAt: now}}
     ).catch(error => {
       logger.error('Error on hearbeat ', error)
@@ -39,13 +38,19 @@ export default class Worker {
   }
 
   async execute(func, jobData) {
-    this.currentJobData = jobData
-    this.currentInitTime = new Date()
-    this.interval = setInterval(() => this.hearbeat(), lockConfig.lockRenewInterval * 1000 * 60)
-    this.currentExecution = func()
     await this.currentExecution
-    if (this.interval) clearInterval(this.interval)
-    this.currentJobData = null
-    this.currentExecution = null
+    this.currentExecution = this.executeWrap(func, jobData)
+  }
+
+  async executeWrap(func, jobData) {
+    this.jobData = jobData
+    const initTime = new Date()
+    const intervalId = setInterval(
+      () => this.hearbeat({jobData, initTime}),
+      lockConfig.lockRenewInterval * 1000 * 60
+    )
+    await func()
+    clearInterval(intervalId)
+    this.jobData = null
   }
 }
