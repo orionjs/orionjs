@@ -11,7 +11,7 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.21",
     "luxon": "^1.2.0",
     "nodemailer": "^4.6.6"
   },
