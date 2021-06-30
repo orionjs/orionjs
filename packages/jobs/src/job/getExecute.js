@@ -2,7 +2,7 @@ import JobsCollection from '../JobsCollection'
 import defaultGetNextRun from '../helpers/defaultGetNextRun'
 import {generateId, config} from '@orion-js/app'
 
-export default function (job) {
+export default function(job) {
   const {logger} = config()
   return async (params, jobData) => {
     try {
@@ -13,7 +13,7 @@ export default function (job) {
         // eslint-disable-next-line
         result.result = await job.run.call(job, params, jobData)
       } catch (error) {
-        logger.error('Error running job:', error)
+        logger.error('Error running job:', {error, jobData})
         result.error = error
       }
 
@@ -37,13 +37,16 @@ export default function (job) {
         if (result.error && job.maxRetries > jobData.timesExecuted) {
           const timesExecuted = (jobData.timesExecuted || 0) + 1
           const getNextRun = job.getNextRun || defaultGetNextRun
-          await JobsCollection.updateOne({job: jobData.job, identifier: jobData.identifier}, {
-            $set: {
-              lockedAt: null,
-              runAfter: await getNextRun({...jobData, result, timesExecuted}),
-              timesExecuted
+          await JobsCollection.updateOne(
+            {job: jobData.job, identifier: jobData.identifier},
+            {
+              $set: {
+                lockedAt: null,
+                runAfter: await getNextRun({...jobData, result, timesExecuted}),
+                timesExecuted
+              }
             }
-          })
+          )
         } else {
           await JobsCollection.remove(jobData._id)
         }
