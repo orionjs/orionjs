@@ -836,13 +836,13 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@orion-js/app@^2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-2.0.0-beta.1.tgz#644f3970ad65f23c75ac95a51cf9010e8371428b"
-  integrity sha512-FqfELr+i/pds5YX8bQ1UliNl/VP/mh+DYOJigXbtOsO24JgU9D0MXKmwseogTGtyLpX7O9LTGC8fCfM47KAH6w==
+"@orion-js/app@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-2.0.0.tgz#4225ca33119207e5fde04e1722a91b9f5da13f73"
+  integrity sha512-PR43kTRgucIsekQWD+5RGL/n2c23H8EBFFkm04y+waS3uyjr9RTG/IeR9bgTlJkM7PIvrsCyIy3jMsLDDI44Zg==
   dependencies:
     "@babel/runtime" "^7.14.0"
-    "@orion-js/schema" "^2.0.0-beta.1"
+    "@orion-js/schema" "^2.0.0"
     colors "^1.3.3"
     dataloader "^2.0.0"
     dot-object "^1.9.0"
@@ -852,13 +852,13 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
-"@orion-js/schema@^2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.0.0-beta.1.tgz#158b3d734f6e96b7be80e664c0819824d2f73969"
-  integrity sha512-vAc0dcQf3ZLbeoyUfINN+Q6xFV4uBVpVMKwhETQxUb2dVr6iB49w0hJj1PpXrlNCfiAMSSynGl3CK6Msx2jBGQ==
+"@orion-js/schema@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.0.0.tgz#fbb6880eabace2899f859433572d5d3ddf506981"
+  integrity sha512-LbxfPWV2eKqZk9ZFIidb3E0HwQLl2qGuMjN6BJYVwC/buwmB5PWQz9w4zEvgGi/lWTqFXVE9fVqHRqbpjDGhlg==
   dependencies:
     "@babel/runtime" "^7.5.5"
-    dot-object "^1.7.0"
+    dot-object "^1.9.0"
     lodash "^4.17.10"
 
 abab@^1.0.4:
@@ -1680,7 +1680,7 @@ domexception@^1.0.0:
   dependencies:
     webidl-conversions "^4.0.2"
 
-dot-object@^1.7.0, dot-object@^1.9.0:
+dot-object@^1.9.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/dot-object/-/dot-object-1.9.0.tgz#6e3d6d8379f794c5174599ddf05528f5990f076e"
   integrity sha512-7MPN6y7XhAO4vM4eguj5+5HNKLjJYfkVG1ZR1Aput4Q4TR6SYeSjhpVQ77IzJHoSHffKbDxBC+48aCiiRurDPw==
@@ -2261,8 +2261,9 @@ inherits@2.0.1:
   integrity sha1-sX0I0ya0Qj5Wjv9xn5GwscvfafE=
 
 ini@~1.3.0:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
+  version "1.3.8"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.8.tgz#a29da425b48806f34767a4efce397269af28432c"
+  integrity sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
 
 invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"
