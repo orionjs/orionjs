@@ -16,7 +16,7 @@ server
             └── index.js
 ```
 
-- `resolvers`: The directory of the set of collections.
+- `collections`: The directory of the set of collections.
 - `Collection1`: Represents the collection use to manage its respective documents.
 
 ## Create a collection
