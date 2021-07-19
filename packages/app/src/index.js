@@ -2,7 +2,7 @@ import './Errors/handleErrors'
 import connect from './database/connect'
 import disconnect from './database/disconnect'
 import connectToDatabase from './database/connectToDatabase'
-import getServer from './route/start'
+import {getServer, startServer} from './route/startServer'
 import register from './register'
 import route from './route'
 import Collection from './collection'
@@ -35,6 +35,7 @@ export {
   hook,
   micro,
   getServer,
+  startServer,
   register,
   route,
   Collection,

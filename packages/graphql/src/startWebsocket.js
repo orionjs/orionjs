@@ -8,6 +8,12 @@ export default function ({schema}, options) {
   setPubsub(options.pubsub || new PubSub())
 
   const server = getServer()
+  if (!server) {
+    throw new Error(
+      'Error starting GraphQL WebSocket. You must start http server before starting GraphQL WebSocket'
+    )
+  }
+
   const path = '/subscriptions'
   const subServer = new SubscriptionServer(
     {

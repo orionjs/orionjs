@@ -4,7 +4,7 @@ import config from '../config'
 
 let server = null
 
-export default function() {
+export const startServer = function () {
   if (server) return server
   if (process.env.ORION_TEST) return // no running in tests, port is used always
   server = micro(handler)
@@ -21,5 +21,9 @@ export default function() {
       })
     )
   global.orionServer = server
+  return server
+}
+
+export const getServer = function () {
   return server
 }
