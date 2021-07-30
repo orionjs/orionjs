@@ -1,4 +1,4 @@
 export default ({rawCollection}) =>
-  function aggregate(pipeline) {
-    return rawCollection.aggregate(pipeline)
+  function aggregate(pipeline, options = {}) {
+    return rawCollection.aggregate(pipeline, options)
   }
