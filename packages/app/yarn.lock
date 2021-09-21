@@ -1089,13 +1089,13 @@
     readdirp "^2.2.1"
     upath "^1.1.1"
 
-"@orion-js/schema@^2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.0.0-beta.1.tgz#158b3d734f6e96b7be80e664c0819824d2f73969"
-  integrity sha512-vAc0dcQf3ZLbeoyUfINN+Q6xFV4uBVpVMKwhETQxUb2dVr6iB49w0hJj1PpXrlNCfiAMSSynGl3CK6Msx2jBGQ==
+"@orion-js/schema@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.1.0.tgz#4b77c96c0ebe2b578ad0da870f02b5c66c20d59e"
+  integrity sha512-a8czQ8H31qXvyzTjO881r79ZyBIBdroZebMuuG+tZ+uzEzCFMCnmi8Y09YfVAyVOUZX67H6l/LFyEJdqbhB+fA==
   dependencies:
     "@babel/runtime" "^7.5.5"
-    dot-object "^1.7.0"
+    dot-object "^1.9.0"
     lodash "^4.17.10"
 
 "@types/babel__core@^7.1.0":
@@ -1976,7 +1976,7 @@ domexception@^1.0.1:
   dependencies:
     webidl-conversions "^4.0.2"
 
-dot-object@^1.7.0, dot-object@^1.9.0:
+dot-object@^1.9.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/dot-object/-/dot-object-1.9.0.tgz#6e3d6d8379f794c5174599ddf05528f5990f076e"
   integrity sha512-7MPN6y7XhAO4vM4eguj5+5HNKLjJYfkVG1ZR1Aput4Q4TR6SYeSjhpVQ77IzJHoSHffKbDxBC+48aCiiRurDPw==
@@ -4717,9 +4717,9 @@ tmp@^0.1.0:
     rimraf "^2.6.3"
 
 tmpl@1.0.x:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.4.tgz#23640dd7b42d00433911140820e5cf440e521dd1"
-  integrity sha1-I2QN17QtAEM5ERQIIOXPRA5SHdE=
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.5.tgz#8683e0b902bb9c20c4f726e3c0b69f36518c07cc"
+  integrity sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==
 
 to-buffer@^1.1.1:
   version "1.1.1"
