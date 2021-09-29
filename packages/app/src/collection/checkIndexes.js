@@ -27,7 +27,7 @@ export default async function checkIndexes(collection) {
     : currentIndexes
 
   if (indexesToDelete.length > 0) {
-    logger.error(
+    logger.warn(
       `${indexesToDelete.length} unexpected indexes found in collection "${
         collection.name
       }": ${indexesToDelete
