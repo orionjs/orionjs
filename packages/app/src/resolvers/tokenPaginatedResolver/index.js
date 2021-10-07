@@ -12,29 +12,22 @@ export default function ({collection, params, resolve, ...otherOptions}) {
     return {query: {}}
   }
 
-  /* This function does the query to the collection, ensuring that the result
-     ids are bigger than a certain offset if it was provided, returning only
-     the requested number of elements */
+  /* This function does the query to the collection. The logic is based 
+     in this article:
+     https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3 */
   const getCursor = async ({query, sort: sortingCriteria, limit, idOffset}) => {
-    /* If the resolver doesn't have a sortingCriteria or it's empty, the results
-       will be sorted by _id */
+    if (sortingCriteria && Object.keys(sortingCriteria).length > 1)
+      throw new Error('sorting criteria supports at most one field')
+
     if (!sortingCriteria || !Object.keys(sortingCriteria).length) {
       sortingCriteria = {_id: 1}
       if (idOffset) query = {...query, _id: {$gt: idOffset}}
     } else {
-      /* If we are here, we are sure that we have a sortingCriteria and it has
-         only one field */
       const sortingField = Object.keys(sortingCriteria)[0]
 
-      /* Extending the sorting criteria with _id, so we can break the ties when
-         we have documents with the same sortingCriteria value spanning multiple
-         pages */
       sortingCriteria = {...sortingCriteria, _id: 1}
 
-      /* If we receive an offset, we have to modify the query in order to get
-         the correct next document */
       if (idOffset) {
-        /* Getting the document referenced by the idOffset */
         const offsetDocument = await collection.findOne({_id: idOffset})
 
         const {[sortingField]: originalSortingFieldQuery, ...restOfQuery} = query
@@ -75,10 +68,6 @@ export default function ({collection, params, resolve, ...otherOptions}) {
           For decreasing order it is exactly the same, but the second part of the or has
           to be changed for $lt.
           */
-
-        /* If we have an increasing order, we want the next document to be greater than the
-           last one seen. But if it's decreasing order, we want the next document
-           to be LOWER than that last one seen. */
         const sortOperator = sortingCriteria[sortingField] === 1 ? '$gt' : '$lt'
         query = {
           $or: [
@@ -101,14 +90,9 @@ export default function ({collection, params, resolve, ...otherOptions}) {
           throw new Error("tokenPaginatedResolvers don't support $or nor $expr on query")
         }
 
-        /* If the query restriction for this field is an object, we have to validate
-           that this object is valid */
         if (typeof query[field] === 'object') validateQuery(query[field])
-        else if (Array.isArray(query[field])) {
-          /* If the restriction for this field is an array (like for $and), then we
-             have to validate that each one of the array elements are valid */
+        else if (Array.isArray(query[field]))
           query[field].forEach(queryElement => validateQuery(queryElement))
-        }
       })
     }
   }
@@ -135,9 +119,6 @@ export default function ({collection, params, resolve, ...otherOptions}) {
       if (!query) throw new Error("'query' object not found in return of resolve function")
 
       await validateQuery(query)
-
-      if (sort && Object.keys(sort).length > 1)
-        throw new Error('sorting criteria supports at most one field')
 
       const cursor = await getCursor({...params, query, sort})
 
