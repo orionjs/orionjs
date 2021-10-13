@@ -7,6 +7,10 @@ import serialize from './serialize'
  * @param  {Object} params
  */
 export default async function (options) {
+  if (!config.producer) {
+    throw new Error('You must initialize echoes configruation to use publish')
+  }
+
   const payload = {
     params: options.params
   }
