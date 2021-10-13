@@ -14,7 +14,13 @@ import ValidationError from './Errors/ValidationError'
 import PermissionsError from './Errors/PermissionsError'
 import Model from './Model'
 import modelToSchema from './Model/modelToSchema'
-import {resolver, crudResolvers, paginatedResolver, addPermissionChecker} from './resolvers'
+import {
+  resolver,
+  crudResolvers,
+  paginatedResolver,
+  tokenPaginatedResolver,
+  addPermissionChecker
+} from './resolvers'
 import checkResolverPermissions from './resolvers/resolver/getResolver/checkPermissions'
 import {setGetViewer} from './route/setGetViewer'
 import getViewer from './route/handler/getViewer'
@@ -45,6 +51,7 @@ export {
   Model,
   resolver,
   crudResolvers,
+  tokenPaginatedResolver,
   generateId,
   setGetViewer,
   getViewer,

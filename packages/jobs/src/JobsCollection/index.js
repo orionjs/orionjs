@@ -9,7 +9,11 @@ export default new Collection({
       options: {unique: true}
     },
     {
-      keys: {runAfter: 1}
+      keys: {
+        runAfter: 1,
+        lockedAt: 1,
+        job: 1
+      }
     }
   ],
   model: new Model({
