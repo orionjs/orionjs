@@ -19,6 +19,7 @@ See [Client configuration](https://kafka.js.org/docs/configuration#broker-discov
 ```js
 import {startService} from '@orion-js/echoes'
 import echoes from 'app/components/echoes'
+import {route} from '@orion-js/app'
 
 startService({
   client: {
@@ -29,15 +30,24 @@ startService({
     groupId: 'microserviceId'
   },
   producer: {},
+  requests: {
+    key: 'secretPassword',
+    startHandler: handler => route('/echoes-services', handler),
+    services: {
+      example: 'http://localhost:4100/echoes-services'
+    }
+  },
   echoes
 })
 ```
 
 ## `echo`
 
-An `echo` is a message handler. You can define multiple echoes in your app. All must be passed in the `echoes` param of `startService`. The key in the `echoes` params will be the name of the `topic`.
+An `echo` is a message handler. You can define multiple echoes in your app. All must be passed in the `echoes` param of `startService`. The key in the `echoes` params will be the name of the `topic`. An `echo` definition must have 2 params. `type` and `resolve`:
 
-You must pass a resolve function, which has 2 arguments.
+Type can be `echo.types.event` or `echo.types.request`.
+
+You must pass a `resolve` function, which has 2 arguments.
 
 - `params`: The params passed when this event is called
 - `context`: Contains the arguments in the [`eachMessage` Kafkajs function](https://kafka.js.org/docs/consuming#a-name-each-message-a-eachmessage)
@@ -46,6 +56,7 @@ You must pass a resolve function, which has 2 arguments.
 import {echo} from '@orion-js/echoes'
 
 export default echo({
+  type: echo.types.event,
   async resolve(params, context) {
     console.log('Received an event', params)
   }
@@ -66,6 +77,30 @@ import {publish} from '@orion-js/echoes'
 
 await publish({
   topic: 'onEvent',
+  params: {
+    hello: 'world',
+    date: new Date(),
+    number: 134433,
+    bool: true,
+    regexp: /alsothis/gi
+  }
+})
+```
+
+## `request`
+
+Publish sends a http request that expects an instant response. It expects the following params:
+
+- `method`: Topic (`echo`) to send the message to
+- `service`: Service name that has an url mapped on the startService function.
+- `params`: The params that the `echo` will receive. This params are serialized using [`serialize-javascript`](https://github.com/yahoo/serialize-javascript) so you can pass all JavaScript basic types (not including functions).
+
+```js
+import {request} from '@orion-js/echoes'
+
+await request({
+  service: 'example',
+  method: 'getResponse',
   params: {
     hello: 'world',
     date: new Date(),
