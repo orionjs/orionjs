@@ -13,6 +13,9 @@ export default function (options) {
   config.consumer.connect()
 
   for (const topic in options.echoes) {
+    const echo = options.echoes[topic]
+    if (echo.type !== types.event) continue
+
     config.consumer.subscribe({topic})
   }
 
