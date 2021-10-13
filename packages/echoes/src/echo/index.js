@@ -16,12 +16,12 @@ const echo = function (options) {
         data
       }
 
-      await options.resolve(data.params, context)
+      await options.resolve(data.params || {}, context)
     },
     onRequest: async serializedParams => {
       const context = {}
       const params = deserialize(serializedParams)
-      const result = await options.resolve(params, context)
+      const result = await options.resolve(params || {}, context)
       return result
     }
   }
