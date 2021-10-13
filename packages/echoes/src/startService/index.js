@@ -1,5 +1,7 @@
 import {Kafka} from 'kafkajs'
 import config from '../config'
+import requestsHandler from '../requestsHandler'
+import types from '../echo/types'
 
 export default async function (options) {
   const kafka = new Kafka(options.client)
@@ -11,14 +13,24 @@ export default async function (options) {
   await config.consumer.connect()
 
   for (const topic in options.echoes) {
-    await config.consumer.subscribe({topic})
+    config.consumer.subscribe({topic})
   }
 
-  await config.consumer.run({
+  config.consumer.run({
     eachMessage: async params => {
       const echo = options.echoes[params.topic]
       if (!echo) return
+      if (echo.type !== types.event) return
       await echo.onMessage(params)
     }
   })
+
+  if (options.requests) {
+    config.requests = options.requests
+
+    config.echoes = options.echoes
+    if (config.requests.startHandler) {
+      config.requests.startHandler(requestsHandler)
+    }
+  }
 }

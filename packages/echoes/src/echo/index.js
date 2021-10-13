@@ -1,6 +1,7 @@
 import deserialize from './deserialize'
+import types from './types'
 
-export default function (options) {
+const echo = function (options) {
   return {
     ...options,
     onMessage: async messageData => {
@@ -16,6 +17,16 @@ export default function (options) {
       }
 
       await options.resolve(data.params, context)
+    },
+    onRequest: async serializedParams => {
+      const context = {}
+      const params = deserialize(serializedParams)
+      const result = await options.resolve(params, context)
+      return result
     }
   }
 }
+
+echo.types = types
+
+export default echo
