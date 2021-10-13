@@ -3,14 +3,14 @@ import config from '../config'
 import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
 
-export default async function (options) {
+export default function (options) {
   const kafka = new Kafka(options.client)
 
   config.producer = kafka.producer(options.producer)
   config.consumer = kafka.consumer(options.consumer)
 
-  await config.producer.connect()
-  await config.consumer.connect()
+  config.producer.connect()
+  config.consumer.connect()
 
   for (const topic in options.echoes) {
     config.consumer.subscribe({topic})
