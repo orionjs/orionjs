@@ -17,6 +17,7 @@ export default async function (options) {
   }
 
   const apolloServer = new ApolloServer(apolloOptions)
+  await apolloServer.start()
   const handler = apolloServer.createHandler() // highlight-line
 
   route('/graphql', async function (params) {
