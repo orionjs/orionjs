@@ -1233,13 +1233,13 @@
   resolved "https://registry.yarnpkg.com/@josephg/resolvable/-/resolvable-1.0.1.tgz#69bc4db754d79e1a2f17a650d3466e038d94a5eb"
   integrity sha512-CtzORUwWTTOTqfVtHaKRJ0I1kNQd1bpn3sUh8I3nJDVY+5/M/Oe1DnEWzPQvqq/xPIIkzzzIP7mfCoAjFRvDhg==
 
-"@orion-js/app@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-2.2.1.tgz#fcbae251492d788c379483b877ac2fb4b15ef1bc"
-  integrity sha512-VFXLHssZtXDUBSslDR/3pvMZl5fs3GZKMbCWWgp36RHwnxj4r9X13SlKG1qkh0Ztxc/v2SMTDJkXM9/IU4RaNg==
+"@orion-js/app@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-2.3.0.tgz#674d8dd5a7ca837efa5ae494d506dd8bc228aa46"
+  integrity sha512-s5On+yuTKYofKSm9UzkZw0341qAG+Lv174x3OH/aA0YSL97ABL2XPoiOkfKzHjbb5c1n/TZm+tVRvR6BVwr99w==
   dependencies:
     "@babel/runtime" "^7.14.0"
-    "@orion-js/schema" "^2.1.0"
+    "@orion-js/schema" "^2.3.0"
     colors "^1.3.3"
     dataloader "^2.0.0"
     dot-object "^1.9.0"
@@ -1249,10 +1249,10 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
-"@orion-js/schema@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.1.0.tgz#4b77c96c0ebe2b578ad0da870f02b5c66c20d59e"
-  integrity sha512-a8czQ8H31qXvyzTjO881r79ZyBIBdroZebMuuG+tZ+uzEzCFMCnmi8Y09YfVAyVOUZX67H6l/LFyEJdqbhB+fA==
+"@orion-js/schema@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.3.0.tgz#cd7c137ca7217f6ba44049b18cf93f4703313a3b"
+  integrity sha512-nQt412vHJi792eQ/b2k6purGfgPUXHUPl6u4h6DBRnUhnSjYD7BhrHHqRebgow8G50/yM+Atla9JLqtKzpCMIw==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dot-object "^1.9.0"
@@ -2620,11 +2620,6 @@ graphql-tag@^2.11.0:
   integrity sha512-5xNhP4063d16Pz3HBtKprutsPrmHZi5IdUGOWRxA2B6VF7BIRGOHZ5WQvDmJXZuPcBg7rYwaFxvQYjqkSdR3TQ==
   dependencies:
     tslib "^2.1.0"
-
-graphql@^15.6.1:
-  version "15.6.1"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.6.1.tgz#9125bdf057553525da251e19e96dab3d3855ddfc"
-  integrity sha512-3i5lu0z6dRvJ48QP9kFxBkJ7h4Kso7PS8eahyTFz5Jm6CvQfLtNIE8LX9N6JLnXTuwR+sIYnXzaWp6anOg0QQw==
 
 growly@^1.3.0:
   version "1.3.0"

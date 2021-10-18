@@ -15,7 +15,6 @@
     "apollo-server-core": "3.4.0",
     "apollo-server-micro": "3.4.0",
     "deep-sort-object": "^1.0.2",
-    "graphql": "^15.6.1",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^1.2.1",
     "lodash": "^4.17.21",
@@ -32,7 +31,8 @@
     "jest": "^26.2.2"
   },
   "peerDependencies": {
-    "@orion-js/app": "*"
+    "@orion-js/app": "*",
+    "graphql": "^15.6.0"
   },
   "publishConfig": {
     "access": "public"
