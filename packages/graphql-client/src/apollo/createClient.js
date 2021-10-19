@@ -38,7 +38,8 @@ export default function (passedOptions) {
     // initial upgrade
     if (options.upgradeJWT) {
       setTimeout(() => {
-        if (!options.getJWT() && options.getSession()) {
+        const oldSession = options.getSession() || {}
+        if (!options.getJWT() && oldSession.userId) {
           console.log('Performing initial JWT upgrade...')
           refreshJWT(options)
         }
