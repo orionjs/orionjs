@@ -53,6 +53,8 @@ export default function (passedOptions) {
   global.apolloClient = client
 
   options.apolloClient = client
+  client._orionOptions = options
+  client._wsClient = options.wsClient
   setOptions(options)
   return client
 }
