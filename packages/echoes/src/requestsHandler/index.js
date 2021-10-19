@@ -17,8 +17,7 @@ export default async function ({getBodyJSON}) {
       result: serialize(result)
     }
   } catch (error) {
-    console.error('Error at echo requests handler:')
-    console.error(error)
+    console.error('Error at echo requests handler:', error)
 
     return {
       error: error.message
