@@ -1,4 +1,5 @@
 import rp from 'request-promise'
+import pjson from '../../package.json'
 
 export default async function () {
   try {
@@ -9,7 +10,6 @@ export default async function () {
       json: true,
       timeout: 2000
     })
-    const pjson = require('../../package.json')
 
     const latestVersion = response['dist-tags'].latest
     const currentVersion = pjson.version

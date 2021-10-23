@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-specifier-resolution=node --no-warnings
 import program from 'commander'
 import start from './start'
 import build from './build'
@@ -6,6 +6,7 @@ import colors from 'colors/safe'
 import create from './create'
 import checkVersion from './helpers/checkVersion'
 import test from './test'
+import pjson from '../package.json'
 import './handleErrors'
 
 const run = function (action) {
@@ -26,7 +27,7 @@ program
   .option('--skip-compilation', 'Skip inital compilation')
   .action(run(start))
 
-program.command('test').allowUnknownOption().description('Runs Jest').action(run(test))
+program.command('test').allowUnknownOption().description('Deprecated command').action(run(test))
 
 program
   .command('build')
@@ -41,7 +42,7 @@ program
   .option('--kit [kit]', 'Which starter kit to use')
   .action(run(create))
 
-program.version(require('../package.json').version, '-v --version')
+program.version(pjson.version, '-v --version')
 
 program.parse(process.argv)
 
