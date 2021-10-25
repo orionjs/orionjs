@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "3.0.0-alpha.8",
+  "version": "3.0.0-alpha.9",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -15,7 +15,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.0-alpha.0",
+    "@orion-js/helpers": "^3.0.0-alpha.9",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
     "kafkajs": "^1.15.0",
