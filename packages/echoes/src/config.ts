@@ -1,4 +1,4 @@
-import {EchoesConfigHandler} from './options'
+import {EchoesConfigHandler} from './types'
 
 const config: EchoesConfigHandler = {}
 

@@ -2,7 +2,7 @@ import {EachMessagePayload, Kafka} from 'kafkajs'
 import config from '../config'
 import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
-import {EchoesOptions} from '../options'
+import {EchoesOptions} from '../types'
 
 export default function (options: EchoesOptions) {
   const kafka = new Kafka(options.client)

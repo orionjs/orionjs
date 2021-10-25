@@ -1,7 +1,7 @@
 import getEcho from './getEcho'
 import serialize from '../publish/serialize'
 import checkSignature from './checkSignature'
-import {RequestHandlerResponse, RequestsHandlerParams} from '../options'
+import {RequestHandlerResponse, RequestsHandlerParams} from '../types'
 
 export default async function ({
   getBodyJSON

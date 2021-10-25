@@ -1,5 +1,5 @@
 import config from '../config'
-import {PublishOptions} from '../options'
+import {PublishOptions} from '../types'
 import serialize from './serialize'
 
 /**

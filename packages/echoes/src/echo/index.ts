@@ -1,5 +1,5 @@
 import {EachMessagePayload} from 'kafkajs'
-import {Echo, EchoConfig} from '../options'
+import {Echo, EchoConfig} from '../types'
 import deserialize from './deserialize'
 import types from './types'
 

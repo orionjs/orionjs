@@ -3,7 +3,7 @@ import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
-import {RequestHandlerResponse, RequestOptions} from '../options'
+import {RequestHandlerResponse, RequestOptions} from '../types'
 
 export default async function (options: RequestOptions): Promise<any> {
   const {method, service, params} = options

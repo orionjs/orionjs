@@ -2,6 +2,10 @@
   "name": "@orion-js/echoes",
   "version": "3.0.0-alpha.6",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -10,6 +14,7 @@
     "build": "tsc",
     "watch": "tsc -w"
   },
+
   "dependencies": {
     "@orion-js/helpers": "^3.0.0-alpha.0",
     "axios": "^0.23.0",

@@ -1,60 +1,67 @@
-import {ConsumerConfig, KafkaConfig, ProducerConfig, Consumer, Producer} from 'kafkajs'
+import {
+  ConsumerConfig,
+  KafkaConfig,
+  ProducerConfig,
+  Consumer,
+  Producer,
+  EachMessagePayload
+} from 'kafkajs'
 
-interface EchoConfig {
+export interface EchoConfig {
   type: 'event' | 'request'
   resolve: (params: any, context?: any) => Promise<any>
 }
 
-interface Echo extends EchoConfig {
+export interface Echo extends EchoConfig {
   onMessage: (messageData: EachMessagePayload) => Promise<void>
   onRequest: (serializedParams: string) => any
 }
 
-interface PublishOptions {
+export interface PublishOptions {
   topic: string
   params: any
   acks?: number
   timeout?: number
 }
 
-interface RequestOptions {
+export interface RequestOptions {
   method: string
   service: string
   params: any
 }
 
-interface RequestHandlerResponse {
+export interface RequestHandlerResponse {
   result?: any
   error?: any
 }
 
-interface RequestsHandlerParams {
+export interface RequestsHandlerParams {
   getBodyJSON: () => Promise<any>
 }
 
-interface RequestsConfig {
+export interface RequestsConfig {
   key: string
-  startHandler: (handler: (params: HandlerParams) => Promise<RequestHandlerResponse>) => any
+  startHandler: (handler: (params: RequestsHandlerParams) => Promise<RequestHandlerResponse>) => any
   services: {
-    [string]: string
+    string: string
   }
 }
 
-interface EchoesOptions {
+export interface EchoesOptions {
   client: KafkaConfig
   producer: ProducerConfig
   consumer: ConsumerConfig
   requests: RequestsConfig
   echoes: {
-    [string]: Echo
+    string: Echo
   }
 }
 
-interface EchoesConfigHandler {
+export interface EchoesConfigHandler {
   producer?: Producer
   consumer?: Consumer
   requests?: RequestsConfig
   echoes?: {
-    [string]: Echo
+    string: Echo
   }
 }
