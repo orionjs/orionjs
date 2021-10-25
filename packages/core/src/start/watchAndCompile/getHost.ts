@@ -13,7 +13,7 @@ export function getHost(runner: Runner) {
       runner.stop()
     }
 
-    console.log(colors.bold(`=> [${diagnostic.code}] ${diagnostic.messageText}`))
+    console.log(colors.bold(`=> ${diagnostic.messageText}`))
 
     if (diagnostic.code === 6194) {
       /**
