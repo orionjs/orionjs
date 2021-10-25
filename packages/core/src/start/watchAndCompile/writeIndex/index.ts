@@ -2,13 +2,13 @@ import writeFile from '../../../helpers/writeFile'
 import fs from 'fs'
 import path from 'path'
 
-const libPath = path.resolve(__dirname, '../../../../moduleAlias.js.txt')
-const libContent = fs.readFileSync(libPath).toString()
-
 export default function () {
   const basePath = `${process.cwd()}/.orion/build`
 
   const libPath = `${basePath}/moduleAliasLib.js`
+
+  const libContentPath = path.resolve(__dirname, '../../../../moduleAlias.js.txt')
+  const libContent = fs.readFileSync(libContentPath).toString()
 
   writeFile(libPath, libContent)
 
@@ -19,7 +19,6 @@ export default function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const moduleAlias = require('./moduleAliasLib')
 const path =  __dirname + '/app'
-console.log('registering alias',  path)
 moduleAlias.addAlias('app', path)
   `
   )
