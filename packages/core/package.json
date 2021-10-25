@@ -1,0 +1,36 @@
+{
+  "name": "@orion-js/core",
+  "version": "2.3.0",
+  "main": "index.js",
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "bin": {
+    "orion": "./dist/index.js"
+  },
+  "scripts": {
+    "test": "exit 0",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@babel/core": "^7.15.8",
+    "async-exit-hook": "^2.0.1",
+    "chokidar": "^3.5.1",
+    "colors": "^1.4.0",
+    "commander": "^2.19.0",
+    "globby": "^8.0.1",
+    "lodash": "^4.17.15",
+    "process-exists": "^3.1.0",
+    "request": "^2.88.0x",
+    "request-promise": "^4.2.5",
+    "typescript": "^4.4.4",
+    "walk-sync": "^0.3.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+}

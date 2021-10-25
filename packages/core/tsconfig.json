@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "commonjs",
+    "target": "es2020",
+    "moduleResolution": "node",
+    "lib": ["es2020"],
+
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+
+  "assets": ["**/*.txt"],
+  "watchAssets": true
+}
