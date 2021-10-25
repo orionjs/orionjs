@@ -9,12 +9,12 @@ import {
 
 export interface EchoConfig {
   type: 'event' | 'request'
-  resolve: (params: any, context?: any) => Promise<any>
+  resolve(params: any, context?: any): Promise<any>
 }
 
 export interface Echo extends EchoConfig {
-  onMessage: (messageData: EachMessagePayload) => Promise<void>
-  onRequest: (serializedParams: string) => any
+  onMessage(messageData: EachMessagePayload): Promise<void>
+  onRequest(serializedParams: string): any
 }
 
 export interface PublishOptions {
@@ -36,14 +36,14 @@ export interface RequestHandlerResponse {
 }
 
 export interface RequestsHandlerParams {
-  getBodyJSON: () => Promise<any>
+  getBodyJSON(): Promise<any>
 }
 
 export interface RequestsConfig {
   key: string
-  startHandler: (handler: (params: RequestsHandlerParams) => Promise<RequestHandlerResponse>) => any
+  startHandler(handler: (params: RequestsHandlerParams) => Promise<RequestHandlerResponse>): any
   services: {
-    string: string
+    [key: string]: string
   }
 }
 
@@ -53,7 +53,7 @@ export interface EchoesOptions {
   consumer: ConsumerConfig
   requests: RequestsConfig
   echoes: {
-    string: Echo
+    [key: string]: Echo
   }
 }
 
@@ -62,6 +62,6 @@ export interface EchoesConfigHandler {
   consumer?: Consumer
   requests?: RequestsConfig
   echoes?: {
-    string: Echo
+    [key: string]: Echo
   }
 }
