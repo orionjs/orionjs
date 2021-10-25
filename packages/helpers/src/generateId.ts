@@ -38,7 +38,15 @@ const randomString = function (charsCount, alphabet) {
   return digits.join('')
 }
 
-export default function generateId(charsCount, chars = UNMISTAKABLE_CHARS) {
+/**
+ * Returns a random ID
+ * @param charsCount length of the ID
+ * @param chars characters used to generate the ID
+ */
+export default function generateId(
+  charsCount?: number,
+  chars: string = UNMISTAKABLE_CHARS
+): string {
   if (!charsCount) {
     charsCount = 17
   }
