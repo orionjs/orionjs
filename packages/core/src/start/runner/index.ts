@@ -8,16 +8,13 @@ export interface RunnerOptions {
 
 export interface Runner {
   restart: () => void
+  stop: () => void
 }
 
 export function getRunner(options: RunnerOptions): Runner {
   let appProcess = null
 
-  const restart = () => {
-    if (appProcess) {
-      appProcess.kill()
-    }
-
+  const start = () => {
     console.log(colors.bold('=> Starting app...\n'))
     appProcess = startProcess(options)
 
@@ -31,5 +28,16 @@ export function getRunner(options: RunnerOptions): Runner {
     writeFile('.orion/process', `${appProcess.pid}`)
   }
 
-  return {restart}
+  const stop = () => {
+    if (appProcess) {
+      appProcess.kill()
+    }
+  }
+
+  const restart = () => {
+    stop()
+    start()
+  }
+
+  return {restart, stop}
 }

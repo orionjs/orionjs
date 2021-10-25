@@ -1,22 +1,11 @@
-import ts from 'typescript'
+import ts, {ListFormat} from 'typescript'
+import colors from 'colors/safe'
 
-const formatHost: ts.FormatDiagnosticsHost = {
-  getCanonicalFileName: path => path,
-  getCurrentDirectory: ts.sys.getCurrentDirectory,
+const format = {
+  getCanonicalFileName: fileName => fileName,
+  getCurrentDirectory: () => process.cwd(),
   getNewLine: () => ts.sys.newLine
 }
-
 export function reportDiagnostic(diagnostic: ts.Diagnostic) {
-  console.error(
-    'Error',
-    diagnostic.code,
-    ':',
-    ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine())
-  )
+  console.log(ts.formatDiagnosticsWithColorAndContext([diagnostic], format))
 }
-
-/**
- * Prints a diagnostic every time the watch status changes.
- * This is mainly for messages like "Starting compilation" or "Compilation completed".
- */
-export function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {}
