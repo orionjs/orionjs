@@ -1,8 +1,11 @@
 import getEcho from './getEcho'
 import serialize from '../publish/serialize'
 import checkSignature from './checkSignature'
+import {RequestHandlerResponse, RequestsHandlerParams} from '../options'
 
-export default async function ({getBodyJSON}) {
+export default async function ({
+  getBodyJSON
+}: RequestsHandlerParams): Promise<RequestHandlerResponse> {
   try {
     const {body, signature} = await getBodyJSON()
 

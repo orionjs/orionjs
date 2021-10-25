@@ -1,4 +1,4 @@
-export default function (serializedJavascript) {
+export default function (serializedJavascript: string): any {
   try {
     return eval('(' + serializedJavascript + ')')
   } catch (error) {

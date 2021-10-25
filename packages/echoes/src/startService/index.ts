@@ -1,9 +1,10 @@
-import {Kafka} from 'kafkajs'
+import {EachMessagePayload, Kafka} from 'kafkajs'
 import config from '../config'
 import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
+import {EchoesOptions} from '../options'
 
-export default function (options) {
+export default function (options: EchoesOptions) {
   const kafka = new Kafka(options.client)
 
   config.producer = kafka.producer(options.producer)
@@ -20,11 +21,11 @@ export default function (options) {
   }
 
   config.consumer.run({
-    eachMessage: async params => {
-      const echo = options.echoes[params.topic]
+    eachMessage: async (payload: EachMessagePayload) => {
+      const echo = options.echoes[payload.topic]
       if (!echo) return
       if (echo.type !== types.event) return
-      await echo.onMessage(params)
+      await echo.onMessage(payload)
     }
   })
 

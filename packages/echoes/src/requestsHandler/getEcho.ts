@@ -1,7 +1,7 @@
 import config from '../config'
 import types from '../echo/types'
 
-export default function (method) {
+export default function (method: string) {
   const echo = config.echoes[method]
 
   if (!echo) {

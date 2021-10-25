@@ -754,10 +754,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@orion-js/helpers@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-2.1.0.tgz#1bf9c223587a5205191358c5b853312e9cee7bda"
-  integrity sha512-G8tnTfgEzrSsYzOPWslRPHfeFggQimaF5Kh9UDLbYMXZ7psyQeSI0ZyaHHEVfRXzX79qmIHAFQxnVTLJ6mtwfQ==
+"@orion-js/helpers@^3.0.0-alpha.0":
+  version "3.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0-alpha.0.tgz#c160ecf3182bd0601d6fcdff87e40714bbdccf32"
+  integrity sha512-4zTgoQkvAfF46pXhs1/aQzSEg6aeswsUzO5HQ+2NsZ1pcT1uOTmqO3TWSo+jWaK7WuCGy7JQYSvFDfdY9NQAwA==
   dependencies:
     kafkajs "^1.15.0"
     object-hash "^2.1.1"
@@ -2302,6 +2302,11 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
+
+typescript@^4.4.4:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
+  integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

@@ -1,12 +1,11 @@
 import config from '../config'
+import {PublishOptions} from '../options'
 import serialize from './serialize'
 
 /**
  * Publish
- * @param  {ID} topic
- * @param  {Object} params
  */
-export default async function (options) {
+export default async function (options: PublishOptions) {
   if (!config.producer) {
     throw new Error('You must initialize echoes configruation to use publish')
   }

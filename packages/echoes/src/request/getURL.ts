@@ -1,6 +1,6 @@
 import config from '../config'
 
-export default function (serviceName) {
+export default function (serviceName: string): string {
   const url = config.requests.services[serviceName]
 
   if (!url) {

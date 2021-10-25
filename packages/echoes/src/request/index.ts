@@ -3,8 +3,10 @@ import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
+import {RequestHandlerResponse, RequestOptions} from '../options'
 
-export default async function ({method, service, params}) {
+export default async function (options: RequestOptions): Promise<any> {
+  const {method, service, params} = options
   const serializedParams = serialize(params)
   const date = new Date()
   const body = {method, service, serializedParams, date}
@@ -27,11 +29,13 @@ export default async function ({method, service, params}) {
       throw new Error(`Echoes request network error ${result.status}`)
     }
 
-    if (result.data.error) {
-      throw new Error(`Echoes request error: ${result.data.error}`)
+    const data: RequestHandlerResponse = result.data
+
+    if (data.error) {
+      throw new Error(`Echoes request error: ${data.error}`)
     }
 
-    const response = deserialize(result.data.result)
+    const response = deserialize(data.result)
     return response
   } catch (error) {
     throw new Error(`Echoes request network error ${error.message}`)
