@@ -1,6 +1,7 @@
 import {config} from '@orion-js/app'
+import {MailOptions} from 'nodemailer/lib/json-transport'
 
-export default function (options) {
+export default function (options: MailOptions) {
   const {logger} = config()
   logger.info(`
     === Email Sent ===
