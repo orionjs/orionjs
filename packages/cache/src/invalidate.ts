@@ -1,5 +1,7 @@
-export default function(store) {
-  return async function(key) {
+import {CacheStore} from './CacheStoreType'
+
+export default function (store: CacheStore) {
+  return async function (key: string) {
     return await store.invalidate(key)
   }
 }

@@ -1,6 +1,8 @@
-import cache from './index'
-import sleep from '../helpers/sleep'
-import garbageCollector from './store/garbageCollector'
+import {createCache, defaultStore} from './index'
+import garbageCollector from './defaultStore/garbageCollector'
+import {sleep} from '@orion-js/helpers'
+
+const cache = createCache(defaultStore)
 
 afterAll(() => {
   garbageCollector(true)

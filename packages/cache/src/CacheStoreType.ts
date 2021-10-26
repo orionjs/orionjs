@@ -5,7 +5,11 @@ export interface StoredCacheData {
 
 export interface SetCacheOptions {
   ttl?: number
-  [key: string]: any
+}
+
+export interface GetCacheOptions {
+  ttl?: number
+  fallback?(): Promise<any>
 }
 
 export interface CacheStore {
@@ -18,6 +22,23 @@ export interface CacheStore {
    * Get data from the cache
    */
   get(key: string): Promise<StoredCacheData>
+
+  /**
+   * Removes data from the cache
+   */
+  invalidate(key: string): Promise<void>
+}
+
+export interface OrionCache {
+  /**
+   * Save data in the cache
+   */
+  set(key: string, value: any, options?: SetCacheOptions): Promise<void>
+
+  /**
+   * Get data from the cache
+   */
+  get(key: string, options?: GetCacheOptions): Promise<StoredCacheData>
 
   /**
    * Removes data from the cache

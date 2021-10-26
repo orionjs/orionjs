@@ -1,7 +1,9 @@
+import {CacheStore, GetCacheOptions, StoredCacheData} from './CacheStoreType'
+
 const promises = {}
 
-export default function(store) {
-  const getData = async function(key, {fallback, ttl} = {}) {
+export default function (store: CacheStore) {
+  const getData = async function (key: string, {fallback, ttl}: GetCacheOptions = {}) {
     const saved = await store.get(key)
     if (saved) return saved
     if (!fallback) return
@@ -11,8 +13,8 @@ export default function(store) {
     return {value: newResult}
   }
 
-  return function(key, options) {
-    return new Promise(async function(resolve, reject) {
+  return (key: string, options: GetCacheOptions): Promise<StoredCacheData> => {
+    return new Promise(async function (resolve, reject) {
       promises[key] = promises[key] || []
 
       promises[key].push({resolve, reject})
