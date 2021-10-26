@@ -1,6 +1,7 @@
 import cloneDeep from 'lodash/cloneDeep'
+import {SetCacheOptions} from '../CacheStoreType'
 
-export default async function(key, value, options) {
+export default async function (key: string, value: any, options: SetCacheOptions) {
   const store = global.orionjsCache
 
   const stored = {

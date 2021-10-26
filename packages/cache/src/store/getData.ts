@@ -1,4 +1,8 @@
-export default async function(key) {
+/**
+ * Returns the stored data in the cache
+ * @param key Cache key
+ */
+export default async function (key: string) {
   const store = global.orionjsCache
   const stored = store[key]
 

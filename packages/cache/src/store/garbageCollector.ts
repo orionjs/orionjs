@@ -1,8 +1,8 @@
-import sleep from '../../helpers/sleep'
+import {sleep} from '@orion-js/helpers'
 
 let running = true
 
-const collect = async function() {
+const collect = async function () {
   const store = global.orionjsCache
 
   const now = new Date().getTime()
@@ -19,7 +19,7 @@ const collect = async function() {
   }
 }
 
-export default function(stop) {
+export default function (stop?: boolean): void {
   if (stop) {
     running = false
   } else {

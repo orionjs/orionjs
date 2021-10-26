@@ -1,0 +1,29 @@
+{
+  "name": "@orion-js/cache",
+  "version": "3.0.0-alpha.9",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "exit 0",
+    "prepare": "yarn run build",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@orion-js/helpers": "^3.0.0-alpha.9"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@types/lodash": "4.14.176",
+    "typescript": "^4.4.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+}
