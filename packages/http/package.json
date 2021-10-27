@@ -11,7 +11,8 @@
   "scripts": {
     "test": "jest",
     "prepare": "yarn run build",
-    "build": "tsc",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
     "watch": "tsc -w"
   },
   "dependencies": {
