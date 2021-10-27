@@ -1,2 +1,4 @@
 import resolver from './resolver'
-export {resolver}
+import createModel from './createModel'
+
+export {resolver, createModel}
