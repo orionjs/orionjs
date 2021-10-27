@@ -1,12 +1,7 @@
 import {createCache, defaultStore} from './index'
-import garbageCollector from './defaultStore/garbageCollector'
 import {sleep} from '@orion-js/helpers'
 
 const cache = createCache(defaultStore)
-
-afterAll(() => {
-  garbageCollector(true)
-})
 
 it('should save data in local cache', async () => {
   await cache.set('key1', 'value1')

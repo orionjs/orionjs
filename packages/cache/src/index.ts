@@ -12,4 +12,6 @@ export const createCache = (store: CacheStore): OrionCache => {
   }
 }
 
-export {defaultStore}
+const defaultCache = createCache(defaultStore)
+
+export {defaultStore, defaultCache, CacheStore, OrionCache}

@@ -16,7 +16,7 @@ export interface CacheStore {
   /**
    * Save data in the cache
    */
-  set(key: string, value: any, options: SetCacheOptions): Promise<void>
+  set(key: string, value: any, options: SetCacheOptions): Promise<void> | void
 
   /**
    * Get data from the cache
@@ -26,14 +26,14 @@ export interface CacheStore {
   /**
    * Removes data from the cache
    */
-  invalidate(key: string): Promise<void>
+  invalidate(key: string): Promise<void> | void
 }
 
 export interface OrionCache {
   /**
    * Save data in the cache
    */
-  set(key: string, value: any, options?: SetCacheOptions): Promise<void>
+  set(key: string, value: any, options?: SetCacheOptions): Promise<void> | void
 
   /**
    * Get data from the cache
@@ -43,5 +43,5 @@ export interface OrionCache {
   /**
    * Removes data from the cache
    */
-  invalidate(key: string): Promise<void>
+  invalidate(key: string): Promise<void> | void
 }
