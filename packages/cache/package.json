@@ -1,0 +1,31 @@
+{
+  "name": "@orion-js/cache",
+  "version": "3.0.0-alpha.10",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "prepare": "yarn run build",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@shelf/jest-mongodb": "^2.1.0",
+    "@types/jest": "^27.0.2",
+    "@types/lodash": "4.14.176",
+    "jest": "27.3.1",
+    "ts-jest": "27.0.7",
+    "typescript": "^4.4.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+}

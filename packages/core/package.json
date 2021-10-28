@@ -10,11 +10,14 @@
   "scripts": {
     "test": "exit 0",
     "prepare": "yarn run build",
-    "build": "tsc",
-    "watch": "tsc -w"
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
     "@babel/core": "^7.15.8",
+    "@orion-js/resolvers": "^3.0.0-alpha.10",
+    "@orion-js/schema": "^3.0.0-alpha.0",
     "async-exit-hook": "^2.0.1",
     "chokidar": "^3.5.1",
     "colors": "^1.4.0",
@@ -33,5 +36,8 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42",
+  "devDependencies": {
+    "@shelf/jest-mongodb": "^2.1.0"
+  }
 }

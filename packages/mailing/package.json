@@ -1,29 +1,27 @@
 {
   "name": "@orion-js/mailing",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.0-alpha.10",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "test": "exit 0",
     "prepare": "yarn run build",
-    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib",
-    "test": "exit 0"
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
+    "@orion-js/resolvers": "^3.0.0-alpha.10",
+    "@orion-js/schema": "^3.0.0-alpha.0",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0",
     "nodemailer": "^4.6.6"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
-    "@orion-js/app": "^3.0.0-alpha.0",
-    "babel-jest": "^22.4.3",
-    "jest": "^22.4.3"
+    "@shelf/jest-mongodb": "^2.1.0",
+    "@types/nodemailer": "^6.4.4",
+    "typescript": "^4.4.4"
   },
   "peerDependencies": {
     "@orion-js/app": "*"
