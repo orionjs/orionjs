@@ -1,4 +1,4 @@
 import resolver from './resolver'
-import createModel from './createModel'
+import {OrionResolvers} from './resolver/ResolverTypes'
 
-export {resolver, createModel}
+export {resolver, OrionResolvers}

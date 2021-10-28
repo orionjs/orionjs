@@ -1,6 +1,6 @@
 import createModel from './index'
-import resolver from '../resolver'
 import {sleep} from '@orion-js/helpers'
+import {resolver} from '@orion-js/resolvers'
 
 it('should call the resolver', async () => {
   let index = 0

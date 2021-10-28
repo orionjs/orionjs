@@ -1,4 +1,4 @@
-import {OrionResolvers} from '../resolver/ResolverTypes'
+import {resolver, OrionResolvers} from '@orion-js/resolvers'
 
 export namespace OrionModels {
   export interface CreateModelOptions {
