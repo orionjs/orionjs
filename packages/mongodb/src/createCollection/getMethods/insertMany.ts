@@ -3,24 +3,28 @@ import {OrionCollection} from '../Types'
 import {generateId} from '@orion-js/helpers'
 import {values} from 'lodash'
 import * as MongoDB from 'mongodb'
+import fromDot from '../../helpers/fromDot'
 
 export default (collection: OrionCollection.Collection) => {
-  const insertMany: OrionCollection.InsertMany = async (docs, options) => {
-    for (const doc of docs) {
+  const insertMany: OrionCollection.InsertMany = async (docs, options = {}) => {
+    for (let index = 0; index < docs.length; index++) {
+      const doc = docs[index]
+
       if (!doc || !isPlainObject(doc)) {
-        throw new Error('Insert must receive a document')
+        throw new Error(`Item at index ${index} is not a document`)
       }
+
       if (!doc._id) {
         doc._id = generateId()
       }
 
-      // if (schema) {
-      //   doc = await clean(schema, fromDot(doc))
-      //   await validate(schema, doc)
-      // }
+      if (collection.model) {
+        const cleaned = await collection.model.clean(fromDot(doc))
+        await collection.model.validate(cleaned)
+        docs[index] = cleaned
+      }
     }
-
-    const {insertedIds} = await collection.rawCollection.insertMany(docs)
+    const {insertedIds} = await collection.rawCollection.insertMany(docs, options.mongoOptions)
 
     const ids: Array<MongoDB.ObjectId> = values(insertedIds)
 

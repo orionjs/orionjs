@@ -10,8 +10,10 @@ import {
   insertMany,
   insertOne,
   updateMany,
-  updateOne
+  updateOne,
+  upsert
 } from './getMethods'
+import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 
 export default function createCollection(
   options: OrionCollection.CollectionOptions
@@ -48,10 +50,18 @@ export default function createCollection(
   collection.updateMany = updateMany(collection)
   collection.deleteMany = deleteMany(collection)
   collection.deleteOne = deleteOne(collection)
+  collection.upsert = upsert(collection)
 
   // plain passed methods
-  collection.aggregate = rawCollection.aggregate
-  collection.watch = rawCollection.watch
+  collection.aggregate = (pipeline, options) =>
+    collection.rawCollection.aggregate(pipeline, options)
+  collection.watch = (pipeline, options) => collection.rawCollection.watch(pipeline, options)
+
+  // data loader
+  collection.loadData = loadData(collection)
+  collection.loadById = loadById(collection)
+  collection.loadOne = loadOne(collection)
+  collection.loadMany = loadMany(collection)
 
   return collection
 }

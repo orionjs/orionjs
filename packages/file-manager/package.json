@@ -11,6 +11,8 @@
     "test": "exit 0"
   },
   "dependencies": {
+    "@orion-js/resolvers": "^3.0.0-alpha.10",
+    "@orion-js/schema": "^3.0.0-alpha.0",
     "aws-sdk": "^2.258.1",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0"
@@ -22,6 +24,7 @@
     "@babel/preset-env": "^7.5.5",
     "@babel/runtime": "^7.5.5",
     "@orion-js/app": "^3.0.0-alpha.10",
+    "@shelf/jest-mongodb": "^2.1.0",
     "babel-jest": "^22.4.3",
     "jest": "^22.4.3"
   },

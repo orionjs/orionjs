@@ -13,12 +13,11 @@
     "prepare": "yarn run build",
     "clean": "rm -rf ./lib",
     "build": "yarn run clean && tsc",
-    "watch": "tsc -w"
+    "watch": "yarn run clean && tsc -w"
   },
-  "dependencies": {
-    "@orion-js/helpers": "^3.0.0-alpha.9"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "^27.0.2",
     "@types/lodash": "4.14.176",
     "jest": "27.3.1",

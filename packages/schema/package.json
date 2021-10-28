@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
+    "@orion-js/resolvers": "^3.0.0-alpha.10",
     "dot-object": "^1.9.0",
     "lodash": "^4.17.10"
   },
@@ -20,6 +21,7 @@
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
+    "@shelf/jest-mongodb": "^2.1.0",
     "babel-jest": "^23.4.0",
     "jest": "^23.4.1"
   },

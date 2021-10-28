@@ -1,11 +1,9 @@
 import isPlainObject from 'lodash/isPlainObject'
-import isEmpty from 'lodash/isEmpty'
 import {Document, Filter} from 'mongodb'
 import {OrionCollection} from '../Types'
+import isUndefined from 'lodash/isUndefined'
 
-export default function (selector?: OrionCollection.MongoSelector): Filter<Document> {
-  if (isEmpty(selector)) return {}
-
+export default function (selector: OrionCollection.MongoSelector): Filter<Document> {
   if (typeof selector === 'string') {
     return {_id: selector}
   }

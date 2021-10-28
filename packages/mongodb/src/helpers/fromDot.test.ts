@@ -38,6 +38,7 @@ it('should convert objects with index array from dot notation', async () => {
     'person.friends.0.person.name': 'Joaquín',
     'person.friends.1.person.name': 'Roberto'
   })
+
   expect(result).toEqual({
     person: {
       friends: [{person: {name: 'Joaquín'}}, {person: {name: 'Roberto'}}]

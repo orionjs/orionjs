@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@orion-js/resolvers": "^3.0.0-alpha.10",
     "@orion-js/schema": "^3.0.0-alpha.0",
     "apollo-server-core": "3.4.0",
     "apollo-server-micro": "3.4.0",
@@ -27,6 +28,7 @@
     "@babel/preset-env": "^7.11.0",
     "@babel/runtime": "^7.11.2",
     "@orion-js/app": "^3.0.0-alpha.10",
+    "@shelf/jest-mongodb": "^2.1.0",
     "babel-jest": "^26.2.2",
     "jest": "^26.2.2"
   },
