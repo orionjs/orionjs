@@ -33,9 +33,6 @@ it('adds default value when creating docs', async () => {
   const now = new Date()
   let calls = 0
   const schema = {
-    _id: {
-      type: 'ID'
-    },
     firstName: {
       type: String,
       defaultValue: () => 'Nicolás'

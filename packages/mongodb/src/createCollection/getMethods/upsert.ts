@@ -18,7 +18,7 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
 
       if (options.clean !== false) {
         selector = (await cleanModifier(schema, {$set: selector})).$set
-        modifier = await cleanModifier(schema, modifier)
+        modifier = await cleanModifier(schema, modifier, {isUpsert: true})
       }
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
