@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/resolvers",
-  "version": "3.0.0-alpha.10",
+  "version": "3.0.0-alpha.11",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -16,14 +16,14 @@
     "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.0-alpha.9",
-    "@orion-js/schema": "^3.0.0-alpha.0"
+    "@orion-js/helpers": "^3.0.0-alpha.11",
+    "@orion-js/schema": "^3.0.0-alpha.11"
   },
   "peerDependencies": {
     "@orion-js/cache": "^3.0.0-alpha.10"
   },
   "devDependencies": {
-    "@orion-js/cache": "^3.0.0-alpha.10",
+    "@orion-js/cache": "^3.0.0-alpha.11",
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "^27.0.2",
     "@types/lodash": "4.14.176",

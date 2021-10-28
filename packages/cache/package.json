@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/cache",
-  "version": "3.0.0-alpha.10",
+  "version": "3.0.0-alpha.11",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -15,7 +15,6 @@
     "build": "yarn run clean && tsc",
     "watch": "yarn run clean && tsc -w"
   },
-  "dependencies": {},
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "^27.0.2",
