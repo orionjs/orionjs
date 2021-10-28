@@ -3,8 +3,8 @@ import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
 import isUndefined from 'lodash/isUndefined'
 import isEqual from 'lodash/isEqual'
-import fromDot from '../../../lib/helpers/fromDot'
 import * as MongoDB from 'mongodb'
+import fromDot from '../../helpers/fromDot'
 
 const shouldCheck = function (key) {
   if (key === '$pushAll') throw new Error('$pushAll is not supported; use $push + $each')
