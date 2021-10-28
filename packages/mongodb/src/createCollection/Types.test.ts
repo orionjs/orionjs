@@ -1,5 +1,4 @@
 import {generateId} from '@orion-js/helpers'
-import {property} from 'lodash'
 import createCollection from './index'
 
 it('uses correctly typescript for collections', async () => {
@@ -23,11 +22,11 @@ it('uses correctly typescript for collections', async () => {
 
   expect(user1.name).toBe('Nico')
 
-  Users.updateOne(userId, {$set: {name: 'Nicolás'}})
+  await Users.updateOne(userId, {$set: {name: 'Nicolás'}})
 
-  const user2 = await Users.findOne({lastName: 'Nicolás'})
+  const user2 = await Users.findOne({lastName: 'López'})
 
-  expect(user2._id).toBe('Nicolás')
+  expect(user2.name).toBe('Nicolás')
 
   Users.deleteOne({_id: user2._id})
 })

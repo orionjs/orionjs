@@ -12,7 +12,6 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
   ) => {
     let modifier = modifierArg as any
     let selector = getSelector(selectorArg)
-    modifier.$setOnInsert = {...modifier.$setOnInsert, _id: generateId()}
 
     if (collection.model) {
       const schema = collection.model.getSchema()
@@ -23,6 +22,8 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
       }
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
+
+    modifier.$setOnInsert = {...modifier.$setOnInsert, _id: generateId()}
 
     const result = await collection.rawCollection.updateOne(selector, modifier, {upsert: true})
 

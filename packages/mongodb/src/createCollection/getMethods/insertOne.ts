@@ -10,13 +10,13 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
       throw new Error('Insert must receive a document')
     }
 
-    if (!doc._id) {
-      doc._id = generateId()
-    }
-
     if (collection.model) {
       doc = await collection.model.clean(fromDot(doc))
       await collection.model.validate(doc)
+    }
+
+    if (!doc._id) {
+      doc._id = generateId()
     }
 
     await collection.rawCollection.insertOne(doc)
