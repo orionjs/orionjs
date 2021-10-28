@@ -28,5 +28,5 @@ it('uses correctly typescript for collections', async () => {
 
   expect(user2.name).toBe('Nicolás')
 
-  Users.deleteOne({_id: user2._id})
+  await Users.deleteOne({_id: user2._id})
 })
