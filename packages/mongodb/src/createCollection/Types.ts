@@ -1,5 +1,12 @@
-import {OrionModels} from '@orion-js/resolvers/lib/createModel/ModelTypes'
 import * as MongoDB from 'mongodb'
+import {OrionModels} from '@orion-js/models'
+
+type WithId<T> = T & {
+  /**
+   * The ID of the document
+   */
+  _id: string
+}
 
 export namespace OrionCollection {
   export interface CollectionIndex {
@@ -9,12 +16,6 @@ export namespace OrionCollection {
     options: {
       [key: string]: any
     }
-  }
-  export interface CollectionOptions {
-    name: string
-    connectionName?: string
-    model?: OrionModels.Model
-    indexes?: Array<CollectionIndex>
   }
 
   export namespace DataLoader {
@@ -36,20 +37,20 @@ export namespace OrionCollection {
       value: any
     }
 
-    export type LoadData = (options: LoadDataOptions) => Promise<Array<any>>
-    export type LoadOne = (options: LoadOneOptions) => Promise<any>
-    export type LoadMany = (options: LoadDataOptions) => Promise<Array<any>>
-    export type LoadById = (id: string) => Promise<any>
+    export type LoadData<DocumentType> = (
+      options: LoadDataOptions
+    ) => Promise<Array<WithId<DocumentType>>>
+    export type LoadOne<DocumentType> = (options: LoadOneOptions) => Promise<WithId<DocumentType>>
+    export type LoadMany<DocumentType> = (
+      options: LoadDataOptions
+    ) => Promise<Array<WithId<DocumentType>>>
+    export type LoadById<DocumentType> = (id: string) => Promise<WithId<DocumentType>>
   }
 
-  export type MongoSelector = string | MongoDB.Filter<MongoDB.Document>
+  export type MongoSelector<DocumentType = MongoDB.Document> = string | MongoDB.Filter<DocumentType>
 
-  export interface Document {
-    [key: string]: any
-  }
-
-  export interface FindCursor extends MongoDB.FindCursor {
-    toArray: () => Promise<Array<Document>>
+  export interface FindCursor<DocumentType> extends MongoDB.FindCursor {
+    toArray: () => Promise<Array<WithId<DocumentType>>>
   }
 
   export interface UpdateOptions {
@@ -70,72 +71,97 @@ export namespace OrionCollection {
     mongoOptions?: MongoDB.InsertOneOptions
   }
 
-  export type InitItem = (doc: MongoDB.Document) => Document
+  export type InitItem<DocumentType> = (doc: MongoDB.Document) => WithId<DocumentType>
 
-  export type FindOne = (
-    selector: MongoSelector,
+  export type FindOne<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
     options?: MongoDB.FindOptions
-  ) => Promise<Document>
+  ) => Promise<WithId<DocumentType>>
 
-  export type Find = (selector: MongoSelector, options?: MongoDB.FindOptions) => FindCursor
+  export type Find<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
+    options?: MongoDB.FindOptions
+  ) => FindCursor<DocumentType>
 
-  export type FindOneAndUpdate = (
-    selector: MongoSelector,
-    modifier: MongoDB.UpdateFilter<MongoDB.Document> | Partial<MongoDB.Document>,
+  export type FindOneAndUpdate<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
+    modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
     options?: FindOneAndUpdateUpdateOptions
-  ) => Promise<Document>
+  ) => Promise<WithId<DocumentType>>
 
-  export type InsertOne = (doc: Document, options?: InsertOptions) => Promise<string>
+  export type InsertOne<DocumentType> = (
+    doc: DocumentType,
+    options?: InsertOptions
+  ) => Promise<string>
 
-  export type InsertMany = (doc: Array<Document>, options?: InsertOptions) => Promise<Array<string>>
+  export type InsertMany<DocumentType> = (
+    doc: Array<Partial<DocumentType>>,
+    options?: InsertOptions
+  ) => Promise<Array<string>>
 
-  export type DeleteMany = (
-    selector: MongoSelector,
+  export type DeleteMany<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
     options?: MongoDB.DeleteOptions
   ) => Promise<MongoDB.DeleteResult>
 
-  export type DeleteOne = (
-    selector: MongoSelector,
+  export type DeleteOne<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
     options?: MongoDB.DeleteOptions
   ) => Promise<MongoDB.DeleteResult>
 
-  export type UpdateOne = (
-    selector: MongoSelector,
-    modifier: MongoDB.UpdateFilter<MongoDB.Document> | Partial<MongoDB.Document>,
+  export type UpdateOne<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
+    modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
     options?: UpdateOptions
   ) => Promise<MongoDB.UpdateResult>
 
-  export type UpdateMany = (
-    selector: MongoSelector,
-    modifier: MongoDB.UpdateFilter<MongoDB.Document> | Partial<MongoDB.Document>,
+  export type UpdateMany<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
+    modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
     options?: UpdateOptions
   ) => Promise<MongoDB.UpdateResult | MongoDB.Document>
 
-  export type Upsert = (
-    selector: MongoSelector,
-    modifier: MongoDB.UpdateFilter<MongoDB.Document> | Partial<MongoDB.Document>,
+  export type Upsert<DocumentType> = (
+    selector: MongoSelector<DocumentType>,
+    modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
     options?: UpdateOptions
   ) => Promise<MongoDB.UpdateResult>
 
-  export interface Collection extends CollectionOptions {
+  export interface CreateCollectionOptions {
+    name: string
+    connectionName?: string
+    model?: OrionModels.Model
+    indexes?: Array<CollectionIndex>
+  }
+
+  export type CreateCollection = <DocumentType = any>(
+    options: CreateCollectionOptions
+  ) => Collection<DocumentType>
+
+  export interface Collection<DocumentType = any> {
+    name: string
+    connectionName?: string
+    model?: OrionModels.Model
+    indexes?: Array<CollectionIndex>
+
     db: MongoDB.Db
     rawCollection: MongoDB.Collection
-    initItem?: InitItem
+    initItem?: InitItem<DocumentType>
 
-    findOne?: FindOne
-    find?: Find
+    findOne?: FindOne<DocumentType>
+    find?: Find<DocumentType>
 
-    insertOne?: InsertOne
-    insertMany?: InsertMany
+    insertOne?: InsertOne<DocumentType>
+    insertMany?: InsertMany<DocumentType>
 
-    deleteMany?: DeleteMany
-    deleteOne?: DeleteOne
+    deleteMany?: DeleteMany<DocumentType>
+    deleteOne?: DeleteOne<DocumentType>
 
-    updateOne?: UpdateOne
-    updateMany?: UpdateMany
+    updateOne?: UpdateOne<DocumentType>
+    updateMany?: UpdateMany<DocumentType>
 
-    upsert?: Upsert
-    findOneAndUpdate?: FindOneAndUpdate
+    upsert?: Upsert<DocumentType>
+    findOneAndUpdate?: FindOneAndUpdate<DocumentType>
 
     aggregate?: <T = MongoDB.Document>(
       pipeline?: MongoDB.Document[],
@@ -146,9 +172,9 @@ export namespace OrionCollection {
       options?: MongoDB.ChangeStreamOptions
     ) => MongoDB.ChangeStream<T>
 
-    loadData?: DataLoader.LoadData
-    loadOne?: DataLoader.LoadOne
-    loadMany?: DataLoader.LoadMany
-    loadById?: DataLoader.LoadById
+    loadData?: DataLoader.LoadData<DocumentType>
+    loadOne?: DataLoader.LoadOne<DocumentType>
+    loadMany?: DataLoader.LoadMany<DocumentType>
+    loadById?: DataLoader.LoadById<DocumentType>
   }
 }

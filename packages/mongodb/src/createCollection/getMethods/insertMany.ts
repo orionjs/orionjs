@@ -5,10 +5,10 @@ import {values} from 'lodash'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
 
-export default (collection: OrionCollection.Collection) => {
-  const insertMany: OrionCollection.InsertMany = async (docs, options = {}) => {
+export default <DocumentType>(collection: OrionCollection.Collection) => {
+  const insertMany: OrionCollection.InsertMany<DocumentType> = async (docs, options = {}) => {
     for (let index = 0; index < docs.length; index++) {
-      const doc = docs[index]
+      const doc = docs[index] as any
 
       if (!doc || !isPlainObject(doc)) {
         throw new Error(`Item at index ${index} is not a document`)

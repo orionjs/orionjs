@@ -3,12 +3,13 @@ import validateModifier from './validateModifier'
 import cleanModifier from './cleanModifier'
 import {OrionCollection} from '../Types'
 
-export default (collection: OrionCollection.Collection) => {
-  const findOneAndUpdate: OrionCollection.FindOneAndUpdate = async (
+export default <DocumentType>(collection: OrionCollection.Collection) => {
+  const findOneAndUpdate: OrionCollection.FindOneAndUpdate<DocumentType> = async (
     selectorArg,
-    modifier,
+    modifierArg,
     options = {}
   ) => {
+    let modifier = modifierArg as any
     const selector = getSelector(selectorArg)
 
     if (!modifier) {

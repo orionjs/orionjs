@@ -4,8 +4,13 @@ import cleanModifier from './cleanModifier'
 import {generateId} from '@orion-js/helpers'
 import {OrionCollection} from '../Types'
 
-export default (collection: OrionCollection.Collection) => {
-  const upsert: OrionCollection.Upsert = async (selectorArg, modifier, options = {}) => {
+export default <DocumentType>(collection: OrionCollection.Collection) => {
+  const upsert: OrionCollection.Upsert<DocumentType> = async (
+    selectorArg,
+    modifierArg,
+    options = {}
+  ) => {
+    let modifier = modifierArg as any
     let selector = getSelector(selectorArg)
     modifier.$setOnInsert = {...modifier.$setOnInsert, _id: generateId()}
 

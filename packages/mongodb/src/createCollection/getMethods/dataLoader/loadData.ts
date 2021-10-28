@@ -3,8 +3,8 @@ import {OrionCollection} from '../../Types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
-export default function (collection: OrionCollection.Collection) {
-  const loadData: OrionCollection.DataLoader.LoadData = async options => {
+export default function <DocumentType>(collection: OrionCollection.Collection) {
+  const loadData: OrionCollection.DataLoader.LoadData<DocumentType> = async options => {
     const result = await dataLoad({
       loaderKey: {
         key: options.key,

@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel} from '@orion-js/resolvers'
+import {createModel} from '@orion-js/models'
 import createCollection from '..'
 
 it('updates a document without errors', async () => {
