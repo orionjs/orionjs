@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test this file",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["${file}", "--runInBand"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "cwd": "${fileDirname}"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test & watch this file",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["${file}", "--runInBand", "--watch"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "cwd": "${fileDirname}"
+    },
+  ]
+}
