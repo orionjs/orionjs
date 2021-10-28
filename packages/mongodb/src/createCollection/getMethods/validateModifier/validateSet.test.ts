@@ -6,7 +6,6 @@ it('should handle $ correctly', async () => {
     verified: {type: Boolean}
   }
   const schema = {
-    _id: {type: 'ID'},
     emails: {type: [Email]}
   }
 
