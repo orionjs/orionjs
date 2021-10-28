@@ -22,6 +22,6 @@
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
       "cwd": "${fileDirname}"
-    },
+    }
   ]
 }
