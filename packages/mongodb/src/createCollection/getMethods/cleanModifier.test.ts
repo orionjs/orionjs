@@ -52,7 +52,6 @@ it('should clean modifier and leave dots', async () => {
     state: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
   const modifier = {$set: {'wife.state': 'Happy'}}
@@ -169,7 +168,6 @@ it('cleans $push modifier with deep array', async () => {
 
 it('cleans $unset correctly', async () => {
   const schema = {
-    _id: {type: 'ID'},
     name: {type: String, optional: true},
     info: {type: 'blackbox', optional: true},
     age: {type: Number, optional: true}
@@ -189,7 +187,6 @@ it('should handle $ correctly', async () => {
     verified: {type: Boolean}
   }
   const schema = {
-    _id: {type: 'ID'},
     emails: {type: [Email]}
   }
 

@@ -22,7 +22,6 @@ it('should insertOne documents passing deep validation', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
   const model = createModel({name: generateId(), schema})
@@ -34,7 +33,6 @@ it('should insertOne documents passing deep validation', async () => {
 it('should clean a document before insertOneing', async () => {
   const now = new Date()
   const schema = {
-    _id: {type: 'ID'},
     name: {type: String},
     createdAt: {type: Date, autoValue: () => now}
   }
@@ -48,7 +46,7 @@ it('should clean a document before insertOneing', async () => {
 })
 
 it('should validate a document', async () => {
-  const schema = {_id: {type: 'ID'}, name: {type: String}}
+  const schema = {name: {type: String}}
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({name: generateId(), model})
 
