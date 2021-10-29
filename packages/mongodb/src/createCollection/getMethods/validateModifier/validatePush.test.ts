@@ -56,7 +56,6 @@ it('validate $push with $each operations', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     friends: {type: [friend]}
   }
 
@@ -85,7 +84,6 @@ it('validate $addToSet', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     friends: {type: [friend]}
   }
 

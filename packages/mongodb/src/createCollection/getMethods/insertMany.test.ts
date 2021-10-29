@@ -1,7 +1,7 @@
 import createInsert from './insertMany'
 import {generateId} from '@orion-js/helpers'
 import createCollection from '..'
-import {createModel} from '@orion-js/resolvers'
+import {createModel} from '@orion-js/models'
 
 it('should return a function', async () => {
   const Tests = createCollection({name: generateId()})
@@ -33,7 +33,6 @@ it('should insert documents passing deep validation', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
   const model = createModel({name: generateId(), schema})
@@ -45,7 +44,6 @@ it('should insert documents passing deep validation', async () => {
 it('should clean a document before inserting', async () => {
   const now = new Date()
   const schema = {
-    _id: {type: 'ID'},
     name: {type: String},
     createdAt: {type: Date, autoValue: () => now}
   }
@@ -59,7 +57,7 @@ it('should clean a document before inserting', async () => {
 })
 
 it('should validate a document', async () => {
-  const schema = {_id: {type: 'ID'}, name: {type: String}}
+  const schema = {name: {type: String}}
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({name: generateId(), model})
 

@@ -6,7 +6,6 @@ it('should pass validation when not all fields are present', async () => {
     state: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
 
@@ -19,7 +18,6 @@ it('should throw an error when a not present field is passed', async () => {
     state: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
 
@@ -36,7 +34,6 @@ it('validate arrays', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     friends: {type: [friend]}
   }
 
@@ -55,7 +52,6 @@ it('validate $push operations', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     friends: {type: [friend]}
   }
 
@@ -73,7 +69,6 @@ it('validate $push operations', async () => {
 
 it('validate $unset operations', async () => {
   const schema = {
-    _id: {type: 'ID'},
     name: {type: String, optional: true}
   }
 

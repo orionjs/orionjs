@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel} from '@orion-js/resolvers'
+import {createModel} from '@orion-js/models'
 import createCollection from '..'
 
 it('updates a document if exists', async () => {
@@ -33,9 +33,6 @@ it('adds default value when creating docs', async () => {
   const now = new Date()
   let calls = 0
   const schema = {
-    _id: {
-      type: 'ID'
-    },
     firstName: {
       type: String,
       defaultValue: () => 'Nicolás'
@@ -80,7 +77,6 @@ it('should upsert documents passing cleaning validation', async () => {
   }
 
   const schema = {
-    _id: {type: 'ID'},
     name: {type: String},
     label: {type: String},
     wife: {type: person},

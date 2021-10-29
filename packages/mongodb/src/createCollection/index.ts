@@ -15,9 +15,9 @@ import {
 } from './getMethods'
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 
-export default function createCollection(
-  options: OrionCollection.CollectionOptions
-): OrionCollection.Collection {
+const createCollection: OrionCollection.CreateCollection = <DocumentType>(
+  options: OrionCollection.CreateCollectionOptions
+) => {
   const connectionName = options.connectionName || 'main'
 
   const orionConnection = connections[connectionName]
@@ -28,7 +28,7 @@ export default function createCollection(
   const db = orionConnection.db
   const rawCollection = db.collection(options.name)
 
-  const collection: OrionCollection.Collection = {
+  const collection: OrionCollection.Collection<DocumentType> = {
     name: options.name,
     connectionName,
     model: options.model,
@@ -65,3 +65,5 @@ export default function createCollection(
 
   return collection
 }
+
+export default createCollection

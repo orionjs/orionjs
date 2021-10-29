@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel} from '@orion-js/resolvers'
+import {createModel} from '@orion-js/models'
 import createCollection from '..'
 
 it('updates a document without errors', async () => {
@@ -30,7 +30,6 @@ it('should update documents that have array passing validation', async () => {
     name: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     friends: {type: [friend]}
   }
   const model = createModel({name: generateId(), schema})
@@ -61,7 +60,6 @@ it('should update documents that have array passing validation', async () => {
 
 it('should do $pull operation', async () => {
   const schema = {
-    _id: {type: 'ID'},
     tags: {type: [String]}
   }
   const model = createModel({name: generateId(), schema})
@@ -87,7 +85,6 @@ it('should update documents passing validation', async () => {
     state: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
   const model = createModel({name: generateId(), schema})
@@ -106,7 +103,6 @@ it('should update documents passing validation', async () => {
 
 it('should handle $inc operator on blackbox', async () => {
   const schema = {
-    _id: {type: 'ID'},
     services: {type: 'blackbox'}
   }
   const model = createModel({name: generateId(), schema})
@@ -126,7 +122,6 @@ it('should handle $inc operator on blackbox', async () => {
 
 it('should update documents passing validation with blackbox field', async () => {
   const schema = {
-    _id: {type: 'ID'},
     services: {type: 'blackbox'}
   }
   const model = createModel({name: generateId(), schema})
@@ -149,7 +144,6 @@ it('should throw an error when modifier is invalid', async () => {
     state: {type: String}
   }
   const schema = {
-    _id: {type: 'ID'},
     wife: {type: wife}
   }
   const model = createModel({name: generateId(), schema})
@@ -175,7 +169,6 @@ it('should throw an error when modifier is invalid', async () => {
 it('dont add autovalue when updating', async () => {
   let index = 1
   const schema = {
-    _id: {type: 'ID'},
     name: {
       type: String
     },
@@ -204,7 +197,6 @@ it('should handle $ correctly', async () => {
     verified: {type: Boolean}
   }
   const schema = {
-    _id: {type: 'ID'},
     emails: {type: [Email]}
   }
   const model = createModel({name: generateId(), schema})
@@ -245,7 +237,6 @@ it('should pass full doc on clean as well as validate', async () => {
   const model = createModel({
     name: generateId(),
     schema: {
-      _id: {type: 'ID'},
       name: {
         type: String,
         clean(value, {doc}) {

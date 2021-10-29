@@ -11,7 +11,7 @@ const shouldCheck = function (key) {
   return ['$pull', '$pullAll', '$pop', '$slice'].indexOf(key) === -1
 }
 
-export default async function cleanModifier(schema, modifier) {
+export default async function cleanModifier(schema, modifier, {isUpsert} = {isUpsert: false}) {
   const cleanedModifier: MongoDB.UpdateFilter<MongoDB.Document> = {}
   for (const operation of Object.keys(modifier)) {
     const operationDoc = modifier[operation]
@@ -66,8 +66,12 @@ export default async function cleanModifier(schema, modifier) {
     }
   }
 
-  if (cleanedModifier.$setOnInsert) {
-    cleanedModifier.$setOnInsert = await clean(schema, fromDot(cleanedModifier.$setOnInsert))
+  if (isUpsert) {
+    const cleanedSetOnInsert = await clean(schema, fromDot(cleanedModifier.$setOnInsert || {}))
+
+    if (!isEmpty(cleanedSetOnInsert)) {
+      cleanedModifier.$setOnInsert = cleanedSetOnInsert
+    }
   }
 
   if (isEqual(cleanedModifier, {})) {

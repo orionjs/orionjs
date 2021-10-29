@@ -1,5 +1,5 @@
 {
-  "name": "@orion-js/mongodb",
+  "name": "@orion-js/models",
   "version": "3.0.0-alpha.11",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -17,15 +17,15 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.0.0-alpha.11",
-    "@orion-js/models": "^3.0.0-alpha.11",
-    "@orion-js/schema": "^3.0.0-alpha.11",
-    "dataloader": "2.0.0",
-    "dot-object": "2.1.4",
-    "mongodb": "4.1.3"
+    "@orion-js/resolvers": "^3.0.0-alpha.11",
+    "@orion-js/schema": "^3.0.0-alpha.11"
+  },
+  "peerDependencies": {
+    "@orion-js/cache": "^3.0.0-alpha.10"
   },
   "devDependencies": {
+    "@orion-js/cache": "^3.0.0-alpha.11",
     "@shelf/jest-mongodb": "^2.1.0",
-    "@types/dot-object": "^2.1.2",
     "@types/jest": "^27.0.2",
     "@types/lodash": "4.14.176",
     "jest": "27.3.1",
