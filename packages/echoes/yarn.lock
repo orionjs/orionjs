@@ -754,6 +754,7 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+<<<<<<< Updated upstream
 "@shelf/jest-mongodb@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@shelf/jest-mongodb/-/jest-mongodb-2.1.0.tgz#2179b53b8e01dde1315b9f333cc2945dd89a6940"
@@ -768,6 +769,8 @@
   resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.2.2.tgz#424537a3b91828cb26aaf697f21ae3cd1b69f7e7"
   integrity sha512-MhSa0yylXtVMsyT8qFpHA1DLHj4DvQGH5ntxrhHSh8PxUVNi35Wk+P5hVgqbO2qZqOotqr9jaoPRL+iRjWYm/A==
 
+=======
+>>>>>>> Stashed changes
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
