@@ -88,6 +88,5 @@ test('validate blackbox child', async () => {
     services: {type: 'blackbox'}
   }
 
-  console.log('will validtea blackbox')
   expect(await validateKey(schema, 'services.phoneVerification.tries', 1)).toBeNull()
 })
