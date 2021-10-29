@@ -1,30 +1,31 @@
+import {asSchemaNode, Schema, SchemaNode, SchemaRecursiveNodeType} from '..'
 import dotGetSchema from './dotGetSchema'
 
 const tag = {
-  name: {
+  name: asSchemaNode<string>({
     type: String
-  }
+  })
 }
 const car = {
-  brand: {
+  brand: asSchemaNode<string>({
     type: String
-  },
-  tags: {
+  }),
+  tags: asSchemaNode<object[]>({
     type: [tag]
-  }
+  })
 }
-const schema = {
-  name: {
+const schema: Schema = {
+  name: asSchemaNode<string>({
     type: String
-  },
-  car: {
+  }),
+  car: asSchemaNode<object>({
     type: car
-  }
+  })
 }
 
 test('handle deep schemas', async () => {
   const value = dotGetSchema(schema, 'car.brand')
-  expect(value).toBe(schema.car.type.brand)
+  expect(value).toBe(((schema.car as SchemaNode).type as SchemaRecursiveNodeType).brand)
 })
 
 test('throw error when no schema is passed', async () => {
@@ -53,10 +54,11 @@ test('replaces numbers to $', async () => {
 
 test('returns information when is blackbox child', async () => {
   const schema = {
-    services: {
+    services: asSchemaNode<object>({
       type: 'blackbox'
-    }
+    })
   }
+
   expect(dotGetSchema(schema, 'services')).toBe(schema.services)
   expect(dotGetSchema(schema, 'services').isBlackboxChild).toBeUndefined()
   expect(dotGetSchema(schema, 'services.phoneVerification').isBlackboxChild).toBe(true)

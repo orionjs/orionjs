@@ -1,12 +1,12 @@
 import isPlainObject from 'lodash/isPlainObject'
 import isNil from 'lodash/isNil'
-import {Schema} from '..'
+import {Schema, SchemaNode} from '..'
 
-const dotGet = function dotGet(object, path) {
+const dotGet = function dotGet(object: SchemaNode, path: string) {
   if (path === '') return object
 
   const pathParts = path.split('.')
-  let first = pathParts.shift()
+  const first = pathParts.shift()
   const remainingPath = pathParts.join('.')
 
   const levelObject = object.type
