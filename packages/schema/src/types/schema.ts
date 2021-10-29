@@ -1,4 +1,4 @@
-import string from '../fieldTypes/string'
+/* eslint-disable @typescript-eslint/ban-types */
 
 export type Constructor<T> = new (...args: any[]) => T
 
@@ -59,7 +59,7 @@ export type CleanFunction<T extends SchemaNodeType> = (
   ...args: any[]
 ) => T | Promise<T>
 
-export interface SchemaNode<T extends SchemaNodeType> {
+export interface SchemaNode<T extends SchemaNodeType = SchemaNodeType> {
   /**
    * The type of the field. Used for type validations. Can also contain a subschema.
    */
