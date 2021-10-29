@@ -1,5 +1,5 @@
 import {createModel} from '@orion-js/models'
-import {asSchemaNode, SpecialNumbers, SpecialObjects, SpecialStrings} from '@orion-js/schema'
+import {asSchemaNode, SchemaFieldTypes} from '@orion-js/schema'
 import {asPropOptions} from './decorators'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
 import {Prop, Schema, getSchemaForClass, getModelForClass, Resolver} from './index'
@@ -45,16 +45,16 @@ describe('typed-schema e2e tests', () => {
     it('works for a simple schema using alt data types', () => {
       @Schema()
       class Spec {
-        @Prop({type: SpecialStrings.String})
+        @Prop({type: SchemaFieldTypes.String})
         name: string
 
-        @Prop({type: SpecialStrings.ID})
+        @Prop({type: SchemaFieldTypes.ID})
         _id: string
 
-        @Prop({type: SpecialNumbers.Integer})
+        @Prop({type: SchemaFieldTypes.Integer})
         age: number
 
-        @Prop({type: SpecialObjects.Blackbox})
+        @Prop({type: SchemaFieldTypes.Blackbox})
         metadata: object
       }
 

@@ -1,15 +1,9 @@
 /* eslint-disable no-unused-vars */
-export enum SpecialStrings {
+export enum SchemaFieldTypes {
   ID = 'ID',
   Email = 'email',
-  String = 'string'
-}
-
-export enum SpecialNumbers {
+  String = 'string',
   Number = 'number',
-  Integer = 'integer'
-}
-
-export enum SpecialObjects {
+  Integer = 'integer',
   Blackbox = 'blackbox'
 }

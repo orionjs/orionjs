@@ -49,3 +49,27 @@ export class User {
 
 export default getModelForClass(User)
 ```
+
+## Advanced usage
+
+### Schema Extension
+
+Typed-model allows extending an existing Schema to reduce code repetition.
+
+```typescript
+import {SchemaFieldTypes} from '@orion-js/schema'
+
+@Schema()
+class ModelWithId {
+  @Prop({type: SchemaFieldTypes.ID})
+  _id: string
+}
+
+class ModelWithName extends ModelWithId {
+  @Prop()
+  name: string
+}
+
+export default getModelForClass(ModelWithName)
+// Will contain both _id and name props
+```
