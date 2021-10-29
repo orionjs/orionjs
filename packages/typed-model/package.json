@@ -1,0 +1,41 @@
+{
+  "name": "@orion-js/typed-model",
+  "version": "3.0.0-alpha.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
+  "author": "dmerrill6",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "yarn run build",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest --config jest.config.js"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.5.5",
+    "@orion-js/models": "^3.0.0-alpha.12",
+    "@orion-js/resolvers": "^3.0.0-alpha.12",
+    "@orion-js/schema": "^3.0.0-alpha.12",
+    "lodash": "^4.17.10"
+  },
+  "devDependencies": {
+    "@types/eslint": "^7.28.2",
+    "@types/jest": "27.0.2",
+    "@types/node": "16.11.1",
+    "@typescript-eslint/eslint-plugin": "5.1.0",
+    "@typescript-eslint/parser": "5.1.0",
+    "eslint": "8.0.1",
+    "eslint-plugin-import": "2.25.2",
+    "jest": "26.6.3",
+    "reflect-metadata": "0.1.13",
+    "ts-jest": "26.5.6",
+    "typescript": "^4.4.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+}

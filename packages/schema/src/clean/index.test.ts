@@ -1,3 +1,4 @@
+import {SchemaFieldTypes} from '..'
 import {asSchemaNode, Schema} from '../types/schema'
 import clean from './index'
 
@@ -29,7 +30,7 @@ test('autoconverts values', async () => {
 test('dont autoConvert values', async () => {
   const schema: Schema = {
     number: {
-      type: 'number'
+      type: SchemaFieldTypes.Number
     },
     string: {
       type: String
@@ -356,7 +357,9 @@ test('omit undefined items in array', async () => {
     name: {
       type: String
     },
-    __clean() {}
+    __clean() {
+      return undefined
+    }
   }
 
   const schema = {

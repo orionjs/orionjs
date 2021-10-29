@@ -1,6 +1,6 @@
 import validateKey from './index'
 import Errors from '../Errors'
-import {Schema} from '..'
+import {Schema, SchemaFieldTypes} from '..'
 
 test('autoconvert value', async () => {
   const schema = {
@@ -46,7 +46,7 @@ test('deep validate fields', async () => {
 test('filters keys not in schema', async () => {
   const schema: Schema = {
     services: {
-      type: 'blackbox'
+      type: SchemaFieldTypes.Blackbox
     }
   }
 
@@ -56,7 +56,7 @@ test('filters keys not in schema', async () => {
 test('dont filter keys not in schema if specified', async () => {
   const schema: Schema = {
     services: {
-      type: 'blackbox'
+      type: SchemaFieldTypes.Blackbox
     }
   }
 
@@ -85,8 +85,8 @@ test('should handle $ correctly', async () => {
 
 test('validate blackbox child', async () => {
   const schema: Schema = {
-    _id: {type: 'ID'},
-    services: {type: 'blackbox'}
+    _id: {type: SchemaFieldTypes.ID},
+    services: {type: SchemaFieldTypes.Blackbox}
   }
 
   expect(await validateKey(schema, 'services.phoneVerification.tries', 1)).toBeNull()

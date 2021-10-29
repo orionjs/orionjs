@@ -754,20 +754,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@shelf/jest-mongodb@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@shelf/jest-mongodb/-/jest-mongodb-2.1.0.tgz#2179b53b8e01dde1315b9f333cc2945dd89a6940"
-  integrity sha512-sSSS/QnU8sKJUpVqKvcR4CR5ca8Mb1MpQY49H/we9bzyg/UsBhEcVehwaRSEZ13dOd8orGrNa8OW8438l2Gt1g==
-  dependencies:
-    debug "4.3.2"
-    mongodb-memory-server "7.3.6"
-    uuid "8.3.2"
-
-"@types/tmp@^0.2.0":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.2.2.tgz#424537a3b91828cb26aaf697f21ae3cd1b69f7e7"
-  integrity sha512-MhSa0yylXtVMsyT8qFpHA1DLHj4DvQGH5ntxrhHSh8PxUVNi35Wk+P5hVgqbO2qZqOotqr9jaoPRL+iRjWYm/A==
-
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
