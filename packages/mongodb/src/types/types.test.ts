@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from './index'
+import createCollection from '../createCollection/index'
 
 it('uses correctly typescript for collections', async () => {
   class User {

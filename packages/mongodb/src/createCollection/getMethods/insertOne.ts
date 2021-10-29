@@ -1,10 +1,9 @@
 import isPlainObject from 'lodash/isPlainObject'
-import {generateId} from '@orion-js/helpers'
-import {OrionCollection} from '../Types'
+import {Collection, InsertOne} from '../../types'
 import fromDot from '../../helpers/fromDot'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const insertOne: OrionCollection.InsertOne<DocumentType> = async (insertDoc, options) => {
+export default <DocumentType>(collection: Collection) => {
+  const insertOne: InsertOne<DocumentType> = async (insertDoc, options) => {
     let doc = insertDoc as any
     if (!doc || !isPlainObject(doc)) {
       throw new Error('Insert must receive a document')
@@ -16,7 +15,7 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
     }
 
     if (!doc._id) {
-      doc._id = generateId()
+      doc._id = collection.generateId()
     }
 
     await collection.rawCollection.insertOne(doc)

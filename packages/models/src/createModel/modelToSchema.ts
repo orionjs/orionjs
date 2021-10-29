@@ -1,5 +1,4 @@
 import isArray from 'lodash/isArray'
-import {OrionModels} from './ModelTypes'
 import cloneDeep from 'lodash/cloneDeep'
 
 export default function (schema: any) {

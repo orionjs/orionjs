@@ -1,9 +1,12 @@
 import isPlainObject from 'lodash/isPlainObject'
 import {Document, Filter} from 'mongodb'
-import {OrionCollection} from '../Types'
-import isUndefined from 'lodash/isUndefined'
+import {MongoSelector} from '../../types'
 
-export default function (selector: OrionCollection.MongoSelector): Filter<Document> {
+export default function (args: IArguments): Filter<Document> {
+  if (args.length === 0) return {}
+
+  const selector = args[0] as MongoSelector
+
   if (typeof selector === 'string') {
     return {_id: selector}
   }

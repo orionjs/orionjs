@@ -1,12 +1,11 @@
 import isPlainObject from 'lodash/isPlainObject'
-import {OrionCollection} from '../Types'
-import {generateId} from '@orion-js/helpers'
+import {Collection, InsertMany} from '../../types'
 import {cloneDeep, values} from 'lodash'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const insertMany: OrionCollection.InsertMany<DocumentType> = async (docs, options = {}) => {
+export default <DocumentType>(collection: Collection) => {
+  const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
     for (let index = 0; index < docs.length; index++) {
       let doc = cloneDeep(docs[index]) as any
 
@@ -20,7 +19,7 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
       }
 
       if (!doc._id) {
-        doc._id = generateId()
+        doc._id = collection.generateId()
       }
 
       docs[index] = doc

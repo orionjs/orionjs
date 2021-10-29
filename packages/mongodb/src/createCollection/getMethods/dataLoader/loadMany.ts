@@ -1,7 +1,7 @@
-import {OrionCollection} from '../../Types'
+import {Collection, DataLoader} from '../../../types'
 
-export default function <DocumentType>(collection: OrionCollection.Collection) {
-  const loadMany: OrionCollection.DataLoader.LoadMany<DocumentType> = async options => {
+export default function <DocumentType>(collection: Collection) {
+  const loadMany: DataLoader.LoadMany<DocumentType> = async options => {
     const results = await collection.loadData(options)
     return results
   }

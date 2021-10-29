@@ -1,9 +1,9 @@
 import getSelector from './getSelector'
-import {OrionCollection} from '../Types'
+import {Collection, FindOne} from '../../types'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const findOne: OrionCollection.FindOne<DocumentType> = async (selectorArg, options) => {
-    const selector = getSelector(selectorArg)
+export default <DocumentType>(collection: Collection) => {
+  const findOne: FindOne<DocumentType> = async function (selectorArg, options) {
+    const selector = getSelector(arguments)
     const item = await collection.rawCollection.findOne(selector, options)
 
     if (!item) return item

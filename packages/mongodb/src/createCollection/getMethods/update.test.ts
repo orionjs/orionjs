@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel} from '@orion-js/models'
+import {createModel, ModelSchema} from '@orion-js/models'
 import createCollection from '..'
 
 it('updates a document without errors', async () => {
@@ -102,10 +102,12 @@ it('should update documents passing validation', async () => {
 })
 
 it('should handle $inc operator on blackbox', async () => {
-  const schema = {
-    services: {type: 'blackbox'}
-  }
-  const model = createModel({name: generateId(), schema})
+  const model = createModel({
+    name: generateId(),
+    schema: {
+      services: {type: 'blackbox'}
+    }
+  })
   const Tests = createCollection({
     name: generateId(),
     model
@@ -121,10 +123,12 @@ it('should handle $inc operator on blackbox', async () => {
 })
 
 it('should update documents passing validation with blackbox field', async () => {
-  const schema = {
-    services: {type: 'blackbox'}
-  }
-  const model = createModel({name: generateId(), schema})
+  const model = createModel({
+    name: generateId(),
+    schema: {
+      services: {type: 'blackbox'}
+    }
+  })
   const Tests = createCollection({
     name: generateId(),
     model

@@ -1,10 +1,10 @@
 import {createMap, createMapArray} from '@orion-js/helpers'
-import {OrionCollection} from '../../Types'
+import {DataLoader, Collection} from '../../../types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
-export default function <DocumentType>(collection: OrionCollection.Collection) {
-  const loadData: OrionCollection.DataLoader.LoadData<DocumentType> = async options => {
+export default function <DocumentType>(collection: Collection) {
+  const loadData: DataLoader.LoadData<DocumentType> = async options => {
     const result = await dataLoad({
       loaderKey: {
         key: options.key,

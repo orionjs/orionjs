@@ -1,6 +1,6 @@
 import {connections} from '../connect/connections'
 import initItem from './initItem'
-import {OrionCollection} from './Types'
+import {Collection, CreateCollection, CreateCollectionOptions} from '../types'
 import {
   deleteMany,
   deleteOne,
@@ -14,10 +14,9 @@ import {
   upsert
 } from './getMethods'
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
+import getIdGenerator from './generateId'
 
-const createCollection: OrionCollection.CreateCollection = <DocumentType>(
-  options: OrionCollection.CreateCollectionOptions
-) => {
+const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
   const connectionName = options.connectionName || 'main'
 
   const orionConnection = connections[connectionName]
@@ -28,13 +27,14 @@ const createCollection: OrionCollection.CreateCollection = <DocumentType>(
   const db = orionConnection.db
   const rawCollection = db.collection(options.name)
 
-  const collection: OrionCollection.Collection<DocumentType> = {
+  const collection: Collection<DocumentType> = {
     name: options.name,
     connectionName,
     model: options.model,
-    indexes: options.indexes,
+    indexes: options.indexes || [],
     db,
-    rawCollection
+    rawCollection,
+    generateId: getIdGenerator(options)
   }
 
   // helpers

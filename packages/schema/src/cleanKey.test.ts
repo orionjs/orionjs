@@ -114,7 +114,6 @@ test('should inject doc on cleanKey', async () => {
     data: {
       type: String,
       clean(value, {doc}) {
-        console.log(value, doc)
         expect(doc).toEqual(item)
         return value
       }

@@ -1,11 +1,9 @@
-import {OrionCollection} from '../Types'
+import {Collection, Find} from '../../types'
 import getSelector from './getSelector'
-import * as MongoDB from 'mongodb'
-import clone from 'lodash/clone'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const find: OrionCollection.Find<DocumentType> = (selectorArg, options) => {
-    const selector = getSelector(selectorArg)
+export default <DocumentType>(collection: Collection) => {
+  const find: Find<DocumentType> = function (selectorArg, options) {
+    const selector = getSelector(arguments)
 
     const cursor = collection.rawCollection.find(selector, options) as any
 

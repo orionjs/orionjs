@@ -1,16 +1,16 @@
 import getSelector from './getSelector'
-import {OrionCollection} from '../Types'
+import {Collection, UpdateOne} from '../../types'
 import cleanModifier from './cleanModifier'
 import validateModifier from './validateModifier'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const updateOne: OrionCollection.UpdateOne<DocumentType> = async (
+export default <DocumentType>(collection: Collection) => {
+  const updateOne: UpdateOne<DocumentType> = async function (
     selectorArg,
     modifierArg,
     options = {}
-  ) => {
+  ) {
     let modifier = modifierArg as any
-    const selector = getSelector(selectorArg)
+    const selector = getSelector(arguments)
 
     if (!modifier) {
       throw new Error('Modifier is required when making an update')
