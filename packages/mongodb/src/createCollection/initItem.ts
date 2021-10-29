@@ -1,7 +1,7 @@
-import {OrionCollection} from './Types'
+import {Collection, InitItem} from '../types'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const initItem: OrionCollection.InitItem<DocumentType> = <DocumentType>(doc) => {
+export default <DocumentType>(collection: Collection) => {
+  const initItem: InitItem<DocumentType> = <DocumentType>(doc) => {
     if (!doc) return doc
 
     return doc as DocumentType

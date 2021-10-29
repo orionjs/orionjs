@@ -1,11 +1,11 @@
 import initItem from './initItem'
-import {OrionModels} from './ModelTypes'
+import {CreateModel, CloneOptions} from '../types'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
 import modelToSchema from './modelToSchema'
 
-const createModel: OrionModels.CreateModel = modelOptions => {
+const createModel: CreateModel = modelOptions => {
   const name = modelOptions.name
   let resolvedSchema = null
   let resolvedResolvers = null
@@ -48,7 +48,7 @@ const createModel: OrionModels.CreateModel = modelOptions => {
       const schema = getSchema()
       return await clean(schema, doc)
     },
-    clone: cloneOptions => {
+    clone: (cloneOptions: CloneOptions) => {
       return clone(
         {
           createModel,

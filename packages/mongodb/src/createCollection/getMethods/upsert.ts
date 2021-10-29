@@ -1,17 +1,12 @@
 import getSelector from './getSelector'
 import validateUpsert from './validateModifier/validateUpsert'
 import cleanModifier from './cleanModifier'
-import {generateId} from '@orion-js/helpers'
-import {OrionCollection} from '../Types'
+import {Collection, Upsert} from '../../types'
 
-export default <DocumentType>(collection: OrionCollection.Collection) => {
-  const upsert: OrionCollection.Upsert<DocumentType> = async (
-    selectorArg,
-    modifierArg,
-    options = {}
-  ) => {
+export default <DocumentType>(collection: Collection) => {
+  const upsert: Upsert<DocumentType> = async function (selectorArg, modifierArg, options = {}) {
     let modifier = modifierArg as any
-    let selector = getSelector(selectorArg)
+    let selector = getSelector(arguments)
 
     if (collection.model) {
       const schema = collection.model.getSchema()
@@ -23,7 +18,7 @@ export default <DocumentType>(collection: OrionCollection.Collection) => {
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
 
-    modifier.$setOnInsert = {...modifier.$setOnInsert, _id: generateId()}
+    modifier.$setOnInsert = {...modifier.$setOnInsert, _id: collection.generateId()}
 
     const result = await collection.rawCollection.updateOne(selector, modifier, {upsert: true})
 

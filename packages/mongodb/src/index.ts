@@ -4,3 +4,5 @@ import {connect} from './connect'
 import createCollection from './createCollection'
 
 export {connect, connectToDB, connections, createCollection}
+
+export * from './types'
