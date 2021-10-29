@@ -1,13 +1,20 @@
 import dotGetSchema from './dotGetSchema'
 import getValidationErrors from '../getValidationErrors'
 import Errors from '../Errors'
+import {CurrentNodeInfoOptions, Schema} from '..'
 
 const defaultOptions = {
   filter: false
 }
 
-export default async function(schema, key, value, passedOptions = {}, ...args) {
-  const options = {...defaultOptions, ...passedOptions}
+export default async function (
+  schema: Schema,
+  key: string,
+  value: any,
+  passedOptions: CurrentNodeInfoOptions = {},
+  ...args
+) {
+  const options: CurrentNodeInfoOptions = {...defaultOptions, ...passedOptions}
   const keySchema = dotGetSchema(schema, key)
 
   if (!keySchema) {
