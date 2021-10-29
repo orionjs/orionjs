@@ -1,4 +1,4 @@
-import {asSchemaNode, Schema, SchemaNode, SchemaRecursiveNodeType} from '..'
+import {asSchemaNode, Schema, SchemaNode, SchemaRecursiveNodeType, SpecialObjects} from '..'
 import dotGetSchema from './dotGetSchema'
 
 const tag = {
@@ -55,7 +55,7 @@ test('replaces numbers to $', async () => {
 test('returns information when is blackbox child', async () => {
   const schema = {
     services: asSchemaNode<object>({
-      type: 'blackbox'
+      type: SpecialObjects.Blackbox
     })
   }
 

@@ -1,10 +1,12 @@
-import {PropOptions} from '..'
+import {PropOptions, ResolverOptions} from '..'
 import {PropertyAlreadyExistsError, SchemaAlreadyExistsError} from '../errors'
+import {ResolversMap} from '@orion-js/models'
 
 export type PropertiesMap = {[key: string]: PropOptions}
 export class MetadataStorageHandler {
   private schemas = new Map<string, object>()
   private properties = new Map<string, PropertiesMap>()
+  private resolvers = new Map<string, ResolversMap>()
 
   public addSchemaMetadata({schemaName, options}: {schemaName: string; options?: object}) {
     if (this.schemas.get(schemaName)) {
@@ -34,8 +36,33 @@ export class MetadataStorageHandler {
     this.properties.set(schemaName, props)
   }
 
-  public getSchemaMetadata(schemaName: string): PropertiesMap | undefined {
+  public addResolverMetadata({
+    schemaName,
+    propertyKey,
+    options
+  }: {
+    schemaName: string
+    propertyKey: string | symbol
+    options: ResolverOptions
+  }) {
+    let resolvers = this.resolvers.get(schemaName)
+    if (!resolvers) {
+      resolvers = {}
+    }
+    const currResolver = resolvers[propertyKey as string]
+    if (currResolver) {
+      throw new PropertyAlreadyExistsError(schemaName, propertyKey as string)
+    }
+    resolvers[propertyKey as string] = options
+    this.resolvers.set(schemaName, resolvers)
+  }
+
+  public getSchemaProps(schemaName: string): PropertiesMap | undefined {
     return this.properties.get(schemaName)
+  }
+
+  public getSchemaResolvers(schemaName: string): ResolversMap | undefined {
+    return this.resolvers.get(schemaName)
   }
 
   public clearStorage() {

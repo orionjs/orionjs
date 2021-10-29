@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
+import {SpecialNumbers, SpecialObjects, SpecialStrings} from '.'
+
 export type Constructor<T> = new (...args: any[]) => T
 
-export type SpecialSchemaString = 'ID' | 'email' | 'string'
-export type SpecialSchemaNumber = 'integer' | 'number'
-export type SpecialSchemaObject = 'blackbox'
+export type SpecialSchemaString = SpecialStrings.ID | SpecialStrings.Email | SpecialStrings.String
+export type SpecialSchemaNumber = SpecialNumbers.Number | SpecialNumbers.Integer
+export type SpecialSchemaObject = SpecialObjects.Blackbox
 
 export type SchemaRecursiveNodeTypeExtras = {
   __clean?: CleanFunction<any> // TODO: Remove any
