@@ -1,5 +1,6 @@
 import isPlainObject from 'lodash/isPlainObject'
 import isNil from 'lodash/isNil'
+import {Schema} from '..'
 
 const dotGet = function dotGet(object, path) {
   if (path === '') return object
@@ -23,7 +24,7 @@ const dotGet = function dotGet(object, path) {
   return null
 }
 
-export default function(schema, path) {
+export default function (schema: Schema, path: string) {
   if (isNil(schema)) {
     throw new Error('You need to pass a schema')
   }
