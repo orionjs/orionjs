@@ -1,4 +1,3 @@
-import {SchemaFieldTypes} from '..'
 import {asSchemaNode, Schema} from '../types/schema'
 import clean from './index'
 
@@ -30,7 +29,7 @@ test('autoconverts values', async () => {
 test('dont autoConvert values', async () => {
   const schema: Schema = {
     number: {
-      type: SchemaFieldTypes.Number
+      type: 'number'
     },
     string: {
       type: String

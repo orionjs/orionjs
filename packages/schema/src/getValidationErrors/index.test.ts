@@ -1,7 +1,6 @@
 import getValidationErrors from './index'
 import Errors from '../Errors'
 import {Schema} from '../types/schema'
-import {SchemaFieldTypes} from '..'
 
 const friend = {
   firstName: {
@@ -325,7 +324,7 @@ test('run custom validation with custom key', async () => {
 test('allow custom validation to pass an error object', async () => {
   const schema: Schema = {
     person: {
-      type: SchemaFieldTypes.Blackbox,
+      type: 'blackbox',
       async validate(person) {
         return {
           name: 'required',
@@ -345,7 +344,7 @@ test('allow custom validation to pass an error object', async () => {
 test('allow custom validation to pass an complex error object', async () => {
   const schema: Schema = {
     person: {
-      type: SchemaFieldTypes.Blackbox,
+      type: 'blackbox',
       async validate(person) {
         return {
           name: 'required',
