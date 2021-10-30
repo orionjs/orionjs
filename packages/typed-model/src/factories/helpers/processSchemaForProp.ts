@@ -4,7 +4,6 @@ import {PropOptions} from '../../decorators/prop'
 import {Schema, SchemaRecursiveNodeType} from '@orion-js/schema'
 import {MetadataStorage} from '../../storage/metadataStorage'
 import {isClass} from '../../utils/isClass'
-import {Constructor} from '../../utils/interfaces'
 
 function isPrimitive(type: Function) {
   return ([Boolean, Number, String, Date] as Function[]).includes(type)
@@ -48,7 +47,7 @@ export function processSchemaForProp(prop: PropOptions) {
   return prop
 }
 
-export function getSchemaForClassRecursive<TClass>(target: Constructor<TClass>): Schema {
+export function getSchemaForClassRecursive(target): Schema {
   const schema: Schema = {}
 
   let parent: Function = target

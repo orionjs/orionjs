@@ -1,10 +1,24 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
+import {FieldType} from '../fieldType'
+
 export type Constructor<T> = new (...args: any[]) => T
 
-export type SpecialSchemaString = 'ID' | 'email' | 'string'
-export type SpecialSchemaNumber = 'number' | 'integer'
-export type SpecialSchemaObject = 'blackbox'
+export type FieldTypesList =
+  | 'string'
+  | 'date'
+  | 'integer'
+  | 'number'
+  | 'ID'
+  | 'boolean'
+  | 'email'
+  | 'blackbox'
+
+export type ConstructorsTypesList =
+  | Constructor<String>
+  | Constructor<Number>
+  | Constructor<Boolean>
+  | Constructor<Date>
 
 export type SchemaRecursiveNodeTypeExtras = {
   __clean?: CleanFunction
@@ -12,34 +26,19 @@ export type SchemaRecursiveNodeTypeExtras = {
   __skipChildValidation?: (value: any, info: CurrentNodeInfo) => Promise<boolean>
 }
 
-export type SchemaRecursiveType = {
+export interface Schema {
   [key: string]: SchemaNode | Function
 }
 
-export type SchemaRecursiveNodeType = SchemaRecursiveType & SchemaRecursiveNodeTypeExtras
+export type SchemaRecursiveNodeType = Schema & SchemaRecursiveNodeTypeExtras
 
-export type SchemaNodeType = string | Date | number | boolean | object | SchemaNodeArrayType
+export type SchemaMetaFieldTypeSingle =
+  | FieldTypesList
+  | ConstructorsTypesList
+  | SchemaRecursiveNodeType
+  | FieldType
 
-export type SchemaNodeArrayType =
-  | Array<string>
-  | Array<Date>
-  | Array<number>
-  | Array<boolean>
-  | Array<object>
-
-/**
- * Converts the SchemaNodeType to its abstraction.
- * E.g. if the Node has type string, it will return the String constructor.
- */
-export type StringAllowedTypeValues = SpecialSchemaString | Constructor<String>
-export type NumberAllowedTypeValues = SpecialSchemaNumber | Constructor<Number>
-export type ObjectAllowedTypeValues = SpecialSchemaObject | SchemaRecursiveNodeType
-
-export type SchemaMetaFieldType =
-  | SchemaNodeType
-  | StringAllowedTypeValues
-  | NumberAllowedTypeValues
-  | ObjectAllowedTypeValues
+export type SchemaMetaFieldType = SchemaMetaFieldTypeSingle | [SchemaMetaFieldTypeSingle]
 
 export type ValidateFunction = (
   value: any,
@@ -99,8 +98,6 @@ export interface SchemaNode {
    */
   custom?: ValidateFunction
 }
-
-export type Schema = SchemaRecursiveType
 
 export interface CurrentNodeInfoOptions {
   autoConvert?: boolean

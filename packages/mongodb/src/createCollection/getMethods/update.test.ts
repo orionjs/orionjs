@@ -29,7 +29,7 @@ it('should update documents that have array passing validation', async () => {
   const friend = {
     name: {type: String}
   }
-  const schema = {
+  const schema: ModelSchema = {
     friends: {type: [friend]}
   }
   const model = createModel({name: generateId(), schema})
@@ -59,7 +59,7 @@ it('should update documents that have array passing validation', async () => {
 })
 
 it('should do $pull operation', async () => {
-  const schema = {
+  const schema: ModelSchema = {
     tags: {type: [String]}
   }
   const model = createModel({name: generateId(), schema})
@@ -102,11 +102,14 @@ it('should update documents passing validation', async () => {
 })
 
 it('should handle $inc operator on blackbox', async () => {
+  const schema: ModelSchema = {
+    services: {
+      type: 'blackbox'
+    }
+  }
   const model = createModel({
     name: generateId(),
-    schema: {
-      services: {type: 'blackbox'}
-    }
+    schema
   })
   const Tests = createCollection({
     name: generateId(),
@@ -200,7 +203,7 @@ it('should handle $ correctly', async () => {
     address: {type: String},
     verified: {type: Boolean}
   }
-  const schema = {
+  const schema: ModelSchema = {
     emails: {type: [Email]}
   }
   const model = createModel({name: generateId(), schema})

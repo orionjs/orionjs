@@ -1,12 +1,12 @@
-import {OrionResolvers} from '@orion-js/resolvers'
+import {Resolver} from '@orion-js/resolvers'
 import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 
 export interface ModelsSchemaNode extends Omit<SchemaNode, 'type'> {
-  type: Model | SchemaMetaFieldType
+  type: Model | [Model] | SchemaMetaFieldType
 }
 
 export interface ModelSchema {
-  [key: string]: ModelsSchemaNode | Function
+  [key: string]: ModelsSchemaNode
 }
 
 export interface CreateModelOptions {
@@ -29,7 +29,7 @@ export interface CreateModelOptions {
 }
 
 export interface ResolversMap {
-  [key: string]: OrionResolvers.Resolver
+  [key: string]: Resolver
 }
 
 export interface CloneOptions {

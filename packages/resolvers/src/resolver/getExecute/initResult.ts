@@ -1,8 +1,8 @@
 import isArray from 'lodash/isArray'
 import isNil from 'lodash/isNil'
-import {OrionResolvers} from '../ResolverTypes'
+import {ResolverOptions} from '../ResolverTypes'
 
-export default function (options: OrionResolvers.ResolverOptions, result: any) {
+export default function (options: ResolverOptions, result: any) {
   const {returns} = options
   if (returns) {
     if (isArray(returns) && returns[0].__isModel) {

@@ -13,12 +13,12 @@ test('autoconvert value', async () => {
 })
 
 test('deep validate fields', async () => {
-  const tag = {
+  const tag: Schema = {
     name: {
       type: 'string'
     }
   }
-  const car = {
+  const car: Schema = {
     brand: {
       type: 'string'
     },
@@ -26,7 +26,7 @@ test('deep validate fields', async () => {
       type: [tag]
     }
   }
-  const schema = {
+  const schema: Schema = {
     name: {
       type: 'string'
     },
@@ -66,7 +66,7 @@ test('dont filter keys not in schema if specified', async () => {
 })
 
 test('should handle $ correctly', async () => {
-  const Email = {
+  const Email: Schema = {
     address: {
       type: String
     },
@@ -74,7 +74,7 @@ test('should handle $ correctly', async () => {
       type: Boolean
     }
   }
-  const user = {
+  const user: Schema = {
     emails: {
       type: [Email]
     }

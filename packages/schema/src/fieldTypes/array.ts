@@ -1,7 +1,6 @@
 import fieldType from '../fieldType'
 import isArray from 'lodash/isArray'
 import Errors from '../Errors'
-import {SchemaNodeType} from '../types/schema'
 
 export default fieldType({
   name: 'array',
@@ -11,7 +10,7 @@ export default fieldType({
   clean(value, {options}) {
     if (options.autoConvert) {
       if (!isArray(value)) {
-        value = [value] as SchemaNodeType
+        value = [value]
       }
     }
 

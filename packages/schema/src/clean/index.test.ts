@@ -203,7 +203,7 @@ test('run deep autovalues', async () => {
       }
     }
   }
-  const schema = {
+  const schema: Schema = {
     text: {
       type: deep,
       autoValue(text) {
@@ -242,7 +242,7 @@ test('perform custom cleaning from clean option in field', async () => {
     }
   }
 
-  const schema = {
+  const schema: Schema = {
     persons: {
       type: [person]
     }
@@ -325,7 +325,7 @@ test('pass currentDoc cleaning arrays', async () => {
   const aItem = {name: 'Nicolás'}
   const doc = {items: [aItem]}
 
-  const item = {
+  const item: Schema = {
     name: {
       type: String,
       async autoValue(name: string, {currentDoc}) {

@@ -1,17 +1,14 @@
 import getCacheKey from './getCacheKey'
-import {OrionResolvers} from '../ResolverTypes'
+import {ResolverOptions, ExecuteOptions, ModelResolve, GlobalResolve} from '../ResolverTypes'
 
-export default async function (
-  options: OrionResolvers.ResolverOptions,
-  executeOptions: OrionResolvers.ExecuteOptions
-) {
+export default async function (options: ResolverOptions, executeOptions: ExecuteOptions) {
   const {parent, params, viewer} = executeOptions
   const executeResolver = async (): Promise<any> => {
     if (parent) {
-      const resultFunc = options.resolve as OrionResolvers.ModelResolve
+      const resultFunc = options.resolve as ModelResolve
       return await resultFunc(parent, params, viewer)
     } else {
-      const resultFunc = options.resolve as OrionResolvers.GlobalResolve
+      const resultFunc = options.resolve as GlobalResolve
       return await resultFunc(params, viewer)
     }
   }

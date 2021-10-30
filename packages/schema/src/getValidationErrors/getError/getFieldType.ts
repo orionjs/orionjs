@@ -1,6 +1,6 @@
 import getFieldValidator from './getFieldValidator'
 import fieldTypes from '../../fieldTypes'
-import {SchemaMetaFieldType, SchemaNodeType} from '../../types/schema'
+import {SchemaMetaFieldType} from '../../types/schema'
 import {FieldValidatorType} from '../../types/fieldValidators'
 import {FieldType} from '../../fieldType'
 

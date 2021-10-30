@@ -2,13 +2,13 @@ import getValidationErrors from './index'
 import Errors from '../Errors'
 import {Schema} from '../types/schema'
 
-const friend = {
+const friend: Schema = {
   firstName: {
     type: String
   }
 }
 
-const car = {
+const car: Schema = {
   brand: {
     type: String
   },
@@ -17,7 +17,7 @@ const car = {
   }
 }
 
-const schema = {
+const schema: Schema = {
   firstName: {
     type: String
   },
@@ -89,7 +89,7 @@ test('gives error when a document field is not present in schema', async () => {
 })
 
 test('dont give error when array is optional and its not passed', async () => {
-  const schema = {
+  const schema: Schema = {
     name: {
       type: String
     },
@@ -120,7 +120,7 @@ test('gives an error if a optional object is present and has missing values', as
 })
 
 test('can check errors in deeply nested keys', async () => {
-  const children = {
+  const children: Schema = {
     name: {
       type: String
     },
@@ -129,7 +129,7 @@ test('can check errors in deeply nested keys', async () => {
       optional: true
     }
   }
-  const mother = {
+  const mother: Schema = {
     name: {
       type: String
     },
@@ -140,7 +140,7 @@ test('can check errors in deeply nested keys', async () => {
       type: car
     }
   }
-  const family = {
+  const family: Schema = {
     name: {
       type: String
     },
@@ -148,7 +148,7 @@ test('can check errors in deeply nested keys', async () => {
       type: mother
     }
   }
-  const deepSchema = {
+  const deepSchema: Schema = {
     name: {
       type: String
     },
@@ -196,7 +196,7 @@ test('run validate validation when field is optional and no value is passed', as
         return 'No'
       }
     },
-    __validate: async value => {
+    __validate: async (value: any) => {
       if (!value) return 'No object'
     }
   }
@@ -285,7 +285,7 @@ test('skip child validation if specified', async () => {
     }
   }
 
-  const schema = {
+  const schema: Schema = {
     persons: {
       type: [person]
     }
@@ -376,7 +376,7 @@ test('pass currentDoc validating arrays', async () => {
     }
   }
 
-  const schema = {
+  const schema: Schema = {
     items: {
       type: [item],
       async validate(items, {currentDoc}) {
@@ -443,7 +443,7 @@ test('pass currentDoc validating complex schemas', async () => {
     }
   }
 
-  const schema = {
+  const schema: Schema = {
     items: {
       type: [item],
       async validate(value, {currentDoc}) {

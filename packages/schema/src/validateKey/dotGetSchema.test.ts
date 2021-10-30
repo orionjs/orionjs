@@ -1,12 +1,15 @@
 import {Schema, SchemaNode, SchemaRecursiveNodeType} from '..'
 import dotGetSchema from './dotGetSchema'
 
-const tag = {
+const tag: Schema = {
   name: {
     type: String
+  },
+  other: {
+    type: 'string'
   }
 }
-const car = {
+const car: Schema = {
   brand: {
     type: String
   },
@@ -53,7 +56,7 @@ test('replaces numbers to $', async () => {
 })
 
 test('returns information when is blackbox child', async () => {
-  const schema = {
+  const schema: Schema = {
     services: {
       type: 'blackbox'
     }
@@ -62,14 +65,4 @@ test('returns information when is blackbox child', async () => {
   expect(dotGetSchema(schema, 'services')).toBe(schema.services)
   expect(dotGetSchema(schema, 'services').isBlackboxChild).toBeUndefined()
   expect(dotGetSchema(schema, 'services.phoneVerification').isBlackboxChild).toBe(true)
-
-  const schema2: Schema = {
-    services: {
-      type: 'blackbox'
-    }
-  }
-
-  expect(dotGetSchema(schema2, 'services')).toBe(schema2.services)
-  expect(dotGetSchema(schema2, 'services').isBlackboxChild).toBeUndefined()
-  expect(dotGetSchema(schema2, 'services.phoneVerification').isBlackboxChild).toBe(true)
 })

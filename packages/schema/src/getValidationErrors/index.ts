@@ -1,4 +1,4 @@
-import {Schema, SchemaNodeType} from '../types/schema'
+import {Schema} from '../types/schema'
 import doValidation from './doValidation'
 import getValidationErrorsObject from './getValidationErrorsObject'
 

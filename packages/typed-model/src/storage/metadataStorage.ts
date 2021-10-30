@@ -1,6 +1,7 @@
-import {PropOptions, ResolverOptions} from '..'
+import {PropOptions} from '..'
 import {PropertyAlreadyExistsError, SchemaAlreadyExistsError} from '../errors'
 import {ResolversMap} from '@orion-js/models'
+import {Resolver} from '@orion-js/resolvers'
 
 export type PropertiesMap = {[key: string]: PropOptions}
 export class MetadataStorageHandler {
@@ -43,7 +44,7 @@ export class MetadataStorageHandler {
   }: {
     schemaName: string
     propertyKey: string | symbol
-    options: ResolverOptions
+    options: Resolver
   }) {
     let resolvers = this.resolvers.get(schemaName)
     if (!resolvers) {

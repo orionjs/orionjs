@@ -1,4 +1,4 @@
 import resolver from './resolver'
-import {OrionResolvers} from './resolver/ResolverTypes'
+export * from './resolver/ResolverTypes'
 
-export {resolver, OrionResolvers}
+export {resolver}

@@ -1,11 +1,29 @@
 import {createModel} from '..'
 
 it('should create correctly a model with its schema', async () => {
-  const model = createModel({
+  const model1 = createModel({
     name: 'Name',
     schema: {
       services: {
         type: 'blackbox'
+      }
+    }
+  })
+  const model2 = createModel({
+    name: 'Name',
+    schema: {
+      services: {
+        type: model1
+      }
+    }
+  })
+
+  const model3 = createModel({
+    name: 'Name',
+    schema: {
+      services: {
+        type: [model2],
+        optional: true
       }
     }
   })

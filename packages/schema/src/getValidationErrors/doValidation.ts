@@ -5,12 +5,7 @@ import clone from 'lodash/clone'
 import isNil from 'lodash/isNil'
 import difference from 'lodash/difference'
 import Errors from '../Errors'
-import {
-  CurrentNodeInfo,
-  SchemaNode,
-  SchemaNodeArrayType,
-  SchemaRecursiveNodeTypeExtras
-} from '../types/schema'
+import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
 
 export default async function doValidation(params: CurrentNodeInfo) {
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
@@ -60,7 +55,7 @@ export default async function doValidation(params: CurrentNodeInfo) {
     }
   } else if (isArray(currentSchema.type)) {
     const itemSchema = currentSchema.type[0]
-    for (let i = 0; i < (value as SchemaNodeArrayType).length; i++) {
+    for (let i = 0; i < value.length; i++) {
       const itemValue = value[i]
       const keyItemKeys = clone(keys)
       keyItemKeys.push(i.toString())

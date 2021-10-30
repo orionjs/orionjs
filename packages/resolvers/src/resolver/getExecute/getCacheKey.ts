@@ -1,23 +1,25 @@
 import {hashObject} from '@orion-js/helpers'
-import {OrionResolvers} from '../ResolverTypes'
+import {
+  ResolverOptions,
+  ExecuteOptions,
+  ModelGetCacheKey,
+  GlobalGetCacheKey
+} from '../ResolverTypes'
 
-const getBaseKey = async (
-  options: OrionResolvers.ResolverOptions,
-  executeOptions: OrionResolvers.ExecuteOptions
-) => {
+const getBaseKey = async (options: ResolverOptions, executeOptions: ExecuteOptions) => {
   const {parent, params, viewer} = executeOptions
   if (parent) {
-    const getKey = options.getCacheKey as OrionResolvers.ModelGetCacheKey
+    const getKey = options.getCacheKey as ModelGetCacheKey
     return await getKey(parent, params, viewer)
   } else {
-    const getKey = options.getCacheKey as OrionResolvers.GlobalGetCacheKey
+    const getKey = options.getCacheKey as GlobalGetCacheKey
     return await getKey(params, viewer)
   }
 }
 
 export default async function (
-  options: OrionResolvers.ResolverOptions,
-  executeOptions: OrionResolvers.ExecuteOptions
+  options: ResolverOptions,
+  executeOptions: ExecuteOptions
 ): Promise<string> {
   const {parent, params, viewer} = executeOptions
   if (options.getCacheKey) {

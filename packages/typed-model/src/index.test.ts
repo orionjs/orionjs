@@ -1,6 +1,6 @@
 import {createModel} from '@orion-js/models'
-import {asSchemaNode, SchemaFieldTypes} from '@orion-js/schema'
-import {asPropOptions} from './decorators'
+import {resolver} from '@orion-js/resolvers'
+import {PropOptions} from './decorators'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
 import {Prop, Schema, getSchemaForClass, getModelForClass, Resolver} from './index'
 import {MetadataStorage} from './storage/metadataStorage'
@@ -45,16 +45,16 @@ describe('typed-schema e2e tests', () => {
     it('works for a simple schema using alt data types', () => {
       @Schema()
       class Spec {
-        @Prop({type: SchemaFieldTypes.String})
+        @Prop({type: 'string'})
         name: string
 
-        @Prop({type: SchemaFieldTypes.ID})
+        @Prop({type: 'ID'})
         _id: string
 
-        @Prop({type: SchemaFieldTypes.Integer})
+        @Prop({type: 'integer'})
         age: number
 
-        @Prop({type: SchemaFieldTypes.Blackbox})
+        @Prop({type: 'blackbox'})
         metadata: object
       }
 
@@ -205,12 +205,13 @@ describe('typed-schema e2e tests', () => {
       })
 
       it('works for array schemas', () => {
+        const def: PropOptions = {type: [String]}
         @Schema()
         class Spec {
-          @Prop(asPropOptions<never, string[]>({type: [String]}))
+          @Prop(def)
           names: string[]
 
-          @Prop(asPropOptions<never, number[]>({type: [Number]}))
+          @Prop({type: [Number]})
           ages: number[]
         }
 
@@ -300,19 +301,17 @@ describe('typed-schema e2e tests', () => {
       it('works for nested schemas with objects inside', () => {
         @Schema()
         class A {
-          @Prop(
-            asSchemaNode<object>({
-              type: {
-                phoneNumber: {type: String}
-              }
-            })
-          )
+          @Prop({
+            type: {
+              phoneNumber: {type: String}
+            }
+          })
           data: {phoneNumber: string}
         }
 
         @Schema()
         class B {
-          @Prop(asPropOptions<A>({type: A, optional: true}))
+          @Prop({type: A, optional: true})
           a: A
         }
 
@@ -455,11 +454,12 @@ describe('typed-schema e2e tests', () => {
 
   describe('using resolvers', () => {
     it('allows passing resolvers to the model', () => {
-      const exampleResolver = async (user, {title}: {title: string}): Promise<string> => {
-        return `${title} ${user.firstName} ${user.lastName}`
-      }
-
-      const resolverSchema = {returns: String, params: {title: String}, resolve: exampleResolver}
+      const exampleResolver = resolver({
+        returns: String,
+        resolve: async (user, {title}: {title: string}): Promise<string> => {
+          return `${title} ${user.firstName} ${user.lastName}`
+        }
+      })
 
       @Schema()
       class Spec {
@@ -469,7 +469,7 @@ describe('typed-schema e2e tests', () => {
         @Prop()
         lastName: string
 
-        @Resolver(resolverSchema)
+        @Resolver(exampleResolver)
         fullName: typeof exampleResolver
       }
 
@@ -484,7 +484,7 @@ describe('typed-schema e2e tests', () => {
           }
         },
         resolvers: {
-          fullName: resolverSchema
+          fullName: exampleResolver
         }
       })
 

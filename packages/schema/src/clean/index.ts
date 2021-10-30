@@ -23,6 +23,6 @@ export default async function clean(
     options,
     args
   }
-  const cleanedResult = await recursiveClean<Schema>(params)
+  const cleanedResult = await recursiveClean(params)
   return cleanedResult as Schema
 }

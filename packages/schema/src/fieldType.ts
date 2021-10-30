@@ -1,4 +1,4 @@
-import {CleanFunction, SchemaNodeType, ValidateFunction} from './types/schema'
+import {CleanFunction, ValidateFunction} from './types/schema'
 
 export interface FieldTypeOpts {
   name: string

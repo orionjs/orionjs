@@ -2,7 +2,7 @@ import isUndefined from 'lodash/isUndefined'
 import isArray from 'lodash/isArray'
 import cleanType from './cleanType'
 import isNil from 'lodash/isNil'
-import {CurrentNodeInfo, SchemaNode, SchemaNodeArrayType, SchemaNodeType} from '../types/schema'
+import {CurrentNodeInfo, SchemaNode} from '../types/schema'
 import getObjectNode from './getObjectNode'
 
 const cleanObjectFields = async function ({
@@ -35,13 +35,13 @@ const cleanObjectFields = async function ({
   return newDoc
 }
 
-const cleanArrayItems = async function <T extends SchemaNodeArrayType>({
+const cleanArrayItems = async function ({
   schema,
   value,
   ...other
 }: {
   schema: Partial<SchemaNode>
-  value: T
+  value: any
 }): Promise<any> {
   // clean array items
 
@@ -60,13 +60,10 @@ const cleanArrayItems = async function <T extends SchemaNodeArrayType>({
   })
 
   const result = await Promise.all(promises)
-  return result.filter(value => !isUndefined(value)) as T
+  return result.filter(value => !isUndefined(value))
 }
 
-function getArrayNode<T extends SchemaNodeType>(
-  schema: Partial<SchemaNode>,
-  value: T | T[]
-): SchemaNode | void {
+function getArrayNode(schema: Partial<SchemaNode>, value: any | Array<any>): SchemaNode | void {
   if (isArray(schema.type) && !isNil(value)) {
     const result = schema as SchemaNode
     return result
@@ -75,7 +72,7 @@ function getArrayNode<T extends SchemaNodeType>(
   return null
 }
 
-const clean = async function <T extends SchemaNodeType>(info: CurrentNodeInfo): Promise<any> {
+const clean = async function (info: CurrentNodeInfo): Promise<any> {
   let {schema, args = [], value} = info
 
   const currSchema: SchemaNode =
@@ -89,7 +86,7 @@ const clean = async function <T extends SchemaNodeType>(info: CurrentNodeInfo): 
       value: value as object
     })
     const result = await cleanType('plainObject', objectSchema, newDoc, info, ...args)
-    return result as T
+    return result
   }
 
   const arraySchema = getArrayNode(currSchema, value)
@@ -97,16 +94,16 @@ const clean = async function <T extends SchemaNodeType>(info: CurrentNodeInfo): 
   if (arraySchema) {
     let updatedValue = value
     if (!isArray(value) && !Array.isArray(value)) {
-      updatedValue = [value] as T
+      updatedValue = [value]
     }
 
     const newDoc = await cleanArrayItems({
       ...info,
       schema: arraySchema,
-      value: updatedValue as SchemaNodeArrayType
+      value: updatedValue
     })
     const result = await cleanType('array', arraySchema, newDoc, info, ...args)
-    return result as T
+    return result
   }
 
   const result = await cleanType(currSchema.type, currSchema, value, info, ...args)

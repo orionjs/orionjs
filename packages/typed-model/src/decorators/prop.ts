@@ -1,23 +1,15 @@
-import {SchemaMetaFieldType, SchemaNode, SchemaNodeType} from '@orion-js/schema'
+import {Constructor, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 import {MetadataStorage} from '../storage/metadataStorage'
 import 'reflect-metadata'
 import {CannotDetermineTypeError, CannotUseArrayError} from '../errors'
 import {isClass} from '../utils/isClass'
-import {Constructor} from '../utils/interfaces'
 import {Model} from '@orion-js/models'
 
-export interface SchemaNodeForClasses<TClass, TSubschemaType = SchemaNodeType>
-  extends Omit<SchemaNode, 'type'> {
-  type: SchemaMetaFieldType<TSubschemaType> | Constructor<TClass> | Model
+export interface SchemaNodeForClasses extends Omit<SchemaNode, 'type'> {
+  type: SchemaMetaFieldType | Constructor<any> | Model
 }
 
-export type PropOptions<TClass = any, TSubschemaType = SchemaNodeType> = Partial<
-  SchemaNodeForClasses<TClass, TSubschemaType>
->
-
-export const asPropOptions = <TClass = any, TSubschemaType = SchemaNodeType>(
-  propOptions: SchemaNodeForClasses<TClass, TSubschemaType>
-) => propOptions
+export type PropOptions = Partial<SchemaNodeForClasses>
 
 export function Prop(options: PropOptions = {}): PropertyDecorator {
   return (target: object, propertyKey: string | symbol) => {
