@@ -4,19 +4,18 @@ import {
   CurrentNodeInfo,
   SchemaMetaFieldType,
   SchemaNode,
-  SchemaNodeType,
   SchemaRecursiveNodeType
 } from '../types/schema'
 import {FieldValidatorType} from '../types/fieldValidators'
 import getObjectNode from './getObjectNode'
 
-export default async function cleanType<T extends SchemaNodeType>(
-  type: SchemaMetaFieldType<T> | FieldValidatorType,
-  fieldSchema: Partial<SchemaNode<T>>,
-  value: T,
-  info: CurrentNodeInfo<any>,
+export default async function cleanType(
+  type: SchemaMetaFieldType | FieldValidatorType,
+  fieldSchema: Partial<SchemaNode>,
+  value: any,
+  info: CurrentNodeInfo,
   ...args: any[]
-): Promise<T> {
+): Promise<any> {
   info.type = fieldSchema.type
   if (!info.type) {
     throw new Error('Cleaning field with no type')
@@ -25,7 +24,7 @@ export default async function cleanType<T extends SchemaNodeType>(
   const {clean: rootFieldClean} = await getFieldType(type)
 
   if (rootFieldClean && !isNil(value)) {
-    value = (await rootFieldClean(value, info, ...args)) as T
+    value = await rootFieldClean(value, info, ...args)
   }
 
   let needReClean = false
@@ -59,7 +58,7 @@ export default async function cleanType<T extends SchemaNodeType>(
   }
 
   if (needReClean && rootFieldClean && !isNil(value)) {
-    value = (await rootFieldClean(value, info, ...args)) as T
+    value = await rootFieldClean(value, info, ...args)
   }
 
   return value

@@ -15,12 +15,12 @@ test('autoconvert value', async () => {
 test('deep validate fields', async () => {
   const tag = {
     name: {
-      type: String
+      type: 'string'
     }
   }
   const car = {
     brand: {
-      type: String
+      type: 'string'
     },
     tags: {
       type: [tag]
@@ -28,7 +28,7 @@ test('deep validate fields', async () => {
   }
   const schema = {
     name: {
-      type: String
+      type: 'string'
     },
     car: {
       type: car

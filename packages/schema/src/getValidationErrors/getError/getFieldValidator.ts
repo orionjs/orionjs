@@ -26,5 +26,5 @@ export default function (type: any): FieldValidatorType {
     throw new Error('Field type does not exist')
   }
 
-  return type
+  return type as FieldValidatorType
 }

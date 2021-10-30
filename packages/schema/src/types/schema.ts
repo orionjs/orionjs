@@ -7,12 +7,13 @@ export type SpecialSchemaNumber = 'number' | 'integer'
 export type SpecialSchemaObject = 'blackbox'
 
 export type SchemaRecursiveNodeTypeExtras = {
-  __clean?: CleanFunction<any> // TODO: Remove any
-  __validate?: ValidateFunction<any> // TODO: Remove any
+  __clean?: CleanFunction
+  __validate?: ValidateFunction
+  __skipChildValidation?: (value: any, info: CurrentNodeInfo) => Promise<boolean>
 }
 
 export type SchemaRecursiveType = {
-  [key: string]: SchemaNode<SchemaNodeType> | Function
+  [key: string]: SchemaNode | Function
 }
 
 export type SchemaRecursiveNodeType = SchemaRecursiveType & SchemaRecursiveNodeTypeExtras
@@ -34,57 +35,49 @@ export type StringAllowedTypeValues = SpecialSchemaString | Constructor<String>
 export type NumberAllowedTypeValues = SpecialSchemaNumber | Constructor<Number>
 export type ObjectAllowedTypeValues = SpecialSchemaObject | SchemaRecursiveNodeType
 
-export type SchemaMetaFieldType<T> = T extends string
-  ? StringAllowedTypeValues
-  : T extends number
-  ? NumberAllowedTypeValues
-  : T extends boolean
-  ? Constructor<Boolean>
-  : T extends Date
-  ? Constructor<Date>
-  : T extends Array<infer U>
-  ? Array<SchemaMetaFieldType<U>>
-  : T extends object
-  ? ObjectAllowedTypeValues
-  : T
+export type SchemaMetaFieldType =
+  | SchemaNodeType
+  | StringAllowedTypeValues
+  | NumberAllowedTypeValues
+  | ObjectAllowedTypeValues
 
-export type ValidateFunction<T extends SchemaNodeType> = (
-  value: T,
-  info?: Partial<CurrentNodeInfo<T>>,
+export type ValidateFunction = (
+  value: any,
+  info?: Partial<CurrentNodeInfo>,
   ...args: any[]
 ) => object | string | void | Promise<object | string | void>
-export type CleanFunction<T extends SchemaNodeType> = (
-  value: T,
-  info?: Partial<CurrentNodeInfo<T>>,
+export type CleanFunction = (
+  value: any,
+  info?: Partial<CurrentNodeInfo>,
   ...args: any[]
-) => T | Promise<T>
+) => any | Promise<any>
 
-export interface SchemaNode<T extends SchemaNodeType = SchemaNodeType> {
+export interface SchemaNode {
   /**
    * The type of the field. Used for type validations. Can also contain a subschema.
    */
-  type: SchemaMetaFieldType<T>
+  type: SchemaMetaFieldType
 
   /**
    * Defaults to false
    */
   optional?: boolean
 
-  allowedValues?: Array<T>
+  allowedValues?: Array<any>
 
-  defaultValue?: T | ((info: CurrentNodeInfo<T>, ...args: any[]) => T | Promise<T>)
+  defaultValue?: ((info: CurrentNodeInfo, ...args: any[]) => any | Promise<any>) | any
 
   /**
    * Function that takes a value and returns an error message if there are any errors. Must return null or undefined otherwise.
    */
-  validate?: ValidateFunction<T>
+  validate?: ValidateFunction
 
   /**
    * Function that preprocesses a value before it is set.
    */
-  clean?: CleanFunction<T>
+  clean?: CleanFunction
 
-  autoValue?: (value: T, info: CurrentNodeInfo<T>, ...args: any[]) => T | Promise<T>
+  autoValue?: (value: any, info: CurrentNodeInfo, ...args: any[]) => any | Promise<any>
 
   /**
    * The minimum value if it's a number, the minimum length if it's a string or array.
@@ -104,13 +97,8 @@ export interface SchemaNode<T extends SchemaNodeType = SchemaNodeType> {
   /**
    * Deprecated
    */
-  custom?: ValidateFunction<T>
+  custom?: ValidateFunction
 }
-
-/**
- * It's the same as defining the object directly, but works better with TypeScript for type inference.
- */
-export const asSchemaNode = <T extends SchemaNodeType>(schemaNode: SchemaNode<T>) => schemaNode
 
 export type Schema = SchemaRecursiveType
 
@@ -123,23 +111,23 @@ export interface CurrentNodeInfoOptions {
   omitRequired?: boolean
 }
 
-export interface CurrentNodeInfo<T extends SchemaNodeType, S extends SchemaNodeType = any> {
+export interface CurrentNodeInfo {
   /**
    * The global schema, prefaced by {type: {...}} to be compatible with subschemas
    * Sometimes it's given without {type: {...}}. TODO: Normalize this.
    */
-  schema?: SchemaNode<T> | Schema
+  schema?: SchemaNode | Schema
   /**
    * The current node subschema
    */
-  currentSchema?: Partial<SchemaNode<S>>
+  currentSchema?: Partial<SchemaNode>
 
-  value: T
-  doc?: T
-  currentDoc?: T
+  value: any
+  doc?: any
+  currentDoc?: any
   options?: CurrentNodeInfoOptions
   args?: any[]
-  type?: SchemaMetaFieldType<T>
+  type?: SchemaMetaFieldType
   keys?: string[]
 
   addError?: (keys: string[], code: string | object) => void

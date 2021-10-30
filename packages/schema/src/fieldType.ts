@@ -1,28 +1,28 @@
 import {CleanFunction, SchemaNodeType, ValidateFunction} from './types/schema'
 
-export interface FieldTypeOpts<T extends SchemaNodeType> {
+export interface FieldTypeOpts {
   name: string
-  validate?: ValidateFunction<T>
-  clean?: CleanFunction<T>
+  validate?: ValidateFunction
+  clean?: CleanFunction
 }
 
-export interface FieldType<T extends SchemaNodeType> {
+export interface FieldType {
   name: string
-  validate: ValidateFunction<T>
-  clean: CleanFunction<T>
+  validate: ValidateFunction
+  clean: CleanFunction
   _isFieldType: boolean
 }
 
-export default function fieldType<T extends SchemaNodeType>(opts: FieldTypeOpts<T>): FieldType<T> {
+export default function fieldType(opts: FieldTypeOpts): FieldType {
   const {name, validate, clean, ...otherFields} = opts
-  const overwrittenValidate: ValidateFunction<T> = (value, info = {}) => {
+  const overwrittenValidate: ValidateFunction = (value, info = {}) => {
     if (!info.currentSchema) {
       info.currentSchema = {}
     }
     return validate(value, info)
   }
 
-  const overwrittenClean: CleanFunction<T> = (value, info = {}) => {
+  const overwrittenClean: CleanFunction = (value, info = {}) => {
     if (!info.options) {
       info.options = {}
     }

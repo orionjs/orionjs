@@ -2,11 +2,11 @@ import isNil from 'lodash/isNil'
 import getFieldValidator from './getFieldValidator'
 import fieldTypes from '../../fieldTypes'
 import Errors from '../../Errors'
-import {CurrentNodeInfo, SchemaNodeType} from '../../types/schema'
+import {CurrentNodeInfo, SchemaRecursiveNodeTypeExtras} from '../../types/schema'
 import {FieldType} from '../../fieldType'
 
-export default async function getValidationErrors<T extends SchemaNodeType>(
-  params: CurrentNodeInfo<T>
+export default async function getValidationErrors(
+  params: CurrentNodeInfo
 ): Promise<object | string | void> {
   const {schema, doc, currentDoc, value, currentSchema, keys, options = {}, args = []} = params
   const info = {schema, doc, currentDoc, keys, currentSchema, options}
@@ -18,7 +18,7 @@ export default async function getValidationErrors<T extends SchemaNodeType>(
   } else {
     const validatorKey = getFieldValidator(currentSchema.type)
     const validator =
-      validatorKey === 'custom' ? (currentSchema.type as FieldType<T>) : fieldTypes[validatorKey]
+      validatorKey === 'custom' ? (currentSchema.type as FieldType) : fieldTypes[validatorKey]
 
     const error = await validator.validate(value, info, ...args)
     if (error) {
@@ -36,8 +36,10 @@ export default async function getValidationErrors<T extends SchemaNodeType>(
     }
   }
 
-  if (currentSchema.type.__validate) {
-    const typeError = await currentSchema.type.__validate(value, info, ...args)
+  const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
+
+  if (type.__validate) {
+    const typeError = await type.__validate(value, info, ...args)
     if (typeError) {
       return typeError
     }

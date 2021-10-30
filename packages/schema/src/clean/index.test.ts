@@ -1,4 +1,4 @@
-import {asSchemaNode, Schema} from '../types/schema'
+import {Schema} from '../types/schema'
 import clean from './index'
 
 test('autoconverts values', async () => {
@@ -127,12 +127,12 @@ test('filter fields not in schema', async () => {
 
 test('runs autovalues with arrays', async () => {
   const schema: Schema = {
-    texts: asSchemaNode<string[]>({
+    texts: {
       type: [String],
       autoValue(values: string[]) {
         return values.map(val => val + ' world')
       }
-    })
+    }
   }
   const doc = {
     texts: ['hello', 'good bye']
@@ -326,23 +326,23 @@ test('pass currentDoc cleaning arrays', async () => {
   const doc = {items: [aItem]}
 
   const item = {
-    name: asSchemaNode<string>({
+    name: {
       type: String,
       async autoValue(name: string, {currentDoc}) {
         expect(currentDoc).toBe(aItem)
         return name
       }
-    })
+    }
   }
 
-  const schema = {
-    items: asSchemaNode<object[]>({
+  const schema: Schema = {
+    items: {
       type: [item],
       async autoValue(items, {currentDoc}) {
         expect(currentDoc).toBe(doc)
         return items
       }
-    })
+    }
   }
 
   expect.assertions(2)

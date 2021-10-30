@@ -10,9 +10,9 @@ const cleanObjectFields = async function ({
   value,
   ...other
 }: {
-  schema: SchemaNode<object>
+  schema: SchemaNode
   value: object
-}): Promise<object> {
+}): Promise<any> {
   const keys = Object.keys(schema.type).filter(key => !key.startsWith('__'))
   const newDoc: object = {}
 
@@ -40,9 +40,9 @@ const cleanArrayItems = async function <T extends SchemaNodeArrayType>({
   value,
   ...other
 }: {
-  schema: Partial<SchemaNode<T>>
+  schema: Partial<SchemaNode>
   value: T
-}): Promise<T> {
+}): Promise<any> {
   // clean array items
 
   const schemaType = schema.type[0]
@@ -64,31 +64,31 @@ const cleanArrayItems = async function <T extends SchemaNodeArrayType>({
 }
 
 function getArrayNode<T extends SchemaNodeType>(
-  schema: Partial<SchemaNode<T>>,
+  schema: Partial<SchemaNode>,
   value: T | T[]
-): SchemaNode<SchemaNodeArrayType> | void {
+): SchemaNode | void {
   if (isArray(schema.type) && !isNil(value)) {
-    const result = schema as SchemaNode<SchemaNodeArrayType>
+    const result = schema as SchemaNode
     return result
   }
 
   return null
 }
 
-const clean = async function <T extends SchemaNodeType>(info: CurrentNodeInfo<T>): Promise<T> {
+const clean = async function <T extends SchemaNodeType>(info: CurrentNodeInfo): Promise<any> {
   let {schema, args = [], value} = info
 
-  const currSchema: SchemaNode<T> =
-    schema.type === undefined ? ({type: schema} as SchemaNode<T>) : (schema as SchemaNode<T>)
+  const currSchema: SchemaNode =
+    schema.type === undefined ? ({type: schema} as SchemaNode) : (schema as SchemaNode)
 
-  const objectSchema = getObjectNode<T>(currSchema, value)
+  const objectSchema = getObjectNode(currSchema, value)
   if (objectSchema) {
     const newDoc = await cleanObjectFields({
       ...info,
       schema: objectSchema,
       value: value as object
     })
-    const result = await cleanType<object>('plainObject', objectSchema, newDoc, info, ...args)
+    const result = await cleanType('plainObject', objectSchema, newDoc, info, ...args)
     return result as T
   }
 
@@ -105,7 +105,7 @@ const clean = async function <T extends SchemaNodeType>(info: CurrentNodeInfo<T>
       schema: arraySchema,
       value: updatedValue as SchemaNodeArrayType
     })
-    const result = await cleanType<SchemaNodeArrayType>('array', arraySchema, newDoc, info, ...args)
+    const result = await cleanType('array', arraySchema, newDoc, info, ...args)
     return result as T
   }
 

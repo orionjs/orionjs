@@ -5,9 +5,14 @@ import clone from 'lodash/clone'
 import isNil from 'lodash/isNil'
 import difference from 'lodash/difference'
 import Errors from '../Errors'
-import {CurrentNodeInfo, SchemaNode, SchemaNodeArrayType, SchemaNodeType} from '../types/schema'
+import {
+  CurrentNodeInfo,
+  SchemaNode,
+  SchemaNodeArrayType,
+  SchemaRecursiveNodeTypeExtras
+} from '../types/schema'
 
-export default async function doValidation<T extends SchemaNodeType>(params: CurrentNodeInfo<T>) {
+export default async function doValidation(params: CurrentNodeInfo) {
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
   const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
 
@@ -23,15 +28,17 @@ export default async function doValidation<T extends SchemaNodeType>(params: Cur
    * Deep validation
    */
   if (isPlainObject(currentSchema.type)) {
-    if (typeof currentSchema.type?.__skipChildValidation === 'function') {
-      if (await currentSchema.type?.__skipChildValidation(value, info)) {
+    const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
+
+    if (typeof type?.__skipChildValidation === 'function') {
+      if (await type?.__skipChildValidation(value, info)) {
         return
       }
     }
 
     const schemaKeys = Object.keys(currentSchema.type).filter(key => !key.startsWith('__'))
     for (const key of schemaKeys) {
-      const itemSchema = currentSchema.type[key] as SchemaNode<T>
+      const itemSchema = currentSchema.type[key] as SchemaNode
       const itemValue = value[key]
       const keyItemKeys = clone(keys)
       keyItemKeys.push(key)
@@ -56,7 +63,7 @@ export default async function doValidation<T extends SchemaNodeType>(params: Cur
     for (let i = 0; i < (value as SchemaNodeArrayType).length; i++) {
       const itemValue = value[i]
       const keyItemKeys = clone(keys)
-      keyItemKeys.push(i)
+      keyItemKeys.push(i.toString())
       await doValidation({
         ...info,
         currentDoc: value,

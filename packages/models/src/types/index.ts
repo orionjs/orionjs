@@ -1,12 +1,12 @@
 import {OrionResolvers} from '@orion-js/resolvers'
-import {Schema, SchemaMetaFieldType, SchemaNode, SchemaNodeType} from '@orion-js/schema'
+import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 
-export interface ModelsSchemaNode<T extends SchemaNodeType> extends Omit<SchemaNode<T>, 'type'> {
-  type: Model | SchemaMetaFieldType<T>
+export interface ModelsSchemaNode extends Omit<SchemaNode, 'type'> {
+  type: Model | SchemaMetaFieldType
 }
 
 export interface ModelSchema {
-  [key: string]: ModelsSchemaNode<SchemaNodeType> | Function
+  [key: string]: ModelsSchemaNode | Function
 }
 
 export interface CreateModelOptions {

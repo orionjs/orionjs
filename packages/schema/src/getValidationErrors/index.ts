@@ -6,9 +6,9 @@ const defaultOptions = {
   omitRequired: false
 }
 
-export default async function getValidationErrors<T extends SchemaNodeType>(
+export default async function getValidationErrors(
   schema: Schema,
-  doc: T,
+  doc: any,
   passedOptions = {},
   ...args
 ) {

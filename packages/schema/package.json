@@ -10,8 +10,9 @@
   "license": "MIT",
   "scripts": {
     "prepare": "yarn run build",
-    "build": "tsc",
-    "watch": "tsc -w",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w",
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "@babel/preset-env": "^7.5.5",
     "@types/eslint": "^7.28.2",
     "@types/jest": "27.0.2",
+    "@types/lodash": "4.14.176",
     "@types/node": "16.11.1",
     "@typescript-eslint/eslint-plugin": "5.1.0",
     "@typescript-eslint/parser": "5.1.0",
