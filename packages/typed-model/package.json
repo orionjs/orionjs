@@ -10,8 +10,9 @@
   "license": "MIT",
   "scripts": {
     "prepare": "yarn run build",
-    "build": "tsc",
-    "watch": "tsc -w",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w",
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
