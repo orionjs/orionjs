@@ -1,6 +1,6 @@
 import {getViewer} from './../viewer'
 import {getApp} from './../start'
-import {OrionRoute} from './RouteDef'
+import {OrionRoute} from '../types'
 import {onError} from '../errors'
 
 export default function registerRoute(route: OrionRoute): void {
