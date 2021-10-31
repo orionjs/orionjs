@@ -6,10 +6,9 @@ interface AppRef {
 
 const appRef: AppRef = {}
 
-export const startServer = () => {
+export const startServer = (port: number = Number(process.env.PORT)) => {
   const app = getApp()
 
-  const port = process.env.PORT || 3000
   app.listen(port)
 
   return app

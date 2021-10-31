@@ -1,19 +1,12 @@
-import {getViewer} from './../viewer'
 import {getApp} from './../start'
-import {OrionRoute} from '../types'
-import {onError} from '../errors'
+import {Route} from '../types'
+import {executeRequest} from './executeRequest'
 
-export default function registerRoute(route: OrionRoute): void {
+export default function registerRoute(route: Route): void {
   const app = getApp()
   const method = route.method
-  const expressMethod = app[method]
 
-  expressMethod(route.path, async (req, res) => {
-    try {
-      const viewer = await getViewer(req)
-      await route.resolve(req, res, viewer)
-    } catch (error) {
-      await onError(req, res, error)
-    }
+  app[method](route.path, async (req, res): Promise<void> => {
+    executeRequest(route, req, res)
   })
 }
