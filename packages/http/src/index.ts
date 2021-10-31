@@ -5,6 +5,9 @@ import express from 'express'
 import route from './routes/route'
 import registerRoute from './routes/registerRoute'
 import registerRoutes from './routes/registerRoutes'
+import {json, raw, text, urlencoded} from 'body-parser'
+
+const bodyParser = {json, raw, text, urlencoded}
 
 export {
   express,
@@ -16,7 +19,8 @@ export {
   onError,
   route,
   registerRoute,
-  registerRoutes
+  registerRoutes,
+  bodyParser
 }
 
 export * from './types'

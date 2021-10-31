@@ -1,15 +1,10 @@
 import {Route} from './../types'
 import {onError} from '../errors'
 import {getViewer} from './../viewer'
-import {Request, ParamsDictionary, Response} from 'express-serve-static-core'
-import {ParsedQs} from 'qs'
+import express from 'express'
 import {isPlainObject} from 'lodash'
 
-export async function executeRequest(
-  route: Route,
-  req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-  res: Response<any, Record<string, any>, number>
-) {
+export async function executeRequest(route: Route, req: express.Request, res: express.Response) {
   try {
     const viewer = await getViewer(req)
     const result = await route.resolve(req, res, viewer)
