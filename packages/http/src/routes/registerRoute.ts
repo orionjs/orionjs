@@ -2,7 +2,7 @@ import {getApp} from './../start'
 import {Route} from '../types'
 import {executeRequest} from './executeRequest'
 import express from 'express'
-import {json, raw, text, urlencoded} from 'body-parser'
+import * as bodyParser from 'body-parser'
 
 export default function registerRoute(route: Route): void {
   const app = getApp()
@@ -15,8 +15,7 @@ export default function registerRoute(route: Route): void {
   const handlers: Array<express.RequestHandler> = [handler]
 
   if (route.bodyParser) {
-    const parsers = {json, raw, text, urlencoded}
-    const parser = parsers[route.bodyParser](route.bodyParserOptions)
+    const parser = bodyParser[route.bodyParser](route.bodyParserOptions)
     handlers.unshift(parser)
   }
 
