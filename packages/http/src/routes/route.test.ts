@@ -6,7 +6,7 @@ import request from 'supertest'
 let app = getApp()
 
 describe('Test routes', () => {
-  test('It should response a http get request', async () => {
+  test('It should response a http get request with a custom status code', async () => {
     const test = {hello: 'world'}
     const testRoute = route({
       path: '/test1',
@@ -52,5 +52,38 @@ describe('Test routes', () => {
     const response = await request(app).post('/test3')
     expect(response.statusCode).toBe(504)
     expect(response.body).toEqual({error: '504'})
+  })
+
+  // test a http get request with query params
+  test('It should response a http get request with query params', async () => {
+    const testRoute = route({
+      path: '/test4',
+      method: 'get',
+      async resolve(req, res, viewer) {
+        return {body: req.query, statusCode: 200}
+      }
+    })
+
+    registerRoute(testRoute)
+
+    const response = await request(app).get('/test4?hello=world')
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({hello: 'world'})
+  })
+
+  test('It should respond a http get request with text body', async () => {
+    const testRoute = route({
+      path: '/test5',
+      method: 'get',
+      async resolve(req, res, viewer) {
+        return {body: 'hello world', statusCode: 200}
+      }
+    })
+
+    registerRoute(testRoute)
+
+    const response = await request(app).get('/test5')
+    expect(response.statusCode).toBe(200)
+    expect(response.text).toBe('hello world')
   })
 })
