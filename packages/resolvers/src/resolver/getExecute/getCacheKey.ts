@@ -1,10 +1,5 @@
 import {hashObject} from '@orion-js/helpers'
-import {
-  ResolverOptions,
-  ExecuteOptions,
-  ModelGetCacheKey,
-  GlobalGetCacheKey
-} from '../ResolverTypes'
+import {ResolverOptions, ExecuteOptions, ModelGetCacheKey, GlobalGetCacheKey} from '../types'
 
 const getBaseKey = async (options: ResolverOptions, executeOptions: ExecuteOptions) => {
   const {parent, params, viewer} = executeOptions

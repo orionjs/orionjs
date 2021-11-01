@@ -1,7 +1,7 @@
 import {OrionCache} from '@orion-js/cache'
 
-export type GlobalResolve = (params: any, viewer: any) => Promise<any>
-export type ModelResolve = (parent: any, params: any, viewer: any) => Promise<any>
+export type GlobalResolve<T = Promise<any>> = (params: any, viewer: any) => T
+export type ModelResolve<T = Promise<any>> = (parent: any, params: any, viewer?: any) => T
 
 export type GlobalCheckPermissions = (params: any, viewer: any) => Promise<string>
 export type ModelCheckPermissions = (parent: any, params: any, viewer: any) => Promise<string>
@@ -25,7 +25,7 @@ export interface ExecuteParams {
   parent?: any
 }
 
-export type Execute = (executeOptions: ExecuteParams) => Promise<any>
+export type Execute<ReturnType = any> = (executeOptions: ExecuteParams) => Promise<ReturnType>
 
 export interface SharedResolverOptions {
   resolverId?: string
@@ -49,6 +49,16 @@ export interface ResolverOptions extends SharedResolverOptions {
   // [key: string]: any
 }
 
-export interface Resolver extends SharedResolverOptions {
+export interface Resolver<ResolveFunction = BaseResolveFunction> extends SharedResolverOptions {
   execute: Execute
+  resolve: ResolveFunction
 }
+
+export type BaseResolveFunction = GlobalResolve | ModelResolve
+
+export type CreateResolver = <ResolveFunction = BaseResolveFunction>(
+  options: ResolverOptions
+) => Resolver<ResolveFunction>
+
+type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never
+export type ModelResolverFunction<F extends ModelResolve> = OmitFirstArg<F>

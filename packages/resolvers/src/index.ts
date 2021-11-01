@@ -1,4 +1,4 @@
 import resolver from './resolver'
-export * from './resolver/ResolverTypes'
+export * from './resolver/types'
 
 export {resolver}

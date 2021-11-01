@@ -1,3 +1,4 @@
+import {ModelResolverFunction} from './types'
 import createResolver from './index'
 
 it('should return a function with a resolver id', () => {
@@ -7,6 +8,7 @@ it('should return a function with a resolver id', () => {
     async resolve(params, viewer) {}
   })
 
+  expect(typeof resolver).toBe('object')
   expect(typeof resolver.execute).toBe('function')
   expect(typeof resolver.resolverId).toBe('string')
 })
@@ -57,4 +59,46 @@ it('should get from cache', async () => {
 
   const result5 = await resolver.execute({params: {value: 3}}) // 3
   expect(result5).toBe(3)
+})
+
+it('should create typed resolvers', async () => {
+  const resolve = async (params: {value: number}) => {
+    return params.value * 2
+  }
+  const resolver = createResolver<typeof resolve>({
+    params: {
+      value: {
+        type: Number
+      }
+    },
+    returns: Number,
+    resolve
+  })
+
+  const result = await resolver.execute({params: {value: 2}})
+  expect(result).toBe(4)
+})
+
+it('should create typed model resolvers', async () => {
+  const resolve = async function (model, params?: {value: number}) {
+    return model.value * 2
+  }
+  const resolver = createResolver<typeof resolve>({
+    params: {
+      value: {
+        type: Number
+      }
+    },
+    returns: Number,
+    resolve
+  })
+
+  const inModel = resolver.resolve as unknown as ModelResolverFunction<typeof resolver.resolve>
+
+  const inModelResult = await inModel({value: 2})
+
+  /**
+   * We are testing the typescript removes one argument on the resolve function.
+   */
+  expect(inModelResult).toBe(4)
 })

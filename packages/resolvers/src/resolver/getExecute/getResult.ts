@@ -1,5 +1,5 @@
 import getCacheKey from './getCacheKey'
-import {ResolverOptions, ExecuteOptions, ModelResolve, GlobalResolve} from '../ResolverTypes'
+import {ResolverOptions, ExecuteOptions, ModelResolve, GlobalResolve} from '../types'
 
 export default async function (options: ResolverOptions, executeOptions: ExecuteOptions) {
   const {parent, params, viewer} = executeOptions

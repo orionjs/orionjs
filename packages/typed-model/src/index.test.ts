@@ -1,8 +1,8 @@
 import {createModel} from '@orion-js/models'
-import {resolver} from '@orion-js/resolvers'
+import {ModelResolverFunction, resolver} from '@orion-js/resolvers'
 import {PropOptions} from './decorators'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
-import {Prop, Schema, getSchemaForClass, getModelForClass, Resolver} from './index'
+import {Prop, Schema, getSchemaForClass, getModelForClass, ResolverProp} from './index'
 import {MetadataStorage} from './storage/metadataStorage'
 
 describe('typed-schema e2e tests', () => {
@@ -469,8 +469,8 @@ describe('typed-schema e2e tests', () => {
         @Prop()
         lastName: string
 
-        @Resolver(exampleResolver)
-        fullName: typeof exampleResolver
+        @ResolverProp(exampleResolver)
+        fullName: ModelResolverFunction<typeof exampleResolver.resolve>
       }
 
       const expected = createModel({

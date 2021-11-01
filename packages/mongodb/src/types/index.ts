@@ -8,6 +8,16 @@ export type DocumentWithId<T> = T & {
   _id: string
 }
 
+type OmitByValue<T, ValueType> = Pick<
+  T,
+  {[Key in keyof T]-?: T[Key] extends ValueType ? never : Key}[keyof T]
+>
+
+type RemoveFunctions<T> = OmitByValue<T, Function>
+
+export type ModelToDocumentType<ModelClass> = RemoveFunctions<ModelClass>
+export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentType<ModelClass>>
+
 export interface CollectionIndex {
   keys: {
     [key: string]: any
@@ -72,12 +82,12 @@ export interface InsertOptions {
   mongoOptions?: MongoDB.InsertOneOptions
 }
 
-export type InitItem<DocumentType> = (doc: MongoDB.Document) => DocumentWithId<DocumentType>
+export type InitItem<ModelClass> = (doc: MongoDB.Document) => DocumentWithId<ModelClass>
 
-export type FindOne<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
+export type FindOne<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
-) => Promise<DocumentWithId<DocumentType>>
+) => Promise<DocumentWithId<ModelClass>>
 
 export type Find<DocumentType> = (
   selector: MongoSelector<DocumentType>,
@@ -90,8 +100,8 @@ export type FindOneAndUpdate<DocumentType> = (
   options?: FindOneAndUpdateUpdateOptions
 ) => Promise<DocumentWithId<DocumentType>>
 
-export type InsertOne<DocumentType> = (
-  doc: DocumentType,
+export type InsertOne<ModelClass> = (
+  doc: ModelToDocumentType<ModelClass>,
   options?: InsertOptions
 ) => Promise<string>
 
@@ -136,11 +146,11 @@ export interface CreateCollectionOptions {
   idGeneration?: 'mongo' | 'random'
 }
 
-export type CreateCollection = <DocumentType = any>(
+export type CreateCollection = <ModelClass = any>(
   options: CreateCollectionOptions
-) => Collection<DocumentType>
+) => Collection<ModelClass>
 
-export interface Collection<DocumentType = any> {
+export interface Collection<ModelClass = any> {
   name: string
   connectionName?: string
   model?: Model
@@ -149,22 +159,22 @@ export interface Collection<DocumentType = any> {
 
   db: MongoDB.Db
   rawCollection: MongoDB.Collection
-  initItem?: InitItem<DocumentType>
+  initItem?: InitItem<ModelClass>
 
-  findOne?: FindOne<DocumentType>
-  find?: Find<DocumentType>
+  findOne?: FindOne<ModelClass>
+  find?: Find<ModelClass>
 
-  insertOne?: InsertOne<DocumentType>
-  insertMany?: InsertMany<DocumentType>
+  insertOne?: InsertOne<ModelClass>
+  insertMany?: InsertMany<ModelClass>
 
-  deleteMany?: DeleteMany<DocumentType>
-  deleteOne?: DeleteOne<DocumentType>
+  deleteMany?: DeleteMany<ModelClass>
+  deleteOne?: DeleteOne<ModelClass>
 
-  updateOne?: UpdateOne<DocumentType>
-  updateMany?: UpdateMany<DocumentType>
+  updateOne?: UpdateOne<ModelClass>
+  updateMany?: UpdateMany<ModelClass>
 
-  upsert?: Upsert<DocumentType>
-  findOneAndUpdate?: FindOneAndUpdate<DocumentType>
+  upsert?: Upsert<ModelClass>
+  findOneAndUpdate?: FindOneAndUpdate<ModelClass>
 
   aggregate?: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
@@ -175,8 +185,8 @@ export interface Collection<DocumentType = any> {
     options?: MongoDB.ChangeStreamOptions
   ) => MongoDB.ChangeStream<T>
 
-  loadData?: DataLoader.LoadData<DocumentType>
-  loadOne?: DataLoader.LoadOne<DocumentType>
-  loadMany?: DataLoader.LoadMany<DocumentType>
-  loadById?: DataLoader.LoadById<DocumentType>
+  loadData?: DataLoader.LoadData<ModelClass>
+  loadOne?: DataLoader.LoadOne<ModelClass>
+  loadMany?: DataLoader.LoadMany<ModelClass>
+  loadById?: DataLoader.LoadById<ModelClass>
 }

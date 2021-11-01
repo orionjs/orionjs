@@ -5,7 +5,7 @@ import {
   GlobalCheckPermissions,
   ModelCheckPermissions,
   ResolverOptions
-} from '../ResolverTypes'
+} from '../types'
 
 export default async function (executeOptions: ExecuteOptions, options: ResolverOptions) {
   const {parent, params, viewer} = executeOptions

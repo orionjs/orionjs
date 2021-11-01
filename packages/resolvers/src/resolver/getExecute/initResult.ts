@@ -1,6 +1,6 @@
 import isArray from 'lodash/isArray'
 import isNil from 'lodash/isNil'
-import {ResolverOptions} from '../ResolverTypes'
+import {ResolverOptions} from '../types'
 
 export default function (options: ResolverOptions, result: any) {
   const {returns} = options

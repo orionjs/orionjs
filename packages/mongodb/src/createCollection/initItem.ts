@@ -1,10 +1,11 @@
 import {Collection, InitItem} from '../types'
 
-export default <DocumentType>(collection: Collection) => {
-  const initItem: InitItem<DocumentType> = <DocumentType>(doc) => {
+export default (collection: Collection) => {
+  const initItem = doc => {
     if (!doc) return doc
+    if (!collection.model) return doc
 
-    return doc as DocumentType
+    return collection.model.initItem(doc)
   }
 
   return initItem
