@@ -1,6 +1,8 @@
-import {resolver, UserError} from '@orion-js/app'
-
+import {resolver} from '@orion-js/resolvers'
+import {UserError} from '@orion-js/helpers'
 import ResolverParams from './ResolverParams'
+
+declare const global: any
 
 export default resolver({
   params: {

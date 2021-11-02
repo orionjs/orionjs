@@ -1,13 +1,14 @@
-import {getServer, getViewer} from '@orion-js/app'
 import {execute, subscribe} from 'graphql'
 import {SubscriptionServer} from 'subscriptions-transport-ws'
 import {PubSub} from 'graphql-subscriptions'
 import {setPubsub} from './pubsub'
+import {getApp} from '@orion-js/http'
+import {getViewer} from './websockerViewer'
 
 export default function ({schema}, options) {
   setPubsub(options.pubsub || new PubSub())
 
-  const server = getServer()
+  const server = getApp()
   if (!server) {
     throw new Error(
       'Error starting GraphQL WebSocket. You must start http server before starting GraphQL WebSocket'
@@ -24,18 +25,13 @@ export default function ({schema}, options) {
         try {
           const params = {
             headers: {
-              'x-orion-nonce': connectionParams.nonce,
-              'x-orion-publickey': connectionParams.publicKey,
-              'x-orion-signature': connectionParams.signature,
               'x-orion-jwt': connectionParams.jwt
-            },
-            getBody: () => 'websockethandshake',
-            nonceName: 'graphqlsubs'
+            }
           }
           const viewer = await getViewer(params)
           return viewer
         } catch (error) {
-          const viewer = await getViewer()
+          const viewer = await getViewer({})
           return viewer
         }
       },

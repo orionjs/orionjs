@@ -2,7 +2,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
-import {Model} from '@orion-js/app'
+
 import getScalar from './getScalar'
 import getTypeAsResolver from './getTypeAsResolver'
 
@@ -14,9 +14,9 @@ export default function getGraphQLType(type, options) {
   if (isArray(type)) {
     const graphQLType = getGraphQLType(type[0], options)
     return new GraphQLList(graphQLType)
-  } else if (!type._isFieldType && (isPlainObject(type) || type instanceof Model)) {
+  } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
     const model = type.__isModel ? type : type.__model
-    if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
+    if (!model || !model.__isModel) throw new Error('Type is not a Model')
     if (model.graphQLType) return model.graphQLType
 
     model.graphQLType = new GraphQLObjectType({

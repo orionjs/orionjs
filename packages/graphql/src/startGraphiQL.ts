@@ -1,4 +1,4 @@
-import {route} from '@orion-js/app'
+import {registerRoute, route} from '@orion-js/http'
 
 // Ensures string values are safe to be used within a <script> tag.
 // TODO: I don't think that's the right escape function
@@ -202,8 +202,16 @@ const getHTML = function (apolloOptions, options, data) {
 
 export default function (apolloOptions, options) {
   if (options.useGraphiql) {
-    route('/graphiql', async function ({query, request}) {
-      return getHTML(apolloOptions, options, query, request)
-    })
+    registerRoute(
+      route({
+        path: options.graphiqlPath,
+        method: 'get',
+        async resolve(req) {
+          return {
+            body: getHTML(apolloOptions, options, req.query)
+          }
+        }
+      })
+    )
   }
 }

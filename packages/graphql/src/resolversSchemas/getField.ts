@@ -15,7 +15,7 @@ export default async function getParams(field) {
     }
   } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
     const model = type.__isModel ? type : type.__model
-    if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
+    if (!model || !model.__isModel) throw new Error('Type is not a Model')
 
     const fields = {}
 
