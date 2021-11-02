@@ -1,9 +1,9 @@
 import clone from 'lodash/clone'
 
-export default function(rawParams) {
-  if (!rawParams) return
+export default function (rawParams) {
+  if (!rawParams) return {}
   if (rawParams.__isModel) {
-    rawParams = rawParams.schema
+    rawParams = rawParams.getSchema()
   }
   const params = clone(rawParams)
   Object.keys(params).forEach(key => {

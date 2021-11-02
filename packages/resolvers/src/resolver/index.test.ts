@@ -1,5 +1,6 @@
 import {ModelResolverFunction} from './types'
 import createResolver from './index'
+import {Schema} from '@orion-js/schema'
 
 it('should return a function with a resolver id', () => {
   const resolver = createResolver({
@@ -80,17 +81,46 @@ it('should create typed resolvers', async () => {
 })
 
 it('should create typed model resolvers', async () => {
-  const resolve = async function (model, params?: {value: number}) {
-    return model.value * 2
-  }
-  const resolver = createResolver<typeof resolve>({
+  const resolver = createResolver({
     params: {
       value: {
         type: Number
       }
     },
     returns: Number,
-    resolve
+    resolve: async function (model, params?: {value: number}) {
+      return model.value * 2
+    }
+  })
+
+  const inModel = resolver.resolve as unknown as ModelResolverFunction<typeof resolver.resolve>
+
+  const inModelResult = await inModel({value: 2})
+
+  /**
+   * We are testing the typescript removes one argument on the resolve function.
+   */
+  expect(inModelResult).toBe(4)
+})
+
+it('should accept a model as params', async () => {
+  const aModel = {
+    __isModel: true,
+    name: 'ResolverParams',
+    getSchema(): Schema {
+      return {
+        value: {
+          type: 'string'
+        }
+      }
+    }
+  }
+  const resolver = createResolver({
+    params: aModel,
+    returns: Number,
+    resolve: async function (params: {value: number}) {
+      return params.value * 2
+    }
   })
 
   const inModel = resolver.resolve as unknown as ModelResolverFunction<typeof resolver.resolve>
