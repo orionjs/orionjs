@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.0.0-alpha.16",
+  "version": "3.0.0-alpha.19",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
-    "@orion-js/models": "^3.0.0-alpha.16",
-    "@orion-js/resolvers": "^3.0.0-alpha.16",
+    "@orion-js/models": "^3.0.0-alpha.19",
+    "@orion-js/resolvers": "^3.0.0-alpha.19",
     "@orion-js/schema": "^3.0.0-alpha.13",
     "lodash": "^4.17.10"
   },

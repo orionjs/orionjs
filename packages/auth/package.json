@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/auth",
-  "version": "3.0.0-alpha.16",
+  "version": "3.0.0-alpha.19",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.0-alpha.16",
+    "@orion-js/resolvers": "^3.0.0-alpha.19",
     "@orion-js/schema": "^3.0.0-alpha.13",
     "bcryptjs": "^2.4.3",
     "jssha": "^2.3.1",
