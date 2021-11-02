@@ -1,10 +1,6 @@
 import express from 'express'
 
-interface AppRef {
-  app?: express.Express
-}
-
-const appRef: AppRef = {}
+global.appRef = null
 
 export const startServer = (port: number = Number(process.env.PORT)) => {
   const app = getApp()
@@ -15,10 +11,11 @@ export const startServer = (port: number = Number(process.env.PORT)) => {
 }
 
 export const getApp = (): express.Express => {
-  if (appRef.app) return appRef.app
+  if (global.appRef) return global.appRef as express.Express
 
   const app = express()
-  appRef.app = app
+
+  global.appRef = app
 
   return app
 }

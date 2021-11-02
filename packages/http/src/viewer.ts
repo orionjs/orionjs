@@ -1,10 +1,10 @@
 import express from 'express'
 
-let getViewerRef: (req: express.Request) => any = () => null
+global.getViewerRef = () => null
 
 export const getViewer = async (req: express.Request): Promise<any> => {
   try {
-    const viewer = await getViewerRef(req)
+    const viewer = await global.getViewerRef(req)
     if (!viewer) return {}
     return viewer
   } catch {
@@ -13,5 +13,5 @@ export const getViewer = async (req: express.Request): Promise<any> => {
 }
 
 export const setGetViewer = (getViewerFunc: (req: express.Request) => any): void => {
-  getViewerRef = getViewerFunc
+  global.getViewerRef = getViewerFunc
 }
