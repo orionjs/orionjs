@@ -11,7 +11,9 @@ describe('Test init item', () => {
       },
       resolvers: {
         title: resolver({
-          resolve: async (person, {title}) => `${title} ${person.name}`
+          resolve: async (person, {title}) => {
+            return `${title} ${person.name}`
+          }
         })
       }
     })

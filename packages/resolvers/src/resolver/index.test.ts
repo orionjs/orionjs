@@ -132,3 +132,13 @@ it('should accept a model as params', async () => {
    */
   expect(inModelResult).toBe(4)
 })
+
+it('should correctly clean params when no params are passed', async () => {
+  const resolver = createResolver({
+    resolve: async ({title}) => {
+      return `${title}`
+    }
+  })
+
+  expect(await resolver.execute({params: {title: 'test'}})).toBe('test')
+})

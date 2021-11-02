@@ -51,7 +51,8 @@ export interface ResolverOptions extends SharedResolverOptions {
 
 type AnyFunction = (...args: any) => any
 
-export interface Resolver<ResolveFunction extends AnyFunction> extends SharedResolverOptions {
+export interface Resolver<ResolveFunction extends AnyFunction = AnyFunction>
+  extends SharedResolverOptions {
   execute: Execute<ReturnType<ResolveFunction>>
   resolve: ResolveFunction
 }

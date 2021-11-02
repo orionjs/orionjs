@@ -57,7 +57,7 @@ export function getSchemaForClassRecursive(target): Schema {
       break
     }
 
-    const props = MetadataStorage.getSchemaProps(parent.name)
+    const props = MetadataStorage.getSchemaProps(parent)
     if (!props) {
       parent = Object.getPrototypeOf(parent)
       continue

@@ -1,7 +1,7 @@
 import clone from 'lodash/clone'
 
 export default function (rawParams) {
-  if (!rawParams) return {}
+  if (!rawParams) return
   if (rawParams.__isModel) {
     rawParams = rawParams.getSchema()
   }

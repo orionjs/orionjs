@@ -1,77 +1,91 @@
 import {PropOptions} from '..'
-import {PropertyAlreadyExistsError, SchemaAlreadyExistsError} from '../errors'
+import {PropertyAlreadyExistsError} from '../errors'
 import {ResolversMap} from '@orion-js/models'
 import {Resolver} from '@orion-js/resolvers'
+import {generateId} from '@orion-js/helpers'
 
 export type PropertiesMap = {[key: string]: PropOptions}
-export class MetadataStorageHandler {
-  private schemas = new Map<string, object>()
-  private properties = new Map<string, PropertiesMap>()
-  private resolvers = new Map<string, ResolversMap>()
 
-  public addSchemaMetadata({schemaName, options}: {schemaName: string; options?: object}) {
-    if (this.schemas.get(schemaName)) {
-      throw new SchemaAlreadyExistsError(schemaName)
+interface SchemaStorage {
+  schema: Function
+  options: object
+  properties: PropertiesMap
+  resolvers: ResolversMap
+}
+
+export class MetadataStorageHandler {
+  private schemas = new Map<Function, SchemaStorage>()
+
+  private getSchema(target) {
+    const schema = this.schemas.get(target._schemaId)
+    if (schema) return schema
+
+    const schemaId = generateId()
+
+    target._schemaId = schemaId
+
+    const newSchema = {
+      schema: target,
+      options: {},
+      properties: {},
+      resolvers: {}
     }
-    this.schemas.set(schemaName, options)
+    this.schemas.set(target._schemaId, newSchema)
+    return newSchema
+  }
+
+  public addSchemaMetadata({target, options}: {target: Function; options?: object}) {
+    const schema = this.getSchema(target)
+    schema.options = options
   }
 
   public addPropMetadata({
-    schemaName,
+    target,
     propertyKey,
     options
   }: {
-    schemaName: string
-    propertyKey: string | symbol
+    target: Function
+    propertyKey: string
     options: PropOptions
   }) {
-    let props = this.properties.get(schemaName)
-    if (!props) {
-      props = {}
-    }
-    const currProp = props[propertyKey as string]
+    const schema = this.getSchema(target)
+
+    const currProp = schema.properties[propertyKey]
     if (currProp) {
-      throw new PropertyAlreadyExistsError(schemaName, propertyKey as string)
+      throw new PropertyAlreadyExistsError(target.name, propertyKey)
     }
-    props[propertyKey as string] = options
-    this.properties.set(schemaName, props)
+    schema.properties[propertyKey] = options
   }
 
   public addResolverMetadata({
-    schemaName,
+    target,
     propertyKey,
     options
   }: {
-    schemaName: string
-    propertyKey: string | symbol
+    target: Function
+    propertyKey: string
     options: Resolver
   }) {
-    let resolvers = this.resolvers.get(schemaName)
-    if (!resolvers) {
-      resolvers = {}
-    }
-    const currResolver = resolvers[propertyKey as string]
+    const schema = this.getSchema(target)
+
+    const currResolver = schema.resolvers[propertyKey]
     if (currResolver) {
-      throw new PropertyAlreadyExistsError(schemaName, propertyKey as string)
+      throw new PropertyAlreadyExistsError(target.name, propertyKey)
     }
-    resolvers[propertyKey as string] = options
-    this.resolvers.set(schemaName, resolvers)
+    schema.resolvers[propertyKey] = options
   }
 
-  public getSchemaProps(schemaName: string): PropertiesMap | undefined {
-    return this.properties.get(schemaName)
+  public getSchemaProps(target: Function): PropertiesMap | undefined {
+    const schema = this.getSchema(target)
+
+    return schema.properties
   }
 
-  public getSchemaResolvers(schemaName: string): ResolversMap | undefined {
-    return this.resolvers.get(schemaName)
-  }
+  public getSchemaResolvers(target: Function): ResolversMap | undefined {
+    const schema = this.getSchema(target)
 
-  public clearStorage() {
-    this.schemas.clear()
-    this.properties.clear()
+    return schema.resolvers
   }
 }
 
-export const MetadataStorage: MetadataStorageHandler =
-  global.TypedModelMetadataStorage ||
-  (global.TypedModelMetadataStorage = new MetadataStorageHandler())
+export const MetadataStorage = new MetadataStorageHandler()

@@ -563,6 +563,45 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@orion-js/cache@^3.0.0-alpha.10":
+  version "3.0.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.0.0-alpha.11.tgz#9b46a31871126f31c9f7874def996147b6a632f9"
+  integrity sha512-kfiO0gHfTqVT7a6+q5V1VwX7KvH1RUzTslQAaNjQ4godxEw9SmHfSsLxL8q1HN9R3Vz+lBz9SfzwB0m8pLkdKg==
+
+"@orion-js/helpers@^3.0.0-alpha.11":
+  version "3.0.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0-alpha.11.tgz#f2897a27b9dbbed3741b430cd4919a8b82175e0b"
+  integrity sha512-TQrWB/0TTg7aQxJATcCi2johKmnxMQAv6DRu3T/iNtzUZ3UsDM7nuyr+b9TtBdlEDQ/Yr5DEWI1HScKDBVLNjA==
+  dependencies:
+    object-hash "^2.1.1"
+
+"@orion-js/models@^3.0.0-alpha.19":
+  version "3.0.0-alpha.19"
+  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.0.0-alpha.19.tgz#6d446ff076569ffb358d03d9f86b78967ef88bfc"
+  integrity sha512-N1+INpK4IwYWsoOCe5smn4GZ7cGx9c5D7oVWt0CEtgFH+Ukhnuo+x5tgnDP0ZMfvDP3Tr7W498NlogzXQgn2Yw==
+  dependencies:
+    "@orion-js/helpers" "^3.0.0-alpha.11"
+    "@orion-js/resolvers" "^3.0.0-alpha.19"
+    "@orion-js/schema" "^3.0.0-alpha.13"
+
+"@orion-js/resolvers@^3.0.0-alpha.19":
+  version "3.0.0-alpha.19"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.0-alpha.19.tgz#bc2ab3830c8b273dcdcfc7a9e367ac1d9b55434b"
+  integrity sha512-x2rDxDvQztyaACylqg2s0yzX0ixqTPKKQQodZoes0SeR4GeD/hA6uoNUM7QBegVAHT3TO2b2CkheB37BRrRF6Q==
+  dependencies:
+    "@orion-js/cache" "^3.0.0-alpha.10"
+    "@orion-js/helpers" "^3.0.0-alpha.11"
+    "@orion-js/schema" "^3.0.0-alpha.13"
+
+"@orion-js/schema@^3.0.0-alpha.13":
+  version "3.0.0-alpha.13"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0-alpha.13.tgz#c03ce20a24b90e5c1d00f866269730304a9350b8"
+  integrity sha512-+A4xMrgjYwvhzzj38/UHh1RdYleRw0BDNAKQ4YZfciupeyNU0k5PJYGAFF7KaibjZhjjxNGb3GIKCRM2LTZIWQ==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    dot-object "^1.9.0"
+    lodash "^4.17.10"
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"
@@ -1260,6 +1299,11 @@ combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
+commander@^2.20.0:
+  version "2.20.3"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
+  integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
+
 component-emitter@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/component-emitter/-/component-emitter-1.2.1.tgz#137918d6d78283f7df7a6b7c5a63e140e69425e6"
@@ -1474,6 +1518,14 @@ domexception@^2.0.1:
   integrity sha512-yxJ2mFy/sibVQlu5qHjOkf9J3K6zgmCxgJ94u2EdvDOV09H+32LtRswEcUsmUWN72pVLOEnTSRaIVVzVQgS0dg==
   dependencies:
     webidl-conversions "^5.0.0"
+
+dot-object@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/dot-object/-/dot-object-1.9.0.tgz#6e3d6d8379f794c5174599ddf05528f5990f076e"
+  integrity sha512-7MPN6y7XhAO4vM4eguj5+5HNKLjJYfkVG1ZR1Aput4Q4TR6SYeSjhpVQ77IzJHoSHffKbDxBC+48aCiiRurDPw==
+  dependencies:
+    commander "^2.20.0"
+    glob "^7.1.4"
 
 electron-to-chromium@^1.3.878:
   version "1.3.880"
@@ -3395,6 +3447,11 @@ object-copy@^0.1.0:
     copy-descriptor "^0.1.0"
     define-property "^0.2.5"
     kind-of "^3.0.3"
+
+object-hash@^2.1.1:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-2.2.0.tgz#5ad518581eefc443bd763472b8ff2e9c2c0d54a5"
+  integrity sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==
 
 object-inspect@^1.11.0, object-inspect@^1.9.0:
   version "1.11.0"

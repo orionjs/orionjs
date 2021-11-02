@@ -12,27 +12,27 @@ export interface SchemaNodeForClasses extends Omit<SchemaNode, 'type'> {
 export type PropOptions = Partial<SchemaNodeForClasses>
 
 export function Prop(options: PropOptions = {}): PropertyDecorator {
-  return (target: object, propertyKey: string | symbol) => {
-    const schemaName = target.constructor?.name
+  return (classDef: Function, propertyKey: string) => {
+    const schemaName = classDef.constructor?.name
 
     if (!options.type) {
-      const type = Reflect.getMetadata('design:type', target, propertyKey)
+      const type = Reflect.getMetadata('design:type', classDef, propertyKey)
 
       if (isClass(type) || type === Object) {
-        throw new CannotDetermineTypeError(schemaName, propertyKey as string)
+        throw new CannotDetermineTypeError(schemaName, propertyKey)
       }
 
       if (type === Array) {
-        throw new CannotUseArrayError(schemaName, propertyKey as string)
+        throw new CannotUseArrayError(schemaName, propertyKey)
       }
 
       if (type) {
         options.type = type
       } else {
-        throw new CannotDetermineTypeError(schemaName, propertyKey as string)
+        throw new CannotDetermineTypeError(schemaName, propertyKey)
       }
     }
 
-    MetadataStorage.addPropMetadata({schemaName, propertyKey, options})
+    MetadataStorage.addPropMetadata({target: classDef.constructor, propertyKey, options})
   }
 }

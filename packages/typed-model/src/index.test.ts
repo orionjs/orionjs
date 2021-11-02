@@ -3,13 +3,8 @@ import {ModelResolverFunction, resolver} from '@orion-js/resolvers'
 import {PropOptions} from './decorators'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
 import {Prop, Schema, getSchemaForClass, getModelForClass, ResolverProp} from './index'
-import {MetadataStorage} from './storage/metadataStorage'
 
 describe('typed-schema e2e tests', () => {
-  beforeEach(() => {
-    MetadataStorage.clearStorage()
-  })
-
   describe('getSchemaForClass', () => {
     it('works for a simple schema', () => {
       @Schema()
@@ -493,6 +488,21 @@ describe('typed-schema e2e tests', () => {
       expect(model.name).toEqual(expected.name)
       expect(model.getSchema()).toEqual(expected.getSchema())
       expect(model.getResolvers()).toEqual(expected.getResolvers())
+    })
+  })
+
+  describe('creating schemas', () => {
+    it('allows creating multiple classes with the same name', () => {
+      const create = () => {
+        @Schema()
+        class Spec {
+          @Prop()
+          name: string
+        }
+      }
+
+      create()
+      create()
     })
   })
 })

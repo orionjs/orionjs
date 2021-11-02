@@ -2,9 +2,7 @@ import {Resolver} from '@orion-js/resolvers'
 import {MetadataStorage} from '../storage/metadataStorage'
 
 export function ResolverProp(options: Resolver): PropertyDecorator {
-  return (target: object, propertyKey: string | symbol) => {
-    const schemaName = target.constructor?.name
-
-    MetadataStorage.addResolverMetadata({schemaName, propertyKey, options})
+  return (classDef: Function, propertyKey: string) => {
+    MetadataStorage.addResolverMetadata({target: classDef.constructor, propertyKey, options})
   }
 }

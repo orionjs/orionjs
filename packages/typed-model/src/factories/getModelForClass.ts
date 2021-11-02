@@ -24,13 +24,13 @@ export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
       break
     }
 
-    const props = MetadataStorage.getSchemaProps(parent.name) ?? {}
+    const props = MetadataStorage.getSchemaProps(parent) ?? {}
 
     Object.keys(props).forEach(key => {
       schema[key] = processModelSchemaForProp(props[key])
     })
 
-    const resolvers = MetadataStorage.getSchemaResolvers(parent.name) ?? {}
+    const resolvers = MetadataStorage.getSchemaResolvers(parent) ?? {}
     Object.keys(resolvers).forEach(key => {
       resolverMap[key] = resolvers[key]
     })

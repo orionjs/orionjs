@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
+    "@orion-js/helpers": "^3.0.0-alpha.11",
     "@orion-js/models": "^3.0.0-alpha.19",
     "@orion-js/resolvers": "^3.0.0-alpha.19",
     "@orion-js/schema": "^3.0.0-alpha.13",
