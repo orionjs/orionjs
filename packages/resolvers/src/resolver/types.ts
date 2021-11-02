@@ -49,14 +49,14 @@ export interface ResolverOptions extends SharedResolverOptions {
   // [key: string]: any
 }
 
-export interface Resolver<ResolveFunction = BaseResolveFunction> extends SharedResolverOptions {
-  execute: Execute
+type AnyFunction = (...args: any) => any
+
+export interface Resolver<ResolveFunction extends AnyFunction> extends SharedResolverOptions {
+  execute: Execute<ReturnType<ResolveFunction>>
   resolve: ResolveFunction
 }
 
-export type BaseResolveFunction = GlobalResolve | ModelResolve
-
-export type CreateResolver = <ResolveFunction = BaseResolveFunction>(
+export type CreateResolver = <ResolveFunction extends AnyFunction>(
   options: ResolverOptions
 ) => Resolver<ResolveFunction>
 
