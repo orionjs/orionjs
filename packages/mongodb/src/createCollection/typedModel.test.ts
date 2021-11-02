@@ -1,4 +1,3 @@
-import {ModelToDocumentType} from './../types/index'
 import {ValidationError} from '@orion-js/schema'
 import createCollection from '.'
 import {Schema, Prop, getModelForClass, ResolverProp} from '@orion-js/typed-model'

@@ -3,8 +3,8 @@ import {DataLoader, Collection} from '../../../types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
-export default function <DocumentType>(collection: Collection) {
-  const loadData: DataLoader.LoadData<DocumentType> = async options => {
+export default function <ModelClass>(collection: Collection) {
+  const loadData: DataLoader.LoadData<ModelClass> = async options => {
     const result = await dataLoad({
       loaderKey: {
         key: options.key,
@@ -17,7 +17,7 @@ export default function <DocumentType>(collection: Collection) {
       ids: options.values,
       timeout: options.timeout,
       load: async values => {
-        const query = cloneDeep(options.match) || {}
+        const query: typeof options.match = cloneDeep(options.match) || {}
         query[options.key] = {$in: values}
 
         const cursor = collection.find(query)

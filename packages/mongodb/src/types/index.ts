@@ -15,11 +15,12 @@ type OmitByValue<T, ValueType> = Pick<
 
 type RemoveFunctions<T> = OmitByValue<T, Function>
 
-export type ModelToDocumentType<ModelClass> = RemoveFunctions<ModelClass>
-export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentType<ModelClass>>
+export type ModelToDocumentTypeWithId<ModelClass> = DocumentWithId<RemoveFunctions<ModelClass>>
+export type ModelToDocumentTypeBase<ModelClass> = RemoveFunctions<ModelClass>
+export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentTypeWithId<ModelClass>>
 export type ModelToUpdateFilter<ModelClass> =
-  | MongoDB.UpdateFilter<ModelToDocumentType<ModelClass>>
-  | Partial<ModelToDocumentType<ModelClass>>
+  | MongoDB.UpdateFilter<ModelToDocumentTypeWithId<ModelClass>>
+  | Partial<ModelToDocumentTypeWithId<ModelClass>>
 
 export interface CollectionIndex {
   keys: {
@@ -30,10 +31,12 @@ export interface CollectionIndex {
   }
 }
 
+type KeyOf<T extends object> = Extract<keyof T, string>
+
 export namespace DataLoader {
   interface LoadDataOptionsBase<ModelClass> {
-    key: string
-    match?: MongoDB.Filter<ModelToDocumentType<ModelClass>>
+    key: KeyOf<ModelToDocumentTypeWithId<ModelClass>>
+    match?: MongoDB.Filter<ModelToDocumentTypeWithId<ModelClass>>
     sort?: MongoDB.Sort
     project?: MongoDB.Document
     timeout?: number
@@ -41,12 +44,12 @@ export namespace DataLoader {
   }
 
   export interface LoadDataOptions<ModelClass> extends LoadDataOptionsBase<ModelClass> {
-    value?: ModelToMongoSelector<ModelClass>
-    values?: Array<ModelToMongoSelector<ModelClass>>
+    value?: any
+    values?: Array<any>
   }
 
   export interface LoadOneOptions<ModelClass> extends LoadDataOptionsBase<ModelClass> {
-    value: ModelToMongoSelector<ModelClass>
+    value: any
   }
 
   export type LoadData<ModelClass> = (
@@ -99,19 +102,17 @@ export type Find<ModelClass> = (
 
 export type FindOneAndUpdate<ModelClass> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier:
-    | MongoDB.UpdateFilter<ModelToDocumentType<ModelClass>>
-    | Partial<ModelToDocumentType<ModelClass>>,
+  modifier: ModelToUpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions
 ) => Promise<DocumentWithId<ModelClass>>
 
 export type InsertOne<ModelClass> = (
-  doc: ModelToDocumentType<ModelClass>,
+  doc: ModelToDocumentTypeBase<ModelClass>,
   options?: InsertOptions
 ) => Promise<string>
 
 export type InsertMany<ModelClass> = (
-  doc: Array<Partial<ModelToDocumentType<ModelClass>>>,
+  doc: Array<Partial<ModelToDocumentTypeBase<ModelClass>>>,
   options?: InsertOptions
 ) => Promise<Array<string>>
 

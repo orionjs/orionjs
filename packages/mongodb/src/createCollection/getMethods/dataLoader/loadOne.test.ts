@@ -1,8 +1,24 @@
 import createCollection from '../../index'
 import {generateId} from '@orion-js/helpers'
+import {getModelForClass, Prop, Schema} from '@orion-js/typed-model'
 
 it('should data load one not by id', async () => {
-  const Tests = createCollection({name: generateId()})
+  @Schema()
+  class LoadOneTestModel {
+    @Prop()
+    name: string
+
+    @Prop()
+    websiteId: string
+
+    @Prop({optional: true})
+    deletedAt?: Date
+  }
+
+  const Tests = createCollection<LoadOneTestModel>({
+    name: generateId(),
+    model: getModelForClass(LoadOneTestModel)
+  })
 
   const id1 = await Tests.insertOne({name: 'one', websiteId: '1', deletedAt: null})
   const id2 = await Tests.insertOne({name: 'two', websiteId: '1', deletedAt: null})
