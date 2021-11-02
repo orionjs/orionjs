@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "3.0.0-alpha.19",
+  "version": "3.0.0-alpha.20",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.0-alpha.19",
+    "@orion-js/resolvers": "^3.0.0-alpha.20",
     "@orion-js/schema": "^3.0.0-alpha.13",
     "aws-sdk": "^2.258.1",
     "lodash": "^4.17.10",
