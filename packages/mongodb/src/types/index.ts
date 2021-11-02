@@ -91,12 +91,12 @@ export interface InsertOptions {
 export type InitItem<ModelClass> = (doc: MongoDB.Document) => DocumentWithId<ModelClass>
 
 export type FindOne<ModelClass> = (
-  selector: ModelToMongoSelector<ModelClass>,
+  selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
 ) => Promise<DocumentWithId<ModelClass>>
 
 export type Find<ModelClass> = (
-  selector: ModelToMongoSelector<ModelClass>,
+  selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
 ) => FindCursor<ModelClass>
 
