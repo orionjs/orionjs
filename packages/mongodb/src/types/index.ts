@@ -17,6 +17,9 @@ type RemoveFunctions<T> = OmitByValue<T, Function>
 
 export type ModelToDocumentType<ModelClass> = RemoveFunctions<ModelClass>
 export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentType<ModelClass>>
+export type ModelToUpdateFilter<ModelClass> =
+  | MongoDB.UpdateFilter<ModelToDocumentType<ModelClass>>
+  | Partial<ModelToDocumentType<ModelClass>>
 
 export interface CollectionIndex {
   keys: {
@@ -28,40 +31,40 @@ export interface CollectionIndex {
 }
 
 export namespace DataLoader {
-  interface LoadDataOptionsBase {
+  interface LoadDataOptionsBase<ModelClass> {
     key: string
-    match?: MongoSelector
+    match?: MongoDB.Filter<ModelToDocumentType<ModelClass>>
     sort?: MongoDB.Sort
     project?: MongoDB.Document
     timeout?: number
     debug?: boolean
   }
 
-  export interface LoadDataOptions extends LoadDataOptionsBase {
-    value?: any
-    values?: Array<any>
+  export interface LoadDataOptions<ModelClass> extends LoadDataOptionsBase<ModelClass> {
+    value?: ModelToMongoSelector<ModelClass>
+    values?: Array<ModelToMongoSelector<ModelClass>>
   }
 
-  export interface LoadOneOptions extends LoadDataOptionsBase {
-    value: any
+  export interface LoadOneOptions<ModelClass> extends LoadDataOptionsBase<ModelClass> {
+    value: ModelToMongoSelector<ModelClass>
   }
 
-  export type LoadData<DocumentType> = (
-    options: LoadDataOptions
-  ) => Promise<Array<DocumentWithId<DocumentType>>>
-  export type LoadOne<DocumentType> = (
-    options: LoadOneOptions
-  ) => Promise<DocumentWithId<DocumentType>>
-  export type LoadMany<DocumentType> = (
-    options: LoadDataOptions
-  ) => Promise<Array<DocumentWithId<DocumentType>>>
-  export type LoadById<DocumentType> = (id: string) => Promise<DocumentWithId<DocumentType>>
+  export type LoadData<ModelClass> = (
+    options: LoadDataOptions<ModelClass>
+  ) => Promise<Array<DocumentWithId<ModelClass>>>
+  export type LoadOne<ModelClass> = (
+    options: LoadOneOptions<ModelClass>
+  ) => Promise<DocumentWithId<ModelClass>>
+  export type LoadMany<ModelClass> = (
+    options: LoadDataOptions<ModelClass>
+  ) => Promise<Array<DocumentWithId<ModelClass>>>
+  export type LoadById<ModelClass> = (id: string) => Promise<DocumentWithId<ModelClass>>
 }
 
 export type MongoSelector<DocumentType = MongoDB.Document> = string | MongoDB.Filter<DocumentType>
 
-export interface FindCursor<DocumentType> extends MongoDB.FindCursor {
-  toArray: () => Promise<Array<DocumentWithId<DocumentType>>>
+export interface FindCursor<ModelClass> extends MongoDB.FindCursor {
+  toArray: () => Promise<Array<DocumentWithId<ModelClass>>>
 }
 
 export interface UpdateOptions {
@@ -89,52 +92,54 @@ export type FindOne<ModelClass> = (
   options?: MongoDB.FindOptions
 ) => Promise<DocumentWithId<ModelClass>>
 
-export type Find<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
+export type Find<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
-) => FindCursor<DocumentType>
+) => FindCursor<ModelClass>
 
-export type FindOneAndUpdate<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
-  modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
+export type FindOneAndUpdate<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
+  modifier:
+    | MongoDB.UpdateFilter<ModelToDocumentType<ModelClass>>
+    | Partial<ModelToDocumentType<ModelClass>>,
   options?: FindOneAndUpdateUpdateOptions
-) => Promise<DocumentWithId<DocumentType>>
+) => Promise<DocumentWithId<ModelClass>>
 
 export type InsertOne<ModelClass> = (
   doc: ModelToDocumentType<ModelClass>,
   options?: InsertOptions
 ) => Promise<string>
 
-export type InsertMany<DocumentType> = (
-  doc: Array<Partial<DocumentType>>,
+export type InsertMany<ModelClass> = (
+  doc: Array<Partial<ModelToDocumentType<ModelClass>>>,
   options?: InsertOptions
 ) => Promise<Array<string>>
 
-export type DeleteMany<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
+export type DeleteMany<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.DeleteOptions
 ) => Promise<MongoDB.DeleteResult>
 
-export type DeleteOne<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
+export type DeleteOne<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.DeleteOptions
 ) => Promise<MongoDB.DeleteResult>
 
-export type UpdateOne<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
-  modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
+export type UpdateOne<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
+  modifier: ModelToUpdateFilter<ModelClass>,
   options?: UpdateOptions
 ) => Promise<MongoDB.UpdateResult>
 
-export type UpdateMany<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
-  modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
+export type UpdateMany<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
+  modifier: ModelToUpdateFilter<ModelClass>,
   options?: UpdateOptions
 ) => Promise<MongoDB.UpdateResult | MongoDB.Document>
 
-export type Upsert<DocumentType> = (
-  selector: MongoSelector<DocumentType>,
-  modifier: MongoDB.UpdateFilter<DocumentType> | Partial<DocumentType>,
+export type Upsert<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
+  modifier: ModelToUpdateFilter<ModelClass>,
   options?: UpdateOptions
 ) => Promise<MongoDB.UpdateResult>
 
