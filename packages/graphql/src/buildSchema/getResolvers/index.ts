@@ -1,9 +1,7 @@
 import getType from '../getType'
 import getArgs from '../getArgs'
 import errorHandler from '../../errorHandler'
-
-declare const global: any
-global.graphQLResolvers = {}
+import {resolversStore} from './resolversStore'
 
 export default async function ({resolvers, mutation, options}) {
   const filteredResolvers = Object.keys(resolvers)
@@ -19,7 +17,7 @@ export default async function ({resolvers, mutation, options}) {
   const fields = {}
 
   for (const {resolver, name} of filteredResolvers) {
-    global.graphQLResolvers[name] = resolver
+    resolversStore[name] = resolver
 
     const type = await getType(resolver.returns, options)
     const args = await getArgs(resolver.params)

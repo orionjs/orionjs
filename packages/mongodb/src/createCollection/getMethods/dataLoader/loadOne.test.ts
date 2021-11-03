@@ -1,9 +1,9 @@
 import createCollection from '../../index'
 import {generateId} from '@orion-js/helpers'
-import {getModelForClass, Prop, Schema} from '@orion-js/typed-model'
+import {getModelForClass, Prop, TypedModel} from '@orion-js/typed-model'
 
 it('should data load one not by id', async () => {
-  @Schema()
+  @TypedModel()
   class LoadOneTestModel {
     @Prop()
     name: string

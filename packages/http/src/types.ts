@@ -29,6 +29,11 @@ export interface OrionRouteOptions {
     res: express.Response,
     viewer: any
   ) => Promise<RouteResponse> | Promise<void>
+
+  /**
+   * Pass another express app
+   */
+  app?: express.Application
 }
 
 export interface Route extends OrionRouteOptions {}

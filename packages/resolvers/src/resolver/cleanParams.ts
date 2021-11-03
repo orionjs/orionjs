@@ -3,6 +3,11 @@ import clone from 'lodash/clone'
 export default function (rawParams) {
   if (!rawParams) return
 
+  // for typed model
+  if (rawParams.getModel) {
+    rawParams = rawParams.getModel()
+  }
+
   if (rawParams.__isModel) {
     rawParams = rawParams.getSchema()
   }

@@ -9,7 +9,7 @@ import gql from 'graphql-tag'
 import {sleep} from '@orion-js/helpers'
 import {random} from 'lodash'
 import {setGetWebsockerViewer} from './websockerViewer'
-import {Schema, Prop, getModelForClass} from '@orion-js/typed-model'
+import {TypedModel, Prop, getModelForClass} from '@orion-js/typed-model'
 
 const getStartServerOptions = async () => {
   const resolvers = {
@@ -59,13 +59,13 @@ const getStartServerOptions = async () => {
     }
   })
 
-  @Schema()
+  @TypedModel()
   class TestParams {
     @Prop({type: 'ID'})
     userId: string
   }
 
-  @Schema()
+  @TypedModel()
   class TestModel {
     @Prop()
     name: string

@@ -3,7 +3,8 @@ import isNil from 'lodash/isNil'
 import {ResolverOptions} from '../types'
 
 export default function (options: ResolverOptions, result: any) {
-  const {returns} = options
+  let {returns} = options
+
   if (returns) {
     if (isArray(returns) && returns[0].__isModel) {
       if (isNil(result)) {

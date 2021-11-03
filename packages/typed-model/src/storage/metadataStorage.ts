@@ -17,12 +17,12 @@ export class MetadataStorageHandler {
   private schemas = new Map<Function, SchemaStorage>()
 
   private getSchema(target) {
-    const schema = this.schemas.get(target._schemaId)
+    const schema = this.schemas.get(target.__schemaId)
     if (schema) return schema
 
     const schemaId = generateId()
 
-    target._schemaId = schemaId
+    target.__schemaId = schemaId
 
     const newSchema = {
       schema: target,
@@ -30,7 +30,7 @@ export class MetadataStorageHandler {
       properties: {},
       resolvers: {}
     }
-    this.schemas.set(target._schemaId, newSchema)
+    this.schemas.set(target.__schemaId, newSchema)
     return newSchema
   }
 

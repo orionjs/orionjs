@@ -4,6 +4,7 @@ import getChannelName from './getChannelName'
 import {
   checkPermissions as checkResolverPermissions,
   cleanParams,
+  cleanReturns,
   ResolverOptions
 } from '@orion-js/resolvers'
 
@@ -32,7 +33,7 @@ const createSubscription: CreateSubscriptionFunction = function (options) {
   }
 
   subscription.params = cleanParams(options.params)
-  subscription.returns = options.returns
+  subscription.returns = cleanReturns(options.returns)
 
   return subscription
 }

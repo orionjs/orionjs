@@ -5,7 +5,7 @@ import express from 'express'
 import * as bodyParser from 'body-parser'
 
 export default function registerRoute(route: Route): void {
-  const app = getApp()
+  const app = route.app || getApp()
   const method = route.method
 
   const handler = async (req, res) => {

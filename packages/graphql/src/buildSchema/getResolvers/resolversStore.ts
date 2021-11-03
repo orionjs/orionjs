@@ -1,0 +1,3 @@
+const resolversStore = {}
+
+export {resolversStore}

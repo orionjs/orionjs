@@ -1,13 +1,13 @@
 import {createModel} from '@orion-js/models'
-import {ModelResolverFunction, resolver} from '@orion-js/resolvers'
+import {modelResolver, resolver} from '@orion-js/resolvers'
 import {PropOptions} from './decorators'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
-import {Prop, Schema, getSchemaForClass, getModelForClass, ResolverProp} from './index'
+import {Prop, TypedModel, getSchemaForClass, getModelForClass, ResolverProp} from './index'
 
 describe('typed-schema e2e tests', () => {
   describe('getSchemaForClass', () => {
     it('works for a simple schema', () => {
-      @Schema()
+      @TypedModel()
       class Spec {
         @Prop({optional: true})
         name: string
@@ -38,7 +38,7 @@ describe('typed-schema e2e tests', () => {
     })
 
     it('works for a simple schema using alt data types', () => {
-      @Schema()
+      @TypedModel()
       class Spec {
         @Prop({type: 'string'})
         name: string
@@ -72,7 +72,7 @@ describe('typed-schema e2e tests', () => {
     })
 
     it('works for a derived schema', () => {
-      @Schema()
+      @TypedModel()
       class A {
         @Prop()
         name: string
@@ -96,7 +96,7 @@ describe('typed-schema e2e tests', () => {
     })
 
     it('works for multiple data types', () => {
-      @Schema()
+      @TypedModel()
       class Spec {
         @Prop()
         name: string
@@ -131,7 +131,7 @@ describe('typed-schema e2e tests', () => {
     describe('when using object types', () => {
       it('throws if the object type is not explicitly specified', () => {
         expect(() => {
-          @Schema()
+          @TypedModel()
           // eslint-disable-next-line no-unused-vars
           class Spec {
             @Prop()
@@ -141,7 +141,7 @@ describe('typed-schema e2e tests', () => {
       })
 
       it('works for object types', () => {
-        @Schema()
+        @TypedModel()
         class Spec {
           @Prop({
             type: {
@@ -164,7 +164,7 @@ describe('typed-schema e2e tests', () => {
       })
 
       it('works for object types using shorthands', () => {
-        @Schema()
+        @TypedModel()
         class Spec {
           @Prop({
             type: {
@@ -190,7 +190,7 @@ describe('typed-schema e2e tests', () => {
     describe('when using array types', () => {
       it('throws if the array type is not explicitly specified', () => {
         expect(() => {
-          @Schema()
+          @TypedModel()
           // eslint-disable-next-line no-unused-vars
           class Spec {
             @Prop()
@@ -201,7 +201,7 @@ describe('typed-schema e2e tests', () => {
 
       it('works for array schemas', () => {
         const def: PropOptions = {type: [String]}
-        @Schema()
+        @TypedModel()
         class Spec {
           @Prop(def)
           names: string[]
@@ -225,14 +225,14 @@ describe('typed-schema e2e tests', () => {
 
     describe('when using nested schemas', () => {
       it('throws if the class type is not explicitly specified', () => {
-        @Schema()
+        @TypedModel()
         class A {
           @Prop()
           name: string
         }
 
         expect(() => {
-          @Schema()
+          @TypedModel()
           // eslint-disable-next-line no-unused-vars
           class Spec {
             @Prop()
@@ -242,19 +242,19 @@ describe('typed-schema e2e tests', () => {
       })
 
       it('works for nested schemas', () => {
-        @Schema()
+        @TypedModel()
         class A {
           @Prop()
           name: string
         }
 
-        @Schema()
+        @TypedModel()
         class B {
           @Prop()
           lastName: string
         }
 
-        @Schema()
+        @TypedModel()
         class Spec {
           @Prop()
           name: string
@@ -294,7 +294,7 @@ describe('typed-schema e2e tests', () => {
       })
 
       it('works for nested schemas with objects inside', () => {
-        @Schema()
+        @TypedModel()
         class A {
           @Prop({
             type: {
@@ -304,13 +304,13 @@ describe('typed-schema e2e tests', () => {
           data: {phoneNumber: string}
         }
 
-        @Schema()
+        @TypedModel()
         class B {
           @Prop({type: A, optional: true})
           a: A
         }
 
-        @Schema()
+        @TypedModel()
         class Spec {
           @Prop()
           name: string
@@ -350,7 +350,7 @@ describe('typed-schema e2e tests', () => {
 
   describe('getModelForClass', () => {
     it('works for flat classes', () => {
-      @Schema()
+      @TypedModel()
       class Spec {
         @Prop({optional: true})
         name: string
@@ -371,14 +371,14 @@ describe('typed-schema e2e tests', () => {
     })
 
     it('works for nested models', () => {
-      @Schema()
+      @TypedModel()
       class A {
         @Prop({optional: true})
         name: string
       }
 
       const AModel = getModelForClass(A)
-      @Schema()
+      @TypedModel()
       class Spec {
         @Prop({type: AModel})
         a: A
@@ -398,7 +398,7 @@ describe('typed-schema e2e tests', () => {
     })
 
     it('works for nested models together with nested classes', () => {
-      @Schema()
+      @TypedModel()
       class NestedModelClass {
         @Prop({optional: true})
         name: string
@@ -410,7 +410,7 @@ describe('typed-schema e2e tests', () => {
       }
 
       const NestedModel = getModelForClass(NestedModelClass)
-      @Schema()
+      @TypedModel()
       class Spec {
         @Prop({type: NestedModel})
         a: NestedModelClass
@@ -449,15 +449,15 @@ describe('typed-schema e2e tests', () => {
 
   describe('using resolvers', () => {
     it('allows passing resolvers to the model', () => {
-      const exampleResolver = resolver({
+      const exampleResolver = modelResolver<User, {title: string}, string>({
         returns: String,
-        resolve: async (user, {title}: {title: string}): Promise<string> => {
+        resolve: async (user, {title}) => {
           return `${title} ${user.firstName} ${user.lastName}`
         }
       })
 
-      @Schema()
-      class Spec {
+      @TypedModel()
+      class User {
         @Prop()
         firstName: string
 
@@ -465,11 +465,11 @@ describe('typed-schema e2e tests', () => {
         lastName: string
 
         @ResolverProp(exampleResolver)
-        fullName: ModelResolverFunction<typeof exampleResolver.resolve>
+        fullName: typeof exampleResolver.modelResolve
       }
 
       const expected = createModel({
-        name: 'Spec',
+        name: 'User',
         schema: {
           firstName: {
             type: String
@@ -483,7 +483,7 @@ describe('typed-schema e2e tests', () => {
         }
       })
 
-      const model = getModelForClass(Spec)
+      const model = getModelForClass(User)
 
       expect(model.name).toEqual(expected.name)
       expect(model.getSchema()).toEqual(expected.getSchema())
@@ -494,7 +494,7 @@ describe('typed-schema e2e tests', () => {
   describe('creating schemas', () => {
     it('allows creating multiple classes with the same name', () => {
       const create = () => {
-        @Schema()
+        @TypedModel()
         class Spec {
           @Prop()
           name: string
@@ -503,6 +503,48 @@ describe('typed-schema e2e tests', () => {
 
       create()
       create()
+    })
+  })
+
+  describe('Typed model as arguments', () => {
+    it('allows passing typed model as argument to resolvers', async () => {
+      @TypedModel()
+      class ResolverParams {
+        @Prop()
+        firstName: string
+      }
+
+      @TypedModel()
+      class ResolverReturns {
+        @Prop()
+        fullName: string
+      }
+
+      const fullName = modelResolver<Person, ResolverParams, ResolverReturns>({
+        params: ResolverParams,
+        returns: ResolverReturns,
+        async resolve(item: Person, params: ResolverParams) {
+          return {fullName: `${params.firstName} ${item.lastName}`}
+        }
+      })
+
+      @TypedModel()
+      class Person {
+        @Prop()
+        lastName: string
+
+        @ResolverProp(fullName)
+        fullName: typeof fullName.modelResolve
+      }
+
+      const model = getModelForClass(Person)
+      const item: Person = model.initItem({lastName: 'Doe'})
+
+      const result = await item.fullName({
+        firstName: 'John'
+      })
+
+      expect(result.fullName).toBe('John Doe')
     })
   })
 })
