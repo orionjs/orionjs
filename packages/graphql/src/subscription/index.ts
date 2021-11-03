@@ -1,12 +1,12 @@
 import {getPubsub} from '../pubsub'
-import {Subscription, SubscriptionOptions} from '../types/subscription'
+import {CreateSubscriptionFunction, Subscription, SubscriptionOptions} from '../types/subscription'
 import getChannelName from './getChannelName'
 import {checkPermissions as checkResolverPermissions, ResolverOptions} from '@orion-js/resolvers'
 
-export default function <ReturnType>(options: SubscriptionOptions): Subscription<ReturnType> {
+const createSubscription: CreateSubscriptionFunction = function (options) {
   const subscription = {
     key: 'notInitialized'
-  } as Subscription<ReturnType>
+  } as Subscription
 
   // the publish function
   subscription.publish = async (params, data) => {
@@ -32,3 +32,5 @@ export default function <ReturnType>(options: SubscriptionOptions): Subscription
 
   return subscription
 }
+
+export default createSubscription

@@ -24,7 +24,7 @@ const getStartServerOptions = async () => {
     })
   }
 
-  const onNewGreeting = subscription({
+  const onNewGreeting = subscription<{name: string}, string>({
     params: {
       name: {
         type: 'string'
@@ -33,8 +33,20 @@ const getStartServerOptions = async () => {
     returns: 'string'
   })
 
+  const withPermissionsSub = subscription({
+    returns: 'string',
+    checkPermission: async () => null
+  })
+
+  const withoutPermissionsSub = subscription({
+    returns: 'string',
+    checkPermission: async () => 'notAllowed'
+  })
+
   const subscriptions = {
-    onNewGreeting
+    onNewGreeting,
+    withPermissionsSub,
+    withoutPermissionsSub
   }
 
   const apolloOptions = await getApolloOptions({
@@ -110,6 +122,47 @@ describe('Test GraphQL Subscriptions', () => {
 
     await subscriptions.onNewGreeting.publish({name: 'Nico'}, 'finally')
     await subscriptions.onNewGreeting.publish({name: 'Nico'}, 'finally')
+
+    await sleep(100)
+  })
+
+  it('Should execute subscriptions permissions correctly', async () => {
+    const {client, subscriptions} = await gqClient()
+
+    client
+      .subscribe({
+        query: gql`
+          subscription {
+            info: withPermissionsSub
+          }
+        `
+      })
+      .subscribe({
+        next({data}) {
+          expect(data.info).toEqual('yes')
+        }
+      })
+
+    client
+      .subscribe({
+        query: gql`
+          subscription {
+            info: withoutPermissionsSub
+          }
+        `
+      })
+      .subscribe({
+        next({data}) {
+          expect(data.info).toEqual('no')
+        }
+      })
+
+    await sleep(100)
+
+    expect.assertions(1) // only with should be called
+
+    await subscriptions.withPermissionsSub.publish({}, 'yes')
+    await subscriptions.withoutPermissionsSub.publish({}, 'no')
 
     await sleep(100)
   })
