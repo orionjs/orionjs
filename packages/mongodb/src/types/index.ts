@@ -147,7 +147,7 @@ export type Upsert<ModelClass> = (
 export interface CreateCollectionOptions {
   name: string
   connectionName?: string
-  model?: Model
+  model?: any
   indexes?: Array<CollectionIndex>
   idGeneration?: 'mongo' | 'random'
 }

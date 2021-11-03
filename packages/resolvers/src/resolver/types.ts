@@ -60,8 +60,6 @@ export interface ResolverOptions<
     : ModelResolverResolve<ModelType, Params, ReturnType>
 }
 
-type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never
-
 export interface Resolver<ParamsType = any, ReturnType = any, ModelType = undefined>
   extends SharedResolverOptions {
   execute: Execute<ParamsType, ReturnType, ModelType>
