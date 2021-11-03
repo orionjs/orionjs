@@ -94,9 +94,24 @@ export interface SchemaNode {
   isBlackboxChild?: boolean
 
   /**
-   * Deprecated
+   * @deprecated
    */
   custom?: ValidateFunction
+
+  /**
+   * Used in GraphQL. If true, the field will be omitted from the schema.
+   */
+  private?: boolean
+
+  /**
+   * Used in GraphQL. When in GraphQL, this resolver will replace the static field.
+   */
+  graphQLResolver?: (...args: any) => any
+
+  /**
+   * Used in GraphQL. Sets the key of the field in the GraphQL schema. You must set this value when building your schema.
+   */
+  key?: string
 }
 
 export interface CurrentNodeInfoOptions {

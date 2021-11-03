@@ -17,3 +17,5 @@ export {
   subscription,
   getBasicResultQuery
 }
+
+export * from './types'

@@ -3,6 +3,7 @@ import isArray from 'lodash/isArray'
 import {getFieldType} from '@orion-js/schema'
 import omit from 'lodash/omit'
 import getScalar from '../buildSchema/getType/getScalar'
+import {getStaticFields} from './getStaticFields'
 
 export default async function getParams(field) {
   const {type} = field
@@ -15,11 +16,11 @@ export default async function getParams(field) {
     }
   } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
     const model = type.__isModel ? type : type.__model
-    if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
+    if (!model || !model.__isModel) throw new Error('Type is not a Model')
 
     const fields = {}
 
-    for (const field of model.staticFields) {
+    for (const field of getStaticFields(model)) {
       fields[field.key] = await getParams(field)
     }
 

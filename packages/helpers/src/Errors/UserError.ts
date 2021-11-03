@@ -1,7 +1,7 @@
 import {OrionError} from './OrionError'
 
 export default class UserError extends OrionError {
-  constructor(code, message, extra) {
+  constructor(code: string, message?: string, extra?: any) {
     if (!message && code) {
       message = code
       code = 'error'

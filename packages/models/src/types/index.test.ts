@@ -13,7 +13,8 @@ it('should create correctly a model with its schema', async () => {
     name: 'Name',
     schema: {
       services: {
-        type: model1
+        type: model1,
+        private: true
       }
     }
   })

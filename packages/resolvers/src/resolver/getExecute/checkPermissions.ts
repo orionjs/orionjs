@@ -12,9 +12,11 @@ export default async function (executeOptions: ExecuteOptions, options: Resolver
 
   if (viewer.app) return
 
-  await checkPermissions(options.permissionsOptions, viewer, {
+  await checkPermissions({
+    resolver: options,
     parent,
-    params
+    params,
+    viewer
   })
 
   if (options.checkPermission) {

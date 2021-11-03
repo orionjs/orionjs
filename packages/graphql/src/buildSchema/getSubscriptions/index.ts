@@ -1,6 +1,7 @@
 import getType from '../getType'
 import getArgs from '../getArgs'
 
+declare const global: any
 global.graphQLSubscriptions = {}
 
 export default async function ({subscriptions, options}) {
@@ -8,14 +9,13 @@ export default async function ({subscriptions, options}) {
 
   for (const key of Object.keys(subscriptions)) {
     const subscription = subscriptions[key]
-    global.graphQLSubscriptions[key] = subscription
     subscription.key = key
-    const name = key
-    global.graphQLSubscriptions[name] = subscription
+
+    global.graphQLSubscriptions[key] = subscription
 
     const type = await getType(subscription.returns, options)
     const args = await getArgs(subscription.params)
-    fields[name] = {
+    fields[key] = {
       type,
       args,
       async subscribe(root, params, viewer) {

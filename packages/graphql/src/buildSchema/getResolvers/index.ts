@@ -2,6 +2,7 @@ import getType from '../getType'
 import getArgs from '../getArgs'
 import errorHandler from '../../errorHandler'
 
+declare const global: any
 global.graphQLResolvers = {}
 
 export default async function ({resolvers, mutation, options}) {
@@ -28,7 +29,7 @@ export default async function ({resolvers, mutation, options}) {
       args,
       async resolve(root, params, context) {
         try {
-          const result = await resolver(params, context)
+          const result = await resolver.resolve(params, context)
           return result
         } catch (error) {
           errorHandler(error, {context, resolver, options, name})
