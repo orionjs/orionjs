@@ -26,7 +26,7 @@ export interface CollectionIndex {
   keys: {
     [key: string]: any
   }
-  options: {
+  options?: {
     [key: string]: any
   }
 }
