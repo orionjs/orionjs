@@ -1,20 +1,24 @@
 import {getPubsub} from '../pubsub'
-import {Subscription} from '../types/subscription'
+import {Subscription, SubscriptionOptions} from '../types/subscription'
 import getChannelName from './getChannelName'
-import {checkPermissions as checkResolverPermissions} from '@orion-js/resolvers'
+import {checkPermissions as checkResolverPermissions, ResolverOptions} from '@orion-js/resolvers'
 
-export default function (options) {
+export default function <ReturnType>(options: SubscriptionOptions): Subscription<ReturnType> {
+  const subscription = {
+    key: 'notInitialized'
+  } as Subscription<ReturnType>
+
   // the publish function
-  const subscription = async function publish(params, data) {
+  subscription.publish = async (params, data) => {
     const pubsub = getPubsub()
     const channelName = getChannelName(subscription.key, params)
     await pubsub.publish(channelName, {[subscription.key]: data})
-  } as Subscription
+  }
 
-  subscription.subscribe = async function (params, viewer) {
+  subscription.subscribe = async (params, viewer) => {
     const pubsub = getPubsub()
     try {
-      await checkResolverPermissions({params, viewer}, options)
+      await checkResolverPermissions({params, viewer}, options as ResolverOptions)
 
       const channelName = getChannelName(subscription.key, params)
       return pubsub.asyncIterator(channelName)

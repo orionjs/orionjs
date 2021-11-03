@@ -1,9 +1,7 @@
-import crypto from 'crypto'
-import sort from 'deep-sort-object'
+import {hashObject} from '@orion-js/helpers'
 
 export default function (name: string, params) {
-  const json = JSON.stringify(sort(params))
-  const hash = crypto.createHash('sha1').update(json).digest('base64')
+  const hash = hashObject(params)
   const channelName = `${name}_${hash}`
   return channelName
 }

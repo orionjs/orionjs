@@ -7,7 +7,9 @@ import {StartGraphQLOptions} from './types/startGraphQL'
 
 export default async function (options: StartGraphQLOptions) {
   const apolloOptions = await getApolloOptions(options)
-  startGraphiQL(apolloOptions, options)
+  if (options.useGraphiql) {
+    startGraphiQL(apolloOptions, options)
+  }
 
   if (options.subscriptions) {
     startWebsocket(apolloOptions, options)

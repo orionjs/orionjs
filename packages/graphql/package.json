@@ -18,17 +18,19 @@
     "@orion-js/resolvers": "^3.0.0-alpha.20",
     "@orion-js/schema": "^3.0.0-alpha.13",
     "apollo-server-core": "3.4.0",
-    "deep-sort-object": "^1.0.2",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^1.2.1",
     "lodash": "^4.17.21",
     "subscriptions-transport-ws": "^0.9.19"
   },
   "devDependencies": {
+    "@apollo/client": "^3.4.16",
     "@types/jest": "^27.0.2",
+    "@types/lodash": "4.14.176",
     "@types/supertest": "2.0.11",
     "graphql": "^15.6.0",
     "jest": "27.3.1",
+    "mock-socket-with-protocol": "^7.1.1",
     "supertest": "^6.1.6",
     "ts-jest": "27.0.7",
     "typescript": "^4.4.4"

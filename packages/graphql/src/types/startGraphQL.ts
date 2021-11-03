@@ -1,6 +1,7 @@
 import {ResolversMap} from '@orion-js/models'
 import {express} from '@orion-js/http'
 import {SubscriptionMap} from './subscription'
+import {GraphQLOptions} from 'apollo-server-core'
 
 export type ExecuteGraphQLCache = (
   req: express.Request,
@@ -9,8 +10,26 @@ export type ExecuteGraphQLCache = (
   executeQuery: () => Promise<string>
 ) => Promise<string>
 
-export interface StartGraphQLOptions {
+type SchemaOmits = 'schema' | 'schemaHash' | 'context' | 'useGraphiql'
+
+export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
+  /**
+   * A map with all the global resolvers
+   */
   resolvers: ResolversMap
+
+  /**
+   * A Map with all global subscriptions
+   */
   subscriptions?: SubscriptionMap
+
+  /**
+   * A function that executes the http level cache of graphql queries
+   */
   executeGraphQLCache?: ExecuteGraphQLCache
+
+  /**
+   * Should use GraphiQL. Default to true
+   */
+  useGraphiql?: boolean
 }

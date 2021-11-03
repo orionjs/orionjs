@@ -8,40 +8,30 @@ import {getViewer} from './websockerViewer'
 export default function ({schema}, options) {
   setPubsub(options.pubsub || new PubSub())
 
-  const server = getApp()
+  const server = options.server || getApp()
   if (!server) {
     throw new Error(
       'Error starting GraphQL WebSocket. You must start http server before starting GraphQL WebSocket'
     )
   }
 
-  const path = '/subscriptions'
-  const subServer = new SubscriptionServer(
+  SubscriptionServer.create(
     {
       execute,
       subscribe,
       schema,
-      async onConnect(connectionParams, webSocket) {
+      async onConnect(connectionParams) {
         try {
-          const params = {
-            headers: {
-              'x-orion-jwt': connectionParams.jwt
-            }
-          }
-          const viewer = await getViewer(params)
+          const viewer = await getViewer(connectionParams)
           return viewer
         } catch (error) {
+          console.log('Error connecting to GraphQL Subscription server', error)
           const viewer = await getViewer({})
           return viewer
         }
       },
       onDisconnect() {}
     },
-    {
-      server,
-      path
-    }
+    server
   )
-
-  return subServer
 }

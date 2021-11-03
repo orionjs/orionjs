@@ -1,15 +1,16 @@
 import buildSchema from '../buildSchema'
+import {StartGraphQLOptions} from '../types/startGraphQL'
 import formatError from './formatError'
+import {GraphQLOptions} from 'apollo-server-core'
+import type {SchemaHash} from 'apollo-server-types'
 
-export default async function (options) {
+export default async function (options: StartGraphQLOptions): Promise<GraphQLOptions> {
   const schema = await buildSchema(options)
 
   return {
-    endpointURL: '/graphql',
-    subscriptionsEndpoint: `/subscriptions`,
     schema,
     formatError,
-    useGraphiql: options.useGraphiql || true,
+    schemaHash: 'deprecated' as SchemaHash,
     ...options
   }
 }
