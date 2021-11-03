@@ -23,12 +23,8 @@ export type ModelToUpdateFilter<ModelClass> =
   | Partial<ModelToDocumentTypeWithId<ModelClass>>
 
 export interface CollectionIndex {
-  keys: {
-    [key: string]: any
-  }
-  options: {
-    [key: string]: any
-  }
+  keys: MongoDB.IndexSpecification
+  options: MongoDB.CreateIndexesOptions
 }
 
 type KeyOf<T extends object> = Extract<keyof T, string>
@@ -195,4 +191,6 @@ export interface Collection<ModelClass = any> {
   loadOne?: DataLoader.LoadOne<ModelClass>
   loadMany?: DataLoader.LoadMany<ModelClass>
   loadById?: DataLoader.LoadById<ModelClass>
+
+  createIndexesPromise?: Promise<string[]>
 }

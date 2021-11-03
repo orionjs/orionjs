@@ -16,6 +16,7 @@ import {
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
 import {Model} from '@orion-js/models'
+import {loadIndexes} from './createIndexes'
 
 const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
   const connectionName = options.connectionName || 'main'
@@ -66,6 +67,8 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.loadById = loadById(collection)
   collection.loadOne = loadOne(collection)
   collection.loadMany = loadMany(collection)
+
+  collection.createIndexesPromise = loadIndexes(collection)
 
   return collection
 }
