@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/jobs",
-  "version": "3.0.0-alpha.21",
+  "version": "3.0.0-alpha.22",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
-    "@orion-js/resolvers": "^3.0.0-alpha.21",
-    "@orion-js/schema": "^3.0.0-alpha.21",
+    "@orion-js/resolvers": "^3.0.0-alpha.22",
+    "@orion-js/schema": "^3.0.0-alpha.22",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0"
   },
