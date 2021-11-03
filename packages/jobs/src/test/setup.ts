@@ -1,7 +1,7 @@
 const {default: MongodbMemoryServer} = require('mongodb-memory-server')
-const {connect} = require('@orion-js/app')
+const {connect} = require('@orion-js/mongodb')
 
-module.exports = async function() {
+module.exports = async function () {
   const MONGO_DB_NAME = 'jest'
   const mongod = new MongodbMemoryServer({
     instance: {
