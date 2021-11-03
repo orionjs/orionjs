@@ -575,19 +575,19 @@
   dependencies:
     object-hash "^2.1.1"
 
-"@orion-js/models@^3.0.0-alpha.19":
-  version "3.0.0-alpha.19"
-  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.0.0-alpha.19.tgz#6d446ff076569ffb358d03d9f86b78967ef88bfc"
-  integrity sha512-N1+INpK4IwYWsoOCe5smn4GZ7cGx9c5D7oVWt0CEtgFH+Ukhnuo+x5tgnDP0ZMfvDP3Tr7W498NlogzXQgn2Yw==
+"@orion-js/models@^3.0.0-alpha.20":
+  version "3.0.0-alpha.20"
+  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.0.0-alpha.20.tgz#5af0a50e8a1f7d93459c3d6d37e2f78363a2b52e"
+  integrity sha512-mutKwbYVudUh6wZDPykbL4/DjAHWM4eN9M9dkpNol1OfPq+zGVsMtFQLzK4uuiQr9JJ8GKETk7qwlw+tjOHr+A==
   dependencies:
     "@orion-js/helpers" "^3.0.0-alpha.11"
-    "@orion-js/resolvers" "^3.0.0-alpha.19"
+    "@orion-js/resolvers" "^3.0.0-alpha.20"
     "@orion-js/schema" "^3.0.0-alpha.13"
 
-"@orion-js/resolvers@^3.0.0-alpha.19":
-  version "3.0.0-alpha.19"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.0-alpha.19.tgz#bc2ab3830c8b273dcdcfc7a9e367ac1d9b55434b"
-  integrity sha512-x2rDxDvQztyaACylqg2s0yzX0ixqTPKKQQodZoes0SeR4GeD/hA6uoNUM7QBegVAHT3TO2b2CkheB37BRrRF6Q==
+"@orion-js/resolvers@^3.0.0-alpha.20":
+  version "3.0.0-alpha.20"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.0-alpha.20.tgz#e7550f1fe0080f05a45ead88cb9a179182a4da5a"
+  integrity sha512-LSLiCK0XRyAwVVnlP/3vHKTm6STn3/vXxpTETw5GBKsvDMbRbJABeCK4+roZ39x2CHn6M+Y8QBPcB7iQU90F8w==
   dependencies:
     "@orion-js/cache" "^3.0.0-alpha.10"
     "@orion-js/helpers" "^3.0.0-alpha.11"
