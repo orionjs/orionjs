@@ -1,6 +1,6 @@
 import createModel from './index'
 import {sleep} from '@orion-js/helpers'
-import {resolver} from '@orion-js/resolvers'
+import {modelResolver} from '@orion-js/resolvers'
 
 it('should call the resolver', async () => {
   let index = 0
@@ -8,10 +8,10 @@ it('should call the resolver', async () => {
     name: 'AModel',
     schema: {},
     resolvers: {
-      res: resolver({
+      res: modelResolver({
         private: true,
         cache: 5,
-        async resolve(item, params, viewer) {
+        async resolve() {
           index++
           return index
         }
