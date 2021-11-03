@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql-client",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.21",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -11,8 +11,8 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.0-alpha.20",
-    "@orion-js/schema": "^3.0.0-alpha.13",
+    "@orion-js/resolvers": "^3.0.0-alpha.21",
+    "@orion-js/schema": "^3.0.0-alpha.21",
     "apollo-cache-inmemory": "^1.6.3",
     "apollo-client": "^2.6.4",
     "apollo-client-preset": "^1.0.8",
