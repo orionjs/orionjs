@@ -8,7 +8,8 @@ test('check ts types for schema', async () => {
     },
     string: {
       type: 'string',
-      optional: true
+      optional: true,
+      private: true
     }
   }
 

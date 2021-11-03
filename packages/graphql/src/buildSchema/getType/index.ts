@@ -2,9 +2,10 @@ import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
-
 import getScalar from './getScalar'
 import getTypeAsResolver from './getTypeAsResolver'
+import {getStaticFields} from '../../resolversSchemas/getStaticFields'
+import {getDynamicFields} from '../../resolversSchemas/getDynamicFields'
 
 export default function getGraphQLType(type, options) {
   if (!type) {
@@ -23,7 +24,7 @@ export default function getGraphQLType(type, options) {
       name: model.name,
       fields: () => {
         const fields = {}
-        for (const field of model.staticFields) {
+        for (const field of getStaticFields(model)) {
           try {
             /**
              * For fields that have custom "to client" resolvers and serverside are static
@@ -45,7 +46,7 @@ export default function getGraphQLType(type, options) {
           }
         }
 
-        for (const resolver of model.dynamicFields) {
+        for (const resolver of getDynamicFields(model)) {
           try {
             fields[resolver.key] = getTypeAsResolver({resolver, getGraphQLType, options, model})
           } catch (error) {

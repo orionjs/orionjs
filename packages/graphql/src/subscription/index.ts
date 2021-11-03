@@ -1,7 +1,11 @@
 import {getPubsub} from '../pubsub'
 import {CreateSubscriptionFunction, Subscription, SubscriptionOptions} from '../types/subscription'
 import getChannelName from './getChannelName'
-import {checkPermissions as checkResolverPermissions, ResolverOptions} from '@orion-js/resolvers'
+import {
+  checkPermissions as checkResolverPermissions,
+  cleanParams,
+  ResolverOptions
+} from '@orion-js/resolvers'
 
 const createSubscription: CreateSubscriptionFunction = function (options) {
   const subscription = {
@@ -27,7 +31,7 @@ const createSubscription: CreateSubscriptionFunction = function (options) {
     }
   }
 
-  subscription.params = options.params
+  subscription.params = cleanParams(options.params)
   subscription.returns = options.returns
 
   return subscription

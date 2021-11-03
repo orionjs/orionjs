@@ -11,6 +11,10 @@
 
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    // required for typed models
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   }
 }

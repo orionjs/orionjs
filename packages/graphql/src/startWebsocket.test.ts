@@ -9,6 +9,7 @@ import gql from 'graphql-tag'
 import {sleep} from '@orion-js/helpers'
 import {random} from 'lodash'
 import {setGetWebsockerViewer} from './websockerViewer'
+import {Schema, Prop, getModelForClass} from '@orion-js/typed-model'
 
 const getStartServerOptions = async () => {
   const resolvers = {
@@ -58,12 +59,33 @@ const getStartServerOptions = async () => {
     }
   })
 
+  @Schema()
+  class TestParams {
+    @Prop({type: 'ID'})
+    userId: string
+  }
+
+  @Schema()
+  class TestModel {
+    @Prop()
+    name: string
+
+    @Prop()
+    age: number
+  }
+
+  const modelSub = subscription<TestParams, TestModel>({
+    params: getModelForClass(TestParams),
+    returns: getModelForClass(TestModel)
+  })
+
   const subscriptions = {
     onNewGreeting,
     withPermissionsSub,
     withoutPermissionsSub,
     withGlobalPermissionsSub,
-    withoutGlobalPermissionsSub
+    withoutGlobalPermissionsSub,
+    modelSub
   }
 
   const apolloOptions = await getApolloOptions({
@@ -233,6 +255,36 @@ describe('Test GraphQL Subscriptions', () => {
 
     await subscriptions.withGlobalPermissionsSub.publish({}, 'yes')
     await subscriptions.withoutGlobalPermissionsSub.publish({}, 'no')
+
+    await sleep(50)
+  })
+
+  it('Should work with typed model subscriptions', async () => {
+    const {client, subscriptions} = await gqClient()
+
+    client
+      .subscribe({
+        query: gql`
+          subscription ($userId: ID) {
+            info: modelSub(userId: $userId) {
+              name
+            }
+          }
+        `,
+        variables: {userId: '1'}
+      })
+      .subscribe({
+        next({data}) {
+          expect(data.info).toEqual({name: 'Nico', __typename: 'TestModel'})
+        }
+      })
+
+    await sleep(50)
+
+    expect.assertions(2)
+
+    await subscriptions.modelSub.publish({userId: '1'}, {name: 'Nico', age: 20})
+    await subscriptions.modelSub.publish({userId: '1'}, {name: 'Nico', age: 20})
 
     await sleep(50)
   })

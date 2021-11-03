@@ -822,6 +822,18 @@
     dot-object "^1.9.0"
     lodash "^4.17.10"
 
+"@orion-js/typed-model@^3.0.0-alpha.20":
+  version "3.0.0-alpha.20"
+  resolved "https://registry.yarnpkg.com/@orion-js/typed-model/-/typed-model-3.0.0-alpha.20.tgz#8dcac761137515d9a588d1b12ac1d120480e563f"
+  integrity sha512-yl72yEqMzL0LTM661tr/p6w7SyG2Tq3Ia3gKSBNI6VPU90r/jdPxAZZ9G3iPm07ZJGMbMDzpIJ0wZyNl+qAm5A==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    "@orion-js/helpers" "^3.0.0-alpha.11"
+    "@orion-js/models" "^3.0.0-alpha.20"
+    "@orion-js/resolvers" "^3.0.0-alpha.20"
+    "@orion-js/schema" "^3.0.0-alpha.13"
+    lodash "^4.17.10"
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"

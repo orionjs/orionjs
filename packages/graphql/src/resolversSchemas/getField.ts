@@ -3,6 +3,7 @@ import isArray from 'lodash/isArray'
 import {getFieldType} from '@orion-js/schema'
 import omit from 'lodash/omit'
 import getScalar from '../buildSchema/getType/getScalar'
+import {getStaticFields} from './getStaticFields'
 
 export default async function getParams(field) {
   const {type} = field
@@ -19,7 +20,7 @@ export default async function getParams(field) {
 
     const fields = {}
 
-    for (const field of model.staticFields) {
+    for (const field of getStaticFields(model)) {
       fields[field.key] = await getParams(field)
     }
 

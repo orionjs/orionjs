@@ -11,7 +11,7 @@ export default function (params) {
       const type = getField(params[key].type)
       fields[key] = {type}
     } catch (error) {
-      console.error(`Error creating GraphQL resolver params argument ${key}`, error)
+      throw new Error(`Error creating GraphQL resolver params argument ${key}: ${error.message}`)
     }
   }
   return fields
