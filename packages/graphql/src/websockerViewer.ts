@@ -8,7 +8,7 @@ declare const global: ViewerNodeGlobal
 
 global.getWebsocketViewerRef = () => null
 
-export const getViewer = async (connectionParams: any): Promise<any> => {
+export const getWebsockerViewer = async (connectionParams: any): Promise<any> => {
   try {
     const viewer = await global.getWebsocketViewerRef(connectionParams)
     if (!viewer) return {}
@@ -18,6 +18,6 @@ export const getViewer = async (connectionParams: any): Promise<any> => {
   }
 }
 
-export const setGetViewer = (getViewerFunc: (connectionParams: any) => any): void => {
+export const setGetWebsockerViewer = (getViewerFunc: (connectionParams: any) => any): void => {
   global.getWebsocketViewerRef = getViewerFunc
 }

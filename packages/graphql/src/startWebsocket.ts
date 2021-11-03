@@ -3,7 +3,7 @@ import {SubscriptionServer} from 'subscriptions-transport-ws'
 import {PubSub} from 'graphql-subscriptions'
 import {setPubsub} from './pubsub'
 import {getApp} from '@orion-js/http'
-import {getViewer} from './websockerViewer'
+import {getWebsockerViewer} from './websockerViewer'
 
 export default function ({schema}, options) {
   setPubsub(options.pubsub || new PubSub())
@@ -22,11 +22,11 @@ export default function ({schema}, options) {
       schema,
       async onConnect(connectionParams) {
         try {
-          const viewer = await getViewer(connectionParams)
+          const viewer = await getWebsockerViewer(connectionParams)
           return viewer
         } catch (error) {
           console.log('Error connecting to GraphQL Subscription server', error)
-          const viewer = await getViewer({})
+          const viewer = await getWebsockerViewer({})
           return viewer
         }
       },

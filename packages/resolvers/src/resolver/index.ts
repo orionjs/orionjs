@@ -1,7 +1,7 @@
 import getExecute from './getExecute'
 import cleanParams from './cleanParams'
 import {generateId} from '@orion-js/helpers'
-import {ResolverOptions, CreateResolver, Resolver} from './types'
+import {ResolverOptions, CreateResolver} from './types'
 import {defaultCache} from '@orion-js/cache'
 
 const resolver: CreateResolver = function <ResolveFunction>(options: ResolverOptions) {

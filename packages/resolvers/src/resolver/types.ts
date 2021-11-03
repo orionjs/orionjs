@@ -63,3 +63,12 @@ export type CreateResolver = <ResolveFunction extends AnyFunction>(
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never
 export type ModelResolverFunction<F extends ModelResolve> = OmitFirstArg<F>
+
+export interface PermissionCheckerOptions {
+  resolver: ResolverOptions
+  parent: any
+  params: any
+  viewer: any
+}
+
+export type PermissionChecker = (options: PermissionCheckerOptions) => Promise<string | void>

@@ -1,13 +1,14 @@
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import {resolver} from '@orion-js/resolvers'
+import {resolver, addPermissionChecker} from '@orion-js/resolvers'
 import {subscription} from '.'
 import {Server, WebSocket} from 'mock-socket-with-protocol'
 import {ApolloClient, InMemoryCache} from '@apollo/client/core'
 import {WebSocketLink} from '@apollo/client/link/ws'
 import gql from 'graphql-tag'
 import {sleep} from '@orion-js/helpers'
-import {lowerFirst, random} from 'lodash'
+import {random} from 'lodash'
+import {setGetWebsockerViewer} from './websockerViewer'
 
 const getStartServerOptions = async () => {
   const resolvers = {
@@ -43,10 +44,26 @@ const getStartServerOptions = async () => {
     checkPermission: async () => 'notAllowed'
   })
 
+  const withGlobalPermissionsSub = subscription({
+    returns: 'string',
+    permissionsOptions: {
+      role: 'user'
+    }
+  })
+
+  const withoutGlobalPermissionsSub = subscription({
+    returns: 'string',
+    permissionsOptions: {
+      role: 'admin'
+    }
+  })
+
   const subscriptions = {
     onNewGreeting,
     withPermissionsSub,
-    withoutPermissionsSub
+    withoutPermissionsSub,
+    withGlobalPermissionsSub,
+    withoutGlobalPermissionsSub
   }
 
   const apolloOptions = await getApolloOptions({
@@ -116,14 +133,14 @@ describe('Test GraphQL Subscriptions', () => {
         }
       })
 
-    await sleep(100)
+    await sleep(50)
 
     expect.assertions(2)
 
     await subscriptions.onNewGreeting.publish({name: 'Nico'}, 'finally')
     await subscriptions.onNewGreeting.publish({name: 'Nico'}, 'finally')
 
-    await sleep(100)
+    await sleep(50)
   })
 
   it('Should execute subscriptions permissions correctly', async () => {
@@ -157,13 +174,66 @@ describe('Test GraphQL Subscriptions', () => {
         }
       })
 
-    await sleep(100)
+    await sleep(50)
 
     expect.assertions(1) // only with should be called
 
     await subscriptions.withPermissionsSub.publish({}, 'yes')
     await subscriptions.withoutPermissionsSub.publish({}, 'no')
 
-    await sleep(100)
+    await sleep(50)
+  })
+
+  it('Should execute subscriptions with global permissions correctly using custom get viewer and custom global permission checker', async () => {
+    const {client, subscriptions} = await gqClient()
+
+    setGetWebsockerViewer((connectionParams: any) => {
+      return {
+        role: 'user'
+      }
+    })
+
+    addPermissionChecker(async ({resolver, viewer}) => {
+      if (!resolver.permissionsOptions) return null
+      if (resolver.permissionsOptions.role === viewer.role) return null
+      return 'notAllowed'
+    })
+
+    client
+      .subscribe({
+        query: gql`
+          subscription {
+            info: withGlobalPermissionsSub
+          }
+        `
+      })
+      .subscribe({
+        next({data}) {
+          expect(data.info).toEqual('yes')
+        }
+      })
+
+    client
+      .subscribe({
+        query: gql`
+          subscription {
+            info: withoutGlobalPermissionsSub
+          }
+        `
+      })
+      .subscribe({
+        next({data}) {
+          expect(data.info).toEqual('no')
+        }
+      })
+
+    await sleep(50)
+
+    expect.assertions(1) // only with should be called
+
+    await subscriptions.withGlobalPermissionsSub.publish({}, 'yes')
+    await subscriptions.withoutGlobalPermissionsSub.publish({}, 'no')
+
+    await sleep(50)
   })
 })
