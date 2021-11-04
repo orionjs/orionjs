@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.24",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,12 +12,12 @@
     "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.0-alpha.11",
-    "@orion-js/http": "^3.0.0-alpha.20",
-    "@orion-js/models": "^3.0.0-alpha.20",
-    "@orion-js/resolvers": "^3.0.0-alpha.20",
-    "@orion-js/schema": "^3.0.0-alpha.13",
-    "@orion-js/typed-model": "^3.0.0-alpha.20",
+    "@orion-js/helpers": "^3.0.0-alpha.23",
+    "@orion-js/http": "^3.0.0-alpha.24",
+    "@orion-js/models": "^3.0.0-alpha.24",
+    "@orion-js/resolvers": "^3.0.0-alpha.24",
+    "@orion-js/schema": "^3.0.0-alpha.23",
+    "@orion-js/typed-model": "^3.0.0-alpha.24",
     "apollo-server-core": "3.4.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^1.2.1",
@@ -43,5 +43,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
 }

@@ -1,20 +1,20 @@
 import {ValidationError} from '@orion-js/schema'
 import createCollection from '.'
-import {Schema, Prop, getModelForClass, ResolverProp} from '@orion-js/typed-model'
+import {TypedModel, Prop, getModelForClass, ResolverProp} from '@orion-js/typed-model'
 import {generateId} from '@orion-js/helpers'
-import {ModelResolverFunction, resolver} from '@orion-js/resolvers'
+import {resolver, modelResolver} from '@orion-js/resolvers'
 
 describe('Collections with typed model', () => {
   const resolve = async (person: Person, {title}: {title: string}, viewer?: any) => {
     return `${title} ${person.firstName} ${person.lastName}`
   }
 
-  const titleResolver = resolver<typeof resolve>({
+  const titleResolver = modelResolver<Person, {}, string>({
     returns: String,
     resolve
   })
 
-  @Schema()
+  @TypedModel()
   class Person {
     @Prop()
     firstName: string
@@ -23,7 +23,7 @@ describe('Collections with typed model', () => {
     lastName: string
 
     @ResolverProp(titleResolver)
-    title: ModelResolverFunction<typeof titleResolver.resolve>
+    title: typeof titleResolver.modelResolve
   }
 
   it('Should throw a validation error', async () => {

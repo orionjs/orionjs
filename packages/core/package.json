@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/core",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.24",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@babel/core": "^7.15.8",
-    "@orion-js/resolvers": "^3.0.0-alpha.20",
-    "@orion-js/schema": "^3.0.0-alpha.13",
+    "@orion-js/resolvers": "^3.0.0-alpha.24",
+    "@orion-js/schema": "^3.0.0-alpha.23",
     "async-exit-hook": "^2.0.1",
     "chokidar": "^3.5.1",
     "colors": "^1.4.0",
@@ -36,7 +36,7 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42",
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906",
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0"
   }

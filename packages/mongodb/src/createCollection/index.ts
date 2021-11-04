@@ -15,6 +15,8 @@ import {
 } from './getMethods'
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
+import {Model} from '@orion-js/models'
+import {loadIndexes} from './createIndexes'
 
 const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
   const connectionName = options.connectionName || 'main'
@@ -27,10 +29,13 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   const db = orionConnection.db
   const rawCollection = db.collection(options.name)
 
+  const model: Model =
+    options.model && options.model.getModel ? options.model.getModel() : options.model
+
   const collection: Collection<DocumentType> = {
     name: options.name,
     connectionName,
-    model: options.model,
+    model,
     indexes: options.indexes || [],
     db,
     rawCollection,
@@ -62,6 +67,8 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.loadById = loadById(collection)
   collection.loadOne = loadOne(collection)
   collection.loadMany = loadMany(collection)
+
+  collection.createIndexesPromise = loadIndexes(collection)
 
   return collection
 }

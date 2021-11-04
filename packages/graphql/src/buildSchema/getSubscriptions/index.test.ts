@@ -1,16 +1,16 @@
-import {Schema, Prop, getModelForClass} from '@orion-js/typed-model'
+import {TypedModel, Prop} from '@orion-js/typed-model'
 import {subscription} from '../..'
 import getSubscriptions from './index'
 
 describe('Test get subscriptions schema', () => {
   it('Should correctly build a subscriptions schema using typed models', async () => {
-    @Schema()
+    @TypedModel()
     class TestParams {
       @Prop()
       userId: string
     }
 
-    @Schema()
+    @TypedModel()
     class TestModel {
       @Prop()
       name: string
@@ -20,8 +20,8 @@ describe('Test get subscriptions schema', () => {
     }
 
     const modelSub = subscription<TestParams, TestModel>({
-      params: getModelForClass(TestParams),
-      returns: getModelForClass(TestModel)
+      params: TestParams,
+      returns: TestModel
     })
 
     const subscriptions = {modelSub}

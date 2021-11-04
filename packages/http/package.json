@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/http",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.24",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -16,9 +16,9 @@
     "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.0-alpha.11",
-    "@orion-js/resolvers": "^3.0.0-alpha.20",
-    "@orion-js/schema": "^3.0.0-alpha.13",
+    "@orion-js/helpers": "^3.0.0-alpha.23",
+    "@orion-js/resolvers": "^3.0.0-alpha.24",
+    "@orion-js/schema": "^3.0.0-alpha.23",
     "body-parser": "1.19.0",
     "express": "4.17.1"
   },
@@ -38,5 +38,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
 }

@@ -34,5 +34,7 @@ export function Prop(options: PropOptions = {}): PropertyDecorator {
     }
 
     MetadataStorage.addPropMetadata({target: classDef.constructor, propertyKey, options})
+
+    classDef[propertyKey] = options
   }
 }

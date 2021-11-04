@@ -3,9 +3,12 @@ import cleanParams from './cleanParams'
 import {generateId} from '@orion-js/helpers'
 import {ResolverOptions, CreateResolver} from './types'
 import {defaultCache} from '@orion-js/cache'
+import {CreateModelResolver} from '..'
+import cleanReturns from './cleanReturns'
 
-const resolver: CreateResolver = function <ResolveFunction>(options: ResolverOptions) {
+const createResolver = function (options) {
   options.params = cleanParams(options.params)
+  options.returns = cleanReturns(options.returns)
 
   if (!options.cacheProvider) {
     options.cacheProvider = defaultCache
@@ -15,7 +18,7 @@ const resolver: CreateResolver = function <ResolveFunction>(options: ResolverOpt
     options.resolverId = generateId()
   }
 
-  const resolve = options.resolve as unknown as ResolveFunction
+  const resolve = options.resolve as any
 
   const resolver = {
     ...options,
@@ -26,4 +29,7 @@ const resolver: CreateResolver = function <ResolveFunction>(options: ResolverOpt
   return resolver
 }
 
-export default resolver
+const resolver: CreateResolver = createResolver
+const modelResolver: CreateModelResolver = createResolver
+
+export {resolver, modelResolver}

@@ -1,6 +1,7 @@
 import {resolver} from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
 import ResolverParams from './ResolverParams'
+import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
 
 declare const global: any
 
@@ -16,7 +17,7 @@ export default resolver({
   returns: ResolverParams,
   mutation: false,
   resolve: async function ({mutation, name}, viewer) {
-    const resolver = global.graphQLResolvers[name]
+    const resolver = resolversStore[name]
     if (!resolver) {
       throw new UserError(
         'notFound',

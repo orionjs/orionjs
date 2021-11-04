@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/schema",
-  "version": "3.0.0-alpha.13",
+  "version": "3.0.0-alpha.23",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -40,5 +40,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
 }

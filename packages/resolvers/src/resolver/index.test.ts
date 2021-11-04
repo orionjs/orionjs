@@ -1,6 +1,7 @@
-import {ModelResolverFunction} from './types'
-import createResolver from './index'
+import {resolver as createResolver, modelResolver as createModelResolver} from './index'
 import {Schema} from '@orion-js/schema'
+import {sortBy} from 'lodash'
+import {Params} from '..'
 
 it('should return a function with a resolver id', () => {
   const resolver = createResolver({
@@ -63,24 +64,10 @@ it('should get from cache', async () => {
 })
 
 it('should create typed resolvers', async () => {
-  const resolve = async (params: {value: number}) => {
-    return params.value * 2
+  interface TestResolverParams {
+    value: number
   }
-  const resolver = createResolver<typeof resolve>({
-    params: {
-      value: {
-        type: Number
-      }
-    },
-    returns: Number,
-    resolve
-  })
 
-  const result = await resolver.execute({params: {value: 2}})
-  expect(result).toBe(4)
-})
-
-it('should create typed model resolvers', async () => {
   const resolver = createResolver({
     params: {
       value: {
@@ -88,19 +75,33 @@ it('should create typed model resolvers', async () => {
       }
     },
     returns: Number,
-    resolve: async function (model, params?: {value: number}) {
+    resolve: async (params: TestResolverParams, viewer) => {
+      return params.value * 2
+    }
+  })
+
+  const result1 = await resolver.resolve({
+    value: 2
+  })
+
+  const result2 = await resolver.execute({
+    params: {value: 2}
+  })
+
+  expect(result1).toBe(4)
+  expect(result2).toBe(4)
+})
+
+it('should create typed model resolvers', async () => {
+  const resolver = createModelResolver({
+    returns: Number,
+    resolve: async function (model: any, params: {value: number}, viewer?: any) {
       return model.value * 2
     }
   })
 
-  const inModel = resolver.resolve as unknown as ModelResolverFunction<typeof resolver.resolve>
-
-  const inModelResult = await inModel({value: 2})
-
-  /**
-   * We are testing the typescript removes one argument on the resolve function.
-   */
-  expect(inModelResult).toBe(4)
+  resolver.resolve({}, {value: ''})
+  const inModel = resolver.modelResolve
 })
 
 it('should accept a model as params', async () => {
@@ -115,22 +116,56 @@ it('should accept a model as params', async () => {
       }
     }
   }
-  const resolver = createResolver({
-    params: aModel,
+
+  class TypedParams {
+    value: number
+
+    static getModel() {
+      return aModel
+    }
+  }
+
+  const resolver = createModelResolver<any, TypedParams, Number>({
+    params: TypedParams,
     returns: Number,
-    resolve: async function (params: {value: number}) {
+    resolve: async function (item: any, params: TypedParams, viewer) {
       return params.value * 2
     }
   })
 
-  const inModel = resolver.resolve as unknown as ModelResolverFunction<typeof resolver.resolve>
+  const inModel = resolver.modelResolve
+})
 
-  const inModelResult = await inModel({value: 2})
+it('should accept a model as returns', async () => {
+  const aModel = {
+    __isModel: true,
+    name: 'Returns',
+    getSchema(): Schema {
+      return {
+        value: {
+          type: 'string'
+        }
+      }
+    }
+  }
 
-  /**
-   * We are testing the typescript removes one argument on the resolve function.
-   */
-  expect(inModelResult).toBe(4)
+  class Returns {
+    value: number
+
+    static getModel() {
+      return aModel
+    }
+  }
+
+  const resolver = createResolver<any, Returns>({
+    returns: Returns,
+    resolve: async (params, viewer) => {
+      return {value: 2}
+    }
+  })
+
+  const result = await resolver.resolve({})
+  expect(result.value).toBe(2)
 })
 
 it('should correctly clean params when no params are passed', async () => {

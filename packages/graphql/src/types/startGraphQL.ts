@@ -32,4 +32,9 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
    * Should use GraphiQL. Default to true
    */
   useGraphiql?: boolean
+
+  /**
+   * Pass another express app
+   */
+  app?: express.Application
 }

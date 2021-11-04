@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mailing",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.24",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,8 +12,8 @@
     "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.0-alpha.20",
-    "@orion-js/schema": "^3.0.0-alpha.13",
+    "@orion-js/resolvers": "^3.0.0-alpha.24",
+    "@orion-js/schema": "^3.0.0-alpha.23",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0",
     "nodemailer": "^4.6.6"
@@ -29,5 +29,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
 }
