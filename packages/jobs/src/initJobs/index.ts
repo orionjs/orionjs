@@ -1,11 +1,12 @@
 import {JobScheduleRequiredError} from '../errors/JobScheduleRequired'
 import {Agenda, Job as AgendaJob} from 'agenda/es'
 import {Processor} from 'agenda/dist/agenda/define'
-import {Job, JobMap, JobInitializer} from '../types/job'
+import {JobDefinition, JobMap, Job} from '../types/job'
 import {getAgendaOptions} from '../utils/getAgendaOptions'
 import getProcessorFromJob from '../utils/getProcessorFromJob'
+import getJobName from '../utils/getJobName'
 
-const transformRunPeriodToAgenda = (job: Job): string => {
+const transformRunPeriodToAgenda = (job: JobDefinition): string => {
   const {runEvery} = job
   if (runEvery) {
     if (typeof runEvery === 'number') {
@@ -18,11 +19,9 @@ const transformRunPeriodToAgenda = (job: Job): string => {
 export default async function initJobs(agenda: Agenda, jobs: JobMap, disabled = false) {
   const promises = Object.keys(jobs).map(async key => {
     const job = (
-      (jobs[key] as JobInitializer).__initialize
-        ? (jobs[key] as JobInitializer).__initialize()
-        : jobs[key]
-    ) as Job
-    const jobName = job.name ?? key
+      (jobs[key] as Job).__initialize ? (jobs[key] as Job).__initialize(key) : jobs[key]
+    ) as JobDefinition
+    const jobName = getJobName(job.name ?? key)
 
     const opts = getAgendaOptions(job)
     // Recurrent jobs
@@ -49,7 +48,7 @@ export default async function initJobs(agenda: Agenda, jobs: JobMap, disabled = 
     }
 
     // Event jobs
-    if (job.type === 'event') {
+    if (job.type === 'single') {
       // Do nothing, event jobs are defined on call (see /job/index.ts)
       return
     }

@@ -6,18 +6,38 @@ import {JobMap} from '../types/job'
 import {JobManager} from '../JobManager'
 
 export interface InitOptions {
+  jobs: JobMap
+  /**
+   * If included, will prefix all job names with the given namespace
+   */
+  namespace?: string
+
   agendaConfig?: AgendaConfig
+
+  /**
+   * The address of the mongodb where jobs will be stored
+   */
   dbAddress?: string
+
+  /**
+   * The collection where jobs will be stored. Defaults to orion_v3_jobs
+   */
   dbCollection?: string
+
+  /**
+   * If set to true, will initialize jobs but won't start running them. Single jobs can still be scheduled so that they run in another machine.
+   */
   disabled?: boolean
 }
 
-export async function init(jobs: JobMap, opts: InitOptions = {}) {
+export async function init(opts: InitOptions) {
   const {
+    jobs,
     agendaConfig = {},
     dbAddress = process.env.MONGO_URL,
     dbCollection = 'orion_v3_jobs',
-    disabled = process.env.ORION_TEST ? true : false
+    disabled = process.env.ORION_TEST ? true : false,
+    namespace = ''
   } = opts
 
   if (!dbAddress) {
@@ -34,7 +54,7 @@ export async function init(jobs: JobMap, opts: InitOptions = {}) {
     ...agendaConfig
   })
 
-  JobManager.init(agenda)
+  JobManager.init(agenda, {namespace})
 
   if (disabled) {
     console.log('Skipping jobs.start(). ORION_TEST env var or disabled option is set.')

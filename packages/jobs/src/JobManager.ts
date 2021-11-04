@@ -5,12 +5,14 @@ import {Agenda} from 'agenda/es'
 export class JobManagerContainer {
   private agenda: Agenda | void
   public state: 'started' | 'stopped' = 'stopped'
+  public namespace = ''
 
-  public init(agenda: Agenda) {
+  public init(agenda: Agenda, {namespace = ''}: {namespace?: string} = {}) {
     if (this.agenda) {
       throw new JobsAlreadyInitializedError()
     }
     this.agenda = agenda
+    this.namespace = namespace
   }
 
   public async start() {
@@ -34,6 +36,7 @@ export class JobManagerContainer {
   public clear() {
     this.agenda = null
     this.state = 'stopped'
+    this.namespace = ''
   }
 
   public getAgenda(): Agenda {

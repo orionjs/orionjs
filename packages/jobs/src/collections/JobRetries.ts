@@ -1,8 +1,8 @@
-import {Schema, Prop, getModelForClass} from '@orion-js/typed-model'
+import {TypedModel, Prop} from '@orion-js/typed-model'
 import {createCollection} from '@orion-js/mongodb'
 import {} from '@orion-js/typed-model'
 
-@Schema()
+@TypedModel()
 export class JobRetry {
   @Prop()
   jobId: string
@@ -13,7 +13,7 @@ export class JobRetry {
 
 export const JobRetries = createCollection<JobRetry>({
   name: 'orion_v3_jobs.retries',
-  model: getModelForClass(JobRetry),
+  model: JobRetry,
   indexes: [
     {
       keys: {jobId: 1},

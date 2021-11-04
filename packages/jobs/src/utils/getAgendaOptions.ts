@@ -1,7 +1,7 @@
 import {DefineOptions} from 'agenda/dist/agenda/define'
-import {Job} from '../types/job'
+import {JobDefinition} from '../types/job'
 
-export function getAgendaOptions(job: Job): DefineOptions {
+export function getAgendaOptions(job: JobDefinition): DefineOptions {
   const agendaOptions = {
     concurrency: job.concurrency,
     lockLifetime: job.lockLifetime,

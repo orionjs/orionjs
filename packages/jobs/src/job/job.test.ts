@@ -1,6 +1,7 @@
 import {url} from '../test/setup'
 import {JobManager} from '../JobManager'
-import {init, job, TriggerEventTypeJob} from '..'
+import {Job} from '../types'
+import {init, job} from '..'
 
 describe('job helper', () => {
   let specs = {}
@@ -11,7 +12,7 @@ describe('job helper', () => {
       runMock = jest.fn(() => Promise.reject('some error'))
       specs = {
         eventJob: job({
-          type: 'event',
+          type: 'single',
           name: 'eventJob',
           maxRetries: 3,
           getNextRun: () => new Date(),
@@ -19,8 +20,10 @@ describe('job helper', () => {
         })
       }
 
-      await init(specs, {
-        dbAddress: url
+      await init({
+        jobs: specs,
+        dbAddress: url,
+        namespace: 'job'
       })
     })
 
@@ -34,14 +37,25 @@ describe('job helper', () => {
       const eventData = {
         example: true
       }
-      await (specs as {eventJob: TriggerEventTypeJob}).eventJob(eventData)
+      await (specs as {eventJob: Job}).eventJob.schedule(eventData)
 
-      await new Promise(r => setTimeout(r, 1000))
+      await new Promise(r => setTimeout(r, 500))
 
       expect(runMock).toHaveBeenCalledTimes(3)
       expect(runMock.mock.calls[0][0].example).toEqual(true)
       expect(runMock.mock.calls[1][0].example).toEqual(true)
       expect(runMock.mock.calls[2][0].example).toEqual(true)
+    })
+
+    it('can schedule a job in the future', async () => {
+      const eventData = {
+        example: true
+      }
+      await (specs as {eventJob: Job}).eventJob.schedule(eventData, 'in 1 day')
+
+      await new Promise(r => setTimeout(r, 500))
+
+      expect(runMock).toHaveBeenCalledTimes(0)
     })
   })
 })

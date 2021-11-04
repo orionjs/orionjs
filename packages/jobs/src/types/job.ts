@@ -1,12 +1,12 @@
 import {Job as AgendaJob} from 'agenda/es'
 
-export interface Job {
+export interface JobDefinition {
   /**
    * The type of the job.
-   * "recurrent": The job should be ran every X time.
-   * "event": The job should be ran when an event is triggered.
+   * "recurrent": The job will be executed every X time.
+   * "single": The job will be executed on demand.
    */
-  type: 'recurrent' | 'event'
+  type: 'recurrent' | 'single'
 
   run: RunFunction
 
@@ -27,7 +27,7 @@ export interface Job {
   persistResult?: boolean
 
   /**
-   * The max numbers an event-type job will be retried on failure. Defaults to 0.
+   * The max numbers an single-type job will be retried on failure. Defaults to 0.
    */
   maxRetries?: number
 
@@ -59,30 +59,38 @@ export interface Job {
 
   /**
    * The name of the job. Useful for readability when browsing jobs.
-   * Defaults to the name given on the JobMap object on init (only for recurring jobs).
-   * Event jobs will have a random id as name unless this prop is defined.
+   * Defaults to the name given on the JobMap object on init.
    */
   name?: string
 }
 
 export interface JobMap {
-  [key: string]: Job | JobInitializer
+  [key: string]: Job
 }
 
 export interface JobInfo extends AgendaJob {
   /**
-   * For an event-type job, the number of retries executed.
+   * For an single-type job, the number of retries executed.
    */
   timesExecuted: number
 }
 
 export type RunFunction = (data: any, job: JobInfo) => any
 
-/**
- * A function that schedules an event-type job or does nothing for recurrent jobs.
- */
-export type TriggerEventTypeJob = (data?: object) => Promise<AgendaJob> | void
+export type ScheduleJobFunction = (
+  data?: object,
+  runAt?: Date | string
+) => Promise<AgendaJob> | void
+export interface Job {
+  /**
+   * Internal use only.
+   */
+  __initialize: (jobName: string) => JobDefinition
 
-export interface JobInitializer {
-  __initialize: () => Promise<Job>
+  /**
+   * A function that schedules an single-type job or does nothing for recurrent jobs.
+   * @param data The data that will be passed to the job's run function. Must be an object. Defaults to an empty object.
+   * @param runAt: The date when the job should be executed. Defaults to the result of calling getNextRun(). If getNextRun is not defined, defaults to the current moment. Can be a Date object or a human-readable string (e.g. "in 5 minutes").
+   */
+  schedule: ScheduleJobFunction
 }

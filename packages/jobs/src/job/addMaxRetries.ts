@@ -1,7 +1,7 @@
 import {Processor} from 'agenda/dist/agenda/define'
 import {Agenda, Job as AgendaJob} from 'agenda/es'
 import JobRetries, {JobRetry} from '../collections/JobRetries'
-import {Job} from '../types/job'
+import {JobDefinition} from '../types/job'
 import getProcessorFromJob from '../utils/getProcessorFromJob'
 
 const defaultNextRetry = (): Date => {
@@ -9,7 +9,7 @@ const defaultNextRetry = (): Date => {
   return new Date(now.getTime() + 1000 * 60) // 1 minute from now
 }
 
-const addMaxRetries = (agenda: Agenda, job: Job, jobName: string): Processor => {
+const addMaxRetries = (agenda: Agenda, job: JobDefinition, jobName: string): Processor => {
   const {maxRetries = 0} = job
   if (!maxRetries) {
     return getProcessorFromJob(job)
