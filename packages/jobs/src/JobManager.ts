@@ -31,6 +31,11 @@ export class JobManagerContainer {
     this.state = 'stopped'
   }
 
+  public clear() {
+    this.agenda = null
+    this.state = 'stopped'
+  }
+
   public getAgenda(): Agenda {
     if (!this.agenda) {
       throw new JobsNotInitializedError()

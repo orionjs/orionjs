@@ -2,20 +2,22 @@ import {Agenda} from 'agenda/es'
 import {AgendaConfig} from 'agenda/dist/agenda'
 
 import initJobs from '../initJobs'
-import {Job, JobMap} from '../types/job'
+import {JobMap} from '../types/job'
 import {JobManager} from '../JobManager'
 
 export interface InitOptions {
   agendaConfig?: AgendaConfig
   dbAddress?: string
   dbCollection?: string
+  disabled?: boolean
 }
 
 export async function init(jobs: JobMap, opts: InitOptions = {}) {
   const {
     agendaConfig = {},
     dbAddress = process.env.MONGO_URL,
-    dbCollection = 'orion_v3_jobs'
+    dbCollection = 'orion_v3_jobs',
+    disabled = process.env.ORION_TEST ? true : false
   } = opts
 
   if (!dbAddress) {
@@ -32,7 +34,13 @@ export async function init(jobs: JobMap, opts: InitOptions = {}) {
     ...agendaConfig
   })
 
-  await initJobs(agenda, jobs)
-
   JobManager.init(agenda)
+
+  if (disabled) {
+    console.log('Skipping jobs.start(). ORION_TEST env var or disabled option is set.')
+  } else {
+    await JobManager.start()
+  }
+
+  await initJobs(agenda, jobs, disabled)
 }

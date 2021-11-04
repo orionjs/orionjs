@@ -1,16 +1,20 @@
-const {default: MongodbMemoryServer} = require('mongodb-memory-server')
-const {connect} = require('@orion-js/mongodb')
+import {connect} from '@orion-js/mongodb'
 
-module.exports = async function () {
-  const MONGO_DB_NAME = 'jest'
-  const mongod = new MongodbMemoryServer({
-    instance: {
-      dbName: MONGO_DB_NAME
-    },
-    autoStart: true
-  })
+export const url = `${global.__MONGO_URI__}jest`
+process.env.MONGO_URL = url
+const connection = connect(url)
 
-  global.MONGOD = mongod
-  process.env.MONGO_URL = await mongod.getConnectionString()
-  global.MONGODB_DB = await connect()
-}
+beforeAll(async () => {
+  await connection.connectionPromise
+})
+
+beforeEach(async () => {
+  const collections = await connection.db.collections()
+  for (const collection of collections) {
+    await collection.deleteMany({})
+  }
+})
+
+afterAll(async () => {
+  await connection.client.close()
+})

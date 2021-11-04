@@ -16,33 +16,31 @@ const addMaxRetries = (agenda: Agenda, job: Job, jobName: string): Processor => 
   }
 
   const processor: Processor = async (agendaJob: AgendaJob): Promise<void> => {
+    const originalJobId = agendaJob.attrs.data?._parentJobId ?? agendaJob.attrs._id.toString()
+
     try {
       await job.run(agendaJob.attrs.data, {
         ...agendaJob,
         timesExecuted: 1
       })
     } catch (err) {
-      let retry: JobRetry = await JobRetries.findOne({jobId: agendaJob.attrs._id})
+      let retry: JobRetry = await JobRetries.findOne({jobId: originalJobId})
 
       if (!retry) {
         retry = {
-          jobId: agendaJob.attrs._id.toString(),
-          totalRetries: 1
+          jobId: originalJobId,
+          totalRetries: 0
         }
         await JobRetries.insertOne(retry)
-      } else {
-        await JobRetries.updateOne(
-          {jobId: agendaJob.attrs._id.toString()},
-          {$inc: {totalRetries: 1}}
-        )
       }
 
-      if (retry.totalRetries <= maxRetries) {
-        await agenda.schedule(
-          job.getNextRun ? job.getNextRun() : defaultNextRetry(),
-          jobName,
-          agendaJob.attrs.data
-        )
+      await JobRetries.updateOne({jobId: originalJobId}, {$inc: {totalRetries: 1}})
+
+      if (retry.totalRetries + 1 < maxRetries) {
+        await agenda.schedule(job.getNextRun ? job.getNextRun() : defaultNextRetry(), jobName, {
+          ...agendaJob.attrs.data,
+          _parentJobId: originalJobId
+        })
       }
     }
   }

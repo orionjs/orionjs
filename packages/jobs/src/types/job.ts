@@ -66,7 +66,7 @@ export interface Job {
 }
 
 export interface JobMap {
-  [key: string]: Job
+  [key: string]: Job | JobInitializer
 }
 
 export interface JobInfo extends AgendaJob {
@@ -76,6 +76,13 @@ export interface JobInfo extends AgendaJob {
   timesExecuted: number
 }
 
-export type RunFunction = (data: any, job: JobInfo) => Promise<void>
+export type RunFunction = (data: any, job: JobInfo) => any
 
-export type TriggerEventTypeJob = (data: any) => Promise<AgendaJob>
+/**
+ * A function that schedules an event-type job or does nothing for recurrent jobs.
+ */
+export type TriggerEventTypeJob = (data?: object) => Promise<AgendaJob> | void
+
+export interface JobInitializer {
+  __initialize: () => Promise<Job>
+}

@@ -11,7 +11,7 @@ export class JobRetry {
   totalRetries: number
 }
 
-export default createCollection<JobRetry>({
+export const JobRetries = createCollection<JobRetry>({
   name: 'orion_v3_jobs.retries',
   model: getModelForClass(JobRetry),
   indexes: [
@@ -21,3 +21,5 @@ export default createCollection<JobRetry>({
     }
   ]
 })
+
+export default JobRetries

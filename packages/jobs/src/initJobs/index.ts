@@ -1,7 +1,7 @@
 import {JobScheduleRequiredError} from '../errors/JobScheduleRequired'
 import {Agenda, Job as AgendaJob} from 'agenda/es'
 import {Processor} from 'agenda/dist/agenda/define'
-import {Job, JobMap} from '../types/job'
+import {Job, JobMap, JobInitializer} from '../types/job'
 import {getAgendaOptions} from '../utils/getAgendaOptions'
 import getProcessorFromJob from '../utils/getProcessorFromJob'
 
@@ -15,16 +15,21 @@ const transformRunPeriodToAgenda = (job: Job): string => {
   }
 }
 
-export default async function initJobs(agenda: Agenda, jobs: JobMap) {
+export default async function initJobs(agenda: Agenda, jobs: JobMap, disabled = false) {
   const promises = Object.keys(jobs).map(async key => {
-    const job = jobs[key]
+    const job = (
+      (jobs[key] as JobInitializer).__initialize
+        ? (jobs[key] as JobInitializer).__initialize()
+        : jobs[key]
+    ) as Job
     const jobName = job.name ?? key
 
     const opts = getAgendaOptions(job)
     // Recurrent jobs
     if (job.type === 'recurrent' && job.runEvery) {
       agenda.define(jobName, opts, getProcessorFromJob(job))
-      await agenda.every(transformRunPeriodToAgenda(job), jobName)
+
+      if (!disabled) await agenda.every(transformRunPeriodToAgenda(job), jobName)
 
       return
     } else if (job.type === 'recurrent' && job.getNextRun) {
@@ -36,7 +41,7 @@ export default async function initJobs(agenda: Agenda, jobs: JobMap) {
       }
 
       agenda.define(jobName, opts, processor)
-      await agenda.schedule(job.getNextRun(), jobName, {})
+      if (!disabled) await agenda.schedule(job.getNextRun(), jobName, {})
 
       return
     } else if (job.type === 'recurrent') {
