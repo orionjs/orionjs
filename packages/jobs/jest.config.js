@@ -1,7 +1,10 @@
 module.exports = {
-  verbose: true,
-  roots: ['src'],
-  globalSetup: './src/test/setup.js',
-  globalTeardown: './src/test/teardown.js',
-  testEnvironment: './src/test/mongo-environment.js'
+  preset: '@shelf/jest-mongodb',
+  roots: ['./src'],
+  testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest'
+  },
+  setupFilesAfterEnv: ['./src/test/setup.ts'],
+  verbose: true
 }

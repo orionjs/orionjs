@@ -24,7 +24,7 @@ export type ModelToUpdateFilter<ModelClass> =
 
 export interface CollectionIndex {
   keys: MongoDB.IndexSpecification
-  options: MongoDB.CreateIndexesOptions
+  options?: MongoDB.CreateIndexesOptions
 }
 
 type KeyOf<T extends object> = Extract<keyof T, string>
