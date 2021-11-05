@@ -1,22 +1,32 @@
-import execute from '../helpers/execute'
-import globby from 'globby'
-import colors from 'colors/safe'
+import ts from 'typescript'
+import {getConfigPath} from '../start/watchAndCompile/getConfigPath'
+import {getOptions} from './getOptions'
 import path from 'path'
+import colors from 'colors/safe'
+import {reportDiagnostic} from '../start/watchAndCompile/reports'
 
-export default async function (dirPath) {
-  const finalDirPath = path.join(dirPath, 'app')
-  await execute(`rm -rf ${finalDirPath}`)
-  const files = await globby('app/**/*')
-  try {
-    return true
-  } catch (error) {
-    console.log(colors.red(`=> Syntax error at ${error.message}`))
-    if (error._babel) {
-      console.log(error.codeFrame)
-    } else {
-      console.error(colors.red(error))
-    }
-    await execute(`rm -rf ${finalDirPath}`)
-    return false
+export function compile({output}): void {
+  const {options, fileNames} = getOptions({output})
+
+  const program = ts.createProgram(fileNames, options)
+
+  const preEmitDiagnostics = ts.getPreEmitDiagnostics(program)
+
+  if (preEmitDiagnostics.length > 0) {
+    console.log(colors.red(`\n==> Error builing Orion app\n`))
+  }
+
+  preEmitDiagnostics.forEach(reportDiagnostic)
+
+  if (preEmitDiagnostics.length > 0) {
+    process.exit(1)
+  }
+
+  const emitResult = program.emit()
+
+  emitResult.diagnostics.forEach(reportDiagnostic)
+
+  if (emitResult.emitSkipped) {
+    process.exit(1)
   }
 }

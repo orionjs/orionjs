@@ -25,7 +25,8 @@ export function getHost(runner: Runner) {
         }
       }
 
-      writeIndex()
+      const basePath = `${process.cwd()}/.orion/build`
+      writeIndex({basePath})
       runner.restart()
     }
   }

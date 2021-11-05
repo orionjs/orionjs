@@ -1,18 +1,21 @@
-import compile from './compile'
-import os from 'os'
-import createPackageJSON from './createPackageJSON'
 import colors from 'colors/safe'
-import copyFiles from './copyFiles'
+import execute from '../helpers/execute'
+import writeIndex from '../start/watchAndCompile/writeIndex'
+import {compile} from './compile'
 
 export default async function ({output}) {
   if (!output) {
     output = './build'
   }
 
-  const finalDirPath = output.replace('~', os.homedir())
+  console.log(colors.bold(`Cleaning directory ${output}...`))
+  await execute(`rm -rf ${output}`)
+
   console.log(colors.bold('Compiling your app...'))
-  await compile(finalDirPath)
-  createPackageJSON(finalDirPath)
-  copyFiles(finalDirPath)
+
+  compile({output})
+
+  writeIndex({basePath: output})
+
   console.log(colors.bold('Build created'))
 }

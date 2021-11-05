@@ -2,9 +2,7 @@ import writeFile from '../../../helpers/writeFile'
 import fs from 'fs'
 import path from 'path'
 
-export default function () {
-  const basePath = `${process.cwd()}/.orion/build`
-
+export default function ({basePath}) {
   const libPath = `${basePath}/moduleAliasLib.js`
 
   const libContentPath = path.resolve(__dirname, '../../../../moduleAlias.js.txt')
