@@ -35,23 +35,47 @@ export interface RequestHandlerResponse {
   error?: any
 }
 
-export interface RequestsHandlerParams {
-  getBodyJSON(): Promise<any>
-}
-
-export interface RequestsConfig {
-  key: string
-  startHandler(handler: (params: RequestsHandlerParams) => Promise<RequestHandlerResponse>): any
-  services: {
-    [key: string]: string
+export interface MakeRequestParams {
+  url: string
+  data: {
+    body: object
+    signature: string
   }
 }
 
+export interface RequestMakerResult {
+  statusCode: number
+  data: object
+}
+
+export type RequestMaker = (options: MakeRequestParams) => Promise<RequestMakerResult>
+
+export interface RequestsConfig {
+  /**
+   * The secret key used to sign all requests
+   */
+  key: string
+  /**
+   * The path of the echoes http receiver. Defaults to /echoes-services
+   */
+  handlerPath?: string
+  /**
+   * Map of all the services that have echoes requests handlers
+   */
+  services?: {
+    [key: string]: string
+  }
+  /**
+   * A custom function that make the requests to the services. Uses axios by default
+   */
+  makeRequest?: RequestMaker
+}
+
 export interface EchoesOptions {
-  client: KafkaConfig
-  producer: ProducerConfig
-  consumer: ConsumerConfig
-  requests: RequestsConfig
+  client?: KafkaConfig
+  producer?: ProducerConfig
+  consumer?: ConsumerConfig
+  requests?: RequestsConfig
   echoes: {
     [key: string]: Echo
   }

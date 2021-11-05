@@ -3,38 +3,39 @@ import config from '../config'
 import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
 import {EchoesOptions} from '../types'
+import {registerRoute} from '@orion-js/http'
 
 export default function (options: EchoesOptions) {
-  const kafka = new Kafka(options.client)
+  config.echoes = options.echoes
 
-  config.producer = kafka.producer(options.producer)
-  config.consumer = kafka.consumer(options.consumer)
+  if (options.client) {
+    const kafka = new Kafka(options.client)
 
-  config.producer.connect()
-  config.consumer.connect()
+    config.producer = kafka.producer(options.producer)
+    config.consumer = kafka.consumer(options.consumer)
 
-  for (const topic in options.echoes) {
-    const echo = options.echoes[topic]
-    if (echo.type !== types.event) continue
+    config.producer.connect()
+    config.consumer.connect()
 
-    config.consumer.subscribe({topic})
-  }
+    for (const topic in options.echoes) {
+      const echo = options.echoes[topic]
+      if (echo.type !== types.event) continue
 
-  config.consumer.run({
-    eachMessage: async (payload: EachMessagePayload) => {
-      const echo = options.echoes[payload.topic]
-      if (!echo) return
-      if (echo.type !== types.event) return
-      await echo.onMessage(payload)
+      config.consumer.subscribe({topic})
     }
-  })
+
+    config.consumer.run({
+      eachMessage: async (payload: EachMessagePayload) => {
+        const echo = options.echoes[payload.topic]
+        if (!echo) return
+        if (echo.type !== types.event) return
+        await echo.onMessage(payload)
+      }
+    })
+  }
 
   if (options.requests) {
     config.requests = options.requests
-
-    config.echoes = options.echoes
-    if (config.requests.startHandler) {
-      config.requests.startHandler(requestsHandler)
-    }
+    registerRoute(requestsHandler(options))
   }
 }
