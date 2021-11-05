@@ -54,4 +54,25 @@ describe('Test indexes', () => {
 
     expect(console.warn).toHaveBeenCalled()
   })
+
+  it('Should upgrade a index correctly', async () => {
+    const collectionName = generateId()
+    const collection1 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {name: 1}}]
+    })
+
+    await collection1.createIndexesPromise
+
+    console.info = jest.fn()
+
+    const collection2 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {name: 1}, options: {unique: true}}]
+    })
+
+    await collection2.createIndexesPromise
+
+    expect(console.warn).toHaveBeenCalled()
+  })
 })
