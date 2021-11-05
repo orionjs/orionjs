@@ -1,4 +1,4 @@
-import {Agenda} from 'agenda/es'
+import {Agenda} from 'agenda'
 import {AgendaConfig} from 'agenda/dist/agenda'
 
 import initJobs from '../initJobs'

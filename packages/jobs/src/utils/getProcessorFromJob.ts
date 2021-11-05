@@ -1,4 +1,4 @@
-import {Job as AgendaJob} from 'agenda/es'
+import {Job as AgendaJob} from 'agenda'
 import {JobDefinition} from '../types/job'
 import JobRetries from '../collections/JobRetries'
 

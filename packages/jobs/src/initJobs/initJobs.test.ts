@@ -1,8 +1,7 @@
-import {Job as AgendaJob} from 'agenda/es'
+import {Job as AgendaJob, Agenda} from 'agenda'
 import {url} from './../test/setup'
-import {Agenda} from 'agenda/es'
 import {JobManager} from './../JobManager'
-import {init, Job, job} from '..'
+import {init, Job, job, stop} from '..'
 
 describe('initJobs', () => {
   let specs = {}
@@ -38,8 +37,7 @@ describe('initJobs', () => {
     })
 
     afterEach(async () => {
-      await JobManager.stop()
-      await JobManager.getAgenda().close({force: true})
+      await stop()
       JobManager.clear()
     })
 
@@ -73,5 +71,30 @@ describe('initJobs', () => {
       expect(jobs[0].attrs.nextRunAt).toEqual(nextRun)
       expect(jobs[0].attrs.data).toEqual(eventData)
     })
+  })
+
+  it('calls the run function for a recurrent job', async () => {
+    const mock = jest.fn()
+    const specs = {
+      recurrentJob: job({
+        type: 'recurrent',
+        name: 'recurrentJob',
+        getNextRun: () => new Date(),
+        run: mock
+      })
+    }
+
+    await init({
+      jobs: specs,
+      namespace: 'initJobs.recurrent',
+      dbAddress: url
+    })
+
+    await new Promise(r => setTimeout(r, 200))
+
+    expect(mock).toHaveBeenCalled()
+
+    await stop()
+    JobManager.clear()
   })
 })
