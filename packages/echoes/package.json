@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "3.0.0-alpha.24",
+  "version": "3.0.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -16,10 +16,10 @@
     "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.0-alpha.23",
-    "@orion-js/http": "^3.0.0-alpha.23",
-    "@orion-js/resolvers": "^3.0.0-alpha.24",
-    "@orion-js/schema": "^3.0.0-alpha.23",
+    "@orion-js/helpers": "^3.0.0",
+    "@orion-js/http": "^3.0.0",
+    "@orion-js/resolvers": "^3.0.0",
+    "@orion-js/schema": "^3.0.0",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
     "kafkajs": "^1.15.0",
