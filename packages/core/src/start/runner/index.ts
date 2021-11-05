@@ -4,6 +4,7 @@ import {startProcess} from './startProcess'
 
 export interface RunnerOptions {
   shell: boolean
+  clean: boolean
 }
 
 export interface Runner {
@@ -13,6 +14,10 @@ export interface Runner {
 
 export function getRunner(options: RunnerOptions): Runner {
   let appProcess = null
+
+  if (options.clean) {
+    console.log(colors.bold('=> Cleaning directory...\n'))
+  }
 
   const start = () => {
     console.log(colors.bold('=> Starting app...\n'))

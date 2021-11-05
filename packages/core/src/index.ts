@@ -3,7 +3,6 @@ import program from 'commander'
 import start from './start'
 import build from './build'
 import colors from 'colors/safe'
-import create from './create'
 import test from './test'
 import './handleErrors'
 import version from './version'
@@ -22,6 +21,7 @@ program
   .command('start')
   .description('Run the Orionjs app')
   .option('--shell', 'Opens a shell in Chrome developer tools')
+  .option('--clean', 'Build the typescript project from scratch')
   .action(run(start))
 
 program.command('test').allowUnknownOption().description('Deprecated command').action(run(test))
