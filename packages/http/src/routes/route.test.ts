@@ -6,7 +6,7 @@ import request from 'supertest'
 let app = getApp()
 
 describe('Test routes', () => {
-  test('It should response a http get request with a custom status code', async () => {
+  test('It should reply a http get request with a custom status code', async () => {
     const test = {hello: 'world'}
     const testRoute = route({
       path: '/test1',
@@ -55,7 +55,7 @@ describe('Test routes', () => {
   })
 
   // test a http get request with query params
-  test('It should response a http get request with query params', async () => {
+  test('It should reply a http get request with query params', async () => {
     const testRoute = route({
       path: '/test4',
       method: 'get',

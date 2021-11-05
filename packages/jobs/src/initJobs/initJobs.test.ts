@@ -13,7 +13,6 @@ describe('initJobs', () => {
       specs = {
         recurrentJob: job({
           type: 'recurrent',
-          name: 'recurrentJob',
           getNextRun: () => nextRun,
           run: () => {
             // Do nothing
@@ -22,7 +21,6 @@ describe('initJobs', () => {
 
         eventJob: job({
           type: 'single',
-          name: 'eventJob',
           getNextRun: () => nextRun,
           run: () => {
             // Do nothing
