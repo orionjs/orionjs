@@ -1,5 +1,5 @@
 import {JobScheduleRequiredError} from '../errors/JobScheduleRequired'
-import {Agenda, Job as AgendaJob} from 'agenda/es'
+import {Agenda, Job as AgendaJob} from 'agenda'
 import {Processor} from 'agenda/dist/agenda/define'
 import {JobDefinition, JobMap, Job} from '../types/job'
 import {getAgendaOptions} from '../utils/getAgendaOptions'

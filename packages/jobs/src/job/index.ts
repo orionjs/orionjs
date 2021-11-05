@@ -2,7 +2,7 @@ import {getAgendaOptions} from '../utils/getAgendaOptions'
 import {JobManager} from '../JobManager'
 import {JobDefinition, Job, ScheduleJobFunction} from '../types/job'
 import addMaxRetries from './addMaxRetries'
-import {Job as AgendaJob} from 'agenda/es'
+import {Job as AgendaJob} from 'agenda'
 import getJobName from '../utils/getJobName'
 
 /**
