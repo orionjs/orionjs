@@ -1,6 +1,6 @@
 import {JobsNotInitializedError} from './errors/JobsNotInitialized'
 import {JobsAlreadyInitializedError} from './errors/JobsAlreadyInitialized'
-import {Agenda} from 'agenda/es'
+import {Agenda} from 'agenda'
 
 export class JobManagerContainer {
   private agenda: Agenda | void
@@ -30,6 +30,7 @@ export class JobManagerContainer {
       return
     }
     await this.getAgenda().stop()
+    await this.getAgenda().close()
     this.state = 'stopped'
   }
 

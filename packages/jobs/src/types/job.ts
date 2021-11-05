@@ -1,4 +1,4 @@
-import {Job as AgendaJob} from 'agenda/es'
+import {Job as AgendaJob} from 'agenda'
 
 export interface JobDefinition {
   /**

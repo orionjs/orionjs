@@ -1,5 +1,5 @@
 import {Processor} from 'agenda/dist/agenda/define'
-import {Agenda, Job as AgendaJob} from 'agenda/es'
+import {Agenda, Job as AgendaJob} from 'agenda'
 import JobRetries, {JobRetry} from '../collections/JobRetries'
 import {JobDefinition} from '../types/job'
 import getProcessorFromJob from '../utils/getProcessorFromJob'
