@@ -1,10 +1,11 @@
 import {getFileContents} from '../../helpers/getFileContents'
 import writeFile from '../../helpers/writeFile'
+import {parse, stringify} from 'comment-json'
 
 export function ensureConfigComplies(configPath) {
   try {
     const configJSON = getFileContents(configPath)
-    const config = JSON.parse(configJSON)
+    const config = parse(configJSON)
 
     const newConfig = {
       ...config,
@@ -16,7 +17,7 @@ export function ensureConfigComplies(configPath) {
       }
     }
 
-    writeFile(configPath, JSON.stringify(newConfig, null, 2))
+    writeFile(configPath, stringify(newConfig, null, 2))
   } catch (error) {
     console.log(`Error reading tsconfig.json ${error.message}`)
   }

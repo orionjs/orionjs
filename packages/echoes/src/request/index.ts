@@ -1,9 +1,10 @@
-import axios from 'axios'
 import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
-import {RequestHandlerResponse, RequestOptions} from '../types'
+import {RequestHandlerResponse, RequestMaker, RequestOptions} from '../types'
+import config from '../config'
+import {makeRequest} from './makeRequest'
 
 export default async function (options: RequestOptions): Promise<any> {
   const {method, service, params} = options
@@ -13,20 +14,18 @@ export default async function (options: RequestOptions): Promise<any> {
   const signature = getSignature(body)
 
   try {
-    const result = await axios({
-      method: 'post',
+    const requestMaker: RequestMaker = config.requests.makeRequest || makeRequest
+    const requestOptions = {
       url: getURL(service),
-      headers: {
-        'User-Agent': 'Orionjs-Echoes/1.1'
-      },
       data: {
         body,
         signature
       }
-    })
+    }
+    const result = await requestMaker(requestOptions)
 
-    if (result.status !== 200) {
-      throw new Error(`Echoes request network error ${result.status}`)
+    if (result.statusCode !== 200) {
+      throw new Error(`Echoes request network error ${result.statusCode}`)
     }
 
     const data: RequestHandlerResponse = result.data

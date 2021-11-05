@@ -1,29 +1,38 @@
 import getEcho from './getEcho'
 import serialize from '../publish/serialize'
 import checkSignature from './checkSignature'
-import {RequestHandlerResponse, RequestsHandlerParams} from '../types'
+import {route} from '@orion-js/http'
+import {EchoesOptions} from '../types'
 
-export default async function ({
-  getBodyJSON
-}: RequestsHandlerParams): Promise<RequestHandlerResponse> {
-  try {
-    const {body, signature} = await getBodyJSON()
+export default (options: EchoesOptions) =>
+  route({
+    method: 'post',
+    path: options.requests.handlerPath || '/echoes-services',
+    bodyParser: 'json',
+    async resolve(req, res) {
+      try {
+        const {body, signature} = req.body
 
-    checkSignature(body, signature)
+        checkSignature(body, signature)
 
-    const {method, serializedParams} = body
+        const {method, serializedParams} = body
 
-    const echo = getEcho(method)
-    const result = await echo.onRequest(serializedParams)
+        const echo = getEcho(method)
+        const result = await echo.onRequest(serializedParams)
 
-    return {
-      result: serialize(result)
+        return {
+          body: {
+            result: serialize(result)
+          }
+        }
+      } catch (error) {
+        console.error('Error at echo requests handler:', error)
+
+        return {
+          body: {
+            error: error.message
+          }
+        }
+      }
     }
-  } catch (error) {
-    console.error('Error at echo requests handler:', error)
-
-    return {
-      error: error.message
-    }
-  }
-}
+  })
