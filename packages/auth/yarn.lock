@@ -852,6 +852,38 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
+"@orion-js/cache@^3.0.0-alpha.23":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.0.0.tgz#ea6f6dd0bb06256bbadfb51db299c796d2dad820"
+  integrity sha512-QV+7r1BD6lSQbmSFOo+utkDGPWHATlQX6JNItVLnUVYMFz/kRPz9gFQbu74LVU1AlWMAT225mf33tfbiDDqwnA==
+  dependencies:
+    "@orion-js/helpers" "^3.0.0"
+
+"@orion-js/helpers@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0.tgz#093094e7fafc4988a3e8dad4171e0f51c0deadc6"
+  integrity sha512-6TknMsxNoeOfWJKN7/GPR6ihPMwn2VfUykiPNONqJ6La/fBDMvzr+flR4v9kIx+FudWbtip/f8HI5cRNjzGhSw==
+  dependencies:
+    object-hash "^2.1.1"
+
+"@orion-js/resolvers@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.0.tgz#0b92772415d0d33f837eed8f5a7fb04767dfe736"
+  integrity sha512-QVKllI4XsSDUXQIx3NlbDOD4lToaUXRJpt+xjkdCXWOd0SqyV2M/y6qtYmwCKKqoNod3p1jci9YIgHOXGdJpiw==
+  dependencies:
+    "@orion-js/cache" "^3.0.0-alpha.23"
+    "@orion-js/helpers" "^3.0.0"
+    "@orion-js/schema" "^3.0.0"
+
+"@orion-js/schema@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0.tgz#1650139226117c2cf5ddcaf9ff1035315c2de124"
+  integrity sha512-eDn3k5M9BkU2TQhmhmSD3X0S93u97OgeUXGozu4zbX+vw6bF6zusssHhd/ywW9cD3pqop/CYGRiUMeIBsn4gmg==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    dot-object "^1.9.0"
+    lodash "^4.17.10"
+
 "@orion-js/schema@^3.0.0-alpha.0":
   version "3.0.0-alpha.0"
   resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0-alpha.0.tgz#7ba6a7ea40e90ba2915b496498c659cdd3044b55"
@@ -3277,8 +3309,9 @@ merge-stream@^1.0.1:
     readable-stream "^2.0.1"
 
 merge@^1.1.3:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.0.tgz#7531e39d4949c281a66b8c5a6e0265e8b05894da"
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.1.tgz#38bebf80c3220a8a487b6fcfb3941bb11720c145"
+  integrity sha512-VjFo4P5Whtj4vsLzsYBu5ayHhoHJ0UqNm7ibvShmbmoz7tGi0vXaoJbGdB+GmDMLUdg8DpQXEIeVDAe8MaABvQ==
 
 micro@^9.3.4:
   version "9.3.4"
@@ -3616,7 +3649,7 @@ object-copy@^0.1.0:
     define-property "^0.2.5"
     kind-of "^3.0.3"
 
-object-hash@^2.2.0:
+object-hash@^2.1.1, object-hash@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-2.2.0.tgz#5ad518581eefc443bd763472b8ff2e9c2c0d54a5"
   integrity sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==
