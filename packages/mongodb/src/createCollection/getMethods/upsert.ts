@@ -8,8 +8,10 @@ export default <DocumentType>(collection: Collection) => {
     let modifier = modifierArg as any
     let selector = getSelector(arguments)
 
+    modifier.$setOnInsert = {...modifier.$setOnInsert, _id: collection.generateId()}
+
     if (collection.model) {
-      const schema = collection.model.getSchema()
+      const schema = collection.getSchema()
 
       if (options.clean !== false) {
         selector = (await cleanModifier(schema, {$set: selector})).$set
@@ -17,8 +19,6 @@ export default <DocumentType>(collection: Collection) => {
       }
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
-
-    modifier.$setOnInsert = {...modifier.$setOnInsert, _id: collection.generateId()}
 
     const result = await collection.rawCollection.updateOne(selector, modifier, {upsert: true})
 

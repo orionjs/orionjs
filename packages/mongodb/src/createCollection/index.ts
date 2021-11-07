@@ -17,6 +17,7 @@ import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
 import {Model} from '@orion-js/models'
 import {loadIndexes} from './createIndexes'
+import {cloneDeep} from 'lodash'
 
 const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
   const connectionName = options.connectionName || 'main'
@@ -39,7 +40,16 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
     indexes: options.indexes || [],
     db,
     rawCollection,
-    generateId: getIdGenerator(options)
+    generateId: getIdGenerator(options),
+    getSchema: () => {
+      const schema = cloneDeep(model.getSchema())
+      if (!schema._id) {
+        schema._id = {
+          type: 'ID'
+        }
+      }
+      return schema
+    }
   }
 
   // helpers

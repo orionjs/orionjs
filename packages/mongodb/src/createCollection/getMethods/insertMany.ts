@@ -3,6 +3,7 @@ import {Collection, InsertMany} from '../../types'
 import {cloneDeep, values} from 'lodash'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
+import {clean, validate} from '@orion-js/schema'
 
 export default <DocumentType>(collection: Collection) => {
   const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
@@ -13,13 +14,14 @@ export default <DocumentType>(collection: Collection) => {
         throw new Error(`Item at index ${index} is not a document`)
       }
 
-      if (collection.model) {
-        doc = await collection.model.clean(fromDot(doc))
-        await collection.model.validate(doc)
-      }
-
       if (!doc._id) {
         doc._id = collection.generateId()
+      }
+
+      if (collection.model) {
+        const schema = collection.getSchema()
+        doc = await clean(schema, fromDot(doc))
+        await validate(schema, doc)
       }
 
       docs[index] = doc

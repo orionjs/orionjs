@@ -1,5 +1,6 @@
 import * as MongoDB from 'mongodb'
 import {Model} from '@orion-js/models'
+import {Schema} from '@orion-js/schema'
 
 export type DocumentWithId<T> = T & {
   /**
@@ -8,6 +9,8 @@ export type DocumentWithId<T> = T & {
   _id: string
 }
 
+export type DocumentWithoutId<T> = Omit<T, '_id'>
+
 type OmitByValue<T, ValueType> = Pick<
   T,
   {[Key in keyof T]-?: T[Key] extends ValueType ? never : Key}[keyof T]
@@ -15,12 +18,15 @@ type OmitByValue<T, ValueType> = Pick<
 
 type RemoveFunctions<T> = OmitByValue<T, Function>
 
+export type ModelToDocumentType<ModelClass> = RemoveFunctions<ModelClass>
 export type ModelToDocumentTypeWithId<ModelClass> = DocumentWithId<RemoveFunctions<ModelClass>>
-export type ModelToDocumentTypeBase<ModelClass> = RemoveFunctions<ModelClass>
-export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentTypeWithId<ModelClass>>
+export type ModelToDocumentTypeWithoutId<ModelClass> = DocumentWithoutId<
+  ModelToDocumentType<ModelClass>
+>
+export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentType<ModelClass>>
 export type ModelToUpdateFilter<ModelClass> =
-  | MongoDB.UpdateFilter<ModelToDocumentTypeWithId<ModelClass>>
-  | Partial<ModelToDocumentTypeWithId<ModelClass>>
+  | MongoDB.UpdateFilter<ModelToDocumentTypeWithoutId<ModelClass>>
+  | Partial<ModelToDocumentTypeWithoutId<ModelClass>>
 
 export interface CollectionIndex {
   keys: MongoDB.IndexSpecification
@@ -50,20 +56,18 @@ export namespace DataLoader {
 
   export type LoadData<ModelClass> = (
     options: LoadDataOptions<ModelClass>
-  ) => Promise<Array<DocumentWithId<ModelClass>>>
-  export type LoadOne<ModelClass> = (
-    options: LoadOneOptions<ModelClass>
-  ) => Promise<DocumentWithId<ModelClass>>
+  ) => Promise<Array<ModelClass>>
+  export type LoadOne<ModelClass> = (options: LoadOneOptions<ModelClass>) => Promise<ModelClass>
   export type LoadMany<ModelClass> = (
     options: LoadDataOptions<ModelClass>
-  ) => Promise<Array<DocumentWithId<ModelClass>>>
-  export type LoadById<ModelClass> = (id: string) => Promise<DocumentWithId<ModelClass>>
+  ) => Promise<Array<ModelClass>>
+  export type LoadById<ModelClass> = (id: string) => Promise<ModelClass>
 }
 
 export type MongoSelector<DocumentType = MongoDB.Document> = string | MongoDB.Filter<DocumentType>
 
 export interface FindCursor<ModelClass> extends MongoDB.FindCursor {
-  toArray: () => Promise<Array<DocumentWithId<ModelClass>>>
+  toArray: () => Promise<Array<ModelClass>>
 }
 
 export interface UpdateOptions {
@@ -84,12 +88,12 @@ export interface InsertOptions {
   mongoOptions?: MongoDB.InsertOneOptions
 }
 
-export type InitItem<ModelClass> = (doc: MongoDB.Document) => DocumentWithId<ModelClass>
+export type InitItem<ModelClass> = (doc: MongoDB.Document) => ModelClass
 
 export type FindOne<ModelClass> = (
   selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
-) => Promise<DocumentWithId<ModelClass>>
+) => Promise<ModelClass>
 
 export type Find<ModelClass> = (
   selector?: ModelToMongoSelector<ModelClass>,
@@ -100,15 +104,15 @@ export type FindOneAndUpdate<ModelClass> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions
-) => Promise<DocumentWithId<ModelClass>>
+) => Promise<ModelClass>
 
 export type InsertOne<ModelClass> = (
-  doc: ModelToDocumentTypeBase<ModelClass>,
+  doc: ModelToDocumentTypeWithoutId<ModelClass>,
   options?: InsertOptions
 ) => Promise<string>
 
 export type InsertMany<ModelClass> = (
-  doc: Array<Partial<ModelToDocumentTypeBase<ModelClass>>>,
+  doc: Array<ModelToDocumentTypeWithoutId<ModelClass>>,
   options?: InsertOptions
 ) => Promise<Array<string>>
 
@@ -158,6 +162,7 @@ export interface Collection<ModelClass = any> {
   model?: Model
   indexes: Array<CollectionIndex>
   generateId: () => string
+  getSchema: () => Schema
 
   db: MongoDB.Db
   rawCollection: MongoDB.Collection

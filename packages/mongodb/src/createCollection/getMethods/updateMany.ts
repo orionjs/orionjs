@@ -17,7 +17,7 @@ export default <DocumentType>(collection: Collection) => {
     }
 
     if (collection.model) {
-      const schema = collection.model.getSchema()
+      const schema = collection.getSchema()
       modifier = options.clean !== false ? await cleanModifier(schema, modifier) : modifier
       if (options.validate !== false) await validateModifier(schema, modifier)
     }

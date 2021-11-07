@@ -6,6 +6,9 @@ it('should data load one not by id', async () => {
   @TypedModel()
   class LoadOneTestModel {
     @Prop()
+    _id: string
+
+    @Prop()
     name: string
 
     @Prop()

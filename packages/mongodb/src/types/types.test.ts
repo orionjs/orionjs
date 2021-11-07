@@ -13,6 +13,9 @@ it('uses correctly typescript for collections', async () => {
 
   @TypedModel()
   class User {
+    @Prop()
+    _id: string
+
     /**
      * The users first name
      */

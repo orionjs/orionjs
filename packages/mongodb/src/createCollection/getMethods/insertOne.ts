@@ -1,6 +1,7 @@
 import isPlainObject from 'lodash/isPlainObject'
 import {Collection, InsertOne} from '../../types'
 import fromDot from '../../helpers/fromDot'
+import {clean, validate} from '@orion-js/schema'
 
 export default <DocumentType>(collection: Collection) => {
   const insertOne: InsertOne<DocumentType> = async (insertDoc, options) => {
@@ -9,13 +10,14 @@ export default <DocumentType>(collection: Collection) => {
       throw new Error('Insert must receive a document')
     }
 
-    if (collection.model) {
-      doc = await collection.model.clean(fromDot(doc))
-      await collection.model.validate(doc)
-    }
-
     if (!doc._id) {
       doc._id = collection.generateId()
+    }
+
+    if (collection.model) {
+      const schema = collection.getSchema()
+      doc = await clean(schema, fromDot(doc))
+      await validate(schema, doc)
     }
 
     await collection.rawCollection.insertOne(doc)
