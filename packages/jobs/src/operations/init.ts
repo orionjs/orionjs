@@ -55,12 +55,12 @@ export async function init(opts: InitOptions) {
   })
 
   JobManager.init(agenda, {namespace})
-
-  if (disabled) {
-    console.log('Skipping jobs.start(). ORION_TEST env var or disabled option is set.')
-  } else {
-    await JobManager.start()
-  }
+  await JobManager.start()
 
   await initJobs(agenda, jobs, disabled)
+
+  if (disabled) {
+    console.log('Stopping jobs. ORION_TEST env var or disabled option is set.')
+    await JobManager.getAgenda().stop()
+  }
 }

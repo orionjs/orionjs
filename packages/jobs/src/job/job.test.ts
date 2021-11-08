@@ -58,4 +58,37 @@ describe('job helper', () => {
       expect(runMock).toHaveBeenCalledTimes(0)
     })
   })
+
+  describe('misc checks', () => {
+    it('can schedule without explicitly starting agenda', async () => {
+      runMock = jest.fn(() => Promise.reject('some error'))
+      specs = {
+        eventJob: job({
+          type: 'single',
+          name: 'eventJob',
+          maxRetries: 3,
+          getNextRun: () => new Date(),
+          run: runMock
+        })
+      }
+
+      await init({
+        jobs: specs,
+        dbAddress: url,
+        namespace: 'job',
+        disabled: true
+      })
+
+      const eventData = {
+        example: true
+      }
+      await (specs as {eventJob: Job}).eventJob.schedule(eventData)
+
+      await new Promise(r => setTimeout(r, 500))
+
+      expect(runMock).toHaveBeenCalledTimes(0)
+
+      await JobManager.getAgenda().close()
+    })
+  })
 })
