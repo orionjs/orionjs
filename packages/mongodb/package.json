@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -19,7 +19,7 @@
     "@orion-js/helpers": "^3.0.0",
     "@orion-js/models": "^3.0.0",
     "@orion-js/schema": "^3.0.0",
-    "@orion-js/typed-model": "^3.0.0",
+    "@orion-js/typed-model": "^3.0.2",
     "dataloader": "2.0.0",
     "dot-object": "2.1.4",
     "mongodb": "4.1.3"

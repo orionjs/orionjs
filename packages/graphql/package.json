@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "@orion-js/models": "^3.0.0",
     "@orion-js/resolvers": "^3.0.0",
     "@orion-js/schema": "^3.0.0",
-    "@orion-js/typed-model": "^3.0.0",
+    "@orion-js/typed-model": "^3.0.2",
     "apollo-server-core": "3.4.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^1.2.1",
