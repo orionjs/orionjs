@@ -19,6 +19,12 @@ describe('job helper', () => {
           run: runMock
         })
       }
+
+      await init({
+        jobs: specs,
+        dbAddress: url,
+        namespace: 'job'
+      })
     })
 
     afterEach(async () => {
@@ -28,12 +34,6 @@ describe('job helper', () => {
     })
 
     it('retries the job 3 times before failing', async () => {
-      await init({
-        jobs: specs,
-        dbAddress: url,
-        namespace: 'job'
-      })
-
       const eventData = {
         example: true
       }
@@ -48,12 +48,6 @@ describe('job helper', () => {
     })
 
     it('can schedule a job in the future', async () => {
-      await init({
-        jobs: specs,
-        dbAddress: url,
-        namespace: 'job'
-      })
-
       const eventData = {
         example: true
       }
@@ -63,8 +57,21 @@ describe('job helper', () => {
 
       expect(runMock).toHaveBeenCalledTimes(0)
     })
+  })
 
+  describe('misc checks', () => {
     it('can schedule without explicitly starting agenda', async () => {
+      runMock = jest.fn(() => Promise.reject('some error'))
+      specs = {
+        eventJob: job({
+          type: 'single',
+          name: 'eventJob',
+          maxRetries: 3,
+          getNextRun: () => new Date(),
+          run: runMock
+        })
+      }
+
       await init({
         jobs: specs,
         dbAddress: url,
@@ -80,6 +87,8 @@ describe('job helper', () => {
       await new Promise(r => setTimeout(r, 500))
 
       expect(runMock).toHaveBeenCalledTimes(0)
+
+      await JobManager.getAgenda().close()
     })
   })
 })
