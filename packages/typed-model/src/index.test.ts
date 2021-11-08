@@ -1,5 +1,5 @@
 import {createModel} from '@orion-js/models'
-import {modelResolver, resolver} from '@orion-js/resolvers'
+import {modelResolver} from '@orion-js/resolvers'
 import {PropOptions} from './decorators'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
 import {Prop, TypedModel, getSchemaForClass, getModelForClass, ResolverProp} from './index'
@@ -397,6 +397,33 @@ describe('typed-schema e2e tests', () => {
       expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
     })
 
+    it('works for nested arrays of models', () => {
+      @TypedModel()
+      class A {
+        @Prop({optional: true})
+        name: string
+      }
+
+      const AModel = getModelForClass(A)
+      @TypedModel()
+      class Spec {
+        @Prop({type: [AModel]})
+        a: A[]
+      }
+
+      const expected = createModel({
+        name: 'Spec',
+        schema: {
+          a: {
+            type: [AModel]
+          }
+        }
+      })
+
+      expect(getModelForClass(Spec).name).toEqual(expected.name)
+      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
+    })
+
     it('works for nested models together with nested classes', () => {
       @TypedModel()
       class NestedModelClass {
@@ -495,6 +522,7 @@ describe('typed-schema e2e tests', () => {
     it('allows creating multiple classes with the same name', () => {
       const create = () => {
         @TypedModel()
+        // eslint-disable-next-line no-unused-vars
         class Spec {
           @Prop()
           name: string

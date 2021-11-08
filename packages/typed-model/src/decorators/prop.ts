@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import {Constructor, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 import {MetadataStorage} from '../storage/metadataStorage'
 import 'reflect-metadata'
@@ -6,7 +7,7 @@ import {isClass} from '../utils/isClass'
 import {Model} from '@orion-js/models'
 
 export interface SchemaNodeForClasses extends Omit<SchemaNode, 'type'> {
-  type: SchemaMetaFieldType | Constructor<any> | Model
+  type: SchemaMetaFieldType | Constructor<any> | Model | Model[]
 }
 
 export type PropOptions = Partial<SchemaNodeForClasses>
