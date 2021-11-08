@@ -19,12 +19,6 @@ describe('job helper', () => {
           run: runMock
         })
       }
-
-      await init({
-        jobs: specs,
-        dbAddress: url,
-        namespace: 'job'
-      })
     })
 
     afterEach(async () => {
@@ -34,6 +28,12 @@ describe('job helper', () => {
     })
 
     it('retries the job 3 times before failing', async () => {
+      await init({
+        jobs: specs,
+        dbAddress: url,
+        namespace: 'job'
+      })
+
       const eventData = {
         example: true
       }
@@ -48,10 +48,34 @@ describe('job helper', () => {
     })
 
     it('can schedule a job in the future', async () => {
+      await init({
+        jobs: specs,
+        dbAddress: url,
+        namespace: 'job'
+      })
+
       const eventData = {
         example: true
       }
       await (specs as {eventJob: Job}).eventJob.schedule(eventData, 'in 1 day')
+
+      await new Promise(r => setTimeout(r, 500))
+
+      expect(runMock).toHaveBeenCalledTimes(0)
+    })
+
+    it('can schedule without explicitly starting agenda', async () => {
+      await init({
+        jobs: specs,
+        dbAddress: url,
+        namespace: 'job',
+        disabled: true
+      })
+
+      const eventData = {
+        example: true
+      }
+      await (specs as {eventJob: Job}).eventJob.schedule(eventData)
 
       await new Promise(r => setTimeout(r, 500))
 
