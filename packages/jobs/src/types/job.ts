@@ -77,10 +77,34 @@ export interface JobInfo extends AgendaJob {
 
 export type RunFunction = (data: any, job: JobInfo) => any
 
-export type ScheduleJobFunction = (
-  data?: object,
+export interface ScheduleJobOpts {
+  /**
+   * If included, will run the job at the specified Date. Can also be a human readable string (e.g. "in 5 minutes"). If not included, will use the JobDefinition.getNextRun(). If getNextRun is null, it will run immediately.
+   */
   runAt?: Date | string
-) => Promise<AgendaJob> | void
+
+  /**
+   * If included (and runAt is null), will run the job after that amount of milliseconds.
+   */
+  waitToRun?: number
+
+  /**
+   * In case deduplication is needed.
+   */
+  uniqueness?: {
+    /**
+     * The uniqueness key. If included, will tag the job with the given key on the first run. If a job with the same key is scheduled after the first run, an error will be thrown and the job won't be ran.
+     */
+    key: string
+
+    /**
+     * If set to true, instead of throwing an error when a job with the given key is not unique, the job will be omitted silently.
+     */
+    ignoreError?: boolean
+  }
+}
+
+export type ScheduleJobFunction = (data?: object, opts?: ScheduleJobOpts) => Promise<AgendaJob>
 export interface Job {
   /**
    * Internal use only.
@@ -94,3 +118,5 @@ export interface Job {
    */
   schedule: ScheduleJobFunction
 }
+
+export type PromiseProcessor = (job: AgendaJob) => void | Promise<void>

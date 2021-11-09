@@ -6,18 +6,25 @@ export class JobManagerContainer {
   private agenda: Agenda | void
   public state: 'started' | 'stopped' = 'stopped'
   public namespace = ''
+  public logger = console
 
-  public init(agenda: Agenda, {namespace = ''}: {namespace?: string} = {}) {
+  public init(
+    agenda: Agenda,
+    {namespace = '', logger = console}: {namespace?: string; logger?: typeof console} = {}
+  ) {
     if (this.agenda) {
       throw new JobsAlreadyInitializedError()
     }
     this.agenda = agenda
     this.namespace = namespace
+    this.logger = logger
   }
 
   public async start() {
     if (this.state === 'started') {
-      console.warn('jobs.start() called on an already started Job scheduler. Skipping operation...')
+      this.logger.warn(
+        'jobs.start() called on an already started Job scheduler. Skipping operation...'
+      )
       return
     }
     await this.getAgenda().start()
@@ -26,7 +33,9 @@ export class JobManagerContainer {
 
   public async stop() {
     if (this.state === 'stopped') {
-      console.warn('jobs.stop() called on an already stopped Job scheduler. Skipping operation...')
+      this.logger.warn(
+        'jobs.stop() called on an already stopped Job scheduler. Skipping operation...'
+      )
       return
     }
     await this.getAgenda().stop()

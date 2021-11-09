@@ -19,10 +19,8 @@ const addMaxRetries = (agenda: Agenda, job: JobDefinition, jobName: string): Pro
     const originalJobId = agendaJob.attrs.data?._parentJobId ?? agendaJob.attrs._id.toString()
 
     try {
-      await job.run(agendaJob.attrs.data, {
-        ...agendaJob,
-        timesExecuted: 1
-      })
+      const currProcessor = getProcessorFromJob(job)
+      await currProcessor(agendaJob)
     } catch (err) {
       let retry: JobRetry = await JobRetries.findOne({jobId: originalJobId})
 
