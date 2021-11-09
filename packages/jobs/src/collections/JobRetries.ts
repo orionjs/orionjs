@@ -1,6 +1,5 @@
 import {TypedModel, Prop} from '@orion-js/typed-model'
 import {createCollection} from '@orion-js/mongodb'
-import {} from '@orion-js/typed-model'
 
 @TypedModel()
 export class JobRetry {

@@ -1,9 +1,10 @@
 import {getAgendaOptions} from '../utils/getAgendaOptions'
 import {JobManager} from '../JobManager'
-import {JobDefinition, Job, ScheduleJobFunction} from '../types/job'
+import {JobDefinition, Job, ScheduleJobFunction, ScheduleJobOpts} from '../types/job'
 import addMaxRetries from './addMaxRetries'
 import {Job as AgendaJob} from 'agenda'
 import getJobName from '../utils/getJobName'
+import {jobUniquenessCheck} from './jobUniquenessCheck'
 
 /**
  * Job factory. Creates a job object ready to be initialized.
@@ -25,17 +26,28 @@ export const job = (jobDefinition: JobDefinition): Job => {
     return jobDefinition
   }
 
-  const scheduleEventJob: ScheduleJobFunction = (
+  const scheduleSingleJob: ScheduleJobFunction = async (
     data?: object,
-    runAt?: Date | string
-  ): void | Promise<AgendaJob> => {
+    opts: ScheduleJobOpts = {}
+  ): Promise<AgendaJob> => {
     if (jobDefinition.type === 'recurrent') return null // Recurrent jobs can not be scheduled manually, they are scheduled on init.
 
+    if (opts.uniqueness) {
+      const isUnique = await jobUniquenessCheck(opts.uniqueness.key, opts.uniqueness.ignoreError)
+      if (!isUnique) {
+        return null
+      }
+    }
+
     const agenda = JobManager.getAgenda()
+    const {runAt, waitToRun} = opts
 
     let nextRun: string | Date = jobDefinition.getNextRun ? jobDefinition.getNextRun() : new Date()
+
     if (runAt) {
       nextRun = runAt
+    } else if (waitToRun) {
+      nextRun = new Date(Date.now() + waitToRun)
     }
 
     return agenda.schedule(nextRun, nameRef.name, data)
@@ -43,7 +55,7 @@ export const job = (jobDefinition: JobDefinition): Job => {
 
   return {
     __initialize: initializer,
-    schedule: scheduleEventJob
+    schedule: scheduleSingleJob
   }
 }
 

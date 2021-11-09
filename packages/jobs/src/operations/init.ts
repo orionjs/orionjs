@@ -28,6 +28,11 @@ export interface InitOptions {
    * If set to true, will initialize jobs but won't start running them. Single jobs can still be scheduled so that they run in another machine.
    */
   disabled?: boolean
+
+  /**
+   * The logger. Defaults to console.
+   */
+  logger?: typeof console
 }
 
 export async function init(opts: InitOptions) {
@@ -37,7 +42,8 @@ export async function init(opts: InitOptions) {
     dbAddress = process.env.MONGO_URL,
     dbCollection = 'orion_v3_jobs',
     disabled = process.env.ORION_TEST ? true : false,
-    namespace = ''
+    namespace = '',
+    logger = console
   } = opts
 
   if (!dbAddress) {
@@ -54,13 +60,13 @@ export async function init(opts: InitOptions) {
     ...agendaConfig
   })
 
-  JobManager.init(agenda, {namespace})
+  JobManager.init(agenda, {namespace, logger})
   await JobManager.start()
 
   await initJobs(agenda, jobs, disabled)
 
   if (disabled) {
-    console.log('Stopping jobs. ORION_TEST env var or disabled option is set.')
+    logger.log('Stopping jobs. ORION_TEST env var or disabled option is set.')
     await JobManager.getAgenda().stop()
   }
 }

@@ -47,9 +47,9 @@ export default async function initJobs(agenda: Agenda, jobs: JobMap, disabled = 
       throw new JobScheduleRequiredError(jobName)
     }
 
-    // Event jobs
+    // Single jobs
     if (job.type === 'single') {
-      // Do nothing, event jobs are defined on call (see /job/index.ts)
+      // Do nothing, single jobs are defined on call (see /job/index.ts)
       return
     }
   })

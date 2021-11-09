@@ -18,7 +18,7 @@ describe('initJobs', () => {
           }
         }),
 
-        eventJob: job({
+        singleJob: job({
           type: 'single',
           getNextRun: () => nextRun,
           run: () => {
@@ -48,26 +48,26 @@ describe('initJobs', () => {
       expect(jobs[0].attrs.nextRunAt).toEqual(nextRun)
     })
 
-    it('does not add event jobs to agenda before triggering them', async () => {
+    it('does not add single jobs to agenda before triggering them', async () => {
       const agenda: Agenda = JobManager.getAgenda()
 
-      const jobs = await agenda.jobs({name: 'initJobs.eventJob'})
+      const jobs = await agenda.jobs({name: 'initJobs.singleJob'})
       expect(jobs.length).toBe(0)
     })
 
-    it('adds event jobs to agenda after triggering them', async () => {
+    it('adds single jobs to agenda after triggering them', async () => {
       const agenda: Agenda = JobManager.getAgenda()
 
-      const eventData = {
+      const data = {
         example: true
       }
 
-      await (specs as {eventJob: Job}).eventJob.schedule(eventData)
-      const jobs = await agenda.jobs({name: 'initJobs.eventJob'})
+      await (specs as {singleJob: Job}).singleJob.schedule(data)
+      const jobs = await agenda.jobs({name: 'initJobs.singleJob'})
       expect(jobs.length).toBe(1)
       expect(jobs[0].attrs._id).toBeDefined()
       expect(jobs[0].attrs.nextRunAt).toEqual(nextRun)
-      expect(jobs[0].attrs.data).toEqual(eventData)
+      expect(jobs[0].attrs.data).toEqual(data)
     })
   })
 
