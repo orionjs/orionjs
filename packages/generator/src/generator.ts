@@ -15,6 +15,7 @@ async function generator<Resource, Legacy>(
   if (!['resolver', 'component', 'model', 'collection', 'job'].includes(resource)) {
     throw new Error('Debe especificar un recurso valido: <resolver|component|model|collection|job>')
   }
+
   const {name, path = ''} = options
 
   if (!name || typeof name !== 'string') {
