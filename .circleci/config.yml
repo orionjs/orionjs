@@ -8,7 +8,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/node:10.21.0
+      - image: circleci/node:14.17.0
     steps:
       - checkout
       - run: yarn install
@@ -17,7 +17,7 @@ jobs:
       - run: yarn test
   deploy-website:
     docker:
-      - image: circleci/node:10.21.0
+      - image: circleci/node:14.17.0
     steps:
       - checkout
       - run:
