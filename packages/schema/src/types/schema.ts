@@ -112,6 +112,16 @@ export interface SchemaNode {
    * Used in GraphQL. Sets the key of the field in the GraphQL schema. You must set this value when building your schema.
    */
   key?: string
+
+  /**
+   * The name that would be displayed in a front-end form
+   */
+  label?: string
+
+  /**
+   * The field type that would be used in a front-end form
+   */
+  fieldType?: string //TODO: allow only possible values
 }
 
 export interface CurrentNodeInfoOptions {
