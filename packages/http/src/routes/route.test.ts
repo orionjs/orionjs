@@ -86,4 +86,24 @@ describe('Test routes', () => {
     expect(response.statusCode).toBe(200)
     expect(response.text).toBe('hello world')
   })
+
+  test('It should handle a http request of type get and post on the same path', async () => {
+    const testRoute = route({
+      path: '/test6',
+      method: 'all',
+      async resolve(req, res, viewer) {
+        return {body: 'hello world', statusCode: 200}
+      }
+    })
+
+    registerRoute(testRoute)
+
+    const response = await request(app).get('/test6')
+    expect(response.statusCode).toBe(200)
+    expect(response.text).toBe('hello world')
+
+    const response2 = await request(app).post('/test6')
+    expect(response2.statusCode).toBe(200)
+    expect(response2.text).toBe('hello world')
+  })
 })

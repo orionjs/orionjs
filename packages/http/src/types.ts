@@ -8,7 +8,13 @@ export interface RouteResponse {
 }
 
 export interface OrionRouteOptions {
-  method: 'get' | 'post' | 'put' | 'delete'
+  /**
+   * The http method of the requests to match.
+   */
+  method: 'get' | 'post' | 'put' | 'delete' | 'all'
+  /**
+   * The path of the requests to match.
+   */
   path: string
   /**
    * Select the body parser to use for this route.
