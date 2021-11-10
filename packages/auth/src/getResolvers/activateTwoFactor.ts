@@ -1,17 +1,19 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import speakeasy from 'speakeasy'
 
 export default ({Users, Session}) =>
   resolver({
-    requireUserId: true,
     params: {
       code: {
         type: String
       }
     },
+    permissionsOptions: {
+      requireUserId: true
+    },
     returns: Users.model,
     mutation: true,
-    resolve: async function({code}, viewer) {
+    resolve: async function ({code}, viewer) {
       const user = await Users.findOne(viewer.userId)
       if (!user) throw new Error('User not found')
 

@@ -1,12 +1,14 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 
 export default ({Users, Session}) =>
   resolver({
     returns: Users.model,
     mutation: true,
-    requireUserId: true,
-    requireTwoFactor: true,
-    resolve: async function({code}, viewer) {
+    permissionsOptions: {
+      requireUserId: true,
+      requireTwoFactor: true
+    },
+    resolve: async function ({code}, viewer) {
       const user = await Users.findOne(viewer.userId)
       if (!user) throw new Error('User not found')
       if (!(await user.hasTwoFactor())) {

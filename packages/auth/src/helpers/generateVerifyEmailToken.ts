@@ -1,6 +1,6 @@
-import {generateId} from '@orion-js/app'
+import {generateId} from '@orion-js/helpers'
 
-export default async function(user, email) {
+export default async function (user, email?) {
   if (!email) {
     email = await user.email()
   }

@@ -5,12 +5,16 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "test": "exit 0",
     "prepare": "yarn run build",
-    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib",
-    "test": "exit 0"
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
+    "@orion-js/helpers": "^3.0.0",
+    "@orion-js/http": "^3.0.6",
+    "@orion-js/models": "^3.0.6",
     "@orion-js/resolvers": "^3.0.6",
     "@orion-js/schema": "^3.0.0",
     "bcryptjs": "^2.4.3",
@@ -21,18 +25,16 @@
     "speakeasy": "^2.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
-    "@orion-js/app": "^3.0.0-alpha.10",
     "@shelf/jest-mongodb": "^2.1.0",
-    "babel-jest": "^23.4.2",
-    "jest": "^23.5.0"
-  },
-  "peerDependencies": {
-    "@orion-js/app": "*"
+    "@types/jest": "^27.0.2",
+    "@types/lodash": "4.14.176",
+    "@typescript-eslint/eslint-plugin": "5.1.0",
+    "@typescript-eslint/parser": "5.1.0",
+    "eslint": "8.0.1",
+    "eslint-plugin-import": "2.25.2",
+    "jest": "27.3.1",
+    "ts-jest": "27.0.7",
+    "typescript": "^4.4.4"
   },
   "publishConfig": {
     "access": "public"

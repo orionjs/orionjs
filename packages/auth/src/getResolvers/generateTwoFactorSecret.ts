@@ -1,8 +1,10 @@
-import {resolver, ConfigurationError, Model} from '@orion-js/app'
+import {OrionError} from '@orion-js/helpers'
+import {resolver} from '@orion-js/resolvers'
 import speakeasy from 'speakeasy'
 import qr from 'qr-image'
+import {createModel} from '@orion-js/models'
 
-const model = new Model({
+const model = createModel({
   name: 'QRSetupInformation',
   schema: {
     base32: {
@@ -16,10 +18,12 @@ const model = new Model({
 
 export default ({Users, Session, twoFactor}) =>
   resolver({
-    requireUserId: true,
+    permissionsOptions: {
+      requireUserId: true
+    },
     returns: model,
     mutation: true,
-    resolve: async function(params, viewer) {
+    resolve: async function (params, viewer) {
       const user = await Users.findOne(viewer.userId)
       if (await user.hasTwoFactor()) {
         throw new Error('User has two factor')
@@ -37,7 +41,7 @@ export default ({Users, Session, twoFactor}) =>
       const {issuer} = twoFactor
 
       if (!issuer) {
-        throw new ConfigurationError('Two factor issuer is required in configuration')
+        throw new OrionError('Two factor issuer is required in configuration')
       }
 
       const encoded = encodeURIComponent(`${issuer}:${email}`)

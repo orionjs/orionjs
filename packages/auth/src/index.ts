@@ -6,6 +6,8 @@ import requireTwoFactor from './helpers/requireTwoFactor'
 import {getOptions} from './optionsStore'
 import getSession from './getResolvers/getSession'
 
+export * from './types'
+
 export {
   getSession,
   getAuthResolvers,

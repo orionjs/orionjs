@@ -1,12 +1,12 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import hashPassword from '../helpers/hashPassword'
 import createSession from '../helpers/createSession'
 import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
+import {User} from '../types/user'
 
 export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationToken}) => {
   let profile = Users.model.schema.profile || null
   return resolver({
-    name: 'createUser',
     params: {
       email: {
         type: 'email',
@@ -29,8 +29,8 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, password, profile}, viewer) {
-      const newUser = {
+    resolve: async function ({email, password, profile}, viewer) {
+      const newUser: User = {
         emails: [
           {
             address: email.toLowerCase(),
