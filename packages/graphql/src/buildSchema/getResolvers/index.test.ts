@@ -24,6 +24,7 @@ describe('Test get resolvers schema', () => {
       returns: TestModel,
       async resolve(params) {
         return {
+          userId: params.userId,
           name: 'test',
           age: 10
         }
@@ -37,7 +38,8 @@ describe('Test get resolvers schema', () => {
 
     expect(schema.globalResolver.type.toString()).toEqual('TestModel')
     expect(schema.globalResolver.args).toHaveProperty('userId')
-    expect(await schema.globalResolver.resolve()).toEqual({
+    expect(await schema.globalResolver.resolve(null, {userId: '1'})).toEqual({
+      userId: '1',
       name: 'test',
       age: 10
     })
