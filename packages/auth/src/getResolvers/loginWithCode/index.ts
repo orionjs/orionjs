@@ -1,4 +1,4 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import findUserByEmail from '../../helpers/findUserByEmail'
 import createSession from '../../helpers/createSession'
 import requireTwoFactor from '../../helpers/requireTwoFactor'
@@ -6,7 +6,6 @@ import validate from './validate'
 
 export default ({Users, Session, Sessions, twoFactor}) =>
   resolver({
-    name: 'loginWithCode',
     params: {
       email: {
         type: 'email',
@@ -33,7 +32,7 @@ export default ({Users, Session, Sessions, twoFactor}) =>
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, code, token}, viewer) {
+    resolve: async function ({email, code, token}, viewer) {
       const user = await findUserByEmail({email, Users})
 
       await validate({user, code, token})

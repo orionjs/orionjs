@@ -1,4 +1,4 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import createSession from '../helpers/createSession'
 import {DateTime} from 'luxon'
 
@@ -9,9 +9,7 @@ export default ({Users, Session, Sessions}) =>
         type: String,
         label: 'Token',
         async custom(token) {
-          const maxDate = DateTime.local()
-            .minus({weeks: 2})
-            .toJSDate()
+          const maxDate = DateTime.local().minus({weeks: 2}).toJSDate()
           const exists = await Users.find({
             'services.emailVerify.token': token,
             'services.emailVerify.date': {$gte: maxDate}
@@ -22,7 +20,7 @@ export default ({Users, Session, Sessions}) =>
     },
     returns: Session,
     mutation: true,
-    resolve: async function({token}, viewer) {
+    resolve: async function ({token}, viewer) {
       const user = await Users.findOne({'services.emailVerify.token': token})
       const {email} = user.services.emailVerify
 

@@ -1,5 +1,8 @@
-import {generateId} from '@orion-js/app'
+import {Collection, ModelToDocumentTypeWithoutId} from '@orion-js/mongodb'
+import {generateId} from '@orion-js/helpers'
 import {getOptions} from '../optionsStore'
+import {AbstractSession} from '../Sessions/Model'
+import {User} from '../types'
 
 const hasEmailsVerified = function (user) {
   if (!user.emails) return true
@@ -10,11 +13,19 @@ const hasEmailsVerified = function (user) {
 }
 
 export default async function (user, viewer) {
-  const {Sessions, onCreateSession, customCreateSession} = getOptions()
+  const {
+    Sessions,
+    onCreateSession,
+    customCreateSession
+  }: {
+    Sessions: Collection<AbstractSession>
+    onCreateSession: (session: AbstractSession, viewer: any) => Promise<any>
+    customCreateSession: (user: User, viewer: any) => Promise<AbstractSession>
+  } = getOptions()
 
   if (!user) throw new Error('User not found')
 
-  let session = {}
+  let session: any = {}
   if (customCreateSession) {
     session = await customCreateSession(user, viewer)
   } else {
@@ -29,7 +40,7 @@ export default async function (user, viewer) {
       roles: user.roles,
       emailVerified: hasEmailsVerified(user)
     }
-    session._id = await Sessions.insert(session)
+    session._id = await Sessions.insertOne(session)
   }
 
   if (onCreateSession) {

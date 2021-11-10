@@ -1,9 +1,8 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import deleteSession from '../helpers/deleteSession'
 
 export default ({Users, Session, Sessions}) =>
   resolver({
-    name: 'logout',
     params: {
       sessionId: {
         type: 'ID',
@@ -12,7 +11,7 @@ export default ({Users, Session, Sessions}) =>
     },
     returns: Boolean,
     mutation: true,
-    resolve: async function({sessionId}, viewer) {
+    resolve: async function ({sessionId}, viewer) {
       if (!viewer.session) return false
 
       if (!sessionId) {

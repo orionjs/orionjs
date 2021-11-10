@@ -1,4 +1,4 @@
-import {setGetViewer, setCorsOptions} from '@orion-js/app'
+import {setGetViewer} from '@orion-js/http'
 import loginWithPassword from './loginWithPassword'
 import logout from './logout'
 import changePassword from './changePassword'
@@ -19,6 +19,7 @@ import {setOptions} from '../optionsStore'
 import sendVerificationEmail from './sendVerificationEmail'
 import loginWithCode from './loginWithCode'
 import requestLoginCode from './requestLoginCode'
+import {Resolver} from '@orion-js/resolvers'
 
 export default function (options) {
   options.Sessions = Sessions(options)
@@ -26,22 +27,6 @@ export default function (options) {
   setOptions(options)
 
   setGetViewer(getSession)
-
-  setCorsOptions({
-    allowHeaders: [
-      'X-Requested-With',
-      'Access-Control-Allow-Origin',
-      'X-HTTP-Method-Override',
-      'Content-Type',
-      'Authorization',
-      'Accept',
-      'x-orion-nonce',
-      'x-orion-publickey',
-      'x-orion-signature',
-      'x-orion-locale',
-      'x-orion-twofactor'
-    ]
-  })
 
   registerCheckers(options)
 
@@ -55,7 +40,7 @@ export default function (options) {
     }
   }
 
-  const resolvers = {
+  const resolvers: {[key: string]: Resolver} = {
     loginWithPassword: loginWithPassword(options),
     logout: logout(options),
     getUserByID: getUserByID(options),

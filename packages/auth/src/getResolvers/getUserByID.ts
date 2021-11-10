@@ -1,4 +1,4 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 
 export default options =>
   resolver({
@@ -10,7 +10,7 @@ export default options =>
     },
     returns: options.Users.model,
     mutation: false,
-    resolve: async function({userId}) {
+    resolve: async function ({userId}) {
       return await options.Users.findOne(userId)
     }
   })

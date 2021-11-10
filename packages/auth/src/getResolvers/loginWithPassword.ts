@@ -1,4 +1,4 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import findUserByEmail from '../helpers/findUserByEmail'
 import checkPassword from '../helpers/checkPassword'
 import hasPassword from '../helpers/hasPassword'
@@ -7,7 +7,6 @@ import requireTwoFactor from '../helpers/requireTwoFactor'
 
 export default ({Users, Session, Sessions, twoFactor}) =>
   resolver({
-    name: 'loginWithPassword',
     params: {
       email: {
         type: 'email',
@@ -39,7 +38,7 @@ export default ({Users, Session, Sessions, twoFactor}) =>
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, password}, viewer) {
+    resolve: async function ({email, password}, viewer) {
       const user = await findUserByEmail({email, Users})
       if (twoFactor) {
         await requireTwoFactor({userId: user._id, twoFactorCode: viewer.twoFactorCode})

@@ -1,8 +1,8 @@
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
+import {GetSessionOpts} from '../types'
 
-export default ({Users}) =>
+export default ({Users}: GetSessionOpts) =>
   resolver({
-    name: 'getUserByEmail',
     private: true,
     params: {
       email: {
@@ -11,7 +11,7 @@ export default ({Users}) =>
     },
     returns: Users.model,
     mutation: false,
-    resolve: async function({email}) {
+    resolve: async function ({email}) {
       if (!email) return null
       email = email.toLowerCase()
 
