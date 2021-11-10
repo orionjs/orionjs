@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/generator",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.4",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -15,7 +15,6 @@
     "build": "yarn run clean && tsc",
     "watch": "yarn run clean && tsc -w"
   },
-  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
