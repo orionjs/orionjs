@@ -1,5 +1,6 @@
 import createModel from './createModel'
+import modelToSchema from './createModel/modelToSchema'
 
-export {createModel}
+export {createModel, modelToSchema}
 
 export * from './types'
