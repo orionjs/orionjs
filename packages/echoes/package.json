@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "3.0.0",
+  "version": "3.0.6",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.0.0",
-    "@orion-js/http": "^3.0.0",
-    "@orion-js/resolvers": "^3.0.0",
+    "@orion-js/http": "^3.0.6",
+    "@orion-js/resolvers": "^3.0.6",
     "@orion-js/schema": "^3.0.0",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
