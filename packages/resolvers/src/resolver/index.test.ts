@@ -11,6 +11,7 @@ it('should return a function with a resolver id', () => {
   })
 
   expect(typeof resolver).toBe('object')
+  expect(typeof resolver.resolve).toBe('function')
   expect(typeof resolver.execute).toBe('function')
   expect(typeof resolver.resolverId).toBe('string')
 })
@@ -114,6 +115,9 @@ it('should accept a model as params', async () => {
           type: 'string'
         }
       }
+    },
+    initItem(item) {
+      return item
     }
   }
 
@@ -146,6 +150,9 @@ it('should accept a model as returns', async () => {
           type: 'string'
         }
       }
+    },
+    initItem(item) {
+      return item
     }
   }
 
@@ -176,4 +183,21 @@ it('should correctly clean params when no params are passed', async () => {
   })
 
   expect(await resolver.execute({params: {title: 'test'}})).toBe('test')
+})
+
+it('should allow calling resolver.resolve', async () => {
+  const resolver = createResolver({
+    resolve: async ({title}) => {
+      return `${title}`
+    }
+  })
+
+  const modelResolver = createModelResolver({
+    resolve: async ({title}) => {
+      return `${title}`
+    }
+  })
+
+  expect(await resolver.resolve({title: 'test'})).toBe('test')
+  expect(await modelResolver.resolve({title: 'test'})).toBe('test')
 })
