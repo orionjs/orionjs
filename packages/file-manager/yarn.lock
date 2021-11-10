@@ -852,6 +852,38 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
+"@orion-js/cache@^3.0.0-alpha.23":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.0.0.tgz#ea6f6dd0bb06256bbadfb51db299c796d2dad820"
+  integrity sha512-QV+7r1BD6lSQbmSFOo+utkDGPWHATlQX6JNItVLnUVYMFz/kRPz9gFQbu74LVU1AlWMAT225mf33tfbiDDqwnA==
+  dependencies:
+    "@orion-js/helpers" "^3.0.0"
+
+"@orion-js/helpers@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0.tgz#093094e7fafc4988a3e8dad4171e0f51c0deadc6"
+  integrity sha512-6TknMsxNoeOfWJKN7/GPR6ihPMwn2VfUykiPNONqJ6La/fBDMvzr+flR4v9kIx+FudWbtip/f8HI5cRNjzGhSw==
+  dependencies:
+    object-hash "^2.1.1"
+
+"@orion-js/resolvers@^3.0.6":
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.6.tgz#f125132ea60afa1e29500bcef43407817ba9e16c"
+  integrity sha512-COdei8mwGIGT7O7ZZKcMdbIeomZwY+2Vpw1GWQNTwJD0YxMruOM3Vu1yWtA3nGH/gGmS8vtcw/MxdFlCDSLB+g==
+  dependencies:
+    "@orion-js/cache" "^3.0.0-alpha.23"
+    "@orion-js/helpers" "^3.0.0"
+    "@orion-js/schema" "^3.0.0"
+
+"@orion-js/schema@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0.tgz#1650139226117c2cf5ddcaf9ff1035315c2de124"
+  integrity sha512-eDn3k5M9BkU2TQhmhmSD3X0S93u97OgeUXGozu4zbX+vw6bF6zusssHhd/ywW9cD3pqop/CYGRiUMeIBsn4gmg==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    dot-object "^1.9.0"
+    lodash "^4.17.10"
+
 "@orion-js/schema@^3.0.0-alpha.0":
   version "3.0.0-alpha.0"
   resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0-alpha.0.tgz#7ba6a7ea40e90ba2915b496498c659cdd3044b55"
@@ -2316,8 +2348,9 @@ home-or-tmp@^2.0.0:
     os-tmpdir "^1.0.1"
 
 hosted-git-info@^2.1.4:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.0.tgz#23235b29ab230c576aab0d4f13fc046b0b038222"
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
+  integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 html-encoding-sniffer@^1.0.2:
   version "1.0.2"
@@ -3630,7 +3663,7 @@ object-copy@^0.1.0:
     define-property "^0.2.5"
     kind-of "^3.0.3"
 
-object-hash@^2.2.0:
+object-hash@^2.1.1, object-hash@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-2.2.0.tgz#5ad518581eefc443bd763472b8ff2e9c2c0d54a5"
   integrity sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==
