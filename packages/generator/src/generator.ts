@@ -27,11 +27,4 @@ async function generator<Resource, Legacy>(
   return generators[<string>resource](options)
 }
 
-function hola() {
-  const re = generator<GeneratorResources.JOB, true>(GeneratorResources.JOB, {
-    name: 'hola',
-    type: 'event'
-  })
-}
-
 export {generator}
