@@ -10,7 +10,7 @@ it('should call the resolver', async () => {
     resolvers: {
       res: modelResolver({
         private: true,
-        cache: 5,
+        cache: 100,
         async resolve() {
           index++
           return index
@@ -24,7 +24,7 @@ it('should call the resolver', async () => {
   expect(await item.res({p: 2})).toBe(2)
   expect(await item.res({p: 1})).toBe(1)
 
-  await sleep(5)
+  await sleep(100)
 
   expect(await item.res({p: 1})).toBe(3)
 })
