@@ -39,6 +39,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
     model,
     indexes: options.indexes || [],
     db,
+    client: orionConnection,
     rawCollection,
     generateId: getIdGenerator(options),
     getSchema: () => {

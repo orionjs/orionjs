@@ -1,6 +1,7 @@
 import * as MongoDB from 'mongodb'
 import {Model} from '@orion-js/models'
 import {Schema} from '@orion-js/schema'
+import {OrionMongoClient} from '../connect/connections'
 
 export type DocumentWithId<T> = T & {
   /**
@@ -165,6 +166,7 @@ export interface Collection<ModelClass = any> {
   getSchema: () => Schema
 
   db: MongoDB.Db
+  client: OrionMongoClient
   rawCollection: MongoDB.Collection
   initItem?: InitItem<ModelClass>
 

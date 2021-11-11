@@ -38,6 +38,8 @@ export async function loadIndexes(collection: Collection): Promise<string[]> {
   if (!collection.indexes) return
   if (!collection.indexes.length) return
 
+  await collection.client.connectionPromise
+
   const results = Promise.all(
     collection.indexes.map(async ({keys, options}) => {
       try {
