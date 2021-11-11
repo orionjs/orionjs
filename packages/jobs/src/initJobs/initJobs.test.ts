@@ -1,5 +1,4 @@
 import {Job as AgendaJob, Agenda} from 'agenda'
-import {url} from './../test/setup'
 import {JobManager} from './../JobManager'
 import {init, Job, job, stop} from '..'
 
@@ -29,8 +28,7 @@ describe('initJobs', () => {
 
       await init({
         jobs: specs,
-        namespace: 'initJobs',
-        dbAddress: url
+        namespace: 'initJobs'
       })
     })
 
@@ -84,8 +82,7 @@ describe('initJobs', () => {
 
     await init({
       jobs: specs,
-      namespace: 'initJobs.recurrent',
-      dbAddress: url
+      namespace: 'initJobs.recurrent'
     })
 
     await new Promise(r => setTimeout(r, 200))

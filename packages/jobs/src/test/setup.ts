@@ -1,6 +1,6 @@
 import {connect} from '@orion-js/mongodb'
 
-export const url = `${global.__MONGO_URI__}jest`
+const url = `${global.__MONGO_URI__}jest`
 process.env.MONGO_URL = url
 const connection = connect(url)
 

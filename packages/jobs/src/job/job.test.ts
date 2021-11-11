@@ -1,4 +1,3 @@
-import {url} from '../test/setup'
 import {JobManager} from '../JobManager'
 import {Job} from '../types'
 import {init, job} from '..'
@@ -23,7 +22,6 @@ describe('job helper', () => {
 
       await init({
         jobs: specs,
-        dbAddress: url,
         namespace: 'job_opts',
         disabled: true
       })
@@ -91,7 +89,6 @@ describe('job helper', () => {
 
       await init({
         jobs: specs,
-        dbAddress: url,
         namespace: 'job_retry'
       })
     })
@@ -105,6 +102,8 @@ describe('job helper', () => {
       const data = {
         example: true
       }
+      console.error = jest.fn()
+
       await (specs as {singleJob: Job}).singleJob.schedule(data)
 
       await new Promise(r => setTimeout(r, 500))
@@ -116,6 +115,8 @@ describe('job helper', () => {
       expect(runMock.mock.calls[0][1].timesExecuted).toEqual(0)
       expect(runMock.mock.calls[1][1].timesExecuted).toEqual(1)
       expect(runMock.mock.calls[2][1].timesExecuted).toEqual(2)
+
+      expect(console.error).toHaveBeenCalledTimes(3)
     })
 
     it('can schedule a job in the future', async () => {
@@ -149,7 +150,6 @@ describe('job helper', () => {
 
       await init({
         jobs: specs,
-        dbAddress: url,
         namespace: 'job_misc',
         disabled: true
       })

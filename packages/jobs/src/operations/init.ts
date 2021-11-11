@@ -1,6 +1,6 @@
 import {Agenda} from 'agenda'
 import {AgendaConfig} from 'agenda/dist/agenda'
-
+import {connections} from '@orion-js/mongodb'
 import initJobs from '../initJobs'
 import {JobMap} from '../types/job'
 import {JobManager} from '../JobManager'
@@ -15,9 +15,9 @@ export interface InitOptions {
   agendaConfig?: AgendaConfig
 
   /**
-   * The address of the mongodb where jobs will be stored
+   * The initialized orion mongo connection name. Defaults to main
    */
-  dbAddress?: string
+  connectionName?: string
 
   /**
    * The collection where jobs will be stored. Defaults to orion_v3_jobs
@@ -39,22 +39,22 @@ export async function init(opts: InitOptions) {
   const {
     jobs,
     agendaConfig = {},
-    dbAddress = process.env.MONGO_URL,
+    connectionName = 'main',
     dbCollection = 'orion_v3_jobs',
     disabled = process.env.ORION_TEST ? true : false,
     namespace = '',
     logger = console
   } = opts
 
-  if (!dbAddress) {
-    throw new Error(
-      'No dbAddress provided to Jobs. Please provide it either through opts or set the MONGO_URL env var.'
-    )
+  const mongoConnection = connections[connectionName]
+
+  if (!mongoConnection) {
+    throw new Error(`You must connecto `)
   }
 
   const agenda = new Agenda({
     db: {
-      address: dbAddress,
+      address: mongoConnection.uri,
       collection: dbCollection
     },
     ...agendaConfig
@@ -66,7 +66,6 @@ export async function init(opts: InitOptions) {
   await initJobs(agenda, jobs, disabled)
 
   if (disabled) {
-    logger.log('Stopping jobs. ORION_TEST env var or disabled option is set.')
     await JobManager.getAgenda().stop()
   }
 }
