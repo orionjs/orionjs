@@ -1,10 +1,11 @@
 import {Job as AgendaJob} from 'agenda'
 import {JobDefinition, PromiseProcessor} from '../types/job'
-import JobRetries from '../collections/JobRetries'
+import {getJobRetriesCollection} from '../collections/getJobRetriesCollection'
 import {JobManager} from '..'
 
 export default function getProcessorFromJob(job: JobDefinition): PromiseProcessor {
   return async (agendaJob: AgendaJob): Promise<void> => {
+    const JobRetries = getJobRetriesCollection()
     const retry =
       job.type === 'single'
         ? await JobRetries.findOne(

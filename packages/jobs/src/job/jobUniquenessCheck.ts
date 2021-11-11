@@ -1,4 +1,4 @@
-import JobUniquenessKeys from '../collections/JobUniquenessKeys'
+import {getJobUniquenessKeysCollection} from '../collections/getJobUniquenessKeysCollection'
 import {JobIsNotUniqueError} from '../errors/JobIsNotUnique'
 
 /**
@@ -17,6 +17,7 @@ export const jobUniquenessCheck = async (
     return true
   }
 
+  const JobUniquenessKeys = getJobUniquenessKeysCollection()
   const existingJob = await JobUniquenessKeys.findOne({key: uniquenessKey})
   if (existingJob) {
     if (ignoreUniquenessError) {

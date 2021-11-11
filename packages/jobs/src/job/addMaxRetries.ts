@@ -1,6 +1,6 @@
 import {Processor} from 'agenda/dist/agenda/define'
 import {Agenda, Job as AgendaJob} from 'agenda'
-import JobRetries, {JobRetry} from '../collections/JobRetries'
+import {getJobRetriesCollection} from '../collections/getJobRetriesCollection'
 import {JobDefinition} from '../types/job'
 import getProcessorFromJob from '../utils/getProcessorFromJob'
 
@@ -22,7 +22,8 @@ const addMaxRetries = (agenda: Agenda, job: JobDefinition, jobName: string): Pro
       const currProcessor = getProcessorFromJob(job)
       await currProcessor(agendaJob)
     } catch (err) {
-      let retry: JobRetry = await JobRetries.findOne({jobId: originalJobId})
+      const JobRetries = getJobRetriesCollection()
+      let retry = await JobRetries.findOne({jobId: originalJobId})
 
       if (!retry) {
         retry = {
