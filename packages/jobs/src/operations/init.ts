@@ -49,8 +49,10 @@ export async function init(opts: InitOptions) {
   const mongoConnection = connections[connectionName]
 
   if (!mongoConnection) {
-    throw new Error(`You must connecto `)
+    throw new Error(`The connection to MongoDB client "${connectionName}" was not initialized.`)
   }
+
+  await mongoConnection.connectionPromise
 
   const agenda = new Agenda({
     db: {
