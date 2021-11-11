@@ -200,4 +200,5 @@ export interface Collection<ModelClass = any> {
   loadById?: DataLoader.LoadById<ModelClass>
 
   createIndexesPromise?: Promise<string[]>
+  connectionPromise: Promise<MongoDB.MongoClient>
 }
