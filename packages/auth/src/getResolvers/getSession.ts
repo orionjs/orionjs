@@ -2,14 +2,17 @@ import JSSHA from 'jssha'
 import parseInt from 'lodash/parseInt'
 import isPlainObject from 'lodash/isPlainObject'
 import {getOptions} from '../optionsStore'
+import {express} from '@orion-js/http'
 
-export default async function ({getBody, headers, nonceName = 'default'}) {
+export default async function (req: express.Request) {
+  const {headers} = req
   const {Sessions, omitNonceCheck} = getOptions()
   await Sessions.await() // wait till db is connected
-  const nonce = parseInt(headers['x-orion-nonce'])
+  const nonce = Number(headers['x-orion-nonce'])
   const publicKey = headers['x-orion-publickey']
   const signature = headers['x-orion-signature']
   const twoFactorCode = headers['x-orion-twofactor'] || null
+  const nonceName = 'default'
 
   if (!nonce || !publicKey || !signature) {
     return {twoFactorCode}
@@ -44,7 +47,7 @@ export default async function ({getBody, headers, nonceName = 'default'}) {
     )
   }
 
-  const body = await getBody()
+  const body = req.body
   const shaObj = new JSSHA('SHA-512', 'TEXT')
   shaObj.setHMACKey(session.secretKey, 'TEXT')
   shaObj.update(nonce + body)
