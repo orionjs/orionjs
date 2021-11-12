@@ -1,6 +1,6 @@
-import {Params, ResolverOptions} from '@orion-js/resolvers'
+import {ResolverOptions} from '@orion-js/resolvers'
 
-export interface Subscription<T extends Params = any, ReturnType = any> {
+export interface Subscription<T = any, ReturnType = any> {
   key: string
   params: object
   subscribe: (callParams: object, viewer: object) => {}
@@ -8,7 +8,7 @@ export interface Subscription<T extends Params = any, ReturnType = any> {
   publish: (params: T, data: ReturnType) => Promise<void>
 }
 
-export type CreateSubscriptionFunction = <T extends Params = any, ReturnType = any>(
+export type CreateSubscriptionFunction = <T = any, ReturnType = any>(
   options: SubscriptionOptions
 ) => Subscription<T, ReturnType>
 

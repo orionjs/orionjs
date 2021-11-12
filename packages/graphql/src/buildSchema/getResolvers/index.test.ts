@@ -19,10 +19,10 @@ describe('Test get resolvers schema', () => {
       age: number
     }
 
-    const globalResolver = resolver<TestParams, TestModel>({
+    const globalResolver = resolver({
       params: TestParams,
       returns: TestModel,
-      async resolve(params) {
+      async resolve(params: TestParams) {
         return {
           userId: params.userId,
           name: 'test',
