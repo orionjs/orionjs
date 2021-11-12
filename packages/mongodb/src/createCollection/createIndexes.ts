@@ -8,7 +8,7 @@ function matchingDefinition(defIndex, curIndex) {
   return defIndexName === curIndex.name
 }
 
-export async function checkIndexes(collection: Collection) {
+export async function checkIndexes(collection: Partial<Collection>) {
   let currentIndexes = []
   try {
     currentIndexes = await collection.rawCollection.indexes()
@@ -34,7 +34,7 @@ export async function checkIndexes(collection: Collection) {
     )
   }
 }
-export async function loadIndexes(collection: Collection): Promise<string[]> {
+export async function loadIndexes(collection: Partial<Collection>): Promise<string[]> {
   if (!collection.indexes) return
   if (!collection.indexes.length) return
 

@@ -1,7 +1,7 @@
 import {Collection, Find} from '../../types'
 import getSelector from './getSelector'
 
-export default <DocumentType>(collection: Collection) => {
+export default <DocumentType>(collection: Partial<Collection>) => {
   const find: Find<DocumentType> = function (selectorArg, options) {
     const selector = getSelector(arguments)
 

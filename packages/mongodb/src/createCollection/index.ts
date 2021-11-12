@@ -33,7 +33,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   const model: Model =
     options.model && options.model.getModel ? options.model.getModel() : options.model
 
-  const collection: Collection<DocumentType> = {
+  const collection: Partial<Collection<DocumentType>> = {
     name: options.name,
     connectionName,
     model,
@@ -82,7 +82,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
 
   collection.createIndexesPromise = loadIndexes(collection)
 
-  return collection
+  return collection as Collection<DocumentType>
 }
 
 export default createCollection

@@ -3,7 +3,7 @@ import {DataLoader, Collection} from '../../../types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
-export default function <ModelClass>(collection: Collection) {
+export default function <ModelClass>(collection: Partial<Collection>) {
   const loadData: DataLoader.LoadData<ModelClass> = async options => {
     const result = await dataLoad({
       loaderKey: {

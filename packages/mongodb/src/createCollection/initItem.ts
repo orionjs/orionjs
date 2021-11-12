@@ -1,6 +1,6 @@
 import {Collection, InitItem} from '../types'
 
-export default (collection: Collection) => {
+export default (collection: Partial<Collection>) => {
   const initItem = doc => {
     if (!doc) return doc
     if (!collection.model) return doc

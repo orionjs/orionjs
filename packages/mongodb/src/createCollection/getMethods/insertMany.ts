@@ -5,7 +5,7 @@ import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
 
-export default <DocumentType>(collection: Collection) => {
+export default <DocumentType>(collection: Partial<Collection>) => {
   const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
     for (let index = 0; index < docs.length; index++) {
       let doc = cloneDeep(docs[index]) as any

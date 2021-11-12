@@ -3,7 +3,7 @@ import {Collection, InsertOne} from '../../types'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
 
-export default <DocumentType>(collection: Collection) => {
+export default <DocumentType>(collection: Partial<Collection>) => {
   const insertOne: InsertOne<DocumentType> = async (insertDoc, options) => {
     let doc = insertDoc as any
     if (!doc || !isPlainObject(doc)) {

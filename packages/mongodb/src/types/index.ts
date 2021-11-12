@@ -168,37 +168,37 @@ export interface Collection<ModelClass = any> {
   db: MongoDB.Db
   client: OrionMongoClient
   rawCollection: MongoDB.Collection
-  initItem?: InitItem<ModelClass>
+  initItem: InitItem<ModelClass>
 
-  findOne?: FindOne<ModelClass>
-  find?: Find<ModelClass>
+  findOne: FindOne<ModelClass>
+  find: Find<ModelClass>
 
-  insertOne?: InsertOne<ModelClass>
-  insertMany?: InsertMany<ModelClass>
+  insertOne: InsertOne<ModelClass>
+  insertMany: InsertMany<ModelClass>
 
-  deleteMany?: DeleteMany<ModelClass>
-  deleteOne?: DeleteOne<ModelClass>
+  deleteMany: DeleteMany<ModelClass>
+  deleteOne: DeleteOne<ModelClass>
 
-  updateOne?: UpdateOne<ModelClass>
-  updateMany?: UpdateMany<ModelClass>
+  updateOne: UpdateOne<ModelClass>
+  updateMany: UpdateMany<ModelClass>
 
-  upsert?: Upsert<ModelClass>
-  findOneAndUpdate?: FindOneAndUpdate<ModelClass>
+  upsert: Upsert<ModelClass>
+  findOneAndUpdate: FindOneAndUpdate<ModelClass>
 
-  aggregate?: <T = MongoDB.Document>(
+  aggregate: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
     options?: MongoDB.AggregateOptions
   ) => MongoDB.AggregationCursor<T>
-  watch?: <T = MongoDB.Document>(
+  watch: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
     options?: MongoDB.ChangeStreamOptions
   ) => MongoDB.ChangeStream<T>
 
-  loadData?: DataLoader.LoadData<ModelClass>
-  loadOne?: DataLoader.LoadOne<ModelClass>
-  loadMany?: DataLoader.LoadMany<ModelClass>
-  loadById?: DataLoader.LoadById<ModelClass>
+  loadData: DataLoader.LoadData<ModelClass>
+  loadOne: DataLoader.LoadOne<ModelClass>
+  loadMany: DataLoader.LoadMany<ModelClass>
+  loadById: DataLoader.LoadById<ModelClass>
 
-  createIndexesPromise?: Promise<string[]>
+  createIndexesPromise: Promise<string[]>
   connectionPromise: Promise<MongoDB.MongoClient>
 }
