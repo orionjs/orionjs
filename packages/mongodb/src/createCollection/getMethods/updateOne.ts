@@ -3,7 +3,7 @@ import {Collection, UpdateOne} from '../../types'
 import cleanModifier from './cleanModifier'
 import validateModifier from './validateModifier'
 
-export default <DocumentType>(collection: Collection) => {
+export default <DocumentType>(collection: Partial<Collection>) => {
   const updateOne: UpdateOne<DocumentType> = async function (
     selectorArg,
     modifierArg,

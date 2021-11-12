@@ -3,7 +3,7 @@ import validateUpsert from './validateModifier/validateUpsert'
 import cleanModifier from './cleanModifier'
 import {Collection, Upsert} from '../../types'
 
-export default <DocumentType>(collection: Collection) => {
+export default <DocumentType>(collection: Partial<Collection>) => {
   const upsert: Upsert<DocumentType> = async function (selectorArg, modifierArg, options = {}) {
     let modifier = modifierArg as any
     let selector = getSelector(arguments)
