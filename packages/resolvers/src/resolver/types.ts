@@ -1,13 +1,13 @@
 import {OrionCache} from '@orion-js/cache'
 
 export type GlobalResolverResolve<ParamsType = any, ReturnType = any> = (
-  params?: ParamsType,
+  params: ParamsType,
   viewer?: any
 ) => Promise<ReturnType>
 
 export type ModelResolverResolve<ModelType = any, ParamsType = any, ReturnType = any> = (
   item: ModelType,
-  params?: ParamsType,
+  params: ParamsType,
   viewer?: any
 ) => Promise<ReturnType>
 

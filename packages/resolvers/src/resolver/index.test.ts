@@ -199,5 +199,5 @@ it('should allow calling resolver.resolve', async () => {
   })
 
   expect(await resolver.resolve({title: 'test'})).toBe('test')
-  expect(await modelResolver.resolve({title: 'test'})).toBe('test')
+  expect(await modelResolver.resolve({title: 'test'}, {})).toBe('test')
 })
