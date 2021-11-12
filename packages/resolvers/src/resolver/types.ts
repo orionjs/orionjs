@@ -17,23 +17,19 @@ export type ModelCheckPermissions = (parent: any, params: any, viewer: any) => P
 export type GlobalGetCacheKey = (params: any, viewer: any) => Promise<any>
 export type ModelGetCacheKey = (parent: any, params: any, viewer: any) => Promise<any>
 
-export interface Params {
-  [key: string]: any
-}
-
 export interface ExecuteOptions {
-  params: Params
+  params: object
   viewer: any
   parent?: any
 }
 
-export interface ExecuteParams<ParamsType extends Params = Params, ModelType = undefined> {
+export interface ExecuteParams<ParamsType = object, ModelType = undefined> {
   params?: ParamsType
   viewer?: any
   parent?: ModelType
 }
 
-export type Execute<ParamsType = Params, ReturnType = any, ModelType = undefined> = (
+export type Execute<ParamsType = object, ReturnType = any, ModelType = undefined> = (
   executeOptions: ExecuteParams<ParamsType, ModelType>
 ) => Promise<ReturnType>
 
@@ -50,14 +46,11 @@ export interface SharedResolverOptions {
   permissionsOptions?: any
 }
 
-export interface ResolverOptions<
-  ParamsType extends Params = Params,
-  ReturnType = any,
-  ModelType = undefined
-> extends SharedResolverOptions {
+export interface ResolverOptions<ParamsType = object, ReturnType = any, ModelType = undefined>
+  extends SharedResolverOptions {
   resolve: ModelType extends undefined
     ? GlobalResolverResolve<ParamsType, ReturnType>
-    : ModelResolverResolve<ModelType, Params, ReturnType>
+    : ModelResolverResolve<ModelType, ParamsType, ReturnType>
 }
 
 export interface Resolver<ParamsType = any, ReturnType = any, ModelType = undefined>
@@ -65,7 +58,7 @@ export interface Resolver<ParamsType = any, ReturnType = any, ModelType = undefi
   execute: Execute<ParamsType, ReturnType, ModelType>
   resolve: ModelType extends undefined
     ? GlobalResolverResolve<ParamsType, ReturnType>
-    : ModelResolverResolve<ModelType, Params, ReturnType>
+    : ModelResolverResolve<ModelType, ParamsType, ReturnType>
   modelResolve?: ModelType extends undefined
     ? undefined
     : GlobalResolverResolve<ParamsType, ReturnType>
