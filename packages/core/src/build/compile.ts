@@ -1,7 +1,5 @@
 import ts from 'typescript'
-import {getConfigPath} from '../start/watchAndCompile/getConfigPath'
 import {getOptions} from './getOptions'
-import path from 'path'
 import colors from 'colors/safe'
 import {reportDiagnostic} from '../start/watchAndCompile/reports'
 
