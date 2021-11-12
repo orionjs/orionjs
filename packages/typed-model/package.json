@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.0.9",
+  "version": "3.0.13",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [

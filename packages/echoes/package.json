@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "3.0.7",
+  "version": "3.0.13",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
