@@ -1,7 +1,7 @@
 import getSchema from './getSchema'
 import {validate, clean} from '@orion-js/schema'
 
-export default async function ({params, callParams}) {
+export default async function ({params, callParams}: {params: any; callParams: any}) {
   if (!callParams) callParams = {}
 
   if (params) {

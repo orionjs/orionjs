@@ -7,7 +7,7 @@ import {CreateModelResolver} from '..'
 import cleanReturns from './cleanReturns'
 import {getArgs} from './getArgs'
 
-const createResolver = function (options) {
+const createResolver = function (options: any) {
   options.params = cleanParams(options.params)
   options.returns = cleanReturns(options.returns)
 
@@ -21,7 +21,7 @@ const createResolver = function (options) {
 
   const execute = getExecute(options)
 
-  const resolve = async (...args) => {
+  const resolve = async (...args: any[]) => {
     let {parent, params, viewer} = getArgs(...args)
     const executeOptions = {parent, params, viewer}
     return await execute(executeOptions)

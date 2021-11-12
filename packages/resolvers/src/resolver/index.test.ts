@@ -1,13 +1,11 @@
 import {resolver as createResolver, modelResolver as createModelResolver} from './index'
 import {Schema} from '@orion-js/schema'
-import {sortBy} from 'lodash'
-import {Params} from '..'
 
 it('should return a function with a resolver id', () => {
   const resolver = createResolver({
     params: {},
     returns: String,
-    async resolve(params, viewer) {}
+    async resolve() {}
   })
 
   expect(typeof resolver).toBe('object')
@@ -24,7 +22,7 @@ it('should execute the function', async () => {
       }
     },
     returns: Number,
-    async resolve({value}, viewer) {
+    async resolve({value}: {value: number}) {
       return value * 2
     }
   })
@@ -76,7 +74,7 @@ it('should create typed resolvers', async () => {
       }
     },
     returns: Number,
-    resolve: async (params: TestResolverParams, viewer) => {
+    resolve: async (params: TestResolverParams) => {
       return params.value * 2
     }
   })
@@ -96,12 +94,12 @@ it('should create typed resolvers', async () => {
 it('should create typed model resolvers', async () => {
   const resolver = createModelResolver({
     returns: Number,
-    resolve: async function (model: any, params: {value: number}, viewer?: any) {
+    resolve: async function (model: {value: number}) {
       return model.value * 2
     }
   })
 
-  resolver.resolve({}, {value: ''})
+  await resolver.resolve({value: 1})
   const inModel = resolver.modelResolve
 })
 
@@ -116,23 +114,23 @@ it('should accept a model as params', async () => {
         }
       }
     },
-    initItem(item) {
+    initItem(item: any) {
       return item
     }
   }
 
   class TypedParams {
-    value: number
+    value: number = 1
 
     static getModel() {
       return aModel
     }
   }
 
-  const resolver = createModelResolver<any, TypedParams, Number>({
+  const resolver = createModelResolver({
     params: TypedParams,
     returns: Number,
-    resolve: async function (item: any, params: TypedParams, viewer) {
+    resolve: async function (item: any, params: TypedParams) {
       return params.value * 2
     }
   })
@@ -151,33 +149,33 @@ it('should accept a model as returns', async () => {
         }
       }
     },
-    initItem(item) {
+    initItem(item: any) {
       return item
     }
   }
 
   class Returns {
-    value: number
+    value: number = 1
 
     static getModel() {
       return aModel
     }
   }
 
-  const resolver = createResolver<any, Returns>({
+  const resolver = createResolver({
     returns: Returns,
-    resolve: async (params, viewer) => {
+    resolve: async (): Promise<Returns> => {
       return {value: 2}
     }
   })
 
-  const result = await resolver.resolve({})
+  const result = await resolver.resolve()
   expect(result.value).toBe(2)
 })
 
 it('should correctly clean params when no params are passed', async () => {
   const resolver = createResolver({
-    resolve: async ({title}) => {
+    resolve: async ({title}: {title: string}) => {
       return `${title}`
     }
   })
@@ -187,13 +185,13 @@ it('should correctly clean params when no params are passed', async () => {
 
 it('should allow calling resolver.resolve', async () => {
   const resolver = createResolver({
-    resolve: async ({title}) => {
+    resolve: async ({title}: {title: string}) => {
       return `${title}`
     }
   })
 
   const modelResolver = createModelResolver({
-    resolve: async ({title}) => {
+    resolve: async ({title}: {title: string}) => {
       return `${title}`
     }
   })

@@ -5,7 +5,7 @@ import getResult from './getResult'
 const cacheProvider = defaultCache
 
 it('should execute the function', async () => {
-  const resolve = async function ({num}) {
+  const resolve = async function ({num}: {num: number}) {
     return num * 2
   }
 

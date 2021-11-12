@@ -1,6 +1,4 @@
-import clone from 'lodash/clone'
-
-export default function (rawReturns) {
+export default function (rawReturns: any) {
   if (!rawReturns) return
 
   // for typed model

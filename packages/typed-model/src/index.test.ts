@@ -476,9 +476,9 @@ describe('typed-schema e2e tests', () => {
 
   describe('using resolvers', () => {
     it('allows passing resolvers to the model', () => {
-      const exampleResolver = modelResolver<User, {title: string}, string>({
+      const exampleResolver = modelResolver({
         returns: String,
-        resolve: async (user, {title}) => {
+        resolve: async (user: User, {title}: {title: string}) => {
           return `${title} ${user.firstName} ${user.lastName}`
         }
       })
@@ -548,10 +548,10 @@ describe('typed-schema e2e tests', () => {
         fullName: string
       }
 
-      const fullName = modelResolver<Person, ResolverParams, ResolverReturns>({
+      const fullName = modelResolver({
         params: ResolverParams,
         returns: ResolverReturns,
-        async resolve(item: Person, params: ResolverParams) {
+        async resolve(item: Person, params: ResolverParams): Promise<ResolverReturns> {
           return {fullName: `${params.firstName} ${item.lastName}`}
         }
       })

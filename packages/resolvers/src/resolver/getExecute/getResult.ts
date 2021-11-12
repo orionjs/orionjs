@@ -18,7 +18,7 @@ export default async function (options: ResolverOptions, executeOptions: Execute
     }
   }
 
-  if (options.cache) {
+  if (options.cache && options.cacheProvider) {
     const key = await getCacheKey(options, executeOptions)
     const result = await options.cacheProvider.get(key, {
       fallback: executeResolver,

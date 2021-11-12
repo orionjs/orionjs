@@ -1,4 +1,4 @@
-export const getArgs = function getArgs(...args) {
+export const getArgs = function getArgs(...args: any[]) {
   if (args.length === 3) {
     return {
       parent: args[0],

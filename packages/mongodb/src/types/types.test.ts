@@ -6,7 +6,7 @@ import createCollection from '../createCollection/index'
 it('uses correctly typescript for collections', async () => {
   const fullName = modelResolver({
     returns: String,
-    async resolve(user: User, params: undefined) {
+    async resolve(user: User) {
       return `${user.firstName} ${user.lastName}`
     }
   })

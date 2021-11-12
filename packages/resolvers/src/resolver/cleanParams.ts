@@ -1,6 +1,6 @@
 import clone from 'lodash/clone'
 
-export default function (rawParams) {
+export default function (rawParams: any) {
   if (!rawParams) return
 
   // for typed model

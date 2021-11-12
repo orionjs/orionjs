@@ -9,7 +9,7 @@ describe('Collections with typed model', () => {
     return `${title} ${person.firstName} ${person.lastName}`
   }
 
-  const titleResolver = modelResolver<Person, {}, string>({
+  const titleResolver = modelResolver({
     returns: String,
     resolve
   })
