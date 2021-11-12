@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/core",
-  "version": "3.0.13",
+  "version": "3.0.14",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.15.8",
-    "@orion-js/resolvers": "^3.0.7",
+    "@orion-js/resolvers": "^3.0.14",
     "@orion-js/schema": "^3.0.7",
     "async-exit-hook": "^2.0.1",
     "chokidar": "^3.5.1",
