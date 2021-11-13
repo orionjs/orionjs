@@ -51,6 +51,10 @@ export type CleanFunction = (
   ...args: any[]
 ) => any | Promise<any>
 
+export interface FieldOption {
+  label: string
+  value: SchemaMetaFieldType
+}
 export interface SchemaNode {
   /**
    * The type of the field. Used for type validations. Can also contain a subschema.
@@ -122,6 +126,18 @@ export interface SchemaNode {
    * The field type that would be used in a front-end form
    */
   fieldType?: string //TODO: allow only possible values
+
+  /**
+   * The field optins that would be used in a front-end select box
+   */
+  fieldOptions?: {
+    options: FieldOption[]
+
+    /**
+     * Allow multiple selection? Defaults to false.
+     */
+    multi?: boolean
+  }
 }
 
 export interface CurrentNodeInfoOptions {
