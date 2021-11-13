@@ -18,7 +18,8 @@ export const connectToDB = ({name, uri}): OrionMongoClient => {
     client,
     connectionPromise,
     dbName,
-    db
+    db,
+    connectionName: name
   }
 
   connections[name] = mongoClient

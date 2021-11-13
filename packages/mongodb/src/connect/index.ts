@@ -4,9 +4,9 @@ import {connectToDB} from './connectToDB'
 /**
  * Connects to the main Mongo Database
  */
-export const connect = (mongoURL: string): OrionMongoClient => {
+export const connect = (mongoURL: string, connectionName = 'main'): OrionMongoClient => {
   return connectToDB({
-    name: 'main',
+    name: connectionName,
     uri: mongoURL
   })
 }
