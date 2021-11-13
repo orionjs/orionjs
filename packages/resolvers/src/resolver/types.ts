@@ -57,13 +57,15 @@ export interface Resolver<Resolve = Function, IsModel = undefined> extends Share
   modelResolve: IsModel extends undefined ? undefined : OmitFirstArg<Resolve>
 }
 
+export type ModelResolver<Resolve = Function> = Resolver<Resolve, true>
+
 export type CreateResolver = <Resolve extends GlobalResolverResolve>(
   options: ResolverOptions<Resolve>
 ) => Resolver<Resolve>
 
 export type CreateModelResolver = <Resolve extends ModelResolverResolve>(
   options: ResolverOptions<Resolve>
-) => Resolver<Resolve, true>
+) => ModelResolver<Resolve>
 
 export interface PermissionCheckerOptions {
   resolver: ResolverOptions
