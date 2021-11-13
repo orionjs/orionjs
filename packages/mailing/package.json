@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mailing",
-  "version": "3.0.15",
+  "version": "3.0.16",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.15",
+    "@orion-js/resolvers": "^3.0.16",
     "@orion-js/schema": "^3.0.7",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0",
