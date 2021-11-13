@@ -1,6 +1,6 @@
 import {PropOptions} from '..'
 import {PropertyAlreadyExistsError} from '../errors'
-import {ResolversMap} from '@orion-js/models'
+import {ModelResolversMap} from '@orion-js/models'
 import {Resolver} from '@orion-js/resolvers'
 import {generateId} from '@orion-js/helpers'
 
@@ -10,7 +10,7 @@ interface SchemaStorage {
   schema: Function
   options: object
   properties: PropertiesMap
-  resolvers: ResolversMap
+  resolvers: ModelResolversMap
 }
 
 export class MetadataStorageHandler {
@@ -81,7 +81,7 @@ export class MetadataStorageHandler {
     return schema.properties
   }
 
-  public getSchemaResolvers(target: Function): ResolversMap | undefined {
+  public getSchemaResolvers(target: Function): ModelResolversMap | undefined {
     const schema = this.getSchema(target)
 
     return schema.resolvers

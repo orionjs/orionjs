@@ -2,7 +2,7 @@
   "license": "MIT",
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "test": "lerna run test",
+    "test": "lerna bootstrap && lerna run test",
     "publish-all": "lerna publish --force-publish=*"
   },
   "devDependencies": {

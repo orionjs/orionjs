@@ -1,12 +1,12 @@
 import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import isNil from 'lodash/isNil'
-import {ResolversMap} from '../types'
+import {ModelResolversMap} from '../types'
 
 interface InitItemOptions {
   name: string
   schema: any
-  resolvers: ResolversMap
+  resolvers: ModelResolversMap
 }
 
 export default function ({schema, resolvers, name}: InitItemOptions, item: any): any {

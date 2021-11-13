@@ -1,5 +1,6 @@
 import {resolver as createResolver, modelResolver as createModelResolver} from './index'
 import {Schema} from '@orion-js/schema'
+import {sleep} from '@orion-js/helpers'
 
 it('should return a function with a resolver id', () => {
   const resolver = createResolver({
@@ -40,8 +41,8 @@ it('should get from cache', async () => {
       }
     },
     returns: Number,
-    cache: 1000,
-    async resolve() {
+    cache: 100,
+    async resolve(params: {value: number}) {
       return index++
     }
   })
@@ -60,6 +61,8 @@ it('should get from cache', async () => {
 
   const result5 = await resolver.execute({params: {value: 3}}) // 3
   expect(result5).toBe(3)
+
+  await sleep(100)
 })
 
 it('should create typed resolvers', async () => {
@@ -94,13 +97,18 @@ it('should create typed resolvers', async () => {
 it('should create typed model resolvers', async () => {
   const resolver = createModelResolver({
     returns: Number,
-    resolve: async function (model: {value: number}) {
-      return model.value * 2
+    resolve: async function (model: {value: number}, params: {times: number}) {
+      return model.value * params.times
     }
   })
 
-  await resolver.resolve({value: 1})
+  await resolver.resolve({value: 1}, {times: 2})
   const inModel = resolver.modelResolve
+
+  await resolver.execute({
+    parent: {value: 1},
+    params: {times: 2}
+  })
 })
 
 it('should accept a model as params', async () => {
@@ -198,4 +206,18 @@ it('should allow calling resolver.resolve', async () => {
 
   expect(await resolver.resolve({title: 'test'})).toBe('test')
   expect(await modelResolver.resolve({title: 'test'})).toBe('test')
+})
+
+it('only allow compliant resolve function', async () => {
+  const resolver = createResolver({
+    resolve: async () => {
+      return 'hello'
+    }
+  })
+
+  const modelResolver = createModelResolver({
+    resolve: async () => {
+      return 'hello'
+    }
+  })
 })

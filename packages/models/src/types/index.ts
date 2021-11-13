@@ -1,4 +1,4 @@
-import {Resolver} from '@orion-js/resolvers'
+import {GlobalResolverResolve, ModelResolverResolve, Resolver} from '@orion-js/resolvers'
 import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 
 export interface ModelsSchemaNode extends Omit<SchemaNode, 'type'> {
@@ -25,11 +25,15 @@ export interface CreateModelOptions {
    * Pass a function that returns the resolvers. For example: () => require('./resolvers')
    * This is used like this to allow circular dependencies
    */
-  resolvers?: ResolversMap | (() => {default: ResolversMap})
+  resolvers?: ModelResolversMap | (() => {default: ModelResolversMap})
 }
 
-export interface ResolversMap {
-  [key: string]: Resolver
+export interface ModelResolversMap {
+  [key: string]: Resolver<ModelResolverResolve, true>
+}
+
+export interface GlobalResolversMap {
+  [key: string]: Resolver<GlobalResolverResolve>
 }
 
 export interface CloneOptions {
@@ -38,7 +42,7 @@ export interface CloneOptions {
   pickFields?: Array<string>
   mapFields?: (field: any, key: string) => any
   extendSchema?: Schema
-  extendResolvers?: ResolversMap
+  extendResolvers?: ModelResolversMap
 }
 
 export interface Model {
@@ -57,7 +61,7 @@ export interface Model {
   /**
    * Returns the model resolvers
    */
-  getResolvers: () => ResolversMap
+  getResolvers: () => ModelResolversMap
 
   /**
    * Adds the model resolvers to a item

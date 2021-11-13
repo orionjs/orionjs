@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import {createModel, Model, ModelSchema, ResolversMap} from '@orion-js/models'
+import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
 import {PropOptions} from '..'
 import {MetadataStorage} from '../storage/metadataStorage'
 import {Constructor} from '../utils/interfaces'
@@ -15,7 +15,7 @@ function processModelSchemaForProp(prop: PropOptions) {
 
 export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
   const schema: ModelSchema = {}
-  const resolverMap: ResolversMap = {}
+  const resolverMap: ModelResolversMap = {}
 
   let parent: Function = target
 

@@ -1,4 +1,4 @@
-import {ResolversMap} from '@orion-js/models'
+import {GlobalResolversMap} from '@orion-js/models'
 import {express} from '@orion-js/http'
 import {SubscriptionMap} from './subscription'
 import {GraphQLOptions} from 'apollo-server-core'
@@ -16,7 +16,7 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
   /**
    * A map with all the global resolvers
    */
-  resolvers: ResolversMap
+  resolvers: GlobalResolversMap
 
   /**
    * A Map with all global subscriptions

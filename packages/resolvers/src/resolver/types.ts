@@ -1,15 +1,7 @@
 import {OrionCache} from '@orion-js/cache'
 
-export type GlobalResolverResolve<ParamsType = any, ReturnType = any> = (
-  params: ParamsType,
-  viewer: any
-) => Promise<ReturnType>
-
-export type ModelResolverResolve<ModelType = any, ParamsType = any, ReturnType = any> = (
-  item: ModelType,
-  params: ParamsType,
-  viewer: any
-) => Promise<ReturnType>
+export type GlobalResolverResolve = (params: any, viewer: any) => Promise<any>
+export type ModelResolverResolve = (item: any, params: any, viewer: any) => Promise<any>
 
 export type GlobalCheckPermissions = (params: any, viewer: any) => Promise<string>
 export type ModelCheckPermissions = (parent: any, params: any, viewer: any) => Promise<string>
@@ -23,15 +15,22 @@ export interface ExecuteOptions {
   parent?: any
 }
 
-export interface ExecuteParams<ParamsType = object, ModelType = undefined> {
-  params?: ParamsType
+type Parameters<T> = T extends (...args: infer P) => any ? P : never
+type ReturnType<T> = T extends (...args: any) => infer R ? R : any
+
+type ResolverParams<Resolve, IsModel> = IsModel extends undefined
+  ? Parameters<Resolve>[0]
+  : Parameters<Resolve>[1]
+
+export interface ExecuteParams<Resolve = Function, IsModel = undefined> {
+  params?: ResolverParams<Resolve, IsModel>
   viewer?: any
-  parent?: ModelType
+  parent?: IsModel extends undefined ? undefined : Parameters<Resolve>[0]
 }
 
-export type Execute<ParamsType = object, ReturnType = any, ModelType = undefined> = (
-  executeOptions: ExecuteParams<ParamsType, ModelType>
-) => Promise<ReturnType>
+export type Execute<Resolve = Function, IsModel = undefined> = (
+  executeOptions: ExecuteParams<Resolve, IsModel>
+) => ReturnType<Resolve>
 
 export interface SharedResolverOptions {
   resolverId?: string
@@ -52,17 +51,19 @@ export interface ResolverOptions<Resolve = Function> extends SharedResolverOptio
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never
 
-export interface Resolver<Resolve = Function, ModelType = undefined> extends SharedResolverOptions {
-  execute: Execute
+export interface Resolver<Resolve = Function, IsModel = undefined> extends SharedResolverOptions {
+  execute: Execute<Resolve, IsModel>
   resolve: Resolve
-  modelResolve: ModelType extends undefined ? undefined : OmitFirstArg<Resolve>
+  modelResolve: IsModel extends undefined ? undefined : OmitFirstArg<Resolve>
 }
 
-export type CreateResolver = <Resolve>(options: ResolverOptions<Resolve>) => Resolver<Resolve>
-
-export type CreateModelResolver = <ModelType, Resolve>(
+export type CreateResolver = <Resolve extends GlobalResolverResolve>(
   options: ResolverOptions<Resolve>
-) => Resolver<Resolve, ModelType>
+) => Resolver<Resolve>
+
+export type CreateModelResolver = <Resolve extends ModelResolverResolve>(
+  options: ResolverOptions<Resolve>
+) => Resolver<Resolve, true>
 
 export interface PermissionCheckerOptions {
   resolver: ResolverOptions
