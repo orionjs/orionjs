@@ -1,7 +1,14 @@
+import {Collection} from '@orion-js/mongodb'
 import {resolver} from '@orion-js/resolvers'
 import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
 
-export default ({Users, sendEmailVerificationToken}) =>
+export default ({
+  Users,
+  sendEmailVerificationToken
+}: {
+  Users: Collection
+  sendEmailVerificationToken: (user: string, token: string) => Promise<any>
+}) =>
   resolver({
     returns: Boolean,
     mutation: true,

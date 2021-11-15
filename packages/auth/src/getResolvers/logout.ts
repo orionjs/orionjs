@@ -1,7 +1,7 @@
 import {resolver} from '@orion-js/resolvers'
 import deleteSession from '../helpers/deleteSession'
 
-export default ({Users, Session, Sessions}) =>
+export default ({Sessions}) =>
   resolver({
     params: {
       sessionId: {

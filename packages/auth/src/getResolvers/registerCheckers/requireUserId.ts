@@ -1,6 +1,6 @@
 import {PermissionChecker} from '@orion-js/resolvers'
 
-export default options => {
+export default () => {
   const checker: PermissionChecker = async options => {
     const requireUserId = options.resolver.permissionsOptions?.requireUserId
 

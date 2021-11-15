@@ -1,9 +1,10 @@
+import {Collection} from '@orion-js/mongodb'
 import {resolver} from '@orion-js/resolvers'
 import checkPassword from '../helpers/checkPassword'
 import hashPassword from '../helpers/hashPassword'
 import hasPassword from '../helpers/hasPassword'
 
-export default ({Users, Session}) =>
+export default ({Users}: {Users: Collection}) =>
   resolver({
     permissionsOptions: {
       requireUserId: true
@@ -36,7 +37,7 @@ export default ({Users, Session}) =>
     returns: Boolean,
     mutation: true,
     resolve: async function ({oldPassword, newPassword}, viewer) {
-      await Users.update(viewer.userId, {
+      await Users.updateOne(viewer.userId, {
         $set: {
           'services.password': {
             bcrypt: hashPassword(newPassword),

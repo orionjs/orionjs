@@ -3,9 +3,20 @@ import hashPassword from '../helpers/hashPassword'
 import createSession from '../helpers/createSession'
 import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
 import {User} from '../types/user'
+import {Collection} from '@orion-js/mongodb'
 
-export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationToken}) => {
-  let profile = Users.model.schema.profile || null
+export default ({
+  Session,
+  Users,
+  onCreateUser,
+  sendEmailVerificationToken
+}: {
+  Session: any
+  Users: Collection
+  onCreateUser: Function
+  sendEmailVerificationToken: Function
+}) => {
+  const profile = Users.model.getSchema().profile || null
   return resolver({
     params: {
       email: {
@@ -49,7 +60,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
         }
       }
 
-      const userId = await Users.insert(newUser)
+      const userId = await Users.insertOne(newUser)
       const user = await Users.findOne(userId)
       if (onCreateUser) {
         await onCreateUser(user)

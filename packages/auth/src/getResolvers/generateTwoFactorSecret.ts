@@ -3,6 +3,7 @@ import {resolver} from '@orion-js/resolvers'
 import speakeasy from 'speakeasy'
 import qr from 'qr-image'
 import {createModel} from '@orion-js/models'
+import {Collection} from '@orion-js/mongodb'
 
 const model = createModel({
   name: 'QRSetupInformation',
@@ -16,7 +17,7 @@ const model = createModel({
   }
 })
 
-export default ({Users, Session, twoFactor}) =>
+export default ({Users, twoFactor}: {Users: Collection; twoFactor: any}) =>
   resolver({
     permissionsOptions: {
       requireUserId: true
@@ -31,7 +32,7 @@ export default ({Users, Session, twoFactor}) =>
 
       const email = await user.email()
       const {base32} = speakeasy.generateSecret()
-      await Users.update(viewer.userId, {
+      await Users.updateOne(viewer.userId, {
         $set: {
           'services.twoFactor.base32': base32,
           'services.twoFactor.enabled': false

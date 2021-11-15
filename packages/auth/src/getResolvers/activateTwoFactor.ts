@@ -1,7 +1,8 @@
+import {Collection} from '@orion-js/mongodb'
 import {resolver} from '@orion-js/resolvers'
 import speakeasy from 'speakeasy'
 
-export default ({Users}) =>
+export default ({Users}: {Users: Collection}) =>
   resolver({
     params: {
       code: {
@@ -27,7 +28,7 @@ export default ({Users}) =>
         throw new Error('The code is not correct')
       }
 
-      await Users.update(user._id, {$set: {'services.twoFactor.enabled': true}})
+      await Users.updateOne(user._id, {$set: {'services.twoFactor.enabled': true}})
 
       return await Users.findOne(viewer.userId)
     }

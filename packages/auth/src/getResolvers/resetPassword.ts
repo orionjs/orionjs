@@ -2,8 +2,10 @@ import {resolver} from '@orion-js/resolvers'
 import createSession from '../helpers/createSession'
 import {DateTime} from 'luxon'
 import hashPassword from '../helpers/hashPassword'
+import {Collection} from '@orion-js/mongodb'
+import {Model} from '@orion-js/models'
 
-export default ({Users, Session, Sessions}) =>
+export default ({Users, Session}: {Users: Collection; Session: Model}) =>
   resolver({
     params: {
       token: {
@@ -50,7 +52,7 @@ export default ({Users, Session, Sessions}) =>
         }
       }
 
-      await Users.update(user._id, modifier)
+      await Users.updateOne(user._id, modifier)
       return await createSession(user, viewer)
     }
   })

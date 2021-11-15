@@ -1,6 +1,7 @@
+import {Collection} from '@orion-js/mongodb'
 import {resolver} from '@orion-js/resolvers'
 
-export default ({Users, Session}) =>
+export default ({Users}: {Users: Collection}) =>
   resolver({
     returns: Users.model,
     mutation: true,
@@ -15,7 +16,7 @@ export default ({Users, Session}) =>
         throw new Error('User does not have two factor')
       }
 
-      await Users.update(user._id, {$unset: {'services.twoFactor': ''}})
+      await Users.updateOne(user._id, {$unset: {'services.twoFactor': ''}})
 
       return await Users.findOne(viewer.userId)
     }
