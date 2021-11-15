@@ -4,7 +4,11 @@ title: Installation
 sidebar_label: Installation
 ---
 
-This page will help you install and build your first React Native app. If you already have React Native installed, you can skip this page.
+This page will help you install and build your first Orionjs project. If you already have Orionjs installed, you can skip this page.
+
+## Requirements
+
+- Node: 14 (LTS)
 
 ## Installing Orionjs CLI
 
@@ -22,13 +26,30 @@ Now that you have the `orion` command you can download a starter kit. Let's star
 orion create --kit graphql-fullstack --name myapp
 ```
 
+This command will create a folder with two subfolders: `web` and `server`.
+You should enter both folders and run `yarn install` on each one.
+
+### Example use yarn install in server folder
+
+```sh
+cd server
+yarn install
+```
+
+### Example use yarn install in web folder
+
+```sh
+cd web
+yarn install
+```
+
 ## Installing the Atom plugin
 
 The atom plugin named "orionjs", mantained by the Orionjs team, will help you writing your Orionjs app.
 
-## Running the app
+## Running the server app
 
-Run the following command:
+Run the following command in `server` folder:
 
 ```sh
 orion start
@@ -43,3 +64,10 @@ export VARIABLE_1="example"
 orion start --shell
 ```
 
+## Running the web app
+
+Run the following command in `web` folder:
+
+```sh
+yarn start
+```
