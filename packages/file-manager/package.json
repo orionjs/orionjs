@@ -14,7 +14,7 @@
     "@orion-js/resolvers": "^3.0.17",
     "@orion-js/schema": "^3.0.17",
     "aws-sdk": "^2.258.1",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.21",
     "luxon": "^1.2.0"
   },
   "devDependencies": {
