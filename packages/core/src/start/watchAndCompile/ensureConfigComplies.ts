@@ -19,6 +19,6 @@ export function ensureConfigComplies(configPath) {
 
     writeFile(configPath, stringify(newConfig, null, 2))
   } catch (error) {
-    console.log(`Error reading tsconfig.json ${error.message}`)
+    console.log(`Error reading tsconfig ${error.message}`)
   }
 }
