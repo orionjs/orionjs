@@ -1,12 +1,5 @@
+import {connections} from './connections'
 import {OrionMongoClient} from './connections'
-import {connectToDB} from './connectToDB'
+import {getMongoConnection} from './getMongoConnection'
 
-/**
- * Connects to the main Mongo Database
- */
-export const connect = (mongoURL: string): OrionMongoClient => {
-  return connectToDB({
-    name: 'main',
-    uri: mongoURL
-  })
-}
+export {OrionMongoClient, getMongoConnection, connections}

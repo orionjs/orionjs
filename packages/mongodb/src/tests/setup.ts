@@ -1,10 +1,11 @@
-import {connect} from '../connect'
+import {getMongoConnection} from '..'
 import {connections} from '../connect/connections'
 
-beforeAll(async () => {
-  const url = `${global.__MONGO_URI__}jest`
+const url = `${global.__MONGO_URI__}jest`
+process.env.MONGO_URL = url
 
-  const connection = connect(url)
+beforeAll(async () => {
+  const connection = getMongoConnection({name: 'main'})
   await connection.connectionPromise
 })
 

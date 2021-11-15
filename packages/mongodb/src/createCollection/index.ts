@@ -1,4 +1,3 @@
-import {connections} from '../connect/connections'
 import initItem from './initItem'
 import {Collection, CreateCollection, CreateCollectionOptions} from '../types'
 import {
@@ -18,11 +17,12 @@ import getIdGenerator from './generateId'
 import {Model} from '@orion-js/models'
 import {loadIndexes} from './createIndexes'
 import {cloneDeep} from 'lodash'
+import {getMongoConnection} from '..'
 
 const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
   const connectionName = options.connectionName || 'main'
 
-  const orionConnection = connections[connectionName]
+  const orionConnection = getMongoConnection({name: connectionName})
   if (!orionConnection) {
     throw new Error(`The connection to MongoDB "${connectionName}" was not found`)
   }

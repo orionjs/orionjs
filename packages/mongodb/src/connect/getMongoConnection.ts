@@ -1,11 +1,17 @@
 import {MongoClient} from 'mongodb'
 import {OrionMongoClient, connections} from './connections'
 import getDBName from './getDBName'
+import {getMongoURLFromEnv} from './getMongoURLFromEnv'
 
-export const connectToDB = ({name, uri}): OrionMongoClient => {
-  if (!uri) {
-    throw new Error('MongoURI is undefined')
-  }
+interface MongoConnectOptions {
+  name: string
+  uri?: string
+}
+
+export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongoClient => {
+  uri = uri || getMongoURLFromEnv(name)
+  if (connections[name]) return connections[name]
+
   const client = new MongoClient(uri)
 
   const connectionPromise = client.connect()
