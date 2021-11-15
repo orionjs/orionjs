@@ -164,6 +164,41 @@ describe('job helper', () => {
       expect(runMock).toHaveBeenCalledTimes(0)
 
       await JobManager.stop()
+      JobManager.clear()
+    })
+
+    it('can reschedule a single job', async () => {
+      runMock = jest.fn()
+      specs = {
+        singleJob: job({
+          type: 'single',
+          name: 'singleJob',
+          maxRetries: 3,
+          getNextRun: () => new Date(),
+          run: async (params, curr) => {
+            runMock(params, curr)
+            await curr.schedule('in 100 milliseconds')
+          }
+        })
+      }
+
+      await init({
+        jobs: specs,
+        namespace: 'job_misc'
+      })
+
+      const data = {
+        example: true
+      }
+      await (specs as {singleJob: Job}).singleJob.schedule(data)
+
+      await new Promise(r => setTimeout(r, 500))
+
+      expect(runMock.mock.calls[0][0].example).toEqual(true)
+      expect(runMock.mock.calls[1][0].example).toEqual(true)
+
+      await JobManager.stop()
+      JobManager.clear()
     })
   })
 })
