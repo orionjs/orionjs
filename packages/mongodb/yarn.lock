@@ -508,25 +508,25 @@
   dependencies:
     object-hash "^2.1.1"
 
-"@orion-js/models@^3.0.6", "@orion-js/models@^3.0.9":
-  version "3.0.9"
-  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.0.9.tgz#24a18d0d68200c66446cd1a329b425986af1d653"
-  integrity sha512-mTXtXKA1+80b/hLiGNzY5rTbB25IM/Qo5VLnX9k5kbuwoPtm6HhBQWCgeBU1EETnBTPn4sYRmbnJxF3JO85Zbw==
+"@orion-js/models@^3.0.16":
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.0.16.tgz#86bf935e47bc3380770826b604fe79e5579bc9c7"
+  integrity sha512-Z0UC7fuJTz6gzgLoScR0rp/YuKK4bhNCJdlajP5ZuBkLs/N+JzdJ/Ru71eQiuvKtEWtSHCBYETOOI5+wc8T9gw==
   dependencies:
     "@orion-js/helpers" "^3.0.0"
-    "@orion-js/resolvers" "^3.0.7"
+    "@orion-js/resolvers" "^3.0.16"
     "@orion-js/schema" "^3.0.7"
 
-"@orion-js/resolvers@^3.0.7":
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.7.tgz#11a7ff6d4b7be5bf1468f58a31a7b83c5bcd4dc0"
-  integrity sha512-90LryXxG/Rn+/RS+93MqfMo38QmNiw/QvmOjRtfRfScykCh6XWvuMJsgmfOZSlKCYLB8PWB6LM8fUJnlWK/6kA==
+"@orion-js/resolvers@^3.0.16":
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.16.tgz#5911ca5d524770a004608fff61abbccbec3044db"
+  integrity sha512-jFUPyb9ZeDeRTd+mFCnzMspZmeacol1tnzt69j/odrwn2fyR7/7qgwaS9zdJALHbYH2IZtZOu5l6aHXvUg0zKg==
   dependencies:
     "@orion-js/cache" "^3.0.0-alpha.23"
     "@orion-js/helpers" "^3.0.0"
     "@orion-js/schema" "^3.0.7"
 
-"@orion-js/schema@^3.0.0", "@orion-js/schema@^3.0.7":
+"@orion-js/schema@^3.0.7":
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.7.tgz#46929b880b449594432e9714fd4e40edb6da6c97"
   integrity sha512-yZH0WGrlhwSDr/+Pw2/vNyvCLthiSE2SvHNR2WkUOD5i1dI1fwgZRcp5R3F3YyKkcmLTjDgc1foFeEfOn61cbg==
@@ -535,15 +535,15 @@
     dot-object "^1.9.0"
     lodash "^4.17.10"
 
-"@orion-js/typed-model@^3.0.6":
-  version "3.0.9"
-  resolved "https://registry.yarnpkg.com/@orion-js/typed-model/-/typed-model-3.0.9.tgz#25e5311259ac7de0b276490ea40961d48387648b"
-  integrity sha512-D4qf2d3MvzxLrwDRXjipG+09eF1SmnvzYhCEmb0CuwLZxOPYXA0zVeNkyx5X/pnmZqBB22sOqCHfkwhLyJD53w==
+"@orion-js/typed-model@^3.0.16":
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/@orion-js/typed-model/-/typed-model-3.0.16.tgz#11cd5703261bd8a538ec2dc10cbf68333f4cc113"
+  integrity sha512-RW0leaQxzVAAqRqM4jeBXSoWxhBOysjeLGeIBBe0O8q9hp0nHoXj16VQxyz88CKzBO7gqnJANNKMy9F4iOFhKQ==
   dependencies:
     "@babel/runtime" "^7.5.5"
     "@orion-js/helpers" "^3.0.0"
-    "@orion-js/models" "^3.0.9"
-    "@orion-js/resolvers" "^3.0.7"
+    "@orion-js/models" "^3.0.16"
+    "@orion-js/resolvers" "^3.0.16"
     "@orion-js/schema" "^3.0.7"
     lodash "^4.17.10"
     reflect-metadata "0.1.13"
@@ -929,10 +929,10 @@ bson@^1.1.4:
   resolved "https://registry.yarnpkg.com/bson/-/bson-1.1.6.tgz#fb819be9a60cd677e0853aee4ca712a785d6618a"
   integrity sha512-EvVNVeGo4tHxwi8L6bPj3y3itEvStdwvvlojVxxbyYfoaxJ6keLgrTuKdyfEAszFK+H3olzBuafE0yoh0D1gdg==
 
-bson@^4.5.2:
-  version "4.5.3"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-4.5.3.tgz#de3783b357a407d935510beb1fbb285fef43bb06"
-  integrity sha512-qVX7LX79Mtj7B3NPLzCfBiCP6RAsjiV8N63DjlaVVpZW+PFoDTxQ4SeDbSpcqgE6mXksM5CAwZnXxxxn/XwC0g==
+bson@^4.5.4:
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-4.5.4.tgz#5f74f1e11f743ea8aec30b5e24bfddae82846873"
+  integrity sha512-wIt0bPACnx8Ju9r6IsS2wVtGDHBr9Dxb+U29A1YED2pu8XOhS8aKjOnLZ8sxyXkPwanoK7iWWVhS1+coxde6xA==
   dependencies:
     buffer "^5.6.0"
 
@@ -2197,7 +2197,7 @@ mkdirp@^1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-mongodb-connection-string-url@^2.0.0:
+mongodb-connection-string-url@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/mongodb-connection-string-url/-/mongodb-connection-string-url-2.1.0.tgz#9c522c11c37f571fecddcb267ac4a76ef432aeb7"
   integrity sha512-Qf9Zw7KGiRljWvMrrUFDdVqo46KIEiDuCzvEN97rh/PcKzk2bd6n9KuzEwBwW9xo5glwx69y1mI6s+jFUD/aIQ==
@@ -2236,14 +2236,14 @@ mongodb-memory-server@7.3.6:
     mongodb-memory-server-core "7.3.6"
     tslib "^2.3.0"
 
-mongodb@4.1.3:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.1.3.tgz#8bf24d782ba3f3833201f4e60b0307d87980ba71"
-  integrity sha512-lHvTqODBiSpuqjpCj48DOyYWS6Iq6ElJNUiH9HWdQtONyOfjgsKzJULipWduMGsSzaNO4nFi/kmlMFCLvjox/Q==
+mongodb@4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.1.4.tgz#ba8062c7c67e7a22db5a059dbac1e3044b48453b"
+  integrity sha512-Cv/sk8on/tpvvqbEvR1h03mdyNdyvvO+WhtFlL4jrZ+DSsN/oSQHVqmJQI/sBCqqbOArFcYCAYDfyzqFwV4GSQ==
   dependencies:
-    bson "^4.5.2"
+    bson "^4.5.4"
     denque "^2.0.1"
-    mongodb-connection-string-url "^2.0.0"
+    mongodb-connection-string-url "^2.1.0"
   optionalDependencies:
     saslprep "^1.0.3"
 

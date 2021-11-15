@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-import program from 'commander'
+import {Command} from 'commander'
 import start from './start'
 import build from './build'
 import colors from 'colors/safe'
 import test from './test'
 import './handleErrors'
 import version from './version'
+
+const program = new Command()
 
 const run = function (action) {
   return async function (...args) {

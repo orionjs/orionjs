@@ -21,21 +21,15 @@
     "@orion-js/http": "^3.0.16",
     "@orion-js/resolvers": "^3.0.16",
     "@orion-js/schema": "^3.0.7",
-    "axios": "^0.23.0",
+    "axios": "^0.24.0",
     "jssha": "^3.2.0",
     "kafkajs": "^1.15.0",
-    "serialize-javascript": "^5.0.1"
+    "serialize-javascript": "^6.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "27.0.2",
     "@types/supertest": "2.0.11",
-    "graphql": "^15.6.0",
     "jest": "27.3.1",
     "supertest": "^6.1.6",
     "ts-jest": "27.0.7",

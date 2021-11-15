@@ -494,25 +494,33 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/helpers@^3.0.0-alpha.11":
-  version "3.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0-alpha.11.tgz#f2897a27b9dbbed3741b430cd4919a8b82175e0b"
-  integrity sha512-TQrWB/0TTg7aQxJATcCi2johKmnxMQAv6DRu3T/iNtzUZ3UsDM7nuyr+b9TtBdlEDQ/Yr5DEWI1HScKDBVLNjA==
+"@orion-js/cache@^3.0.0-alpha.23":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.0.0.tgz#ea6f6dd0bb06256bbadfb51db299c796d2dad820"
+  integrity sha512-QV+7r1BD6lSQbmSFOo+utkDGPWHATlQX6JNItVLnUVYMFz/kRPz9gFQbu74LVU1AlWMAT225mf33tfbiDDqwnA==
+  dependencies:
+    "@orion-js/helpers" "^3.0.0"
+
+"@orion-js/helpers@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0.tgz#093094e7fafc4988a3e8dad4171e0f51c0deadc6"
+  integrity sha512-6TknMsxNoeOfWJKN7/GPR6ihPMwn2VfUykiPNONqJ6La/fBDMvzr+flR4v9kIx+FudWbtip/f8HI5cRNjzGhSw==
   dependencies:
     object-hash "^2.1.1"
 
-"@orion-js/resolvers@^3.0.0-alpha.13":
-  version "3.0.0-alpha.13"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.0-alpha.13.tgz#3abae3d80cc73f45a137ff34de5c9aaaa26d7be5"
-  integrity sha512-8w3O2qMmZ7Ey71N4lIlP6XyFl8wJBQ9hVPy2iX7AnoHhMwGkB4c2hPikZ6XVZZM5DNA4Fwu+rloaCm1qmzj1gw==
+"@orion-js/resolvers@^3.0.16":
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.16.tgz#5911ca5d524770a004608fff61abbccbec3044db"
+  integrity sha512-jFUPyb9ZeDeRTd+mFCnzMspZmeacol1tnzt69j/odrwn2fyR7/7qgwaS9zdJALHbYH2IZtZOu5l6aHXvUg0zKg==
   dependencies:
-    "@orion-js/helpers" "^3.0.0-alpha.11"
-    "@orion-js/schema" "^3.0.0-alpha.13"
+    "@orion-js/cache" "^3.0.0-alpha.23"
+    "@orion-js/helpers" "^3.0.0"
+    "@orion-js/schema" "^3.0.7"
 
-"@orion-js/schema@^3.0.0-alpha.13":
-  version "3.0.0-alpha.13"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0-alpha.13.tgz#c03ce20a24b90e5c1d00f866269730304a9350b8"
-  integrity sha512-+A4xMrgjYwvhzzj38/UHh1RdYleRw0BDNAKQ4YZfciupeyNU0k5PJYGAFF7KaibjZhjjxNGb3GIKCRM2LTZIWQ==
+"@orion-js/schema@^3.0.7":
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.7.tgz#46929b880b449594432e9714fd4e40edb6da6c97"
+  integrity sha512-yZH0WGrlhwSDr/+Pw2/vNyvCLthiSE2SvHNR2WkUOD5i1dI1fwgZRcp5R3F3YyKkcmLTjDgc1foFeEfOn61cbg==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dot-object "^1.9.0"

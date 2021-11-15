@@ -487,10 +487,10 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/helpers@^3.0.0-alpha.11":
-  version "3.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0-alpha.11.tgz#f2897a27b9dbbed3741b430cd4919a8b82175e0b"
-  integrity sha512-TQrWB/0TTg7aQxJATcCi2johKmnxMQAv6DRu3T/iNtzUZ3UsDM7nuyr+b9TtBdlEDQ/Yr5DEWI1HScKDBVLNjA==
+"@orion-js/helpers@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.0.0.tgz#093094e7fafc4988a3e8dad4171e0f51c0deadc6"
+  integrity sha512-6TknMsxNoeOfWJKN7/GPR6ihPMwn2VfUykiPNONqJ6La/fBDMvzr+flR4v9kIx+FudWbtip/f8HI5cRNjzGhSw==
   dependencies:
     object-hash "^2.1.1"
 
