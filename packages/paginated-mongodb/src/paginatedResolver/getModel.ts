@@ -1,6 +1,6 @@
-import Model from '../../Model'
+import {createModel} from '@orion-js/models'
 import hash from './hash'
-import resolver from '../resolver'
+import {modelResolver} from '@orion-js/resolvers'
 
 export default ({returns, modelName}) => {
   const getTotalCount = async function (paginated) {
@@ -10,28 +10,26 @@ export default ({returns, modelName}) => {
     return paginated.count
   }
 
-  const _id = resolver({
-    name: '_id',
+  const _id = modelResolver({
     returns: 'ID',
-    async resolve({params}, viewer) {
+    async resolve(paginated: any, p, viewer): Promise<string> {
+      const {params} = paginated
       const num = hash({
         modelName: modelName,
         typename: returns.name,
         userId: viewer.userId,
         params: params
       })
-      return Math.abs(num)
+      return String(Math.abs(num))
     }
   })
 
-  const totalCount = resolver({
-    name: 'totalCount',
+  const totalCount = modelResolver({
     returns: 'integer',
     resolve: getTotalCount
   })
 
-  const totalPages = resolver({
-    name: 'totalPages',
+  const totalPages = modelResolver({
     returns: 'integer',
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
@@ -40,8 +38,7 @@ export default ({returns, modelName}) => {
     }
   })
 
-  const hasNextPage = resolver({
-    name: 'hasNextPage',
+  const hasNextPage = modelResolver({
     returns: Boolean,
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
@@ -51,8 +48,7 @@ export default ({returns, modelName}) => {
     }
   })
 
-  const hasPreviousPage = resolver({
-    name: 'hasPreviousPage',
+  const hasPreviousPage = modelResolver({
     returns: Boolean,
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
@@ -61,15 +57,14 @@ export default ({returns, modelName}) => {
     }
   })
 
-  const items = resolver({
-    name: 'items',
+  const items = modelResolver({
     returns: [returns],
     async resolve({cursor}) {
       return await cursor.toArray()
     }
   })
 
-  return new Model({
+  return createModel({
     name: modelName || `Paginated${returns.name}`,
     resolvers: {
       _id,

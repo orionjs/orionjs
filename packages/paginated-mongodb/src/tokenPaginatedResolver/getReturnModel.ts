@@ -1,16 +1,16 @@
-import Model from '../../Model'
-import resolver from '../resolver'
+import {createModel} from '@orion-js/models'
+import {modelResolver} from '@orion-js/resolvers'
 
 export default ({collection, modelName}) => {
-  const items = resolver({
-    name: 'items',
+  const items = modelResolver({
     returns: [collection.model],
-    async resolve({cursor}) {
+    async resolve(params) {
+      const {cursor} = params
       return await cursor.toArray()
     }
   })
 
-  return new Model({
+  return createModel({
     name: modelName || `tokenPaginated${collection.model.name}`,
     resolvers: {
       items

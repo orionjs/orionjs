@@ -1,6 +1,6 @@
-import resolver from '../resolver'
+import {resolver} from '@orion-js/resolvers'
 import getReturnModel from './getReturnModel'
-import getArgs from '../resolver/getResolver/getArgs'
+import {getArgs} from '@orion-js/resolvers/lib/resolver/getArgs'
 
 export default function ({collection, params, resolve, ...otherOptions}) {
   /* executes the resolve function, obtaining the query that will
@@ -97,6 +97,8 @@ export default function ({collection, params, resolve, ...otherOptions}) {
     }
   }
 
+  const {modelName} = otherOptions
+
   return resolver({
     params: {
       ...params,
@@ -111,9 +113,9 @@ export default function ({collection, params, resolve, ...otherOptions}) {
         max: 200
       }
     },
-    returns: getReturnModel({...otherOptions, collection}),
+    returns: getReturnModel({modelName, collection}),
     async resolve(...args) {
-      const {callParams: params, viewer} = getArgs(...args)
+      const {params, viewer} = getArgs(...args)
       const {query, sort} = await runResolve(...args)
 
       if (!query) throw new Error("'query' object not found in return of resolve function")
