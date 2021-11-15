@@ -2,15 +2,12 @@
   "license": "MIT",
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "clean": "lerna run clean",
+    "watch": "lerna run --parallel watch",
     "test": "lerna bootstrap && lerna run test",
     "publish-all": "lerna publish --force-publish=*"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-orionsoft": "^2.0.1",
-    "eslint-plugin-react": "^7.18.3",
-    "eslint-plugin-react-hooks": "^2.3.0",
-    "eslint-plugin-react-native": "^3.8.1",
     "lerna": "^3.20.2"
   },
   "dependencies": {}

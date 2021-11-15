@@ -42,7 +42,8 @@ npm manifest:
       "prepare": "yarn run build",
       "clean": "rm -rf ./lib",
       "build": "yarn run clean && tsc",
-      "watch": "yarn run clean && tsc -w"
+      "watch": "tsc -w",
+"upgrade-interactive": "yarn upgrade-interactive"
     },
     "dependencies": {
       "@orion-js/helpers": "^3.0.0-alpha.9",

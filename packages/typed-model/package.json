@@ -12,7 +12,8 @@
     "prepare": "yarn run build",
     "clean": "rm -rf ./lib",
     "build": "yarn run clean && tsc",
-    "watch": "yarn run clean && tsc -w",
+    "watch": "tsc -w",
+    "upgrade-interactive": "yarn upgrade-interactive",
     "test": "jest --config jest.config.js"
   },
   "dependencies": {

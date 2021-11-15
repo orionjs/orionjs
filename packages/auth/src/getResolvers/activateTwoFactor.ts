@@ -1,7 +1,7 @@
 import {resolver} from '@orion-js/resolvers'
 import speakeasy from 'speakeasy'
 
-export default ({Users, Session}) =>
+export default ({Users}) =>
   resolver({
     params: {
       code: {
