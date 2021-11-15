@@ -1,4 +1,6 @@
-import {resolver, generateId, Model} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
+import {generateId} from '@orion-js/helpers'
+import {createModel} from '@orion-js/models'
 import AWS from 'aws-sdk'
 import {getAWSCredentials} from '../credentials'
 import Files from '../Files'
@@ -15,7 +17,7 @@ export default resolver({
       type: String
     }
   },
-  returns: new Model({
+  returns: createModel({
     name: 'UploadCredentials',
     schema: {
       fileId: {
@@ -47,7 +49,7 @@ export default resolver({
 
     const key = `${basePath}/${generateId()}-${params.name}`
 
-    const fileId = await Files.insert({
+    const fileId = await Files.insertOne({
       key,
       bucket,
       name: params.name,
@@ -58,7 +60,7 @@ export default resolver({
       createdAt: new Date()
     })
 
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<AWS.S3.PresignedPost>((resolve, reject) => {
       s3.createPresignedPost(
         {
           Bucket: bucket,
@@ -72,7 +74,7 @@ export default resolver({
             'Content-Type': params.type
           }
         },
-        function(error, data) {
+        function (error, data) {
           if (error) reject(error)
           else resolve(data)
         }
@@ -81,7 +83,7 @@ export default resolver({
 
     return {
       fileId,
-      ...result,
+      ...(result as object),
       key
     }
   }

@@ -1,6 +1,6 @@
-import {resolver} from '@orion-js/app'
+import {modelResolver} from '@orion-js/resolvers'
 
-export default resolver({
+export default modelResolver({
   returns: String,
   async resolve(file, viewer) {
     const {type} = file

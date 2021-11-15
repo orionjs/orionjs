@@ -1,4 +1,4 @@
-import {paginatedResolver} from '@orion-js/app'
+import {paginatedResolver} from '@orion-js/paginated-mongodb'
 import escape from 'escape-string-regexp'
 import File from '../File'
 import Files from '../Files'
@@ -12,7 +12,7 @@ export default paginatedResolver({
   },
   returns: File,
   async getCursor({filter}, viewer) {
-    const query = {status: 'uploaded'}
+    const query: any = {status: 'uploaded'}
 
     query.createdBy = viewer.userId
 
