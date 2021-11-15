@@ -122,6 +122,11 @@ export interface SchemaNode {
    * The field type that would be used in a front-end form
    */
   fieldType?: string //TODO: allow only possible values
+
+  /**
+   * The field options that will be passed as props to the front-end field
+   */
+  fieldOptions?: any
 }
 
 export interface CurrentNodeInfoOptions {
