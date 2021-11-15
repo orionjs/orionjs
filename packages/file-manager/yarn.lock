@@ -866,28 +866,28 @@
   dependencies:
     object-hash "^2.1.1"
 
-"@orion-js/resolvers@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.0.tgz#0b92772415d0d33f837eed8f5a7fb04767dfe736"
-  integrity sha512-QVKllI4XsSDUXQIx3NlbDOD4lToaUXRJpt+xjkdCXWOd0SqyV2M/y6qtYmwCKKqoNod3p1jci9YIgHOXGdJpiw==
+"@orion-js/resolvers@^3.0.16":
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.16.tgz#5911ca5d524770a004608fff61abbccbec3044db"
+  integrity sha512-jFUPyb9ZeDeRTd+mFCnzMspZmeacol1tnzt69j/odrwn2fyR7/7qgwaS9zdJALHbYH2IZtZOu5l6aHXvUg0zKg==
   dependencies:
     "@orion-js/cache" "^3.0.0-alpha.23"
     "@orion-js/helpers" "^3.0.0"
-    "@orion-js/schema" "^3.0.0"
-
-"@orion-js/schema@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0.tgz#1650139226117c2cf5ddcaf9ff1035315c2de124"
-  integrity sha512-eDn3k5M9BkU2TQhmhmSD3X0S93u97OgeUXGozu4zbX+vw6bF6zusssHhd/ywW9cD3pqop/CYGRiUMeIBsn4gmg==
-  dependencies:
-    "@babel/runtime" "^7.5.5"
-    dot-object "^1.9.0"
-    lodash "^4.17.10"
+    "@orion-js/schema" "^3.0.7"
 
 "@orion-js/schema@^3.0.0-alpha.0":
   version "3.0.0-alpha.0"
   resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.0-alpha.0.tgz#7ba6a7ea40e90ba2915b496498c659cdd3044b55"
   integrity sha512-VK7FVEc7EFGzJRPt2SMTJ6Ugq7oe2Id8tEeX3+9XloMFEvWVyaoBavYkd2dEafhMOPyN3ipfQZnm3HSTz93vNw==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    dot-object "^1.9.0"
+    lodash "^4.17.10"
+
+"@orion-js/schema@^3.0.7":
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.0.7.tgz#46929b880b449594432e9714fd4e40edb6da6c97"
+  integrity sha512-yZH0WGrlhwSDr/+Pw2/vNyvCLthiSE2SvHNR2WkUOD5i1dI1fwgZRcp5R3F3YyKkcmLTjDgc1foFeEfOn61cbg==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dot-object "^1.9.0"
@@ -4997,8 +4997,9 @@ xmlbuilder@^4.1.0:
     lodash "^4.0.0"
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
+  integrity sha512-uGZHXkHnhF0XeeAPgnKfPv1bgKAYyVvmNL1xlKsPYZPaIHxGti2hHqvOCQv71XMsLxu1QjergkqogUnms5D3YQ==
 
 yallist@^2.1.2:
   version "2.1.2"
