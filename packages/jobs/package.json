@@ -14,7 +14,7 @@
     "build": "yarn run clean && tsc",
     "watch": "tsc -w",
     "upgrade-interactive": "yarn upgrade-interactive",
-    "test": "jest --runInBand --detectOpenHandles"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@orion-js/helpers": "^3.0.17",

@@ -4,7 +4,7 @@
     "bootstrap": "lerna bootstrap",
     "clean": "lerna run clean",
     "watch": "lerna run --parallel watch",
-    "test": "lerna bootstrap && lerna run test",
+    "test": "lerna run test",
     "publish-all": "lerna publish --force-publish=*"
   },
   "devDependencies": {
