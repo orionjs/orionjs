@@ -1,5 +1,5 @@
 import initItem from './initItem'
-import {CreateModel, CloneOptions} from '../types'
+import {CreateModel, CloneOptions, Model} from '../types'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
@@ -16,7 +16,7 @@ const createModel: CreateModel = modelOptions => {
     if (resolvedSchema) return resolvedSchema
     const schema = resolveParam(modelOptions.schema)
 
-    resolvedSchema = modelToSchema(schema)
+    resolvedSchema = modelToSchema(schema, model)
     return resolvedSchema
   }
 
@@ -34,7 +34,7 @@ const createModel: CreateModel = modelOptions => {
     return initItem({schema, resolvers, name}, item)
   }
 
-  const model = {
+  const model: Model = {
     __isModel: true,
     name,
     getSchema,
