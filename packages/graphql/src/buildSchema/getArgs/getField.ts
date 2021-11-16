@@ -3,6 +3,7 @@ import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLInputObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
 import getScalar from '../getType/getScalar'
+import {getStaticFields} from '../../resolversSchemas/getStaticFields'
 
 const storedModelInput = {}
 
@@ -33,7 +34,7 @@ export default function getParams(type) {
 
     const fields = {}
 
-    for (const field of model.staticFields) {
+    for (const field of getStaticFields(model)) {
       fields[field.key] = {
         type: getParams(field.type)
       }

@@ -1,4 +1,6 @@
-export default {
+import {ModelSchema} from '@orion-js/models'
+
+const schema: ModelSchema = {
   _id: {
     type: 'ID'
   },
@@ -44,3 +46,5 @@ export default {
     optional: true
   }
 }
+
+export default schema

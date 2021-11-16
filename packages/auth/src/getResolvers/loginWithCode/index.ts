@@ -3,8 +3,18 @@ import findUserByEmail from '../../helpers/findUserByEmail'
 import createSession from '../../helpers/createSession'
 import requireTwoFactor from '../../helpers/requireTwoFactor'
 import validate from './validate'
+import {Collection} from '@orion-js/mongodb'
+import {Model} from '@orion-js/models'
 
-export default ({Users, Session, Sessions, twoFactor}) =>
+export default ({
+  Users,
+  Session,
+  twoFactor
+}: {
+  Users: Collection
+  Session: Model
+  twoFactor: boolean
+}) =>
   resolver({
     params: {
       email: {
@@ -40,7 +50,7 @@ export default ({Users, Session, Sessions, twoFactor}) =>
       const userEmail = user.emails.find(({address}) => address === email)
 
       if (!userEmail.verified) {
-        await Users.update(
+        await Users.updateOne(
           {_id: user._id, 'emails.address': email},
           {$set: {'emails.$.verified': true}}
         )

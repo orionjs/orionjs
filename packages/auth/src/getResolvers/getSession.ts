@@ -36,7 +36,7 @@ export default async function (req: express.Request) {
       }
     }
 
-    await Sessions.update(
+    await Sessions.updateOne(
       {publicKey},
       {
         $set: {

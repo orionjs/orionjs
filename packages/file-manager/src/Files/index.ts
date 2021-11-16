@@ -1,7 +1,7 @@
-import {Collection} from '@orion-js/app'
+import {createCollection} from '@orion-js/mongodb'
 import File from '../File'
 
-export default new Collection({
+export default createCollection({
   name: 'filemanager_files',
   model: File,
   indexes: [

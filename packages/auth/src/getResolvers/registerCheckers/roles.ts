@@ -2,7 +2,7 @@ import includes from 'lodash/includes'
 import {PermissionsError} from '@orion-js/helpers'
 import {PermissionChecker} from '@orion-js/resolvers'
 
-export default options => {
+export default () => {
   const checker: PermissionChecker = async options => {
     const {roles = [], role}: {roles: string[]; role: string | undefined} = options.resolver
       .permissionsOptions

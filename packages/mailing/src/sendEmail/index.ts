@@ -15,11 +15,10 @@ export default async function (
     ...options
   }
 
-  const result = await transporter.sendMail(mailOptions)
-
   if (!process.env.MAIL_URL) {
     logMail(mailOptions)
+  } else {
+    const result = await transporter.sendMail(mailOptions)
+    return result
   }
-
-  return result
 }

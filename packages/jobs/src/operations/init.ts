@@ -1,6 +1,6 @@
 import {Agenda} from 'agenda'
 import {AgendaConfig} from 'agenda/dist/agenda'
-import {connections} from '@orion-js/mongodb'
+import {connections, getMongoConnection} from '@orion-js/mongodb'
 import initJobs from '../initJobs'
 import {JobMap} from '../types/job'
 import {JobManager} from '../JobManager'
@@ -46,7 +46,7 @@ export async function init(opts: InitOptions) {
     logger = console
   } = opts
 
-  const mongoConnection = connections[connectionName]
+  const mongoConnection = getMongoConnection({name: connectionName})
 
   if (!mongoConnection) {
     throw new Error(`The connection to MongoDB client "${connectionName}" was not initialized.`)

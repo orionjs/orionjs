@@ -1,7 +1,8 @@
 import isArray from 'lodash/isArray'
 import cloneDeep from 'lodash/cloneDeep'
+import {Model} from '..'
 
-export default function (schema: any) {
+export default function (schema: any, model: Model) {
   schema = cloneDeep(schema)
   const keys = Object.keys(schema)
 
@@ -17,5 +18,8 @@ export default function (schema: any) {
     }
   }
 
-  return schema
+  return {
+    ...schema,
+    __model: model
+  }
 }
