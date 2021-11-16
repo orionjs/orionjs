@@ -8,6 +8,18 @@ export class Job {
 
   @Prop()
   name: string
+
+  @Prop({optional: true})
+  lastRunAt: Date
+
+  @Prop({optional: true})
+  nextRunAt: Date
+
+  @Prop({optional: true})
+  lockedAt: Date
+
+  @Prop({optional: true, type: 'blackbox'})
+  params: any
 }
 
 let collection = null
