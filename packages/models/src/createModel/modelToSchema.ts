@@ -2,7 +2,7 @@ import isArray from 'lodash/isArray'
 import cloneDeep from 'lodash/cloneDeep'
 import {Model} from '..'
 
-export default function (schema: any, model: Model) {
+export default function (schema: any, model?: Model) {
   schema = cloneDeep(schema)
   const keys = Object.keys(schema)
 
@@ -17,6 +17,8 @@ export default function (schema: any, model: Model) {
       schema[key].type = schema[key].type.getSchema()
     }
   }
+
+  if (!model) return schema
 
   return {
     ...schema,

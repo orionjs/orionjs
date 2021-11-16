@@ -56,7 +56,12 @@ export interface Model {
   /**
    * Returns the schema of the model
    */
-  getSchema: () => Schema
+  getSchema: () => Schema & {__model: Model}
+
+  /**
+   * Returns the schema without adding __model to the schema
+   */
+  getCleanSchema: () => Schema
 
   /**
    * Returns the model resolvers
