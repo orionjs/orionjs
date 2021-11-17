@@ -28,7 +28,7 @@ export default async function initJobs(agenda: Agenda, jobs: JobMap, disabled = 
     if (job.type === 'recurrent' && job.runEvery) {
       agenda.define(jobName, opts, getProcessorFromJob(job))
 
-      if (!disabled) await agenda.every(transformRunPeriodToAgenda(job), jobName)
+      await agenda.every(transformRunPeriodToAgenda(job), jobName)
 
       return
     } else if (job.type === 'recurrent' && job.getNextRun) {
@@ -40,7 +40,12 @@ export default async function initJobs(agenda: Agenda, jobs: JobMap, disabled = 
       }
 
       agenda.define(jobName, opts, processor)
-      if (!disabled) await agenda.schedule(job.getNextRun(), jobName, {})
+
+      const [existingJob] = await agenda.jobs({name: jobName})
+      const existingJobIsScheduled = existingJob ? existingJob.attrs.nextRunAt !== null : false
+
+      if (existingJobIsScheduled || disabled) return
+      await agenda.schedule(job.getNextRun(), jobName, {})
 
       return
     } else if (job.type === 'recurrent') {

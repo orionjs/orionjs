@@ -2,6 +2,7 @@ import {JobManager} from '../JobManager'
 import {Job} from '../types'
 import {init, job} from '..'
 import {JobIsNotUniqueError} from '../errors'
+import {getJobCollection} from '../collections/getJobsCollection'
 
 describe('job helper', () => {
   let specs = {}
@@ -136,6 +137,44 @@ describe('job helper', () => {
   })
 
   describe('misc checks', () => {
+    it('only creates a single instance when reinitialized', async () => {
+      runMock = jest.fn(() => Promise.reject('some error'))
+      specs = {
+        singleJob: job({
+          type: 'single',
+          name: 'singleJob',
+          maxRetries: 3,
+          getNextRun: () => new Date(),
+          run: runMock
+        })
+      }
+
+      await init({
+        jobs: specs,
+        namespace: 'job_misc',
+        disabled: true
+      })
+
+      await new Promise(r => setTimeout(r, 100))
+
+      await JobManager.stop()
+      JobManager.clear()
+
+      await init({
+        jobs: specs,
+        namespace: 'job_misc',
+        disabled: true
+      })
+
+      await (specs as {singleJob: Job}).singleJob.schedule()
+
+      const jobs = await getJobCollection().find({name: 'job_misc.singleJob'}).toArray()
+      expect(jobs.length).toBe(1)
+
+      await JobManager.stop()
+      JobManager.clear()
+    })
+
     it('can schedule without explicitly starting agenda', async () => {
       runMock = jest.fn(() => Promise.reject('some error'))
       specs = {
