@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/jobs",
-  "version": "3.0.20",
+  "version": "3.0.22",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
