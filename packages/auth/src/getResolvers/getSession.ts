@@ -50,9 +50,8 @@ export default async function (req: express.Request) {
   const body = req.body
   const shaObj = new JSSHA('SHA-512', 'TEXT')
   shaObj.setHMACKey(session.secretKey, 'TEXT')
-  shaObj.update(nonce + body)
+  shaObj.update(nonce + JSON.stringify(body))
   const calculatedSignature = shaObj.getHMAC('HEX')
-
   if (signature !== calculatedSignature) {
     throw new Error('invalidSignature')
   }
