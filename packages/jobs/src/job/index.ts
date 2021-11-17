@@ -15,8 +15,12 @@ export const job = (jobDefinition: JobDefinition): Job => {
   const nameRef = {name: null}
 
   const initializer = (jobKey: string): JobDefinition => {
-    const jobName = getJobName(nameRef.name ?? jobKey)
-    nameRef.name = jobName
+    let jobName = nameRef.name
+    if (!nameRef.name) {
+      jobName = getJobName(jobKey)
+      nameRef.name = jobName
+    }
+
     if (jobDefinition.type === 'recurrent') return jobDefinition // Recurrent jobs are defined during initJobs
 
     const agenda = JobManager.getAgenda()

@@ -7,7 +7,8 @@ export const getViewer = async (req: express.Request): Promise<any> => {
     const viewer = await global.getViewerRef(req)
     if (!viewer) return {}
     return viewer
-  } catch {
+  } catch (err) {
+    console.error('Orion HTTP Error: error getting viewer: ', err)
     return {}
   }
 }

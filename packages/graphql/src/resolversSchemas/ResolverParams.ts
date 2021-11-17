@@ -33,7 +33,7 @@ export default createModel({
     basicResultQuery: resolver({
       returns: String,
       resolve: async function ({resolver}: ResolverMetaParam) {
-        return await getBasicResultQuery({type: resolver.returns.getSchema()})
+        return await getBasicResultQuery({type: resolver.returns?.getSchema()})
       }
     })
   }
