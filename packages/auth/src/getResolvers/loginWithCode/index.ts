@@ -1,10 +1,11 @@
+import {Model} from '@orion-js/models'
 import {resolver} from '@orion-js/resolvers'
 import findUserByEmail from '../../helpers/findUserByEmail'
 import createSession from '../../helpers/createSession'
 import requireTwoFactor from '../../helpers/requireTwoFactor'
 import validate from './validate'
 import {Collection} from '@orion-js/mongodb'
-import {Model} from '@orion-js/models'
+import {TwoFactor} from '../..'
 
 export default ({
   Users,
@@ -13,7 +14,7 @@ export default ({
 }: {
   Users: Collection
   Session: Model
-  twoFactor: boolean
+  twoFactor?: TwoFactor
 }) =>
   resolver({
     params: {

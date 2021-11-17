@@ -13,15 +13,7 @@ const hasEmailsVerified = function (user) {
 }
 
 export default async function (user, viewer) {
-  const {
-    Sessions,
-    onCreateSession,
-    customCreateSession
-  }: {
-    Sessions: Collection<AbstractSession>
-    onCreateSession: (session: AbstractSession, viewer: any) => Promise<any>
-    customCreateSession: (user: User, viewer: any) => Promise<AbstractSession>
-  } = getOptions()
+  const {Sessions, onCreateSession, customCreateSession} = getOptions()
 
   if (!user) throw new Error('User not found')
 

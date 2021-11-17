@@ -17,7 +17,7 @@ const model = createModel({
   }
 })
 
-export default ({Users, twoFactor}: {Users: Collection; twoFactor: any}) =>
+export default ({Users, twoFactor = {}}: {Users: Collection; twoFactor?: any}) =>
   resolver({
     permissionsOptions: {
       requireUserId: true

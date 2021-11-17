@@ -7,7 +7,7 @@ import {express} from '@orion-js/http'
 export default async function (req: express.Request) {
   const {headers} = req
   const {Sessions, omitNonceCheck} = getOptions()
-  await Sessions.await() // wait till db is connected
+  await Sessions.connectionPromise // wait till db is connected
   const nonce = Number(headers['x-orion-nonce'])
   const publicKey = headers['x-orion-publickey']
   const signature = headers['x-orion-signature']

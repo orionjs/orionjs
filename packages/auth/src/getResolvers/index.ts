@@ -20,8 +20,17 @@ import sendVerificationEmail from './sendVerificationEmail'
 import loginWithCode from './loginWithCode'
 import requestLoginCode from './requestLoginCode'
 import {Resolver} from '@orion-js/resolvers'
+import {GetAuthResolversOpts} from '..'
+import {Collection} from '@orion-js/mongodb'
+import {Model} from '@orion-js/models'
 
-export default function (options) {
+export interface ExtendedGetResolversOpts extends GetAuthResolversOpts {
+  Sessions: Collection
+  Session: Model
+}
+
+export default function (opts: GetAuthResolversOpts) {
+  const options = opts as ExtendedGetResolversOpts
   options.Sessions = Sessions(options)
   options.Session = options.customSessionModel || options.Sessions.model
   setOptions(options)
