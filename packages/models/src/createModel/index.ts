@@ -5,6 +5,10 @@ import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
 import modelToSchema from './modelToSchema'
 
+interface GetSchemaOptions {
+  omitModel?: boolean
+}
+
 const createModel: CreateModel = modelOptions => {
   const name = modelOptions.name
   let resolvedSchema = null
@@ -17,6 +21,16 @@ const createModel: CreateModel = modelOptions => {
     const schema = resolveParam(modelOptions.schema)
 
     resolvedSchema = modelToSchema(schema, model)
+    return resolvedSchema
+  }
+
+  const getCleanSchema = () => {
+    if (!modelOptions.schema) return {}
+
+    if (resolvedSchema) return resolvedSchema
+    const schema = resolveParam(modelOptions.schema)
+
+    resolvedSchema = modelToSchema(schema)
     return resolvedSchema
   }
 
@@ -38,6 +52,7 @@ const createModel: CreateModel = modelOptions => {
     __isModel: true,
     name,
     getSchema,
+    getCleanSchema,
     getResolvers,
     initItem: modelInitItem,
     validate: async doc => {
