@@ -2,8 +2,17 @@ import {resolver} from '@orion-js/resolvers'
 import findUserByEmail from '../../helpers/findUserByEmail'
 import {DateTime} from 'luxon'
 import generateCode from './generateCode'
+import {Collection} from '@orion-js/mongodb'
 
-export default ({Users, sendLoginCode, createUserAtLoginWithCode}) =>
+export default ({
+  Users,
+  sendLoginCode,
+  createUserAtLoginWithCode
+}: {
+  Users: Collection
+  sendLoginCode?: Function
+  createUserAtLoginWithCode?: Function
+}) =>
   resolver({
     params: {
       email: {

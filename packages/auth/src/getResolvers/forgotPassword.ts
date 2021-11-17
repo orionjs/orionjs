@@ -8,7 +8,7 @@ export default ({
   sendForgotPasswordToken
 }: {
   Users: Collection
-  sendForgotPasswordToken: Function
+  sendForgotPasswordToken?: Function
 }) =>
   resolver({
     params: {

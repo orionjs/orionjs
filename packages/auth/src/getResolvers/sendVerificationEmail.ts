@@ -7,7 +7,7 @@ export default ({
   sendEmailVerificationToken
 }: {
   Users: Collection
-  sendEmailVerificationToken: (user: string, token: string) => Promise<any>
+  sendEmailVerificationToken?: (user: string, token: string) => Promise<any>
 }) =>
   resolver({
     returns: Boolean,
@@ -15,7 +15,9 @@ export default ({
     async resolve(params, viewer) {
       const user = await Users.findOne(viewer.userId)
       const token = await generateVerifyEmailToken(user)
-      await sendEmailVerificationToken(user, token)
+      if (sendEmailVerificationToken) {
+        await sendEmailVerificationToken(user, token)
+      }
       return true
     }
   })

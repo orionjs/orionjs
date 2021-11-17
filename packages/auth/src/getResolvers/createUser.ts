@@ -13,8 +13,8 @@ export default ({
 }: {
   Session: any
   Users: Collection
-  onCreateUser: Function
-  sendEmailVerificationToken: Function
+  onCreateUser?: Function
+  sendEmailVerificationToken?: Function
 }) => {
   const profile = Users.model.getSchema().profile || null
   return resolver({

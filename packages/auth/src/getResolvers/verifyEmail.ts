@@ -1,8 +1,8 @@
+import {Model} from '@orion-js/models'
 import {resolver} from '@orion-js/resolvers'
 import createSession from '../helpers/createSession'
 import {DateTime} from 'luxon'
 import {Collection} from '@orion-js/mongodb'
-import {Model} from '@orion-js/models'
 
 export default ({Users, Session}: {Users: Collection; Session: Model}) =>
   resolver({
