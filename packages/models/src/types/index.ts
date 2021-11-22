@@ -45,7 +45,7 @@ export interface CloneOptions {
   extendResolvers?: ModelResolversMap
 }
 
-export interface Model {
+export interface Model<ModelClass = any> {
   __isModel: boolean
 
   /**
@@ -71,17 +71,17 @@ export interface Model {
   /**
    * Adds the model resolvers to a item
    */
-  initItem: (item: any) => any
+  initItem: (item: ModelClass) => ModelClass
 
   /**
    * Validates an item using @orion-js/schema
    */
-  validate: (item: any) => Promise<any>
+  validate: (item: ModelClass) => Promise<any>
 
   /**
    * Cleans an item using @orion-js/schema
    */
-  clean: (item: any) => Promise<any>
+  clean: (item: ModelClass) => Promise<ModelClass>
 
   /**
    * Creates a new model using this one as a base

@@ -89,23 +89,36 @@ export interface InsertOptions {
   mongoOptions?: MongoDB.InsertOneOptions
 }
 
-export type InitItem<ModelClass> = (doc: MongoDB.Document) => ModelClass
+export interface ModelItemEnhancements<ModelClass = any> {
+  /**
+   * Updates the document in MongoDB. Also modifies the model item in memory to reflect the updates.
+   * Only available for model items that have an ID.
+   */
+  update?: (
+    modifier: ModelToUpdateFilter<ModelClass>,
+    options?: UpdateOptions
+  ) => Promise<MongoDB.UpdateResult>
+}
+
+export type ModelItem<ModelClass = any> = ModelClass & ModelItemEnhancements<ModelClass>
+
+export type InitItem<ModelClass> = (doc: MongoDB.Document) => ModelItem<ModelClass>
 
 export type FindOne<ModelClass> = (
   selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
-) => Promise<ModelClass>
+) => Promise<ModelItem<ModelClass>>
 
 export type Find<ModelClass> = (
   selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
-) => FindCursor<ModelClass>
+) => FindCursor<ModelItem<ModelClass>>
 
 export type FindOneAndUpdate<ModelClass> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions
-) => Promise<ModelClass>
+) => Promise<ModelItem<ModelClass>>
 
 export type InsertOne<ModelClass> = (
   doc: ModelToDocumentTypeWithoutId<ModelClass>,
@@ -160,7 +173,7 @@ export type CreateCollection = <ModelClass = any>(
 export interface Collection<ModelClass = any> {
   name: string
   connectionName?: string
-  model?: Model
+  model?: Model<ModelClass>
   indexes: Array<CollectionIndex>
   generateId: () => string
   getSchema: () => Schema

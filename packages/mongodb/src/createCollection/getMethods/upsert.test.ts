@@ -2,6 +2,16 @@ import {generateId} from '@orion-js/helpers'
 import {createModel, ModelSchema} from '@orion-js/models'
 import createCollection from '..'
 
+const removeFunctions = modelItem => {
+  const newItem = {...modelItem}
+  for (const key in newItem) {
+    if (typeof newItem[key] === 'function') {
+      delete newItem[key]
+    }
+  }
+  return newItem
+}
+
 it('updates a document if exists', async () => {
   const Tests = createCollection({name: generateId()})
 
@@ -62,7 +72,7 @@ it('adds default value when creating docs', async () => {
   expect(calls).toBe(1)
   expect(typeof upsertedId).toBe('string')
   const final = await Tests.findOne({})
-  expect(final).toEqual({
+  expect(removeFunctions(final)).toEqual({
     _id: upsertedId,
     firstName: 'Nicolás',
     lastName: 'Ermann',
@@ -101,7 +111,7 @@ it('should upsert documents passing cleaning validation', async () => {
   await Tests.updateOne(upsertedId, {$set: {'wife.state': 'Full'}})
 
   const doc = await Tests.findOne(upsertedId)
-  expect(doc).toEqual({
+  expect(removeFunctions(doc)).toEqual({
     _id: upsertedId,
     name: 'Nicolás',
     label: '1234',

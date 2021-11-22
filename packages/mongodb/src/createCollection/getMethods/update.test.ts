@@ -2,6 +2,16 @@ import {generateId} from '@orion-js/helpers'
 import {createModel, ModelSchema} from '@orion-js/models'
 import createCollection from '..'
 
+const removeFunctions = modelItem => {
+  const newItem = {...modelItem}
+  for (const key in newItem) {
+    if (typeof newItem[key] === 'function') {
+      delete newItem[key]
+    }
+  }
+  return newItem
+}
+
 it('updates a document without errors', async () => {
   const Tests = createCollection({name: generateId()})
 
@@ -42,7 +52,7 @@ it('should update documents that have array passing validation', async () => {
 
   await Tests.updateOne(personId, {$set: {'friends.0.name': 'Robert'}})
 
-  expect(await Tests.findOne(personId)).toEqual({
+  expect(removeFunctions(await Tests.findOne(personId))).toEqual({
     _id: personId,
     friends: [{name: 'Robert'}, {name: 'Joaquín'}]
   })
@@ -52,7 +62,7 @@ it('should update documents that have array passing validation', async () => {
       friends: {name: 'Bastian'}
     }
   })
-  expect(await Tests.findOne(personId)).toEqual({
+  expect(removeFunctions(await Tests.findOne(personId))).toEqual({
     _id: personId,
     friends: [{name: 'Robert'}, {name: 'Joaquín'}, {name: 'Bastian'}]
   })
@@ -73,7 +83,7 @@ it('should do $pull operation', async () => {
   await Tests.updateOne(itemId, {$pull: {tags: '1'}})
   await Tests.updateOne(itemId, {$pull: {tags: {$in: ['3', '4']}}})
 
-  expect(await Tests.findOne(itemId)).toEqual({
+  expect(removeFunctions(await Tests.findOne(itemId))).toEqual({
     _id: itemId,
     tags: ['2']
   })
@@ -98,7 +108,7 @@ it('should update documents passing validation', async () => {
   await Tests.updateOne(personId, {$set: {'wife.state': 'Full'}})
 
   const doc = await Tests.findOne(personId)
-  expect(doc).toEqual({_id: personId, wife: {state: 'Full', name: 'Francisca'}})
+  expect(removeFunctions(doc)).toEqual({_id: personId, wife: {state: 'Full', name: 'Francisca'}})
 })
 
 it('should handle $inc operator on blackbox', async () => {
@@ -122,7 +132,7 @@ it('should handle $inc operator on blackbox', async () => {
 
   const doc = await Tests.findOne(userId)
 
-  expect(doc).toEqual({_id: userId, services: {phoneVerification: {tries: 2}}})
+  expect(removeFunctions(doc)).toEqual({_id: userId, services: {phoneVerification: {tries: 2}}})
 })
 
 it('should update documents passing validation with blackbox field', async () => {
@@ -142,7 +152,10 @@ it('should update documents passing validation with blackbox field', async () =>
   await Tests.updateOne(personId, {$set: {'services.forgot': 'mypassword'}})
 
   const doc = await Tests.findOne(personId)
-  expect(doc).toEqual({_id: personId, services: {password: 123456, forgot: 'mypassword'}})
+  expect(removeFunctions(doc)).toEqual({
+    _id: personId,
+    services: {password: 123456, forgot: 'mypassword'}
+  })
 })
 
 it('should throw an error when modifier is invalid', async () => {
@@ -195,7 +208,7 @@ it('dont add autovalue when updating', async () => {
   const personId = await Tests.insertOne({name: 'Nicolás'})
   await Tests.updateOne(personId, {$set: {name: 'Nicolás López'}})
   const doc = await Tests.findOne(personId)
-  expect(doc).toEqual({_id: personId, name: 'Nicolás López', count: 1})
+  expect(removeFunctions(doc)).toEqual({_id: personId, name: 'Nicolás López', count: 1})
 })
 
 it('should handle $ correctly', async () => {
@@ -228,7 +241,7 @@ it('should handle $ correctly', async () => {
     }
   )
 
-  expect(await Tests.findOne(userId)).toEqual({
+  expect(removeFunctions(await Tests.findOne(userId))).toEqual({
     _id: userId,
     emails: [
       {

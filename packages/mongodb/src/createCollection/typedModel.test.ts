@@ -59,4 +59,27 @@ describe('Collections with typed model', () => {
 
     expect(title).toBe('Mr. John Doe')
   })
+
+  it('Should pass the update method to the items', async () => {
+    const Persons = createCollection<Person>({
+      name: generateId(),
+      model: getModelForClass(Person)
+    })
+
+    await Persons.insertOne({
+      firstName: 'John',
+      lastName: 'Doe'
+    })
+
+    const person = await Persons.findOne({})
+    await person.update({$set: {firstName: 'Alice'}})
+
+    expect(person.firstName).toBe('Alice')
+
+    const updatedPerson = await Persons.findOne({})
+    expect(updatedPerson.firstName).toBe('Alice')
+    const title = await person.title({title: 'Ms.'})
+
+    expect(title).toBe('Ms. Alice Doe')
+  })
 })

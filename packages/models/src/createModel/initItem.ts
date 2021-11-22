@@ -9,7 +9,10 @@ interface InitItemOptions {
   resolvers: ModelResolversMap
 }
 
-export default function ({schema, resolvers, name}: InitItemOptions, item: any): any {
+export default function initItem<ModelClass = any>(
+  {schema, resolvers, name}: InitItemOptions,
+  item: ModelClass
+): ModelClass {
   if (isNil(item)) {
     return item
   }
