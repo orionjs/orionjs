@@ -107,6 +107,17 @@ export type FindOneAndUpdate<ModelClass> = (
   options?: FindOneAndUpdateUpdateOptions
 ) => Promise<ModelClass>
 
+export type UpdateAndFind<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
+  modifier: ModelToUpdateFilter<ModelClass>,
+  options?: FindOneAndUpdateUpdateOptions
+) => Promise<ModelClass>
+
+export type UpdateItem<ModelClass> = (
+  item: {_id: string} & ModelClass,
+  modifier: ModelToUpdateFilter<ModelClass>
+) => Promise<void>
+
 export type InsertOne<ModelClass> = (
   doc: ModelToDocumentTypeWithoutId<ModelClass>,
   options?: InsertOptions
@@ -184,6 +195,9 @@ export interface Collection<ModelClass = any> {
 
   upsert: Upsert<ModelClass>
   findOneAndUpdate: FindOneAndUpdate<ModelClass>
+
+  updateAndFind: UpdateAndFind<ModelClass>
+  updateItem: UpdateItem<ModelClass>
 
   aggregate: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
