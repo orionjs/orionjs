@@ -2,7 +2,13 @@ import setSession from '../auth/setSession'
 import getSession from '../auth/getSession'
 import handleJWTRefresh from './handleJWTRefresh'
 
-export default function ({networkError, operation, forward}) {
+export interface OnNetworkErrorOptions {
+  networkError: any
+  operation?: any
+  forward?: any
+}
+
+export default function onNetworkError({networkError, operation, forward}: OnNetworkErrorOptions) {
   if (networkError.statusCode === 401 && networkError.result.error === 'AuthError') {
     const {message} = networkError.result
     if (message.toLowerCase().includes('jwt')) {

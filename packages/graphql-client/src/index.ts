@@ -4,3 +4,5 @@ import getSession from './auth/getSession'
 import sessionQuery from './auth/sessionQuery'
 
 export {createClient, setSession, sessionQuery, getSession}
+
+export * from './types'

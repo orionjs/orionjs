@@ -2,7 +2,7 @@ import getSession from './getSession'
 import getSignature from './getSignature'
 import getJWT from './getJWT'
 
-export default function (body, getHeaders = () => {}) {
+export default function (body, getHeaders: Function = () => {}) {
   const jwt = getJWT()
   const headers = getHeaders(body)
 
