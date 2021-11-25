@@ -9,9 +9,11 @@ Migrate list:
 - [*] Blog
 - [*] Implementar Algolia search
 - [*] Implementar multiples versiones
-- [-] Traer la Documentación v2
+- [*] Migrar la Documentación v2
 - [-] Documentación v3
 - [-] Documentación sobre como pasar de versión 2 a 3
+- [-] New design
+- [-] Agregar página de Sponsors
 
 ### Installation
 
