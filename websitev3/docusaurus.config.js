@@ -6,15 +6,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
-  url: 'https://your-docusaurus-test-site.com',
+  title: 'Orionjs',
+  tagline: 'A framework for modern Nodejs apps',
+  url: 'https://orionjs.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'orionjs', // Usually your GitHub org/user name.
+  projectName: 'orionjs', // Usually your repo name.
 
   presets: [
     [
@@ -25,6 +25,13 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/',
+          editCurrentVersion:true,
+          lastVersion: "current",
+          versions: {
+            current: {
+              label: "3.x",
+            }
+          }
         },
         blog: {
           showReadingTime: true,
@@ -38,14 +45,13 @@ const config = {
       }),
     ],
   ],
-
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'My Site',
+        title: 'Orionjs',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Orionjs Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -57,9 +63,8 @@ const config = {
           },
           {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/facebook/docusaurus',
-            label: 'GitHub',
-            position: 'right',
+            type: 'docsVersionDropdown',
+            position: 'right'
           },
         ],
       },
@@ -80,15 +85,11 @@ const config = {
             items: [
               {
                 label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                href: 'https://stackoverflow.com/questions/tagged/orionjs',
               },
               {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
+                label: 'Github issues',
+                href: 'https://github.com/orionjs/orionjs/issues',
               },
             ],
           },
@@ -101,7 +102,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/orionjs/orionjs',
               },
             ],
           },
@@ -112,6 +113,11 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      algolia:{
+        apiKey: 'c7383946eb91c665407697fcf1b4ec3a',
+        indexName: 'orionjs',
+        algoliaOptions: {} // Optional, if provided by Algolia
+      }
     }),
 };
 

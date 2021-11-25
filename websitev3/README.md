@@ -2,6 +2,17 @@
 
 This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
+## TODO
+
+Migrate list:
+
+- [*] Blog
+- [*] Implementar Algolia search
+- [-] Implementar multiples versiones
+- [-] Traer la Documentación v2
+- [-] Documentación v3
+- [-] Documentación sobre como pasar de versión 2 a 3
+
 ### Installation
 
 ```
