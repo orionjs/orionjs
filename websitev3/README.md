@@ -8,7 +8,7 @@ Migrate list:
 
 - [*] Blog
 - [*] Implementar Algolia search
-- [-] Implementar multiples versiones
+- [*] Implementar multiples versiones
 - [-] Traer la Documentación v2
 - [-] Documentación v3
 - [-] Documentación sobre como pasar de versión 2 a 3

@@ -12,7 +12,7 @@ const config = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/logo-black.png',
   organizationName: 'orionjs', // Usually your GitHub org/user name.
   projectName: 'orionjs', // Usually your repo name.
 
@@ -52,7 +52,8 @@ const config = {
         title: 'Orionjs',
         logo: {
           alt: 'Orionjs Logo',
-          src: 'img/logo.svg',
+          src: 'img/logo-black.png',
+          srcDark: 'img/logo.svg',
         },
         items: [
           {
