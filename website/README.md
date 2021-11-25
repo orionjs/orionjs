@@ -12,8 +12,9 @@ Migrate list:
 - [*] Migrar la Documentación v2
 - [-] Documentación v3
 - [-] Documentación sobre como pasar de versión 2 a 3
-- [-] New design
+- [-] Nuevo diseño
 - [-] Agregar página de Sponsors
+- [-] Agregar página de ayuda
 
 ### Installation
 

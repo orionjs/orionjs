@@ -110,6 +110,7 @@ const config = {
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Orionjs Team &hearts;	`,
       },
+      
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,

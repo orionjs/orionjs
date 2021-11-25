@@ -1,25 +1,16 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+import React from 'react';
+import clsx from 'clsx';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import Layout from '@theme/Layout';
 
-const React = require('react')
+export default function Help() {
+  const {siteConfig} = useDocusaurusContext();
 
-const CompLibrary = require('../../core/CompLibrary.js')
+  const docUrl = (doc, language) => {
+    const {siteConfig} = useDocusaurusContext();
+    return `${siteConfig.baseUrl}docs/${language ? `${language}/` : ''}${doc}`
+  }
 
-const Container = CompLibrary.Container
-const GridBlock = CompLibrary.GridBlock
-
-const siteConfig = require(`${process.cwd()}/siteConfig.js`)
-
-function docUrl(doc, language) {
-  return `${siteConfig.baseUrl}docs/${language ? `${language}/` : ''}${doc}`
-}
-
-class Help extends React.Component {
-  render() {
     const supportLinks = [
       {
         title: 'Browse Docs',
@@ -40,23 +31,23 @@ class Help extends React.Component {
     ]
 
     return (
-      <div className="docMainWrapper wrapper">
-        <Container className="mainContainer documentContainer postContainer">
+      <Layout
+      title={`${siteConfig.title} · ${siteConfig.tagline}`}
+      description="Description will go into a meta tag in <head />">
+      
+      <header className={clsx('hero hero--primary')}>
           <div className="post">
             <header className="postHeader">
               <h1>Need help?</h1>
             </header>
-            <GridBlock contents={supportLinks} layout="threeColumn" />
+            <div contents={supportLinks} layout="threeColumn" />
             <br />
             <br />
             <div>
               <p>If you need paid support, please contact admin@orionsoft.io.</p>
             </div>
           </div>
-        </Container>
-      </div>
+          </header>
+      </Layout>
     )
-  }
 }
-
-module.exports = Help
