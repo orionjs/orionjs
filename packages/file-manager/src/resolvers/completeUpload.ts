@@ -12,7 +12,7 @@ export default resolver({
   mutation: true,
   async resolve({fileId}, viewer) {
     const file = await Files.findOne({createdBy: viewer.userId, _id: fileId})
-    await file.update({$set: {status: 'uploaded'}})
+    await Files.updateOne(file, {$set: {status: 'uploaded'}})
     return file
   }
 })
