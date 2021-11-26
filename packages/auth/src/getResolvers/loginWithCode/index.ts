@@ -46,7 +46,7 @@ export default ({
     resolve: async function ({email, code, token}, viewer) {
       const user = await findUserByEmail({email, Users})
 
-      await validate({user, code, token})
+      await validate({user, code, token, Users})
 
       const userEmail = user.emails.find(({address}) => address === email)
 
@@ -57,7 +57,7 @@ export default ({
         )
       }
 
-      await user.update({$unset: {'services.loginCode': ''}})
+      await Users.updateOne(user, {$unset: {'services.loginCode': ''}})
 
       if (twoFactor) {
         await requireTwoFactor({userId: user._id, twoFactorCode: viewer.twoFactorCode})

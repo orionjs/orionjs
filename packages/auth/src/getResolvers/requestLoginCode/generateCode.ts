@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 
-export default async function (user) {
+export default async function (user, Users) {
   const chars = 'abcdefghjkmnopqrstuvwxyz'
   const code = generateId(6, chars)
   const token = generateId()
@@ -11,7 +11,7 @@ export default async function (user) {
     token
   }
 
-  user.update({$set: {'services.loginCode': data}})
+  Users.updateOne(user, {$set: {'services.loginCode': data}})
 
   return {token, code}
 }
