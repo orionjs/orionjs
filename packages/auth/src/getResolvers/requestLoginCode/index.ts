@@ -45,7 +45,7 @@ export default ({
     mutation: true,
     resolve: async function ({email}, viewer) {
       const user = await findUserByEmail({email, Users})
-      const {token, code} = await generateCode(user)
+      const {token, code} = await generateCode(user, Users)
       await sendLoginCode({user, email, code}, viewer)
       return token
     }
