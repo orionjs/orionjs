@@ -67,7 +67,7 @@ export default ({
       }
 
       if (sendEmailVerificationToken) {
-        const token = await generateVerifyEmailToken(user)
+        const token = await generateVerifyEmailToken(user, Users)
         await sendEmailVerificationToken(user, token)
       }
 

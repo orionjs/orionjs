@@ -14,7 +14,7 @@ export default ({
     mutation: true,
     async resolve(params, viewer) {
       const user = await Users.findOne(viewer.userId)
-      const token = await generateVerifyEmailToken(user)
+      const token = await generateVerifyEmailToken(user, Users)
       if (sendEmailVerificationToken) {
         await sendEmailVerificationToken(user, token)
       }
