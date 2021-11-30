@@ -6,15 +6,15 @@ This website is built using [Docusaurus 2](https://docusaurus.io/), a modern sta
 
 Migrate list:
 
-- [*] Blog
-- [*] Implementar Algolia search
-- [*] Implementar multiples versiones
-- [*] Migrar la Documentación v2
-- [-] Documentación v3
-- [-] Documentación sobre como pasar de versión 2 a 3
-- [-] Nuevo diseño
-- [-] Agregar página de Sponsors
-- [-] Agregar página de ayuda
+- [x] Blog
+- [x] Implementar Algolia search
+- [x] Implementar multiples versiones
+- [x] Migrar la Documentación v2
+- [ ] Documentación v3
+- [ ] Documentación sobre como pasar de versión 2 a 3
+- [ ] Nuevo diseño
+- [ ] Agregar página de Sponsors
+- [ ] Agregar página de ayuda
 
 ### Installation
 
