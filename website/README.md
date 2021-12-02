@@ -11,6 +11,11 @@ Migrate list:
 - [x] Implementar multiples versiones
 - [x] Migrar la Documentación v2
 - [ ] Documentación v3
+  - [ ] Install
+  - [ ] Resolvers
+  - [ ] Models
+  - [ ] Collections
+  - [ ] Schema
 - [ ] Documentación sobre como pasar de versión 2 a 3
 - [ ] Nuevo diseño
 - [ ] Agregar página de Sponsors
