@@ -501,10 +501,10 @@
   dependencies:
     object-hash "^2.2.0"
 
-"@orion-js/resolvers@^3.0.17":
-  version "3.0.17"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.17.tgz#a5f94beeb32656857557705b4250956c4c023554"
-  integrity sha512-1uMGiIX1Hz8YNWFr2XMr9e2IwZrXVKg5LCqvPM8Dp2GZTanE7hnyFHuZfgmhEEDJKzOyilX5LJcSEECzVfSlrw==
+"@orion-js/resolvers@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.0.24.tgz#8f2ea592a3f0b4a7a9f6ac654ff472038a4e44ff"
+  integrity sha512-l6+NQ7wehe4RqMuR7C/ohBhBhSeqdLsayYgVeC+A4nXWNnFZRmsimu3xbfgoFgGY13xuB1V4FhBShWRtS/pntQ==
   dependencies:
     "@orion-js/cache" "^3.0.17"
     "@orion-js/helpers" "^3.0.17"
