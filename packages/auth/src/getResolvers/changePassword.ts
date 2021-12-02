@@ -1,8 +1,15 @@
+import {ValidateFunction, ValidationError} from '@orion-js/schema'
 import {Collection} from '@orion-js/mongodb'
 import {resolver} from '@orion-js/resolvers'
 import checkPassword from '../helpers/checkPassword'
 import hashPassword from '../helpers/hashPassword'
 import hasPassword from '../helpers/hasPassword'
+
+const validateNewPassword: ValidateFunction = async (newPassword, {doc}) => {
+  if (newPassword === doc.oldPassword) {
+    return 'samePassword'
+  }
+}
 
 export default ({Users}: {Users: Collection}) =>
   resolver({
@@ -12,31 +19,26 @@ export default ({Users}: {Users: Collection}) =>
     params: {
       oldPassword: {
         type: String,
-        label: 'Old password',
-        async custom(oldPassword, info, viewer) {
-          const user = await Users.findOne(viewer.userId)
-          if (!hasPassword(user)) {
-            return 'noPassword'
-          }
-          if (!checkPassword(user, oldPassword)) {
-            return 'incorrectPassword'
-          }
-        }
+        label: 'Old password'
       },
       newPassword: {
         type: String,
         min: 8,
         label: 'New password',
-        async custom(newPassword, {doc}, viewer) {
-          if (newPassword === doc.oldPassword) {
-            return 'samePassword'
-          }
-        }
+        validate: validateNewPassword
       }
     },
     returns: Boolean,
     mutation: true,
     resolve: async function ({oldPassword, newPassword}, viewer) {
+      const user = await Users.findOne(viewer.userId)
+      if (!hasPassword(user)) {
+        throw new ValidationError({code: 'noPassword'})
+      }
+      if (!checkPassword(user, oldPassword)) {
+        throw new ValidationError({code: 'incorrectPassword'})
+      }
+
       await Users.updateOne(viewer.userId, {
         $set: {
           'services.password': {
