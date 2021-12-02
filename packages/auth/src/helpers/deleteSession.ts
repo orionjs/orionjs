@@ -1,3 +1,3 @@
-export default async function({userId, Sessions, sessionId}) {
-  await Sessions.remove({_id: sessionId, userId})
+export default async function ({userId, Sessions, sessionId}) {
+  await Sessions.deleteMany({_id: sessionId, userId})
 }
