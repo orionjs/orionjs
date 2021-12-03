@@ -66,8 +66,7 @@ const createModel: CreateModel = modelOptions => {
     clean: async doc => {
       const schema = getCleanSchema()
       const cleanedDoc = modelOptions.clean ? await modelOptions.clean(doc) : doc
-      const res = await clean(schema, cleanedDoc)
-      return res
+      return await clean(schema, cleanedDoc)
     },
     clone: (cloneOptions: CloneOptions) => {
       return clone(
