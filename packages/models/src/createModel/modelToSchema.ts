@@ -23,7 +23,6 @@ export default function (schema: any, model?: Model) {
   return {
     ...schema,
     __model: model,
-    __validate: model.validate,
     __clean: model.clean
   }
 }
