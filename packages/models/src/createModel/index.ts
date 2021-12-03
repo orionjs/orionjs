@@ -12,6 +12,7 @@ interface GetSchemaOptions {
 const createModel: CreateModel = modelOptions => {
   const name = modelOptions.name
   let resolvedSchema = null
+  let resolvedCleanSchema = null
   let resolvedResolvers = null
 
   const getSchema = () => {
@@ -27,11 +28,11 @@ const createModel: CreateModel = modelOptions => {
   const getCleanSchema = () => {
     if (!modelOptions.schema) return {}
 
-    if (resolvedSchema) return resolvedSchema
+    if (resolvedCleanSchema) return resolvedCleanSchema
     const schema = resolveParam(modelOptions.schema)
 
-    resolvedSchema = modelToSchema(schema)
-    return resolvedSchema
+    resolvedCleanSchema = modelToSchema(schema)
+    return resolvedCleanSchema
   }
 
   const getResolvers = () => {
@@ -56,12 +57,16 @@ const createModel: CreateModel = modelOptions => {
     getResolvers,
     initItem: modelInitItem,
     validate: async doc => {
-      const schema = getSchema()
+      const schema = getCleanSchema()
+      if (modelOptions.validate) {
+        await modelOptions.validate(doc)
+      }
       return await validate(schema, doc)
     },
     clean: async doc => {
-      const schema = getSchema()
-      return await clean(schema, doc)
+      const schema = getCleanSchema()
+      const cleanedDoc = modelOptions.clean ? await modelOptions.clean(doc) : doc
+      return await clean(schema, cleanedDoc)
     },
     clone: (cloneOptions: CloneOptions) => {
       return clone(

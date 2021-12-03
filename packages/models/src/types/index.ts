@@ -26,6 +26,19 @@ export interface CreateModelOptions {
    * This is used like this to allow circular dependencies
    */
   resolvers?: ModelResolversMap | (() => {default: ModelResolversMap})
+
+  /**
+   * Optional function that will process the document before being returned.
+   * @param doc The current document
+   * @return The processed document promise
+   */
+  clean?: (doc: any) => Promise<any> | any
+
+  /**
+   * Optional function that will validate the document before being returned.
+   * @param doc The current document
+   */
+  validate?: (doc: any) => Promise<void> | void
 }
 
 export interface ModelResolversMap {

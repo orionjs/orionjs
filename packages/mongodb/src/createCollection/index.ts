@@ -46,7 +46,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
     rawCollection,
     generateId: getIdGenerator(options),
     getSchema: () => {
-      const schema = cloneDeep(model.getSchema())
+      const schema = cloneDeep(model.getCleanSchema())
       if (!schema._id) {
         schema._id = {
           type: 'ID'
