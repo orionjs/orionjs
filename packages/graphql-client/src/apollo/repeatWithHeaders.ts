@@ -1,4 +1,4 @@
-import {Observable} from 'apollo-link'
+import {Observable} from '@apollo/client'
 
 export default function (getNewHeaders, {operation, forward}) {
   return new Observable(observer => {

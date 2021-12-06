@@ -1,3 +1,4 @@
+import {WebSocketLink} from '@apollo/client/link/ws'
 import {SubscriptionClient} from 'subscriptions-transport-ws'
 import getJWT from '../auth/getJWT'
 import getSession from '../auth/getSession'
@@ -26,7 +27,7 @@ const getConnectionParams = function () {
   return params
 }
 
-export default function (options) {
+export default function createWsLink(options) {
   const {endpointURL, subscriptionsPath} = options
   const uri = endpointURL.replace('http', 'ws') + subscriptionsPath
 
@@ -40,5 +41,5 @@ export default function (options) {
 
   options.wsClient = client
 
-  return client
+  return new WebSocketLink(client)
 }

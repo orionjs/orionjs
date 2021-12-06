@@ -1,10 +1,18 @@
-import {ApolloClient} from 'apollo-client'
+import {ApolloClient} from '@apollo/client'
 import defaultCache from './defaultCache'
 import createLink from './createLink'
 import {setOptions} from '../options'
 import refreshJWT from './refreshJWT'
+import {OrionApolloClientOpts, OrionApolloClient} from '../types'
+import isSsrMode from './isSsrMode'
 
-const defaultOptions = {
+declare const global: {
+  prompt: Function
+  apolloClient: ApolloClient<any>
+  _orionOptions: any
+}
+
+const defaultOptions: OrionApolloClientOpts = {
   endpointURL: 'http://localhost:3000',
   subscriptionsPath: '/subscriptions',
   useSubscriptions: true,
@@ -28,7 +36,7 @@ const defaultOptions = {
   refreshJWT: () => {}
 }
 
-export default function (passedOptions) {
+export default function createClient(passedOptions: OrionApolloClientOpts): OrionApolloClient<any> {
   const options = {...defaultOptions, ...passedOptions}
   setOptions(options)
 
@@ -48,7 +56,12 @@ export default function (passedOptions) {
     setInterval(() => refreshJWT(options), 5 * 60 * 1000) // every 5 minutes
   }
 
-  const client = new ApolloClient({link, cache: options.cache, resolvers: options.resolvers})
+  const client: OrionApolloClient<any> = new ApolloClient({
+    ssrMode: isSsrMode(options),
+    link,
+    cache: options.cache,
+    resolvers: options.resolvers
+  })
 
   global.apolloClient = client
 

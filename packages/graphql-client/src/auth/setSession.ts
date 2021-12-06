@@ -14,6 +14,7 @@ export default async function (session, resetStore = true) {
   }
 
   if (wsClient) {
+    // @ts-ignore TODO: Remove this
     wsClient.tryReconnect()
   }
 }
