@@ -1,22 +1,46 @@
 import isArray from 'lodash/isArray'
 import cloneDeep from 'lodash/cloneDeep'
-import {Model} from '..'
+import {Model, ModelSchema} from '..'
+import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 
-export default function (schema: any, model?: Model) {
-  schema = cloneDeep(schema)
-  const keys = Object.keys(schema)
+function isModelSchema(type: Model | [Model] | SchemaMetaFieldType): type is Model {
+  return type && typeof type === 'object' && '__isModel' in type
+}
 
-  for (const key of keys) {
-    if (isArray(schema[key].type)) {
-      if (schema[key].type[0].__isModel) {
-        schema[key].type[0] = schema[key].type[0].getSchema()
+function isModelArraySchema(type: Model | [Model] | SchemaMetaFieldType): type is [Model] {
+  return type && isArray(type) && typeof type[0] === 'object' && '__isModel' in type[0]
+}
+
+export function modelToSchema(modelSchema: ModelSchema, {cleanSchema = true} = {}): Schema {
+  const compiledSchema: Schema = {}
+  for (const key in modelSchema) {
+    const fieldSchema = modelSchema[key]
+    let currNode: SchemaNode
+
+    if (isModelSchema(fieldSchema.type)) {
+      currNode = {
+        ...fieldSchema,
+        type: cleanSchema ? fieldSchema.type.getCleanSchema() : fieldSchema.type.getSchema()
       }
+    } else if (isModelArraySchema(fieldSchema.type)) {
+      currNode = {
+        ...fieldSchema,
+        type: cleanSchema
+          ? [fieldSchema.type[0].getCleanSchema()]
+          : [fieldSchema.type[0].getSchema()]
+      }
+    } else {
+      currNode = {...fieldSchema, type: fieldSchema.type}
     }
 
-    if (schema[key].type && schema[key].type.__isModel) {
-      schema[key].type = schema[key].type.getSchema()
-    }
+    compiledSchema[key] = currNode
   }
+
+  return compiledSchema
+}
+
+export function modelToSchemaWithModel(modelSchema: ModelSchema, model?: Model) {
+  const schema = modelToSchema(modelSchema, {cleanSchema: !model})
 
   if (!model) return schema
 
