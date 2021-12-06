@@ -3,7 +3,7 @@ import {CreateModel, CloneOptions, Model} from '../types'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
-import modelToSchema from './modelToSchema'
+import {modelToSchema, modelToSchemaWithModel} from './modelToSchema'
 
 interface GetSchemaOptions {
   omitModel?: boolean
@@ -21,7 +21,7 @@ const createModel: CreateModel = modelOptions => {
     if (resolvedSchema) return resolvedSchema
     const schema = resolveParam(modelOptions.schema)
 
-    resolvedSchema = modelToSchema(schema, model)
+    resolvedSchema = modelToSchemaWithModel(schema, model)
     return resolvedSchema
   }
 
