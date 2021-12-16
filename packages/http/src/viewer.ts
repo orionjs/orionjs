@@ -1,4 +1,5 @@
 import express from 'express'
+import {UserError} from '@orion-js/helpers'
 
 global.getViewerRef = () => null
 
@@ -8,8 +9,7 @@ export const getViewer = async (req: express.Request): Promise<any> => {
     if (!viewer) return {}
     return viewer
   } catch (err) {
-    console.error('Orion HTTP Error: error getting viewer: ', err)
-    return {}
+    throw new UserError('AuthError', err.message)
   }
 }
 

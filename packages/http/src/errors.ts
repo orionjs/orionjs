@@ -8,14 +8,14 @@ const defaultOnError: onErrorFunction = async (req, res, error) => {
     let statusCode = 400
     if (error.code === 'AuthError') {
       statusCode = 401
+    } else {
+      console.warn(`[route/handler] OrionError in ${req.path}:`, error)
     }
 
     const data = error.getInfo()
 
-    res.writeHead(statusCode)
-    res.end(JSON.stringify(data, null, 2))
-
-    console.warn(`[route/handler] OrionError in ${req.path}:`, error)
+    res.status(statusCode)
+    res.json(data)
   } else if (error.isGraphQLError) {
     res.writeHead(error.statusCode)
     res.end(error.message)
