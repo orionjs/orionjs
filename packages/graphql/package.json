@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.0.30",
+  "version": "3.0.31",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,12 +13,12 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.17",
-    "@orion-js/http": "^3.0.30",
-    "@orion-js/models": "^3.0.28",
-    "@orion-js/resolvers": "^3.0.24",
-    "@orion-js/schema": "^3.0.17",
-    "@orion-js/typed-model": "^3.0.28",
+    "@orion-js/helpers": "^3.0.31",
+    "@orion-js/http": "^3.0.31",
+    "@orion-js/models": "^3.0.31",
+    "@orion-js/resolvers": "^3.0.31",
+    "@orion-js/schema": "^3.0.31",
+    "@orion-js/typed-model": "^3.0.31",
     "apollo-server-core": "3.5.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^2.0.0",

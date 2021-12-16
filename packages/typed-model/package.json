@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.0.28",
+  "version": "3.0.31",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,10 +17,10 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.0.17",
-    "@orion-js/models": "^3.0.28",
-    "@orion-js/resolvers": "^3.0.24",
-    "@orion-js/schema": "^3.0.17",
+    "@orion-js/helpers": "^3.0.31",
+    "@orion-js/models": "^3.0.31",
+    "@orion-js/resolvers": "^3.0.31",
+    "@orion-js/schema": "^3.0.31",
     "lodash": "^4.17.21",
     "reflect-metadata": "0.1.13"
   },
