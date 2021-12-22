@@ -119,6 +119,16 @@ export interface SchemaNode {
   label?: string
 
   /**
+   * The description that would be displayed in a front-end form
+   */
+  description?: string
+
+  /**
+   * The placeholder that would be displayed in a front-end form
+   */
+  placeholder?: string
+
+  /**
    * The field type that would be used in a front-end form
    */
   fieldType?: string //TODO: allow only possible values
