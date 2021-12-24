@@ -473,6 +473,17 @@ describe('typed-schema e2e tests', () => {
       expect(getModelForClass(Spec).name).toEqual(expected.name)
       expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
     })
+
+    it('Should return the same object when calling getModelForClass multiple times', () => {
+      @TypedModel()
+      class Spec {
+        @Prop()
+        name: string
+      }
+
+      const model = getModelForClass(Spec)
+      expect(getModelForClass(Spec)).toBe(model)
+    })
   })
 
   describe('using resolvers', () => {
