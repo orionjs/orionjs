@@ -6,12 +6,6 @@ import refreshJWT from './refreshJWT'
 import {OrionApolloClientOpts, OrionApolloClient} from '../types'
 import isSsrMode from './isSsrMode'
 
-declare const global: {
-  prompt: Function
-  apolloClient: ApolloClient<any>
-  _orionOptions: any
-}
-
 const defaultOptions: OrionApolloClientOpts = {
   endpointURL: 'http://localhost:3000',
   subscriptionsPath: '/subscriptions',
@@ -26,7 +20,7 @@ const defaultOptions: OrionApolloClientOpts = {
   batchInterval: 20,
   batch: true,
   canRetry: true,
-  promptTwoFactorCode: () => global.prompt('Please write your two factor code to continue'),
+  promptTwoFactorCode: () => prompt('Please write your two factor code to continue'),
   onError: () => {},
   getHeaders: () => {},
   resolvers: null,
@@ -62,8 +56,6 @@ export default function createClient(passedOptions: OrionApolloClientOpts): Orio
     cache: options.cache,
     resolvers: options.resolvers
   })
-
-  global.apolloClient = client
 
   options.apolloClient = client
   client._orionOptions = options
