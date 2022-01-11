@@ -6,8 +6,12 @@ import getScalar from '../buildSchema/getType/getScalar'
 import {getStaticFields} from './getStaticFields'
 
 export default async function getParams(field) {
-  const {type} = field
-  if (isArray(type)) {
+  let {type} = field
+
+  if (typeof type === 'function' && type.getModel && type.__schemaId) {
+    const model = type.getModel()
+    return await getParams({...field, type: model})
+  } else if (isArray(type)) {
     const serialized = await getParams({...field, type: type[0]})
     return {
       ...serialized,

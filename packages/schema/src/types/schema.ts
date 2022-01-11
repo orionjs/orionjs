@@ -14,6 +14,8 @@ export type FieldTypesList =
   | 'email'
   | 'blackbox'
 
+export type TypedModelOnSchema = Function
+
 export type ConstructorsTypesList =
   | Constructor<String>
   | Constructor<Number>
@@ -37,8 +39,9 @@ export type SchemaMetaFieldTypeSingle =
   | ConstructorsTypesList
   | SchemaRecursiveNodeType
   | FieldType
+  | TypedModelOnSchema
 
-export type SchemaMetaFieldType = SchemaMetaFieldTypeSingle | [SchemaMetaFieldTypeSingle]
+export type SchemaMetaFieldType = SchemaMetaFieldTypeSingle | SchemaMetaFieldTypeSingle[]
 
 export type ValidateFunction = (
   value: any,

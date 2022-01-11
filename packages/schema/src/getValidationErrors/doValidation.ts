@@ -6,8 +6,11 @@ import isNil from 'lodash/isNil'
 import difference from 'lodash/difference'
 import Errors from '../Errors'
 import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
+import {convertTypedModel} from './convertTypedModel'
 
 export default async function doValidation(params: CurrentNodeInfo) {
+  convertTypedModel(params)
+
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
   const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
 
