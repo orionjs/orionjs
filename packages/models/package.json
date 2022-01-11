@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/models",
-  "version": "3.0.32",
+  "version": "3.0.35",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,14 +18,14 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.0.31",
-    "@orion-js/resolvers": "^3.0.32",
-    "@orion-js/schema": "^3.0.32"
+    "@orion-js/resolvers": "^3.0.35",
+    "@orion-js/schema": "^3.0.35"
   },
   "peerDependencies": {
     "@orion-js/cache": "^3.0.0-alpha.10"
   },
   "devDependencies": {
-    "@orion-js/cache": "^3.0.31",
+    "@orion-js/cache": "^3.0.35",
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "^27.0.2",
     "@types/lodash": "4.14.176",
