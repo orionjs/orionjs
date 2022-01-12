@@ -1,5 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {createModel, ModelSchema} from '@orion-js/models'
+import {Schema} from '@orion-js/schema'
 import createCollection from '..'
 
 it('updates a document without errors', async () => {
@@ -263,4 +264,30 @@ it('should pass full doc on clean as well as validate', async () => {
   })
 
   await Tests.updateOne({}, {$set: {name: 'Nico'}})
+})
+
+it('Should allow custom clean function on a blackbox field', async () => {
+  const model = createModel({
+    name: 'Item',
+    schema: {
+      info: {
+        type: 'blackbox',
+        optional: true,
+        async clean(info, {doc}) {
+          return {hello: 'world'}
+        }
+      }
+    }
+  })
+
+  const Tests = createCollection({
+    name: generateId(),
+    model
+  })
+
+  const itemId = await Tests.insertOne({info: {hello: 'world2'}})
+  await Tests.updateOne(itemId, {$set: {info: {hello: 'world444'}}})
+
+  const item = await Tests.findOne(itemId)
+  expect(item).toEqual({_id: itemId, info: {hello: 'world'}})
 })

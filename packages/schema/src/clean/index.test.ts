@@ -499,3 +499,18 @@ test('pass currentDoc cleaning complex schemas', async () => {
   // @ts-ignore TODO: Check why the __clean method is being used here instead of clean
   await clean(schema, doc)
 })
+
+test('On blackbox allow use of custom clean', async () => {
+  const schema: Schema = {
+    info: {
+      type: 'blackbox',
+      optional: true,
+      async clean(info, {doc}) {
+        return {hello: 'world'}
+      }
+    }
+  }
+
+  const result = await clean(schema, {info: {hello: 'night'}})
+  expect(result).toEqual({info: {hello: 'world'}})
+})
