@@ -3,7 +3,7 @@ import {CreateModel, CloneOptions, Model} from '../types'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
-import {modelToSchema, modelToSchemaWithModel} from './modelToSchema'
+import {modelToSchemaClean, modelToSchemaWithModel} from './modelToSchema'
 
 interface GetSchemaOptions {
   omitModel?: boolean
@@ -22,6 +22,15 @@ const createModel: CreateModel = modelOptions => {
     const schema = resolveParam(modelOptions.schema)
 
     resolvedSchema = modelToSchemaWithModel(schema, model)
+
+    if (modelOptions.clean) {
+      resolvedSchema.__clean = modelOptions.clean
+    }
+
+    if (modelOptions.validate) {
+      resolvedSchema.__clean = modelOptions.validate
+    }
+
     return resolvedSchema
   }
 
@@ -31,7 +40,16 @@ const createModel: CreateModel = modelOptions => {
     if (resolvedCleanSchema) return resolvedCleanSchema
     const schema = resolveParam(modelOptions.schema)
 
-    resolvedCleanSchema = modelToSchema(schema)
+    resolvedCleanSchema = modelToSchemaClean(schema)
+
+    if (modelOptions.clean) {
+      resolvedCleanSchema.__clean = modelOptions.clean
+    }
+
+    if (modelOptions.validate) {
+      resolvedCleanSchema.__clean = modelOptions.validate
+    }
+
     return resolvedCleanSchema
   }
 
@@ -57,16 +75,12 @@ const createModel: CreateModel = modelOptions => {
     getResolvers,
     initItem: modelInitItem,
     validate: async doc => {
-      const schema = getCleanSchema()
-      if (modelOptions.validate) {
-        await modelOptions.validate(doc)
-      }
+      const schema = getSchema()
       return await validate(schema, doc)
     },
     clean: async doc => {
-      const schema = getCleanSchema()
-      const cleanedDoc = modelOptions.clean ? await modelOptions.clean(doc) : doc
-      return await clean(schema, cleanedDoc)
+      const schema = getSchema()
+      return await clean(schema, doc)
     },
     clone: (cloneOptions: CloneOptions) => {
       return clone(

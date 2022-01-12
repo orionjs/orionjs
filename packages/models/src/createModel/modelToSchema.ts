@@ -1,7 +1,7 @@
 import isArray from 'lodash/isArray'
-import cloneDeep from 'lodash/cloneDeep'
 import {Model, ModelSchema} from '..'
 import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
+import {lowerFirst} from 'lodash'
 
 function isModelSchema(type: Model | [Model] | SchemaMetaFieldType): type is Model {
   return type && typeof type === 'object' && '__isModel' in type
@@ -13,7 +13,10 @@ function isModelArraySchema(type: Model | [Model] | SchemaMetaFieldType): type i
 
 export function modelToSchema(modelSchema: ModelSchema, {cleanSchema = true} = {}): Schema {
   const compiledSchema: Schema = {}
+
   for (const key in modelSchema) {
+    if (key.startsWith('__')) continue
+
     const fieldSchema = modelSchema[key]
     let currNode: SchemaNode
 
@@ -46,7 +49,11 @@ export function modelToSchemaWithModel(modelSchema: ModelSchema, model?: Model) 
 
   return {
     ...schema,
-    __model: model,
-    __clean: model.clean
+    __model: model
   }
+}
+
+export function modelToSchemaClean(modelSchema: ModelSchema) {
+  const schema = modelToSchema(modelSchema, {cleanSchema: true})
+  return schema
 }

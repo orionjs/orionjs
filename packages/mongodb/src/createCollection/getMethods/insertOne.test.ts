@@ -57,3 +57,24 @@ it('should validate a document', async () => {
     expect(error.code).toBe('validationError')
   }
 })
+
+it('Should be able to use custom clean for models', async () => {
+  const model = createModel({
+    name: 'File',
+    schema: {
+      name: {type: String}
+    },
+    async clean(value) {
+      if (!value) return null
+      return {
+        ...value,
+        name: value.name.toUpperCase() + value._id
+      }
+    }
+  })
+
+  const Tests = createCollection({name: generateId(), model})
+  const docId = await Tests.insertOne({name: 'hello'})
+  const result = await Tests.findOne(docId)
+  expect(result.name).toBe('HELLO' + docId)
+})

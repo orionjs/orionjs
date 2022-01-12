@@ -49,3 +49,20 @@ it('can clean a schema with nested models', async () => {
     primitive: 'Primitive'
   })
 })
+
+it('Should return a schema with __clean if clean param is passed to model', async () => {
+  const clean = () => ({name: 'hello'})
+
+  const model = createModel({
+    name: 'test',
+    schema: {
+      name: {type: String},
+      age: {type: Number}
+    },
+    clean
+  })
+
+  const schema = model.getSchema() as any
+
+  expect(await schema.__clean()).toEqual(await clean())
+})
