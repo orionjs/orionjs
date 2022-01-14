@@ -87,7 +87,8 @@ const createModel: CreateModel = modelOptions => {
         {
           createModel,
           getSchema,
-          getResolvers
+          getResolvers,
+          modelOptions
         },
         cloneOptions
       )
