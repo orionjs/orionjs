@@ -291,3 +291,48 @@ it('Should allow custom clean function on a blackbox field', async () => {
   const item = await Tests.findOne(itemId)
   expect(item).toEqual({_id: itemId, info: {hello: 'world'}})
 })
+
+it('Should be able to use custom clean for models on update', async () => {
+  const modelFile = createModel({
+    name: 'File',
+    schema: {
+      name: {type: String},
+      lastName: {type: String, optional: true}
+    },
+    async clean(value) {
+      if (!value) return null
+
+      expect(typeof value.name).toBe('string')
+      return {
+        ...value,
+        name: value.name.toUpperCase(),
+        lastName: '1'
+      }
+    }
+  })
+
+  const model = createModel({
+    name: 'Item',
+    schema: {
+      file: {type: modelFile}
+    }
+  })
+
+  const Tests = createCollection({name: generateId(), model})
+
+  const docId = await Tests.insertOne({
+    file: {name: '1'}
+  })
+
+  await Tests.updateOne(docId, {
+    $set: {
+      file: {name: 'Hello'}
+    }
+  })
+  const result = await Tests.findOne(docId)
+
+  expect(result.file.name).toBe('HELLO')
+  expect(result.file.lastName).toBe('1')
+
+  expect.assertions(4)
+})
