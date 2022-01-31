@@ -4,6 +4,7 @@ import {express} from '@orion-js/http'
 import request from 'supertest'
 import {TypedModel, Prop, getModelForClass} from '@orion-js/typed-model'
 import {cleanResolvers} from './cleanResolvers'
+import {createModel} from '@orion-js/models'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {
@@ -132,12 +133,26 @@ describe('Test GraphQL Server', () => {
     }
 
     const user = resolver({
-      params: getModelForClass(Params),
-      returns: getModelForClass(User),
+      params: Params,
+      returns: User,
       resolve
     })
 
-    const resolvers = {user}
+    const model = createModel({
+      name: 'Model',
+      schema: {
+        user: {type: User}
+      }
+    })
+
+    const modelMutation = resolver({
+      params: Params,
+      returns: [model],
+      mutation: true,
+      resolve
+    })
+
+    const resolvers = {user, modelMutation}
     const app = express()
     await startGraphQL({
       resolvers,

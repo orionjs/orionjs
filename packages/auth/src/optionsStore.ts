@@ -1,9 +1,11 @@
-let options = {}
+import {ExtendedGetResolversOpts} from './getResolvers/index'
 
-export const setOptions = function (newOptions) {
+let options: Partial<ExtendedGetResolversOpts> = {}
+
+export const setOptions = function (newOptions: Partial<ExtendedGetResolversOpts>) {
   options = newOptions
 }
 
-export const getOptions = function (): any {
+export const getOptions = function (): Partial<ExtendedGetResolversOpts> {
   return options
 }

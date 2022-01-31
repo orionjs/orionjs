@@ -1,3 +1,4 @@
+import {getSchemaFromTypedModel} from '../getSchemaFromTypedModel'
 import {CurrentNodeInfoOptions, Schema} from '../types/schema'
 import recursiveClean from './recursiveClean'
 
@@ -9,11 +10,13 @@ const defaultOptions = {
 }
 
 export default async function clean(
-  schema: Schema,
+  schema: Schema | Function,
   doc = {},
   opts: CurrentNodeInfoOptions = {},
   ...args
 ): Promise<Schema> {
+  schema = getSchemaFromTypedModel(schema)
+
   const options = {...defaultOptions, ...opts}
   const params = {
     schema: {type: schema},

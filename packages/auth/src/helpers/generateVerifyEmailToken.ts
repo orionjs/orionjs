@@ -1,6 +1,8 @@
 import {generateId} from '@orion-js/helpers'
+import {Collection} from '@orion-js/mongodb'
+import {User} from '../types'
 
-export default async function (user, email?) {
+export default async function (user: User, Users: Collection, email?) {
   if (!email) {
     email = await user.email()
   }
@@ -12,7 +14,7 @@ export default async function (user, email?) {
     token
   }
 
-  user.update({$set: {'services.emailVerify': data}})
+  Users.updateOne(user, {$set: {'services.emailVerify': data}})
 
   return token
 }

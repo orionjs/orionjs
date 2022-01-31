@@ -1,7 +1,7 @@
 import {PermissionChecker} from '@orion-js/resolvers'
 import requireTwoFactorFunc from '../../helpers/requireTwoFactor'
 
-const buildTwoFactorChecker = ({Users}) => {
+const buildTwoFactorChecker = () => {
   const checker: PermissionChecker = async options => {
     const requireTwoFactor = options.resolver.permissionsOptions?.requireTwoFactor
     if (!requireTwoFactor) return

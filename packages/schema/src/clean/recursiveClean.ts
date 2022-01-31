@@ -4,6 +4,7 @@ import cleanType from './cleanType'
 import isNil from 'lodash/isNil'
 import {CurrentNodeInfo, SchemaNode} from '../types/schema'
 import getObjectNode from './getObjectNode'
+import {convertTypedModel} from '../getValidationErrors/convertTypedModel'
 
 const cleanObjectFields = async function ({
   schema,
@@ -73,6 +74,8 @@ function getArrayNode(schema: Partial<SchemaNode>, value: any | Array<any>): Sch
 }
 
 const clean = async function (info: CurrentNodeInfo): Promise<any> {
+  convertTypedModel(info)
+
   let {schema, args = [], value} = info
 
   const currSchema: SchemaNode =

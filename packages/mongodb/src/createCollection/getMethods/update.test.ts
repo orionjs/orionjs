@@ -1,5 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {createModel, ModelSchema} from '@orion-js/models'
+import {Schema} from '@orion-js/schema'
 import createCollection from '..'
 
 it('updates a document without errors', async () => {
@@ -263,4 +264,75 @@ it('should pass full doc on clean as well as validate', async () => {
   })
 
   await Tests.updateOne({}, {$set: {name: 'Nico'}})
+})
+
+it('Should allow custom clean function on a blackbox field', async () => {
+  const model = createModel({
+    name: 'Item',
+    schema: {
+      info: {
+        type: 'blackbox',
+        optional: true,
+        async clean(info, {doc}) {
+          return {hello: 'world'}
+        }
+      }
+    }
+  })
+
+  const Tests = createCollection({
+    name: generateId(),
+    model
+  })
+
+  const itemId = await Tests.insertOne({info: {hello: 'world2'}})
+  await Tests.updateOne(itemId, {$set: {info: {hello: 'world444'}}})
+
+  const item = await Tests.findOne(itemId)
+  expect(item).toEqual({_id: itemId, info: {hello: 'world'}})
+})
+
+it('Should be able to use custom clean for models on update', async () => {
+  const modelFile = createModel({
+    name: 'File',
+    schema: {
+      name: {type: String},
+      lastName: {type: String, optional: true}
+    },
+    async clean(value) {
+      if (!value) return null
+
+      expect(typeof value.name).toBe('string')
+      return {
+        ...value,
+        name: value.name.toUpperCase(),
+        lastName: '1'
+      }
+    }
+  })
+
+  const model = createModel({
+    name: 'Item',
+    schema: {
+      file: {type: modelFile}
+    }
+  })
+
+  const Tests = createCollection({name: generateId(), model})
+
+  const docId = await Tests.insertOne({
+    file: {name: '1'}
+  })
+
+  await Tests.updateOne(docId, {
+    $set: {
+      file: {name: 'Hello'}
+    }
+  })
+  const result = await Tests.findOne(docId)
+
+  expect(result.file.name).toBe('HELLO')
+  expect(result.file.lastName).toBe('1')
+
+  expect.assertions(4)
 })

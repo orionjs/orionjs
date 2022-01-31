@@ -1,13 +1,18 @@
 import initItem from './initItem'
-import {CreateModel, CloneOptions} from '../types'
+import {CreateModel, CloneOptions, Model} from '../types'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
-import modelToSchema from './modelToSchema'
+import {modelToSchemaClean, modelToSchemaWithModel} from './modelToSchema'
+
+interface GetSchemaOptions {
+  omitModel?: boolean
+}
 
 const createModel: CreateModel = modelOptions => {
   const name = modelOptions.name
   let resolvedSchema = null
+  let resolvedCleanSchema = null
   let resolvedResolvers = null
 
   const getSchema = () => {
@@ -16,8 +21,36 @@ const createModel: CreateModel = modelOptions => {
     if (resolvedSchema) return resolvedSchema
     const schema = resolveParam(modelOptions.schema)
 
-    resolvedSchema = modelToSchema(schema)
+    resolvedSchema = modelToSchemaWithModel(schema, model)
+
+    if (modelOptions.clean) {
+      resolvedSchema.__clean = modelOptions.clean
+    }
+
+    if (modelOptions.validate) {
+      resolvedSchema.__clean = modelOptions.validate
+    }
+
     return resolvedSchema
+  }
+
+  const getCleanSchema = () => {
+    if (!modelOptions.schema) return {}
+
+    if (resolvedCleanSchema) return resolvedCleanSchema
+    const schema = resolveParam(modelOptions.schema)
+
+    resolvedCleanSchema = modelToSchemaClean(schema)
+
+    if (modelOptions.clean) {
+      resolvedCleanSchema.__clean = modelOptions.clean
+    }
+
+    if (modelOptions.validate) {
+      resolvedCleanSchema.__clean = modelOptions.validate
+    }
+
+    return resolvedCleanSchema
   }
 
   const getResolvers = () => {
@@ -34,10 +67,11 @@ const createModel: CreateModel = modelOptions => {
     return initItem({schema, resolvers, name}, item)
   }
 
-  const model = {
+  const model: Model = {
     __isModel: true,
     name,
     getSchema,
+    getCleanSchema,
     getResolvers,
     initItem: modelInitItem,
     validate: async doc => {
@@ -53,7 +87,8 @@ const createModel: CreateModel = modelOptions => {
         {
           createModel,
           getSchema,
-          getResolvers
+          getResolvers,
+          modelOptions
         },
         cloneOptions
       )

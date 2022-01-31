@@ -11,5 +11,6 @@ module.exports = {
   moduleNameMapper: {
     'src/(.*)': '<rootDir>/$1'
   },
-  verbose: true
+  verbose: true,
+  transformIgnorePatterns: ['^.+\\.js$']
 }

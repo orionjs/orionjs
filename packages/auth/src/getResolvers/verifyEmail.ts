@@ -1,8 +1,10 @@
+import {Model} from '@orion-js/models'
 import {resolver} from '@orion-js/resolvers'
 import createSession from '../helpers/createSession'
 import {DateTime} from 'luxon'
+import {Collection} from '@orion-js/mongodb'
 
-export default ({Users, Session, Sessions}) =>
+export default ({Users, Session}: {Users: Collection; Session: Model}) =>
   resolver({
     params: {
       token: {
@@ -24,7 +26,7 @@ export default ({Users, Session, Sessions}) =>
       const user = await Users.findOne({'services.emailVerify.token': token})
       const {email} = user.services.emailVerify
 
-      await Users.update(
+      await Users.updateOne(
         {_id: user._id, 'emails.address': email},
         {
           $set: {'emails.$.verified': true},

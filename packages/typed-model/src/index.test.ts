@@ -367,7 +367,8 @@ describe('typed-schema e2e tests', () => {
       })
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
+
+      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
     })
 
     it('works for nested models', () => {
@@ -394,7 +395,7 @@ describe('typed-schema e2e tests', () => {
       })
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
+      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
     })
 
     it('works for nested arrays of models', () => {
@@ -421,7 +422,7 @@ describe('typed-schema e2e tests', () => {
       })
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
+      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
     })
 
     it('works for nested models together with nested classes', () => {
@@ -470,7 +471,18 @@ describe('typed-schema e2e tests', () => {
       })
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
+      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+    })
+
+    it('Should return the same object when calling getModelForClass multiple times', () => {
+      @TypedModel()
+      class Spec {
+        @Prop()
+        name: string
+      }
+
+      const model = getModelForClass(Spec)
+      expect(getModelForClass(Spec)).toBe(model)
     })
   })
 
@@ -513,7 +525,7 @@ describe('typed-schema e2e tests', () => {
       const model = getModelForClass(User)
 
       expect(model.name).toEqual(expected.name)
-      expect(model.getSchema()).toEqual(expected.getSchema())
+      expect(model.getCleanSchema()).toEqual(expected.getCleanSchema())
       expect(model.getResolvers()).toEqual(expected.getResolvers())
     })
   })

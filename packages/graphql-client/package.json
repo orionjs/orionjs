@@ -1,46 +1,38 @@
 {
   "name": "@orion-js/graphql-client",
-  "version": "3.0.17",
-  "main": "lib/index.js",
+  "version": "3.0.36",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "test": "exit 0",
     "prepare": "yarn run build",
-    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib",
-    "test": "exit 0"
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "tsc -w"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.17",
-    "@orion-js/schema": "^3.0.17",
-    "apollo-cache-inmemory": "^1.6.3",
-    "apollo-client": "^2.6.4",
-    "apollo-client-preset": "^1.0.8",
-    "apollo-link": "^1.2.12",
-    "apollo-link-batch-http": "^1.2.12",
-    "apollo-link-error": "^1.1.11",
-    "apollo-link-http": "^1.5.15",
-    "apollo-link-retry": "^2.2.14",
-    "apollo-link-state": "^0.4.2",
-    "apollo-link-ws": "^1.0.18",
+    "@apollo/client": "3.5.5",
     "apollo-utilities": "^1.3.2",
-    "graphql": "^14.5.0",
+    "isomorphic-unfetch": "3.1.0",
     "jssha": "^2.3.1",
-    "subscriptions-transport-ws": "^0.9.16",
-    "unfetch": "^4.1.0"
+    "subscriptions-transport-ws": "^0.9.16"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
     "@shelf/jest-mongodb": "^2.1.0",
-    "babel-jest": "^23.6.0",
-    "jest": "^23.6.0"
+    "graphql": "^16.0.0",
+    "jest": "27.3.1",
+    "react": "^17.0.0",
+    "ts-jest": "27.0.7",
+    "typescript": "^4.4.4"
+  },
+  "peerDependencies": {
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^16.8.0 || ^17.0.0"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
+  "gitHead": "5a3aba4668ff9cf3fdef854523123f828479daa6"
 }

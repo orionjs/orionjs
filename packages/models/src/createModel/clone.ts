@@ -1,5 +1,5 @@
 import includes from 'lodash/includes'
-import {CreateModel, CloneOptions} from '../types'
+import {CreateModel, CloneOptions, CreateModelOptions} from '../types'
 import cloneDeep from 'lodash/cloneDeep'
 import {Schema} from '@orion-js/schema'
 
@@ -7,12 +7,15 @@ interface CloneInfo {
   createModel: CreateModel
   getSchema: () => any
   getResolvers: () => any
+  modelOptions: CreateModelOptions
 }
 
 const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
-  const {createModel, getSchema, getResolvers} = cloneInfo
+  const {createModel, getSchema, getResolvers, modelOptions} = cloneInfo
   return createModel({
     name: options.name,
+    clean: modelOptions.clean,
+    validate: modelOptions.validate,
     resolvers: () => {
       if (!options.extendResolvers) return getResolvers()
 

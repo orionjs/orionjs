@@ -8,4 +8,5 @@ export interface User {
   services: any
   profile: any
   createdAt: Date
+  email?: () => string
 }

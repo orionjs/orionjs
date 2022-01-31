@@ -7,7 +7,7 @@ import {express} from '@orion-js/http'
 export default async function (req: express.Request) {
   const {headers} = req
   const {Sessions, omitNonceCheck} = getOptions()
-  await Sessions.await() // wait till db is connected
+  await Sessions.connectionPromise // wait till db is connected
   const nonce = Number(headers['x-orion-nonce'])
   const publicKey = headers['x-orion-publickey']
   const signature = headers['x-orion-signature']
@@ -36,7 +36,7 @@ export default async function (req: express.Request) {
       }
     }
 
-    await Sessions.update(
+    await Sessions.updateOne(
       {publicKey},
       {
         $set: {
@@ -50,9 +50,8 @@ export default async function (req: express.Request) {
   const body = req.body
   const shaObj = new JSSHA('SHA-512', 'TEXT')
   shaObj.setHMACKey(session.secretKey, 'TEXT')
-  shaObj.update(nonce + body)
+  shaObj.update(nonce + JSON.stringify(body))
   const calculatedSignature = shaObj.getHMAC('HEX')
-
   if (signature !== calculatedSignature) {
     throw new Error('invalidSignature')
   }

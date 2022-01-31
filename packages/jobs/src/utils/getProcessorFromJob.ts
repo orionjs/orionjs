@@ -20,7 +20,10 @@ export default function getProcessorFromJob(job: JobDefinition): PromiseProcesso
         timesExecuted: retry ? retry.totalRetries : 0
       })
     } catch (error) {
-      JobManager.logger.error(`Job "${job.name}" [id: ${agendaJob.attrs._id}] failed.`, {error})
+      JobManager.logger.error(
+        `Job "${agendaJob.attrs.name}" [id: ${agendaJob.attrs._id}] failed.`,
+        {error}
+      )
       throw error
     }
   }

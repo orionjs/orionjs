@@ -1,7 +1,13 @@
+import {Schema} from '@orion-js/schema'
 import getField from './getField'
 
-export default async function serializeSchema(params): Promise<any> {
+export default async function serializeSchema(params): Promise<Schema> {
   if (!params) return
+
+  if (typeof params === 'function' && params.getModel && params.__schemaId) {
+    params = params.getModel().getCleanSchema() // typed model
+  }
+
   if (Object.keys(params).length === 0) return
 
   const fields = {}

@@ -1,4 +1,5 @@
 import isArray from 'lodash/isArray'
+import {getStaticFields} from './getStaticFields'
 
 export default async function getBasicQuery(field) {
   if (!field.type) return ''
@@ -6,7 +7,7 @@ export default async function getBasicQuery(field) {
   if ((isArray(field.type) && field.type[0].__model) || field.type.__model) {
     const model = isArray(field.type) ? field.type[0].__model : field.type.__model
     const fields = []
-    for (const field of model.staticFields) {
+    for (const field of getStaticFields(model)) {
       fields.push(await getBasicQuery(field))
     }
     const key = field.key ? `${field.key} ` : ''

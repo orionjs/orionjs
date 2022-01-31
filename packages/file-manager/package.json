@@ -1,32 +1,37 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "3.0.17",
+  "version": "3.0.38",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
+    "test": "exit 0",
     "prepare": "yarn run build",
-    "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib",
-    "test": "exit 0"
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "yarn run clean && tsc -w"
   },
   "dependencies": {
-    "@orion-js/resolvers": "^3.0.17",
-    "@orion-js/schema": "^3.0.17",
-    "aws-sdk": "^2.258.1",
-    "lodash": "^4.17.10",
-    "luxon": "^1.2.0"
+    "@orion-js/helpers": "^3.0.36",
+    "@orion-js/models": "^3.0.38",
+    "@orion-js/mongodb": "^3.0.38",
+    "@orion-js/paginated-mongodb": "^3.0.38",
+    "@orion-js/resolvers": "^3.0.37",
+    "@orion-js/schema": "^3.0.37",
+    "aws-sdk": "^2.1028.0",
+    "lodash": "^4.17.21",
+    "luxon": "^2.1.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
-    "@orion-js/app": "^3.0.0-alpha.10",
     "@shelf/jest-mongodb": "^2.1.0",
-    "babel-jest": "^22.4.3",
-    "jest": "^22.4.3"
+    "@types/jest": "^27.0.2",
+    "@typescript-eslint/eslint-plugin": "5.4.0",
+    "@typescript-eslint/parser": "5.4.0",
+    "eslint": "8.2.0",
+    "eslint-plugin-import": "2.25.3",
+    "jest": "27.3.1",
+    "ts-jest": "27.0.7",
+    "typescript": "^4.4.4"
   },
   "peerDependencies": {
     "@orion-js/app": "*"

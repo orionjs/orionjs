@@ -5,6 +5,8 @@ import {MetadataStorage} from '../storage/metadataStorage'
 import {Constructor} from '../utils/interfaces'
 import {processSchemaForProp} from './helpers/processSchemaForProp'
 
+const modelCache = new Map<Constructor<any>, Model>()
+
 function processModelSchemaForProp(prop: PropOptions) {
   if ((prop.type as Model)?.__isModel === true) {
     return prop
@@ -14,6 +16,12 @@ function processModelSchemaForProp(prop: PropOptions) {
 }
 
 export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
+  const schemaId = (target as any).__schemaId
+
+  if (modelCache.has(schemaId)) {
+    return modelCache.get(schemaId)
+  }
+
   const schema: ModelSchema = {}
   const resolverMap: ModelResolversMap = {}
 
@@ -38,9 +46,13 @@ export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
     parent = Object.getPrototypeOf(parent)
   }
 
-  return createModel({
+  const model = createModel({
     name: target.name,
     schema,
     resolvers: resolverMap
   })
+
+  modelCache.set(schemaId, model)
+
+  return model
 }

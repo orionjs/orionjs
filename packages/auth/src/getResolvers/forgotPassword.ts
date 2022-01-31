@@ -1,8 +1,15 @@
 import {generateId} from '@orion-js/helpers'
+import {Collection} from '@orion-js/mongodb'
 import {resolver} from '@orion-js/resolvers'
 import findUserByEmail from '../helpers/findUserByEmail'
 
-export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
+export default ({
+  Users,
+  sendForgotPasswordToken
+}: {
+  Users: Collection
+  sendForgotPasswordToken?: Function
+}) =>
   resolver({
     params: {
       email: {
@@ -23,7 +30,7 @@ export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
       const token = generateId() + generateId()
       const date = new Date()
 
-      await Users.update(user._id, {$set: {'services.forgot': {token, date}}})
+      await Users.updateOne(user._id, {$set: {'services.forgot': {token, date}}})
       if (sendForgotPasswordToken) {
         await sendForgotPasswordToken(user, token)
       }

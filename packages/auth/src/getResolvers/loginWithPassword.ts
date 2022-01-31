@@ -1,11 +1,22 @@
+import {Model} from '@orion-js/models'
 import {resolver} from '@orion-js/resolvers'
 import findUserByEmail from '../helpers/findUserByEmail'
 import checkPassword from '../helpers/checkPassword'
 import hasPassword from '../helpers/hasPassword'
 import createSession from '../helpers/createSession'
 import requireTwoFactor from '../helpers/requireTwoFactor'
+import {TwoFactor} from '..'
+import {Collection} from '@orion-js/mongodb'
 
-export default ({Users, Session, Sessions, twoFactor}) =>
+export default ({
+  Users,
+  Session,
+  twoFactor
+}: {
+  Users: Collection
+  Session: Model
+  twoFactor?: TwoFactor
+}) =>
   resolver({
     params: {
       email: {

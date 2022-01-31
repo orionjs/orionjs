@@ -15,6 +15,8 @@ export default function getGraphQLType(type, options) {
   if (isArray(type)) {
     const graphQLType = getGraphQLType(type[0], options)
     return new GraphQLList(graphQLType)
+  } else if (typeof type === 'function' && type.getModel && type.__schemaId) {
+    return getGraphQLType(type.getModel(), options)
   } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type is not a Model')

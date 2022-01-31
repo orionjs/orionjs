@@ -10,9 +10,9 @@ export default function (resolverParams: any) {
     const isArrayOfModel = isArray(field.type) && field.type[0].__isModel
 
     if (isArrayOfModel) {
-      field.type = [field.type[0].schema]
+      field.type = [field.type[0].getSchema()]
     } else if (field.type.__isModel) {
-      field.type = field.type.schema
+      field.type = field.type.getSchema()
     }
 
     schema[key] = field

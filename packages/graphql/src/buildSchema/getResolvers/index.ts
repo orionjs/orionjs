@@ -2,6 +2,7 @@ import getType from '../getType'
 import getArgs from '../getArgs'
 import errorHandler from '../../errorHandler'
 import {resolversStore} from './resolversStore'
+import {GraphQLFieldConfig, GraphQLObjectType, ThunkObjMap} from 'graphql'
 
 export default async function ({resolvers, mutation, options}) {
   const filteredResolvers = Object.keys(resolvers)
@@ -14,7 +15,7 @@ export default async function ({resolvers, mutation, options}) {
     .filter(({resolver}) => !!resolver.mutation === !!mutation)
     .filter(({resolver}) => !resolver.private)
 
-  const fields = {}
+  const fields: ThunkObjMap<GraphQLFieldConfig<any, any, any>> = {}
 
   for (const {resolver, name} of filteredResolvers) {
     resolversStore[name] = resolver

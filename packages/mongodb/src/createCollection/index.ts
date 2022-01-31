@@ -8,6 +8,8 @@ import {
   findOneAndUpdate,
   insertMany,
   insertOne,
+  updateAndFind,
+  updateItem,
   updateMany,
   updateOne,
   upsert
@@ -44,7 +46,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
     rawCollection,
     generateId: getIdGenerator(options),
     getSchema: () => {
-      const schema = cloneDeep(model.getSchema())
+      const schema = cloneDeep(model.getCleanSchema())
       if (!schema._id) {
         schema._id = {
           type: 'ID'
@@ -68,6 +70,10 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.deleteMany = deleteMany(collection)
   collection.deleteOne = deleteOne(collection)
   collection.upsert = upsert(collection)
+
+  // update and find
+  collection.updateAndFind = updateAndFind(collection)
+  collection.updateItem = updateItem(collection)
 
   // plain passed methods
   collection.aggregate = (pipeline, options) =>
