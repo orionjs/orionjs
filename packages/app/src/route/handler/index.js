@@ -13,6 +13,11 @@ export default async function (request, response) {
   }
 
   const {pathname, query} = parse(request.url, true)
+
+  if (process.env.DEBUG && process.env.DEBUG.split(',').includes('http')) {
+    console.log(`[http-request]: path="${pathname}"`)
+  }
+
   let route = getRoute(pathname) || getNotFoundRoute()
   if (!route) {
     response.writeHead(404)
