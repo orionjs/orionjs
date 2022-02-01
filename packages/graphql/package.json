@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -28,6 +28,7 @@
     "@babel/runtime": "^7.11.2",
     "@orion-js/app": "^2.4.1",
     "babel-jest": "^26.2.2",
+  "graphql": "^15.6.0",
     "jest": "^26.2.2"
   },
   "peerDependencies": {
