@@ -6,6 +6,7 @@ import colors from 'colors/safe'
 import test from './test'
 import './handleErrors'
 import version from './version'
+import 'dotenv/config'
 
 const program = new Command()
 
