@@ -6,6 +6,7 @@ import {OrionError, OrionErrorInformation} from './Errors/OrionError'
 import PermissionsError from './Errors/PermissionsError'
 import UserError from './Errors/UserError'
 import createMapArray from './createMapArray'
+import getDurationInMillis from './getDurationMillis'
 
 export {
   createMap,
@@ -16,5 +17,6 @@ export {
   OrionError,
   PermissionsError,
   UserError,
-  OrionErrorInformation
+  OrionErrorInformation,
+  getDurationInMillis
 }
