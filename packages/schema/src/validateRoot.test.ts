@@ -1,25 +1,21 @@
 import { Schema } from '.'
 import validate from './validate'
 
-describe('Tests for global docuement validation',  () => {
-  it('Should validate the root document after the leaves', async () => {
+describe('Tests for global document validation',  () => {
+  it('Should validate child values before current value', async () => {
     const calls = []
     const schema: Schema = {
       name: {
         type: 'string',
         validate: () => {
-          calls.push('leaf')
+          calls.push('child')
         }
       },
       __validate: () => {
-        calls.push('root')
+        calls.push('current')
       }
     }
-
     await validate(schema, {name: 'Gabo'})
-
-
-    expect(calls).toEqual(['leaf', 'root'])
-
+    expect(calls).toEqual(['child', 'current'])
   })
 })
