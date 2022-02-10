@@ -5,26 +5,26 @@ import clone from 'lodash/clone'
 import isNil from 'lodash/isNil'
 import difference from 'lodash/difference'
 import Errors from '../Errors'
-import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
+import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras, SchemaMetaFieldType} from '../types/schema'
 import {convertTypedModel} from './convertTypedModel'
 
 export default async function doValidation(params: CurrentNodeInfo) {
   convertTypedModel(params)
+  const {value, currentSchema} = params
+  const shouldValueHaveChildren = isTypeDeep(currentSchema.type) && !isNil(value)
+  if (shouldValueHaveChildren) await validateChildValues(params)
+  
+  await validateCurrentValue(params)
+}
 
-  const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
-  const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
+function isTypeDeep(type: SchemaMetaFieldType) { return isPlainObject(type) || isArray(type) }
 
-  const error = await getError(info)
-  if (error) {
-    addError(keys, error)
-    return
-  }
+async function validateChildValues(params: CurrentNodeInfo) {
+  convertTypedModel(params)
 
-  if (isNil(value)) return
+  const {value, currentSchema, keys = [], addError} = params
+  const info = getInfo(params)
 
-  /**
-   * Deep validation
-   */
   if (isPlainObject(currentSchema.type)) {
     const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
 
@@ -71,4 +71,16 @@ export default async function doValidation(params: CurrentNodeInfo) {
       })
     }
   }
+}
+
+function getInfo(params: CurrentNodeInfo) {
+  const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
+  return {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
+}
+
+async function validateCurrentValue(params: CurrentNodeInfo) {
+  const {keys = [], addError} = params
+  const info = getInfo(params)
+  const error = await getError(info)
+  if (error) addError(keys, error)  
 }
