@@ -52,7 +52,7 @@ export type RequestMaker = (options: MakeRequestParams) => Promise<RequestMakerR
 
 export interface RequestsConfig {
   /**
-   * The secret key used to sign all requests
+   * The secret key used to sign all requests. Shared between all your services
    */
   key: string
   /**
