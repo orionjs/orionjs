@@ -2,7 +2,7 @@ import {Route} from './../types'
 import {onError} from '../errors'
 import {getViewer} from './../viewer'
 import express from 'express'
-import {isPlainObject} from 'lodash'
+import {isNil, isPlainObject} from 'lodash'
 
 export async function executeRequest(route: Route, req: express.Request, res: express.Response) {
   try {
@@ -23,7 +23,7 @@ export async function executeRequest(route: Route, req: express.Request, res: ex
     }
 
     // add body to response
-    if (result.body) {
+    if (!isNil(result.body)) {
       if (isPlainObject(result.body)) {
         res.json(result.body)
       } else {
