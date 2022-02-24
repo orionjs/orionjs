@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/paginated-mongodb",
-  "version": "3.0.38",
+  "version": "3.0.41",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@orion-js/models": "^3.0.38",
-    "@orion-js/mongodb": "^3.0.38",
+    "@orion-js/mongodb": "^3.0.41",
     "@orion-js/resolvers": "^3.0.37"
   },
   "devDependencies": {
