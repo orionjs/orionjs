@@ -10,6 +10,8 @@ describe('Test indexes', () => {
 
     expect(createIndexesPromises[0]).toBe(collection.createIndexesPromise)
     expect(createIndexesPromises.length).toBe(1)
+
+    await Promise.all(createIndexesPromises)
   })
 
   it('Should create collection indexes correctly', async () => {
