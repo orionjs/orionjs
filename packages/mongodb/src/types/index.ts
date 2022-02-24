@@ -213,6 +213,12 @@ export interface Collection<ModelClass = any> {
   loadMany: DataLoader.LoadMany<ModelClass>
   loadById: DataLoader.LoadById<ModelClass>
 
+  /**
+   * Use this function if you are using tests and you pass the
+   * env var DONT_CREATE_INDEXES_AUTOMATICALLY and you need to
+   * create the indexes for this collection
+   */
+  createIndexes: () => Promise<string[]>
   createIndexesPromise: Promise<string[]>
   connectionPromise: Promise<MongoDB.MongoClient>
 }

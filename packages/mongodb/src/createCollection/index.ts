@@ -88,9 +88,18 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.loadOne = loadOne(collection)
   collection.loadMany = loadMany(collection)
 
-  const createIndexPromise = loadIndexes(collection)
-  createIndexesPromises.push(createIndexPromise)
-  collection.createIndexesPromise = createIndexPromise
+  const createIndexes = async () => {
+    const createIndexPromise = loadIndexes(collection)
+    createIndexesPromises.push(createIndexPromise)
+    collection.createIndexesPromise = createIndexPromise
+    return createIndexPromise
+  }
+
+  collection.createIndexes = createIndexes
+
+  if (!process.env.DONT_CREATE_INDEXES_AUTOMATICALLY) {
+    createIndexes()
+  }
 
   return collection as Collection<DocumentType>
 }
