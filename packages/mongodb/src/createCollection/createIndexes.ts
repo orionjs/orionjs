@@ -1,3 +1,4 @@
+import {MongoExpiredSessionError} from 'mongodb'
 import {Collection} from '..'
 
 function matchingDefinition(defIndex, curIndex) {
@@ -53,6 +54,9 @@ export async function loadIndexes(collection: Partial<Collection>): Promise<stri
           const result = await collection.rawCollection.createIndex(keys, options)
           console.info('Index updated correctly')
           return result
+        } else if (error instanceof MongoExpiredSessionError) {
+          // this errors is thrown when we are on tests environment
+          // but it's not a problem never, index will be created on the next connection
         } else {
           console.error(`Error creating index for collection ${collection.name}: ${error.message}`)
           console.error(error)

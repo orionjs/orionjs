@@ -2,7 +2,7 @@ import {generateId} from '@orion-js/helpers'
 import createCollection, {createIndexesPromises} from '.'
 
 describe('Test indexes', () => {
-  it ('Should store all create indexes promises in the array', async () => {
+  it('Should store all create indexes promises in the array', async () => {
     const collection = createCollection({
       name: generateId(),
       indexes: [{keys: {a: 1}, options: {unique: true}}]
@@ -10,8 +10,6 @@ describe('Test indexes', () => {
 
     expect(createIndexesPromises[0]).toBe(collection.createIndexesPromise)
     expect(createIndexesPromises.length).toBe(1)
-
-    await Promise.all(createIndexesPromises)
   })
 
   it('Should create collection indexes correctly', async () => {
@@ -24,9 +22,6 @@ describe('Test indexes', () => {
 
     expect(results).toEqual(['a_1'])
   })
-
-
-
 
   it('Should handle error when cant create indexes', async () => {
     const collectionName = generateId()
