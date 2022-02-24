@@ -1,9 +1,16 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection, {createIndexesPromises} from '.'
+import createCollection from '.'
+import {allConnectionPromises} from '..'
+import {MockTests} from './createIndexPromisesTest'
+jest.mock('./createIndexPromisesTest')
 
-const Tests = createCollection({
+export const Tests = createCollection({
   name: generateId(),
   indexes: [{keys: {a: 1}, options: {unique: true}}]
+})
+
+beforeEach(async () => {
+  await Promise.all(allConnectionPromises)
 })
 
 describe('createIndexesPromise', () => {
