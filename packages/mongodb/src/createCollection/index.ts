@@ -21,6 +21,8 @@ import {loadIndexes} from './createIndexes'
 import {cloneDeep} from 'lodash'
 import {getMongoConnection} from '..'
 
+export const createIndexesPromises = []
+
 const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
   const connectionName = options.connectionName || 'main'
 
@@ -86,7 +88,9 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.loadOne = loadOne(collection)
   collection.loadMany = loadMany(collection)
 
-  collection.createIndexesPromise = loadIndexes(collection)
+  const createIndexPromise = loadIndexes(collection)
+  createIndexesPromises.push(createIndexPromise)
+  collection.createIndexesPromise = createIndexPromise
 
   return collection as Collection<DocumentType>
 }
