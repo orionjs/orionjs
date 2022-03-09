@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/jobs",
-  "version": "3.0.45",
+  "version": "3.1.0-alpha.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.0.36",
-    "@orion-js/mongodb": "^3.0.45",
-    "@orion-js/typed-model": "^3.0.38",
+    "@orion-js/mongodb": "^3.1.0-alpha.0",
+    "@orion-js/typed-model": "^3.1.0-alpha.0",
     "agenda": "^4.2.1",
     "lodash": "^4.17.21",
     "mongodb": "4.1.4"
