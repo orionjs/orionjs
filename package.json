@@ -5,7 +5,9 @@
     "clean": "lerna run clean",
     "watch": "lerna run --parallel watch",
     "test": "lerna run test",
-    "publish-all": "lerna publish --force-publish=*"
+    "publish-all": "lerna publish --force-publish=*",
+    "release": "lerna publish --npm-tag latest",
+    "release-alpha": "lerna publish --npm-tag next --prerelease-only"
   },
   "devDependencies": {
     "lerna": "^3.20.2"

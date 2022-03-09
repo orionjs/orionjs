@@ -2,6 +2,15 @@
   "docs": {
     "Getting started": ["installation", "basics", "structure", "deploying", "cli", "database"],
     "Basics": ["schema", "models", "resolvers", "collections", "jobs"],
-    "Modules": ["authentication", "graphql", "http", "files", "mailing", "autoform", "echoes"]
+    "Modules": [
+      "authentication",
+      "graphql",
+      "http",
+      "files",
+      "mailing",
+      "autoform",
+      "echoes",
+      "services"
+    ]
   }
 }
