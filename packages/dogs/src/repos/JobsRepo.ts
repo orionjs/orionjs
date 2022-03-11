@@ -1,6 +1,8 @@
 import {createCollection} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
+import {log} from '../log'
 import {JobRecord} from '../types/JobRecord'
+import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
 import {JobToRun} from '../types/Worker'
 
 @Service()
@@ -15,6 +17,15 @@ export class JobsRepo {
           nextRunAt: 1,
           priority: 1,
           lockedUntil: 1
+        }
+      },
+      {
+        keys: {
+          jobName: 1
+        },
+        options: {
+          unique: true,
+          partialFilterExpression: {isRecurrent: true}
         }
       }
     ]
@@ -47,7 +58,8 @@ export class JobsRepo {
     return {
       jobId: job._id,
       name: job.jobName,
-      params: job.params
+      params: job.params,
+      isRecurrent: job.isRecurrent
     }
   }
 
@@ -72,5 +84,28 @@ export class JobsRepo {
         $set: {lockedUntil}
       }
     )
+  }
+
+  async ensureJobRecord(job: JobDefinitionWithName) {
+    const result = await this.jobs.upsert(
+      {
+        jobName: job.name
+      },
+      {
+        $set: {
+          isRecurrent: true,
+          priority: (job as RecurrentJobDefinition).priority || 1
+        },
+        $setOnInsert: {
+          nextRunAt: new Date()
+        }
+      }
+    )
+
+    if (result.upsertedId) {
+      log('debug', `Created job record for "${job.name}"`)
+    } else {
+      log('debug', `Record for job "${job.name}" already exists`)
+    }
   }
 }

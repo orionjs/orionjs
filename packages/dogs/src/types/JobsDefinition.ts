@@ -2,19 +2,9 @@ import {ExecutionContext} from './Worker'
 
 export interface BaseJobDefinition {
   /**
-   * The name of the job. Defined globally across all the mongo ecosystem
-   */
-  name: string
-
-  /**
    * The function to execute when the job is executed.
    */
   resolve: (params: any, context: ExecutionContext) => Promise<void>
-
-  /**
-   * The priority of the job.
-   */
-  priority?: number
 }
 
 export interface RecurrentJobDefinition extends BaseJobDefinition {
@@ -32,6 +22,11 @@ export interface RecurrentJobDefinition extends BaseJobDefinition {
    * Run every x milliseconds. This will be ignored if getNextRun is defined.
    */
   runEvery?: number
+
+  /**
+   * The priority of the job. Higher is more priority. Default is 1.
+   */
+  priority?: number
 }
 
 export interface EventJobDefinition extends BaseJobDefinition {
@@ -42,6 +37,10 @@ export interface EventJobDefinition extends BaseJobDefinition {
 }
 
 export type JobDefinition = RecurrentJobDefinition | EventJobDefinition
+
+export type JobDefinitionWithName = JobDefinition & {
+  name: string
+}
 
 export interface JobsDefinition {
   [jobName: string]: JobDefinition

@@ -9,6 +9,9 @@ export class JobRecord {
   jobName: string
 
   @Prop()
+  isRecurrent: boolean
+
+  @Prop()
   priority: number
 
   @Prop()
@@ -20,6 +23,6 @@ export class JobRecord {
   @Prop({optional: true})
   lockedUntil: Date
 
-  @Prop({optional: true})
+  @Prop({type: 'blackbox', optional: true})
   params: any
 }
