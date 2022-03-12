@@ -22,7 +22,3 @@ export interface WorkersInstance {
    */
   stop: () => Promise<void>
 }
-
-export interface ScheduleJobOptions {
-  name: string
-}

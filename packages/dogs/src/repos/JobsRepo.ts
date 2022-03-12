@@ -1,6 +1,7 @@
 import {createCollection} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
 import {log} from '../log'
+import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
 import {JobToRun} from '../types/Worker'
@@ -107,5 +108,15 @@ export class JobsRepo {
     } else {
       log('debug', `Record for job "${job.name}" already exists`)
     }
+  }
+
+  async scheduleJob(options: ScheduleJobRecordOptions) {
+    const jobId = await this.jobs.insertOne({
+      jobName: options.name,
+      params: options.params,
+      nextRunAt: options.nextRunAt,
+      priority: options.priority,
+      isRecurrent: false
+    })
   }
 }

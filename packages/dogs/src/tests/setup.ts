@@ -18,4 +18,4 @@ afterAll(async () => {
     const connection = connections[connectionName]
     await connection.client.close()
   }
-}, 100)
+})

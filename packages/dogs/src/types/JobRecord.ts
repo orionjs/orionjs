@@ -18,11 +18,11 @@ export class JobRecord {
   nextRunAt: Date
 
   @Prop({optional: true})
-  lastRunAt: Date
+  lastRunAt?: Date
 
   @Prop({optional: true})
-  lockedUntil: Date
+  lockedUntil?: Date
 
   @Prop({type: 'blackbox', optional: true})
-  params: any
+  params?: any
 }

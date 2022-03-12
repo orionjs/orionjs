@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import {sleep} from '@orion-js/helpers'
-import {defineJob, startWorkers} from '.'
+import {defineJob, scheduleJob, startWorkers} from '.'
 
 describe('Global tests', () => {
   it('Should run a recurrent job', async () => {
@@ -52,25 +52,39 @@ describe('Global tests', () => {
   })
 
   it('Should run an event job', async () => {
-    let ran = false
+    let count = 0
     const job3 = defineJob({
       type: 'event',
-      async resolve() {
-        ran = true
+      async resolve(params) {
+        count += params.add
       }
     })
 
     const instance = startWorkers({
       jobs: {job3},
       workersCount: 1,
-      pollInterval: 100,
-      cooldownPeriod: 100,
-      logLevel: 'debug'
+      pollInterval: 10,
+      cooldownPeriod: 10,
+      logLevel: 'info'
     })
 
-    await sleep(500)
+    expect(count).toBe(0)
+
+    await scheduleJob({
+      name: 'job3',
+      params: {add: 5},
+      runIn: 1
+    })
+
+    await scheduleJob({
+      name: 'job3',
+      params: {add: 25},
+      runIn: 1
+    })
+
+    await sleep(100)
     await instance.stop()
 
-    expect(ran).toBe(true)
+    expect(count).toBe(30)
   })
 })
