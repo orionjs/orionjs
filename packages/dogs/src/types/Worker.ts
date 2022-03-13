@@ -5,11 +5,13 @@ export interface JobToRun {
   name: string
   isRecurrent: boolean
   params: any
+  tries: number
 }
 
 export interface ExecutionContext {
   record: JobToRun
   definition: JobDefinition
+  tries: number
   extendLockUntil: (lockedUntil: Date) => Promise<void>
 }
 

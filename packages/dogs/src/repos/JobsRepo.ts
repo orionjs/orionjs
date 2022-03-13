@@ -1,4 +1,4 @@
-import {createCollection} from '@orion-js/mongodb'
+import {createCollection, ModelToUpdateFilter} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
 import {log} from '../log'
 import {ScheduleJobRecordOptions} from '../types/Events'
@@ -60,20 +60,22 @@ export class JobsRepo {
       jobId: job._id,
       name: job.jobName,
       params: job.params,
-      isRecurrent: job.isRecurrent
+      isRecurrent: job.isRecurrent,
+      tries: job.tries || 0
     }
   }
 
-  async scheduleNextRun(options: {jobId: string; nextRunAt: Date}) {
-    await this.jobs.updateOne(
-      {
-        _id: options.jobId
-      },
-      {
-        $set: {nextRunAt: options.nextRunAt},
-        $unset: {lockedUntil: ''}
-      }
-    )
+  async scheduleNextRun(options: {jobId: string; nextRunAt: Date; addTries: boolean}) {
+    const updator: ModelToUpdateFilter<JobRecord> = {
+      $set: {nextRunAt: options.nextRunAt},
+      $unset: {lockedUntil: ''}
+    }
+
+    if (options.addTries) {
+      updator.$inc = {tries: 1}
+    }
+
+    await this.jobs.updateOne(options.jobId, updator)
   }
 
   async extendLockUntil(jobId: string, lockedUntil: Date) {

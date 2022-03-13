@@ -23,6 +23,9 @@ export class JobRecord {
   @Prop({optional: true})
   lockedUntil?: Date
 
+  @Prop({optional: true})
+  tries?: number
+
   @Prop({type: 'blackbox', optional: true})
   params?: any
 }

@@ -14,6 +14,7 @@ export class Executor {
     return {
       definition: job,
       record: jobToRun,
+      tries: jobToRun.tries || 0,
       extendLockUntil: (lockUntil: Date) => this.jobsRepo.extendLockUntil(jobToRun.jobId, lockUntil)
     }
   }
@@ -34,16 +35,36 @@ export class Executor {
   }
 
   async executeJob(jobs: JobsDefinition, jobToRun: JobToRun) {
+    const job = this.getJobDefinition(jobToRun, jobs)
+    if (!job) return
+    const context = this.getContext(job, jobToRun)
+
     try {
-      const job = this.getJobDefinition(jobToRun, jobs)
-      const context = this.getContext(job, jobToRun)
       await job.resolve(jobToRun.params, context)
+
       if (job.type === 'recurrent') {
         await this.jobsRepo.scheduleNextRun({
           jobId: jobToRun.jobId,
-          nextRunAt: getNextRunDate({runIn: job.runEvery, getNextRun: job.getNextRun})
+          nextRunAt: getNextRunDate({runIn: job.runEvery, getNextRun: job.getNextRun}),
+          addTries: false
         })
       }
-    } catch (error) {}
+    } catch (error) {
+      if (!job.onError) {
+        log('error', `Error executing job "${jobToRun.name}"`, error)
+        return
+      }
+
+      const result = await job.onError(error, jobToRun.params, context)
+      if (result.action === 'dismiss') return
+
+      if (result.action === 'retry') {
+        await this.jobsRepo.scheduleNextRun({
+          jobId: jobToRun.jobId,
+          nextRunAt: getNextRunDate(result),
+          addTries: true
+        })
+      }
+    }
   }
 }
