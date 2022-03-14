@@ -14,7 +14,7 @@ export class HistoryRecord {
   jobName: string
 
   @Prop()
-  isRecurrent: boolean
+  type: 'recurrent' | 'event'
 
   @Prop()
   priority: number

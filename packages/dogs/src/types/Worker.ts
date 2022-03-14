@@ -4,7 +4,7 @@ import {JobDefinition} from './JobsDefinition'
 export interface JobToRun {
   jobId: string
   name: string
-  isRecurrent: boolean
+  type: 'event' | 'recurrent'
   params: PlainObject
   tries: number
   lockTime: number

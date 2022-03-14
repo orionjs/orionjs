@@ -26,7 +26,7 @@ export class JobsRepo {
         },
         options: {
           unique: true,
-          partialFilterExpression: {isRecurrent: true}
+          partialFilterExpression: {type: 'recurrent'}
         }
       },
       {
@@ -77,7 +77,7 @@ export class JobsRepo {
       jobId: job._id,
       name: job.jobName,
       params: job.params,
-      isRecurrent: job.isRecurrent,
+      type: job.type,
       tries,
       lockTime,
       priority: job.priority,
@@ -96,6 +96,10 @@ export class JobsRepo {
     }
 
     await this.jobs.updateOne(options.jobId, updator)
+  }
+
+  async deleteEventJob(jobId: string) {
+    await this.jobs.deleteOne({_id: jobId, type: 'event'})
   }
 
   async extendLockTime(jobId: string, extraTime: number) {
@@ -117,7 +121,7 @@ export class JobsRepo {
       },
       {
         $set: {
-          isRecurrent: true,
+          type: job.type,
           priority: (job as RecurrentJobDefinition).priority || 1
         },
         $setOnInsert: {
@@ -141,7 +145,7 @@ export class JobsRepo {
         params: options.params,
         nextRunAt: options.nextRunAt,
         priority: options.priority,
-        isRecurrent: false
+        type: 'event'
       })
     } catch (error) {
       if (error.code === 11000 && options.uniqueIdentifier) {

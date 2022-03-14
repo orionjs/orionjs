@@ -10,7 +10,7 @@ export class JobRecord {
   jobName: string
 
   @Prop()
-  isRecurrent: boolean
+  type: 'recurrent' | 'event'
 
   @Prop()
   priority: number
