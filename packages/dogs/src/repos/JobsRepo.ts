@@ -32,9 +32,8 @@ export class JobsRepo {
     ]
   })
 
-  async getJobAndLock(jobNames: string[]): Promise<JobToRun> {
-    const defaultTimeout = 1000 * 60 * 5
-    const lockedUntil = new Date(Date.now() + defaultTimeout)
+  async getJobAndLock(jobNames: string[], lockTime: number): Promise<JobToRun> {
+    const lockedUntil = new Date(Date.now() + lockTime)
     const job = await this.jobs.findOneAndUpdate(
       {
         jobName: {$in: jobNames},

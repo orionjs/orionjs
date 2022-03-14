@@ -28,17 +28,17 @@ export class WorkerService {
     })
   }
 
-  async runWorkerLoop(jobs: JobsDefinition) {
-    const names = this.getJobNames(jobs)
+  async runWorkerLoop(config: StartWorkersConfig) {
+    const names = this.getJobNames(config.jobs)
     log('debug', `Running worker loop for jobs "${names.join(', ')}"...`)
-    const jobToRun = await this.jobsRepo.getJobAndLock(names)
+    const jobToRun = await this.jobsRepo.getJobAndLock(names, config.lockTime)
     if (!jobToRun) {
       log('debug', 'No job to run')
       return false
     }
 
     log('debug', `Got job to run: ${JSON.stringify(jobToRun)}`)
-    await this.executor.executeJob(jobs, jobToRun)
+    await this.executor.executeJob(config.jobs, jobToRun)
 
     return true
   }
@@ -51,7 +51,7 @@ export class WorkerService {
       }
 
       try {
-        const didRun = await this.runWorkerLoop(config.jobs)
+        const didRun = await this.runWorkerLoop(config)
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
@@ -105,6 +105,7 @@ export class WorkerService {
       cooldownPeriod: 100,
       pollInterval: 3000,
       workersCount: 4,
+      lockTime: 30 * 1000,
       logLevel: 'info'
     }
 
