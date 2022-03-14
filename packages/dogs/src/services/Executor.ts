@@ -45,7 +45,7 @@ export class Executor {
       if (job.type === 'recurrent') {
         await this.jobsRepo.scheduleNextRun({
           jobId: jobToRun.jobId,
-          nextRunAt: getNextRunDate({runIn: job.runEvery, getNextRun: job.getNextRun}),
+          nextRunAt: getNextRunDate(job),
           addTries: false
         })
       }
