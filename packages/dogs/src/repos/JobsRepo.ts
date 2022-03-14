@@ -50,7 +50,7 @@ export class JobsRepo {
         $or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: new Date()}}]
       },
       {
-        $set: {lockedUntil}
+        $set: {lockedUntil, lastRunAt: new Date()}
       },
       {
         mongoOptions: {
