@@ -7,6 +7,8 @@ import {ScheduleJobOptions} from './types/Events'
 import {JobsHistoryRepo} from './repos/JobsHistoryRepo'
 import {JobsRepo} from './repos/JobsRepo'
 
+export * from './types'
+
 const workerService = getInstance(WorkerService)
 const eventsService = getInstance(EventsService)
 const jobsHistoryRepo = getInstance(JobsHistoryRepo)
