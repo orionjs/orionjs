@@ -1,5 +1,5 @@
 import {sleep, generateId} from '@orion-js/helpers'
-import {defineJob, jobsHistory, scheduleJob, startWorkers} from '.'
+import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
 
 describe('Test Jobs History', () => {
   it('Should save success history types', async () => {
@@ -29,7 +29,7 @@ describe('Test Jobs History', () => {
     await sleep(100)
     await instance.stop()
 
-    const executions = await jobsHistory.getExecutions(jobId)
+    const executions = await jobsHistoryRepo.getExecutions(jobId)
 
     expect(executions.length).toBe(1)
 
@@ -78,7 +78,7 @@ describe('Test Jobs History', () => {
     await sleep(100)
     await instance.stop()
 
-    const executions = await jobsHistory.getExecutions(jobId)
+    const executions = await jobsHistoryRepo.getExecutions(jobId)
 
     expect(executions.length).toBe(1)
 
@@ -127,7 +127,7 @@ describe('Test Jobs History', () => {
     await sleep(150)
     await instance.stop()
 
-    const executions = await jobsHistory.getExecutions(jobId)
+    const executions = await jobsHistoryRepo.getExecutions(jobId)
 
     expect(executions.length).toBe(2)
 
