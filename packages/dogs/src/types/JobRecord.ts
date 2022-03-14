@@ -14,6 +14,9 @@ export class JobRecord {
   @Prop()
   priority: number
 
+  @Prop({optional: true})
+  uniqueIdentifier?: string
+
   @Prop()
   nextRunAt: Date
 

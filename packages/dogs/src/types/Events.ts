@@ -2,6 +2,7 @@ export interface ScheduleJobOptionsBase {
   name: string
   params?: any
   priority?: number
+  uniqueIdentifier?: string
 }
 
 export type ScheduleJobOptionsRunIn = ScheduleJobOptionsBase & {
@@ -19,4 +20,5 @@ export interface ScheduleJobRecordOptions {
   params: any
   nextRunAt: Date
   priority: number
+  uniqueIdentifier?: string
 }

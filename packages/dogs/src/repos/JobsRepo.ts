@@ -28,6 +28,15 @@ export class JobsRepo {
           unique: true,
           partialFilterExpression: {isRecurrent: true}
         }
+      },
+      {
+        keys: {
+          uniqueIdentifier: 1
+        },
+        options: {
+          unique: true,
+          sparse: true
+        }
       }
     ]
   })
@@ -114,12 +123,24 @@ export class JobsRepo {
   }
 
   async scheduleJob(options: ScheduleJobRecordOptions) {
-    const jobId = await this.jobs.insertOne({
-      jobName: options.name,
-      params: options.params,
-      nextRunAt: options.nextRunAt,
-      priority: options.priority,
-      isRecurrent: false
-    })
+    try {
+      await this.jobs.insertOne({
+        jobName: options.name,
+        uniqueIdentifier: options.uniqueIdentifier,
+        params: options.params,
+        nextRunAt: options.nextRunAt,
+        priority: options.priority,
+        isRecurrent: false
+      })
+    } catch (error) {
+      if (error.code === 11000 && options.uniqueIdentifier) {
+        log(
+          'info',
+          `Job "${options.name}" with identifier "${options.uniqueIdentifier}" already exists`
+        )
+      } else {
+        throw error
+      }
+    }
   }
 }

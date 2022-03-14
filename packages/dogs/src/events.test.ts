@@ -80,7 +80,7 @@ describe('Event tests', () => {
     expect(passes).toBe(true)
   })
 
-  it('Should throw locktime error', async () => {
+  it('Should throw locktime error and test extendLockTime', async () => {
     const jobId = uniqueId()
     let ranCount = 0
     let staleCount = 0
@@ -105,7 +105,7 @@ describe('Event tests', () => {
       pollInterval: 10,
       cooldownPeriod: 10,
       lockTime: 40,
-      logLevel: 'debug'
+      logLevel: 'info'
     })
 
     await scheduleJob({
@@ -118,5 +118,41 @@ describe('Event tests', () => {
 
     expect(ranCount).toBe(2)
     expect(staleCount).toBe(1)
+  })
+
+  it('Should only schedule one job with uniqueIdentifier', async () => {
+    const jobId = uniqueId()
+    let ranCount = 0
+    const job = defineJob({
+      type: 'event',
+      async resolve() {
+        ranCount++
+      }
+    })
+
+    const instance = startWorkers({
+      jobs: {[jobId]: job},
+      workersCount: 1,
+      pollInterval: 10,
+      cooldownPeriod: 10,
+      logLevel: 'warn'
+    })
+
+    await scheduleJob({
+      name: jobId,
+      runIn: 1,
+      uniqueIdentifier: 'unique'
+    })
+
+    await scheduleJob({
+      name: jobId,
+      runIn: 1,
+      uniqueIdentifier: 'unique'
+    })
+
+    await sleep(50)
+    await instance.stop()
+
+    expect(ranCount).toBe(1)
   })
 })
