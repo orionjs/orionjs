@@ -18,6 +18,11 @@ export interface BaseJobDefinition {
    * Called if the job fails.
    */
   onError?: (error: Error, params: any, context: ExecutionContext) => Promise<JobRetryResult>
+
+  /**
+   * Called if the job locktime is expired. The job will be executed again.
+   */
+  onStale?: (params: any, context: ExecutionContext) => Promise<void>
 }
 
 export interface RecurrentJobDefinition extends BaseJobDefinition {

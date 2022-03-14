@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import {sleep} from '@orion-js/helpers'
 import {defineJob, scheduleJob, startWorkers} from '.'
+import {uniqueId} from 'lodash'
 
 describe('Event tests', () => {
   it('Should run an event job', async () => {
@@ -45,7 +46,7 @@ describe('Event tests', () => {
     const job4 = defineJob({
       type: 'event',
       async resolve(params, context) {
-        if (context.tries < 2) {
+        if (context.tries < 3) {
           throw new Error('Failed')
         }
         passes = true
@@ -77,5 +78,45 @@ describe('Event tests', () => {
     await instance.stop()
 
     expect(passes).toBe(true)
+  })
+
+  it('Should throw locktime error', async () => {
+    const jobId = uniqueId()
+    let ranCount = 0
+    let staleCount = 0
+    const job = defineJob({
+      type: 'event',
+      async resolve(params, context) {
+        if (ranCount === 1) {
+          context.extendLockTime(10000)
+        }
+
+        await sleep(100)
+        ranCount++
+      },
+      async onStale(params, context) {
+        staleCount++
+      }
+    })
+
+    const instance = startWorkers({
+      jobs: {[jobId]: job},
+      workersCount: 1,
+      pollInterval: 10,
+      cooldownPeriod: 10,
+      lockTime: 40,
+      logLevel: 'debug'
+    })
+
+    await scheduleJob({
+      name: jobId,
+      runIn: 1
+    })
+
+    await sleep(200)
+    await instance.stop()
+
+    expect(ranCount).toBe(2)
+    expect(staleCount).toBe(1)
   })
 })

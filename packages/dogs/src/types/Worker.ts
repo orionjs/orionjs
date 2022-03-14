@@ -6,13 +6,15 @@ export interface JobToRun {
   isRecurrent: boolean
   params: any
   tries: number
+  lockTime: number
 }
 
 export interface ExecutionContext {
   record: JobToRun
   definition: JobDefinition
   tries: number
-  extendLockUntil: (lockedUntil: Date) => Promise<void>
+  extendLockTime: (extraTime: number) => Promise<void>
+  clearStaleTimeout: () => void
 }
 
 export interface WorkersInstance {

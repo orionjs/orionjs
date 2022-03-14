@@ -60,7 +60,8 @@ export class JobsRepo {
       name: job.jobName,
       params: job.params,
       isRecurrent: job.isRecurrent,
-      tries: job.tries || 0
+      tries: job.tries || 1,
+      lockTime
     }
   }
 
@@ -77,7 +78,8 @@ export class JobsRepo {
     await this.jobs.updateOne(options.jobId, updator)
   }
 
-  async extendLockUntil(jobId: string, lockedUntil: Date) {
+  async extendLockTime(jobId: string, extraTime: number) {
+    const lockedUntil = new Date(Date.now() + extraTime)
     await this.jobs.updateOne(
       {
         _id: jobId
