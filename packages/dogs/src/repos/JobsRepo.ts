@@ -8,7 +8,7 @@ import {JobToRun} from '../types/Worker'
 
 @Service()
 export class JobsRepo {
-  private jobs = createCollection<JobRecord>({
+  public jobs = createCollection<JobRecord>({
     name: 'orionjs.jobs_dogs_records',
     model: JobRecord,
     indexes: [

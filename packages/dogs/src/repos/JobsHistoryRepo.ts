@@ -4,7 +4,7 @@ import {HistoryRecord} from '../types/HistoryRecord'
 
 @Service()
 export class JobsHistoryRepo {
-  private history = createCollection<HistoryRecord>({
+  public history = createCollection<HistoryRecord>({
     name: 'orionjs.jobs_dogs_history',
     model: HistoryRecord,
     indexes: [
