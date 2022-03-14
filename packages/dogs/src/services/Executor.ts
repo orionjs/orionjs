@@ -33,12 +33,11 @@ export class Executor {
   getJobDefinition(jobToRun: JobToRun, jobs: JobsDefinition) {
     const job = jobs[jobToRun.name]
 
-    if (!jobToRun.isRecurrent && job.type === 'recurrent') {
-      log('warn', `Job record ${jobToRun.name} is event but definition is recurrent`)
-      return
-    }
-    if (jobToRun.isRecurrent && job.type === 'event') {
-      log('warn', `Job record ${jobToRun.name} is recurrent but definition is event`)
+    if (jobToRun.type !== job.type) {
+      log(
+        'warn',
+        `Job record "${jobToRun.name}" is "${jobToRun.type}" but definition is "${job.type}"`
+      )
       return
     }
 
@@ -96,7 +95,7 @@ export class Executor {
       await this.jobsHistoryRepo.saveExecution({
         executionId: jobToRun.jobId,
         jobName: jobToRun.name,
-        isRecurrent: jobToRun.isRecurrent,
+        type: jobToRun.type,
         priority: jobToRun.priority,
         tries: jobToRun.tries,
         uniqueIdentifier: jobToRun.uniqueIdentifier,
@@ -109,6 +108,21 @@ export class Executor {
         params: jobToRun.params,
         result
       })
+    }
+  }
+
+  async afterExecutionSuccess(job: JobDefinition, jobToRun: JobToRun) {
+    if (job.type === 'recurrent') {
+      log('debug', `Scheduling next run for recurrent job "${jobToRun.name}"`)
+      await this.jobsRepo.scheduleNextRun({
+        jobId: jobToRun.jobId,
+        nextRunAt: getNextRunDate(job),
+        addTries: false
+      })
+    }
+    if (job.type === 'event') {
+      log('debug', `Removing event job after success "${jobToRun.name}"`)
+      await this.jobsRepo.deleteEventJob(jobToRun.jobId)
     }
   }
 
@@ -140,6 +154,7 @@ export class Executor {
     try {
       const result = await job.resolve(jobToRun.params, context)
       context.clearStaleTimeout()
+
       this.saveExecution({
         startedAt,
         status: 'success',
@@ -149,13 +164,7 @@ export class Executor {
         jobToRun
       })
 
-      if (job.type === 'recurrent') {
-        await this.jobsRepo.scheduleNextRun({
-          jobId: jobToRun.jobId,
-          nextRunAt: getNextRunDate(job),
-          addTries: false
-        })
-      }
+      await this.afterExecutionSuccess(job, jobToRun)
     } catch (error) {
       context.clearStaleTimeout()
       this.saveExecution({
