@@ -1,9 +1,9 @@
-export interface Options {
+export type Options = {
   getNextRun?: () => Date
   runIn?: number
   runEvery?: number
   runAt?: Date
-}
+} & {[key: string]: any}
 
 export const getNextRunDate = (options: Options) => {
   if (options.runIn) {
