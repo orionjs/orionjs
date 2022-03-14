@@ -4,9 +4,11 @@ import {EventsService} from './services/EventsService'
 import {WorkerService} from './services/WorkerService'
 import {StartWorkersConfig} from './types/StartConfig'
 import {ScheduleJobOptions} from './types/Events'
+import {JobsHistoryRepo} from './repos/JobsHistoryRepo'
 
 const workerService = getInstance(WorkerService)
 const eventsService = getInstance(EventsService)
+const jobsHistory = getInstance(JobsHistoryRepo)
 
 const startWorkers = (config: Partial<StartWorkersConfig>) => {
   return workerService.startWorkers(config)
@@ -16,4 +18,4 @@ const scheduleJob = (options: ScheduleJobOptions) => {
   return eventsService.scheduleJob(options)
 }
 
-export {defineJob, startWorkers, scheduleJob}
+export {defineJob, startWorkers, scheduleJob, jobsHistory}

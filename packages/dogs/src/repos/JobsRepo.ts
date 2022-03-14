@@ -79,7 +79,9 @@ export class JobsRepo {
       params: job.params,
       isRecurrent: job.isRecurrent,
       tries,
-      lockTime
+      lockTime,
+      priority: job.priority,
+      uniqueIdentifier: job.uniqueIdentifier
     }
   }
 

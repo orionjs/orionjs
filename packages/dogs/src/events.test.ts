@@ -1,7 +1,6 @@
 import 'reflect-metadata'
-import {sleep} from '@orion-js/helpers'
+import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, scheduleJob, startWorkers} from '.'
-import {uniqueId} from 'lodash'
 
 describe('Event tests', () => {
   it('Should run an event job', async () => {
@@ -81,7 +80,7 @@ describe('Event tests', () => {
   })
 
   it('Should throw locktime error and test extendLockTime', async () => {
-    const jobId = uniqueId()
+    const jobId = generateId()
     let ranCount = 0
     let staleCount = 0
     const job = defineJob({
@@ -123,7 +122,7 @@ describe('Event tests', () => {
   })
 
   it('Should only schedule one job with uniqueIdentifier', async () => {
-    const jobId = uniqueId()
+    const jobId = generateId()
     let ranCount = 0
     const job = defineJob({
       type: 'event',

@@ -1,6 +1,8 @@
 import {Inject, Service} from '@orion-js/services'
 import {log} from '../log'
+import {JobsHistoryRepo} from '../repos/JobsHistoryRepo'
 import {JobsRepo} from '../repos/JobsRepo'
+import {PlainObject} from '../types/HistoryRecord'
 import {JobDefinition, JobsDefinition} from '../types/JobsDefinition'
 import {ExecutionContext, JobToRun} from '../types/Worker'
 import {getNextRunDate} from './getNextRunDate'
@@ -9,6 +11,9 @@ import {getNextRunDate} from './getNextRunDate'
 export class Executor {
   @Inject()
   private jobsRepo: JobsRepo
+
+  @Inject()
+  private jobsHistoryRepo: JobsHistoryRepo
 
   getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {
     let staleTimeout = setTimeout(() => onStale(), jobToRun.lockTime)
@@ -75,9 +80,43 @@ export class Executor {
     }
   }
 
+  async saveExecution(options: {
+    startedAt: Date
+    status: 'stale' | 'error' | 'success'
+    errorMessage?: string
+    result?: PlainObject
+    job: JobDefinition
+    jobToRun: JobToRun
+  }) {
+    const {startedAt, status, errorMessage, result, job, jobToRun} = options
+    const endedAt = new Date()
+
+    if (job.saveExecutionsFor !== 0) {
+      const saveExecutionsFor = job.saveExecutionsFor || 24 * 60 * 60 * 1000
+      await this.jobsHistoryRepo.saveExecution({
+        executionId: jobToRun.jobId,
+        jobName: jobToRun.name,
+        isRecurrent: jobToRun.isRecurrent,
+        priority: jobToRun.priority,
+        tries: jobToRun.tries,
+        uniqueIdentifier: jobToRun.uniqueIdentifier,
+        startedAt,
+        endedAt,
+        duration: endedAt.getTime() - startedAt.getTime(),
+        expiresAt: new Date(Date.now() + saveExecutionsFor),
+        status,
+        errorMessage,
+        params: jobToRun.params,
+        result
+      })
+    }
+  }
+
   async executeJob(jobs: JobsDefinition, jobToRun: JobToRun) {
     const job = this.getJobDefinition(jobToRun, jobs)
     if (!job) return
+
+    const startedAt = new Date()
 
     const onStale = () => {
       if (job.onStale) {
@@ -86,13 +125,29 @@ export class Executor {
       } else {
         log('warn', `Job "${jobToRun.name}" is stale`)
       }
+      this.saveExecution({
+        startedAt,
+        status: 'stale',
+        result: null,
+        errorMessage: null,
+        job,
+        jobToRun
+      })
     }
 
     const context = this.getContext(job, jobToRun, onStale)
 
     try {
-      await job.resolve(jobToRun.params, context)
+      const result = await job.resolve(jobToRun.params, context)
       context.clearStaleTimeout()
+      this.saveExecution({
+        startedAt,
+        status: 'success',
+        result: result || null,
+        errorMessage: null,
+        job,
+        jobToRun
+      })
 
       if (job.type === 'recurrent') {
         await this.jobsRepo.scheduleNextRun({
@@ -103,6 +158,15 @@ export class Executor {
       }
     } catch (error) {
       context.clearStaleTimeout()
+      this.saveExecution({
+        startedAt,
+        status: 'error',
+        result: null,
+        errorMessage: error.message,
+        job,
+        jobToRun
+      })
+
       await this.onError(error, job, jobToRun, context)
     }
   }

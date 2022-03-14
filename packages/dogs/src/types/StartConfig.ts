@@ -1,6 +1,6 @@
 import {JobsDefinition} from './JobsDefinition'
 
-export type LogLevels = 'debug' | 'info' | 'warn' | 'error'
+export type LogLevels = 'debug' | 'info' | 'warn' | 'error' | 'none'
 
 export interface StartWorkersConfig {
   /**

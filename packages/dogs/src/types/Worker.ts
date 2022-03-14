@@ -1,12 +1,15 @@
+import {PlainObject} from './HistoryRecord'
 import {JobDefinition} from './JobsDefinition'
 
 export interface JobToRun {
   jobId: string
   name: string
   isRecurrent: boolean
-  params: any
+  params: PlainObject
   tries: number
   lockTime: number
+  priority: number
+  uniqueIdentifier?: string
 }
 
 export interface ExecutionContext {

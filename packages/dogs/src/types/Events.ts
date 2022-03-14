@@ -1,6 +1,8 @@
+import {PlainObject} from './HistoryRecord'
+
 export interface ScheduleJobOptionsBase {
   name: string
-  params?: any
+  params?: PlainObject
   priority?: number
   uniqueIdentifier?: string
 }
@@ -17,7 +19,7 @@ export type ScheduleJobOptions = ScheduleJobOptionsRunIn | ScheduleJobOptionsRun
 
 export interface ScheduleJobRecordOptions {
   name: string
-  params: any
+  params: PlainObject
   nextRunAt: Date
   priority: number
   uniqueIdentifier?: string

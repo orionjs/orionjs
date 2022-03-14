@@ -16,11 +16,14 @@ export const levelToInt = (level: LogLevels) => {
 }
 
 export const log = (level: LogLevels, ...args: any[]) => {
+  if (appLogLevel === 'none') return
+
   const levelInt = levelToInt(level)
   const appLogLevelInt = levelToInt(appLogLevel)
-  if (levelInt >= appLogLevelInt) {
-    console[level](...args)
-  }
+
+  if (levelInt < appLogLevelInt) return
+
+  console[level](...args)
 }
 
 export const setLogLevel = (level: LogLevels) => {
