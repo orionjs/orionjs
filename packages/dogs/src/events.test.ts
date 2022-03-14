@@ -86,8 +86,7 @@ describe('Event tests', () => {
     const job = defineJob({
       type: 'event',
       async resolve(params, context) {
-        if (ranCount === 1) {
-          expect(context.tries).toBe(2)
+        if (context.tries === 2) {
           context.extendLockTime(10000)
         }
 
@@ -102,10 +101,10 @@ describe('Event tests', () => {
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
-      workersCount: 1,
+      workersCount: 2,
       pollInterval: 10,
       cooldownPeriod: 10,
-      lockTime: 40,
+      lockTime: 10,
       logLevel: 'info'
     })
 
@@ -114,11 +113,11 @@ describe('Event tests', () => {
       runIn: 1
     })
 
-    await sleep(200)
+    await sleep(300)
     await instance.stop()
 
-    expect(ranCount).toBe(2)
     expect(staleCount).toBe(1)
+    expect(ranCount).toBe(2)
   })
 
   it('Should only schedule one job with uniqueIdentifier', async () => {
