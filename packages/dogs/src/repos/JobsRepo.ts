@@ -9,7 +9,7 @@ import {JobToRun} from '../types/Worker'
 @Service()
 export class JobsRepo {
   private jobs = createCollection<JobRecord>({
-    name: 'orionjs.jobs_dogs',
+    name: 'orionjs.jobs_dogs_records',
     model: JobRecord,
     indexes: [
       {
@@ -57,19 +57,28 @@ export class JobsRepo {
           sort: {
             priority: 1,
             nextRunAt: 1
-          }
+          },
+          returnDocument: 'before'
         }
       }
     )
 
     if (!job) return
 
+    let tries = job.tries || 1
+
+    if (job.lockedUntil) {
+      log('debug', `Running job "${job.jobName}" that was staled`)
+      this.jobs.updateOne(job._id, {$inc: {tries: 1}})
+      tries++
+    }
+
     return {
       jobId: job._id,
       name: job.jobName,
       params: job.params,
       isRecurrent: job.isRecurrent,
-      tries: job.tries || 1,
+      tries,
       lockTime
     }
   }

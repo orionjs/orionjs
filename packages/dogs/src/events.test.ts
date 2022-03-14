@@ -88,6 +88,7 @@ describe('Event tests', () => {
       type: 'event',
       async resolve(params, context) {
         if (ranCount === 1) {
+          expect(context.tries).toBe(2)
           context.extendLockTime(10000)
         }
 
@@ -95,6 +96,7 @@ describe('Event tests', () => {
         ranCount++
       },
       async onStale(params, context) {
+        expect(context.tries).toBe(1)
         staleCount++
       }
     })
