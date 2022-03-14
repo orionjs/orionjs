@@ -7,7 +7,7 @@ export interface JobRetryResultBase {
 
 export type JobRetryResultRunIn = JobRetryResultBase & {runIn: number}
 export type JobRetryResultRunAt = JobRetryResultBase & {runAt: Date}
-export type JobRetryResult = JobRetryResultRunIn | JobRetryResultRunAt
+export type JobRetryResult = JobRetryResultRunIn | JobRetryResultRunAt | JobRetryResultBase
 
 export interface BaseJobDefinition {
   /**

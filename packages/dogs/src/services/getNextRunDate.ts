@@ -18,5 +18,9 @@ export const getNextRunDate = (options: Options) => {
     return options.runAt
   }
 
-  return options.getNextRun()
+  if (options.getNextRun) {
+    return options.getNextRun()
+  }
+
+  return new Date()
 }

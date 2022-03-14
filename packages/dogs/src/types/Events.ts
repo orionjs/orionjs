@@ -15,7 +15,10 @@ export type ScheduleJobOptionsRunAt = ScheduleJobOptionsBase & {
   runAt: Date
 }
 
-export type ScheduleJobOptions = ScheduleJobOptionsRunIn | ScheduleJobOptionsRunAt
+export type ScheduleJobOptions =
+  | ScheduleJobOptionsRunIn
+  | ScheduleJobOptionsRunAt
+  | ScheduleJobOptionsBase
 
 export interface ScheduleJobRecordOptions {
   name: string
