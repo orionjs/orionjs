@@ -10,6 +10,10 @@ export const improveFileName = (path: string) => {
     return path.replace(/^.+\/orionjs\/packages\//, '@orion-js/')
   }
 
+  if (path.includes('.orion/build')) {
+    return path.replace(/^.+\.orion\/build\//, '')
+  }
+
   return path
 }
 
