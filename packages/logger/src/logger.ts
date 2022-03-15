@@ -1,6 +1,7 @@
 import winston, {createLogger as winstonCreateLogger, config, format} from 'winston'
 import {jsonConsoleTransport, textConsoleTransport} from './formats'
 import {setFileName} from './helpers/getFileName'
+import {OrionLogger} from './types'
 
 const transports: winston.transport[] = [
   process.env.ORION_DEV ? textConsoleTransport : jsonConsoleTransport
@@ -29,7 +30,7 @@ export const getLogger = (context: string) => {
   return winstonLogger.child({context})
 }
 
-const createLogger = (logger: winston.Logger) => {
+const createLogger = (logger: winston.Logger): OrionLogger => {
   return {
     debug: (message: string, metadata: any = {}) => {
       setFileName(metadata)
