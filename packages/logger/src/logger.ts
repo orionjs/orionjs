@@ -43,9 +43,9 @@ const createLogger = (logger: winston.Logger) => {
       setFileName(metadata)
       return logger.warn(message, metadata)
     },
-    error: (message: string, error: Error, metadata: any = {}) => {
+    error: (message: string, metadata: any = {}) => {
       setFileName(metadata)
-      return logger.error(message, {error, ...metadata})
+      return logger.error(message, metadata)
     },
     addContext: (module: NodeJS.Module) => {
       if (module.id) {
