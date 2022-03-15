@@ -1,11 +1,11 @@
 {
-  "name": "@orion-js/log",
+  "name": "@orion-js/logger",
   "version": "3.0.36",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "exit 0",
+    "test": "ORION_DEV=1 jest",
     "prepare": "yarn run build",
     "clean": "rm -rf ./lib",
     "build": "yarn run clean && tsc",
@@ -13,10 +13,13 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "object-hash": "^2.2.0"
+    "object-hash": "^2.2.0",
+    "winston": "^3.6.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
+    "ts-jest": "27.0.7",
+    "jest": "27.3.1",
     "typescript": "^4.4.4"
   },
   "publishConfig": {
