@@ -68,7 +68,7 @@ export class JobsRepo {
     let tries = job.tries || 1
 
     if (job.lockedUntil) {
-      log('debug', `Running job "${job.jobName}" that was staled`)
+      log('info', `Running job "${job.jobName}" that was staled`)
       this.jobs.updateOne(job._id, {$inc: {tries: 1}})
       tries++
     }
@@ -131,9 +131,9 @@ export class JobsRepo {
     )
 
     if (result.upsertedId) {
-      log('debug', `Created job record for "${job.name}"`)
+      log('info', `Created job record for "${job.name}"`)
     } else {
-      log('debug', `Record for job "${job.name}" already exists`)
+      log('info', `Record for job "${job.name}" already exists`)
     }
   }
 

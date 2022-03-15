@@ -37,7 +37,7 @@ export class WorkerService {
       return false
     }
 
-    log('debug', `Got job to run: ${JSON.stringify(jobToRun)}`)
+    log('info', `Got job to run: ${JSON.stringify(jobToRun)}`)
     await this.executor.executeJob(config.jobs, jobToRun)
 
     return true
@@ -46,7 +46,7 @@ export class WorkerService {
   async startWorker(config: StartWorkersConfig, workersInstance: WorkersInstance) {
     while (true) {
       if (!workersInstance.running) {
-        log('debug', 'Got signal to stop. Stopping worker...')
+        log('info', 'Got signal to stop. Stopping worker...')
         return
       }
 
@@ -83,17 +83,17 @@ export class WorkerService {
       jobs
         .filter(job => job.type === 'recurrent')
         .map(async job => {
-          log('debug', `Ensuring records for job "${job.name}"...`)
+          log('info', `Ensuring records for job "${job.name}"...`)
           await this.jobsRepo.ensureJobRecord(job)
         })
     )
   }
 
   async runWorkers(config: StartWorkersConfig, workersInstance: WorkersInstance) {
-    log('debug', 'Will ensure records for recurrent jobs')
+    log('info', 'Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
     for (const workerIndex of range(config.workersCount)) {
-      log('debug', `Starting worker ${workerIndex}`)
+      log('info', `Starting worker ${workerIndex}`)
       const workerPromise = this.startWorker(config, workersInstance)
       workersInstance.workers.push(workerPromise)
     }
@@ -117,7 +117,7 @@ export class WorkerService {
     setLogLevel(config.logLevel)
 
     const workersInstance = this.createWorkersInstanceDefinition(config)
-    log('debug', 'Starting workers', config)
+    log('info', 'Starting workers', config)
 
     this.runWorkers(config, workersInstance)
 

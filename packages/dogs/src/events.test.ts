@@ -17,7 +17,7 @@ describe('Event tests', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
-      logLevel: 'info'
+      logLevel: 'none'
     })
 
     expect(count).toBe(0)
@@ -63,7 +63,7 @@ describe('Event tests', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
-      logLevel: 'info'
+      logLevel: 'none'
     })
 
     expect(passes).toBe(false)
@@ -105,7 +105,7 @@ describe('Event tests', () => {
       pollInterval: 10,
       cooldownPeriod: 10,
       lockTime: 10,
-      logLevel: 'info'
+      logLevel: 'none'
     })
 
     await scheduleJob({
@@ -135,7 +135,7 @@ describe('Event tests', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
-      logLevel: 'warn'
+      logLevel: 'none'
     })
 
     await scheduleJob({

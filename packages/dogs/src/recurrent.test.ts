@@ -18,7 +18,7 @@ describe('Recurrent tests', () => {
       workersCount: 1,
       pollInterval: 100,
       cooldownPeriod: 100,
-      logLevel: 'info'
+      logLevel: 'none'
     })
 
     await sleep(500)
@@ -42,7 +42,7 @@ describe('Recurrent tests', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
-      logLevel: 'info'
+      logLevel: 'none'
     })
 
     await sleep(200)

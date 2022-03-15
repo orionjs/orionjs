@@ -60,7 +60,7 @@ export class Executor {
       await scheduleRecurrent()
       return
     } else {
-      log('debug', `Error executing job "${jobToRun.name}"`, error)
+      log('info', `Error executing job "${jobToRun.name}"`, error)
     }
 
     const result = await job.onError(error, jobToRun.params, context)
@@ -113,7 +113,7 @@ export class Executor {
 
   async afterExecutionSuccess(job: JobDefinition, jobToRun: JobToRun) {
     if (job.type === 'recurrent') {
-      log('debug', `Scheduling next run for recurrent job "${jobToRun.name}"`)
+      log('info', `Scheduling next run for recurrent job "${jobToRun.name}"`)
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
@@ -121,7 +121,7 @@ export class Executor {
       })
     }
     if (job.type === 'event') {
-      log('debug', `Removing event job after success "${jobToRun.name}"`)
+      log('info', `Removing event job after success "${jobToRun.name}"`)
       await this.jobsRepo.deleteEventJob(jobToRun.jobId)
     }
   }
@@ -134,10 +134,10 @@ export class Executor {
 
     const onStale = () => {
       if (job.onStale) {
-        log('debug', `Job "${jobToRun.name}" is stale`)
+        log('info', `Job "${jobToRun.name}" is stale`)
         job.onStale(jobToRun.params, context)
       } else {
-        log('warn', `Job "${jobToRun.name}" is stale`)
+        log('error', `Job "${jobToRun.name}" is stale`)
       }
       this.saveExecution({
         startedAt,
