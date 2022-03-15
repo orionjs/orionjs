@@ -1,5 +1,5 @@
+import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
-import {log} from '../log'
 import {JobsHistoryRepo} from '../repos/JobsHistoryRepo'
 import {JobsRepo} from '../repos/JobsRepo'
 import {PlainObject} from '../types/HistoryRecord'
@@ -26,7 +26,11 @@ export class Executor {
         clearTimeout(staleTimeout)
         staleTimeout = setTimeout(() => onStale(), extraTime)
         await this.jobsRepo.extendLockTime(jobToRun.jobId, extraTime)
-      }
+      },
+      logger: logger.addMetadata({
+        jobName: jobToRun.name,
+        jobId: jobToRun.jobId
+      })
     }
   }
 
@@ -34,8 +38,7 @@ export class Executor {
     const job = jobs[jobToRun.name]
 
     if (jobToRun.type !== job.type) {
-      log(
-        'warn',
+      logger.warn(
         `Job record "${jobToRun.name}" is "${jobToRun.type}" but definition is "${job.type}"`
       )
       return
@@ -56,11 +59,11 @@ export class Executor {
     }
 
     if (!job.onError) {
-      log('error', `Error executing job "${jobToRun.name}"`, error)
+      context.logger.error(`Error executing job "${jobToRun.name}"`, error)
       await scheduleRecurrent()
       return
     } else {
-      log('info', `Error executing job "${jobToRun.name}"`, error)
+      context.logger.info(`Error executing job "${jobToRun.name}"`, error)
     }
 
     const result = await job.onError(error, jobToRun.params, context)
@@ -111,9 +114,9 @@ export class Executor {
     }
   }
 
-  async afterExecutionSuccess(job: JobDefinition, jobToRun: JobToRun) {
+  async afterExecutionSuccess(job: JobDefinition, jobToRun: JobToRun, context: ExecutionContext) {
     if (job.type === 'recurrent') {
-      log('info', `Scheduling next run for recurrent job "${jobToRun.name}"`)
+      context.logger.info(`Scheduling next run for recurrent job "${jobToRun.name}"`)
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
@@ -121,7 +124,7 @@ export class Executor {
       })
     }
     if (job.type === 'event') {
-      log('info', `Removing event job after success "${jobToRun.name}"`)
+      context.logger.info(`Removing event job after success "${jobToRun.name}"`)
       await this.jobsRepo.deleteEventJob(jobToRun.jobId)
     }
   }
@@ -134,10 +137,10 @@ export class Executor {
 
     const onStale = () => {
       if (job.onStale) {
-        log('info', `Job "${jobToRun.name}" is stale`)
+        context.logger.info(`Job "${jobToRun.name}" is stale`)
         job.onStale(jobToRun.params, context)
       } else {
-        log('error', `Job "${jobToRun.name}" is stale`)
+        context.logger.error(`Job "${jobToRun.name}" is stale`)
       }
       this.saveExecution({
         startedAt,
@@ -164,7 +167,7 @@ export class Executor {
         jobToRun
       })
 
-      await this.afterExecutionSuccess(job, jobToRun)
+      await this.afterExecutionSuccess(job, jobToRun, context)
     } catch (error) {
       context.clearStaleTimeout()
       this.saveExecution({

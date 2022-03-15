@@ -1,5 +1,6 @@
+import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
-import {log} from '../log'
+
 import {JobsRepo} from '../repos/JobsRepo'
 import {ScheduleJobOptions} from '../types/Events'
 import {getNextRunDate} from './getNextRunDate'
@@ -10,7 +11,7 @@ export class EventsService {
   private jobsRepo: JobsRepo
 
   async scheduleJob(options: ScheduleJobOptions) {
-    log('info', 'Scheduling job...', options)
+    logger.info('Scheduling job...', options)
 
     await this.jobsRepo.scheduleJob({
       name: options.name,

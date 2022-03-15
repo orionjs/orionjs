@@ -1,6 +1,6 @@
+import {logger} from '@orion-js/logger'
 import {createCollection, ModelToUpdateFilter} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
-import {log} from '../log'
 import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
@@ -68,7 +68,7 @@ export class JobsRepo {
     let tries = job.tries || 1
 
     if (job.lockedUntil) {
-      log('info', `Running job "${job.jobName}" that was staled`)
+      logger.info(`Running job "${job.jobName}" that was staled`)
       this.jobs.updateOne(job._id, {$inc: {tries: 1}})
       tries++
     }
@@ -131,9 +131,9 @@ export class JobsRepo {
     )
 
     if (result.upsertedId) {
-      log('info', `Created job record for "${job.name}"`)
+      logger.info(`Created job record for "${job.name}"`)
     } else {
-      log('info', `Record for job "${job.name}" already exists`)
+      logger.info(`Record for job "${job.name}" already exists`)
     }
   }
 
@@ -149,8 +149,7 @@ export class JobsRepo {
       })
     } catch (error) {
       if (error.code === 11000 && options.uniqueIdentifier) {
-        log(
-          'info',
+        logger.info(
           `Job "${options.name}" with identifier "${options.uniqueIdentifier}" already exists`
         )
       } else {

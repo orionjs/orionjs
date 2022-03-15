@@ -1,3 +1,4 @@
+import {OrionLogger} from '@orion-js/logger'
 import {PlainObject} from './HistoryRecord'
 import {JobDefinition} from './JobsDefinition'
 
@@ -16,6 +17,7 @@ export interface ExecutionContext {
   record: JobToRun
   definition: JobDefinition
   tries: number
+  logger: OrionLogger
   extendLockTime: (extraTime: number) => Promise<void>
   clearStaleTimeout: () => void
 }

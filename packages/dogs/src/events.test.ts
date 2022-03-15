@@ -1,6 +1,9 @@
 import 'reflect-metadata'
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, scheduleJob, startWorkers} from '.'
+import {setLogLevel} from '@orion-js/logger'
+
+setLogLevel('error')
 
 describe('Event tests', () => {
   it('Should run an event job', async () => {
@@ -16,8 +19,7 @@ describe('Event tests', () => {
       jobs: {job3},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10,
-      logLevel: 'none'
+      cooldownPeriod: 10
     })
 
     expect(count).toBe(0)
@@ -62,8 +64,7 @@ describe('Event tests', () => {
       jobs: {job4},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10,
-      logLevel: 'none'
+      cooldownPeriod: 10
     })
 
     expect(passes).toBe(false)
@@ -104,8 +105,7 @@ describe('Event tests', () => {
       workersCount: 2,
       pollInterval: 10,
       cooldownPeriod: 10,
-      lockTime: 10,
-      logLevel: 'none'
+      lockTime: 10
     })
 
     await scheduleJob({
@@ -134,8 +134,7 @@ describe('Event tests', () => {
       jobs: {[jobId]: job},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10,
-      logLevel: 'none'
+      cooldownPeriod: 10
     })
 
     await scheduleJob({

@@ -1,5 +1,8 @@
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
+import {setLogLevel} from '@orion-js/logger'
+
+setLogLevel('error')
 
 describe('Test Jobs History', () => {
   it('Should save success history types', async () => {
@@ -65,8 +68,7 @@ describe('Test Jobs History', () => {
     const instance = startWorkers({
       jobs: {[jobId]: job},
       workersCount: 1,
-      pollInterval: 10,
-      logLevel: 'none'
+      pollInterval: 10
     })
 
     await scheduleJob({
@@ -115,8 +117,7 @@ describe('Test Jobs History', () => {
       jobs: {[jobId]: job},
       workersCount: 1,
       pollInterval: 10,
-      lockTime: 10,
-      logLevel: 'none'
+      lockTime: 10
     })
 
     await scheduleJob({

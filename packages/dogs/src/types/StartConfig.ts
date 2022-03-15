@@ -27,8 +27,4 @@ export interface StartWorkersConfig {
    * You can extend this time inside a job by calling extendLockTime from context.
    */
   lockTime: number
-  /**
-   * logLevel is the level of logging to use. Default is 'info'.
-   */
-  logLevel: LogLevels
 }

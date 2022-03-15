@@ -1,8 +1,12 @@
 export const getFileName = () => {
-  const stack = new Error().stack
-  const lines = stack.split('\n')
-  const filePath = lines[4].split('(')[1].split(')')[0]
-  return improveFileName(filePath)
+  try {
+    const stack = new Error().stack
+    const lines = stack.split('\n')
+    const filePath = lines[4].split('(')[1].split(')')[0]
+    return improveFileName(filePath)
+  } catch (error) {
+    return
+  }
 }
 
 export const improveFileName = (path: string) => {
