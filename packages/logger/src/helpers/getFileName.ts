@@ -18,6 +18,18 @@ export const improveFileName = (path: string) => {
     return path.replace(/^.+\.orion\/build\//, '')
   }
 
+  if (path.includes('/node_modules/@')) {
+    const after = path.split('/node_modules/')[1]
+    const parts = after.split('/')
+    return `${parts[0]}/${parts[1]}`
+  }
+
+  if (path.includes('/node_modules/')) {
+    const after = path.split('/node_modules/')[1]
+    const parts = after.split('/')
+    return `${parts[0]}`
+  }
+
   return path
 }
 
