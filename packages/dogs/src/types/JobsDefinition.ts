@@ -30,7 +30,7 @@ export interface BaseJobDefinition {
   onStale?: (params: PlainObject, context: ExecutionContext) => Promise<void>
 
   /**
-   * Save the executions of the job time in milliseconds. Default is 1 day. Set to 0 to disable.
+   * Save the executions of the job time in milliseconds. Default is 1 week. Set to 0 to disable.
    */
   saveExecutionsFor?: number
 }

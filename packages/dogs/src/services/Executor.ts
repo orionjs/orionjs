@@ -94,7 +94,8 @@ export class Executor {
     const endedAt = new Date()
 
     if (job.saveExecutionsFor !== 0) {
-      const saveExecutionsFor = job.saveExecutionsFor || 24 * 60 * 60 * 1000
+      const oneWeek = 1000 * 60 * 60 * 24 * 7
+      const saveExecutionsFor = job.saveExecutionsFor || oneWeek
       await this.jobsHistoryRepo.saveExecution({
         executionId: jobToRun.jobId,
         jobName: jobToRun.name,
