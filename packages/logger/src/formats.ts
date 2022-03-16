@@ -43,7 +43,7 @@ export const jsonConsoleFormat = combine(
   metadata({fillExcept: ['fileName', 'level', 'message']}),
   metaError(),
   timestamp(),
-  json({replacer: null, space: 2})
+  json()
 )
 
 export const jsonConsoleTransport = new transports.Console({
