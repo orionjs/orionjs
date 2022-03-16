@@ -115,9 +115,7 @@ export class JobsRepo {
   }
 
   async ensureJobRecord(job: JobDefinitionWithName) {
-    logger.info(`Waiting for db connection...`)
     await this.jobs.connectionPromise
-    logger.info(`Ensuring records`)
     const result = await this.jobs.upsert(
       {
         jobName: job.name
