@@ -5,7 +5,7 @@
     "clean": "lerna run clean",
     "watch": "lerna run --parallel watch",
     "test": "lerna run test",
-    "publish-all": "lerna publish --force-publish=*",
+    "publish-all": "lerna publish --npm-tag latest --force-publish=*",
     "release": "lerna publish --npm-tag latest",
     "release-alpha": "lerna publish --dist-tag next"
   },
