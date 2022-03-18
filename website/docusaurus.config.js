@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = require('prism-react-renderer/themes/github')
+const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -25,25 +25,24 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/',
-          editCurrentVersion:true,
-          lastVersion: "current",
+          editCurrentVersion: true,
+          lastVersion: 'current',
           versions: {
             current: {
-              label: "3.x",
+              label: '3.x'
             }
           }
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/facebook/docusaurus/edit/main/website/blog/',
+          editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/blog/'
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
-        },
-      }),
-    ],
+          customCss: require.resolve('./src/css/custom.css')
+        }
+      })
+    ]
   ],
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
@@ -53,21 +52,21 @@ const config = {
         logo: {
           alt: 'Orionjs Logo',
           src: 'img/logo-black.png',
-          srcDark: 'img/logo.svg',
+          srcDark: 'img/logo.svg'
         },
         items: [
           {
             type: 'doc',
             docId: 'getting-started/installation',
             position: 'left',
-            label: 'Docs',
+            label: 'Docs'
           },
           {to: '/blog', label: 'Blog', position: 'left'},
           {
             type: 'docsVersionDropdown',
             position: 'right'
-          },
-        ],
+          }
+        ]
       },
       footer: {
         style: 'dark',
@@ -77,50 +76,51 @@ const config = {
             items: [
               {
                 label: 'Docs',
-                to: '/docs/installation',
-              },
-            ],
+                to: '/docs/installation'
+              }
+            ]
           },
           {
             title: 'Community',
             items: [
               {
                 label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/orionjs',
+                href: 'https://stackoverflow.com/questions/tagged/orionjs'
               },
               {
                 label: 'Github issues',
-                href: 'https://github.com/orionjs/orionjs/issues',
-              },
-            ],
+                href: 'https://github.com/orionjs/orionjs/issues'
+              }
+            ]
           },
           {
             title: 'More',
             items: [
               {
                 label: 'Blog',
-                to: '/blog',
+                to: '/blog'
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/orionjs/orionjs',
-              },
-            ],
-          },
+                href: 'https://github.com/orionjs/orionjs'
+              }
+            ]
+          }
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Orionjs Team &hearts;	`,
+        copyright: `Copyright © ${new Date().getFullYear()} Orionjs Team &hearts;	`
       },
-      
+
       prism: {
         theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
+        darkTheme: darkCodeTheme
       },
-      algolia:{
+      algolia: {
+        appId: 'BH4D9OD16A',
         apiKey: 'c7383946eb91c665407697fcf1b4ec3a',
         indexName: 'orionjs',
         algoliaOptions: {} // Optional, if provided by Algolia
       }
-    }),
-};
+    })
+}
 
-module.exports = config;
+module.exports = config
