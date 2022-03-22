@@ -2,6 +2,7 @@ import getSelector from './getSelector'
 import {Collection, UpdateOne} from '../../types'
 import cleanModifier from './cleanModifier'
 import validateModifier from './validateModifier'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const updateOne: UpdateOne<DocumentType> = async function (
@@ -22,7 +23,9 @@ export default <DocumentType>(collection: Partial<Collection>) => {
       if (options.validate !== false) await validateModifier(schema, modifier)
     }
 
-    const result = await collection.rawCollection.updateOne(selector, modifier)
+    const result = await wrapErrors(() => {
+      return collection.rawCollection.updateOne(selector, modifier)
+    })
 
     return result
   }

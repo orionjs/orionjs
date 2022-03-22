@@ -2,6 +2,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import {Collection, InsertOne} from '../../types'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const insertOne: InsertOne<DocumentType> = async (insertDoc, options) => {
@@ -20,7 +21,9 @@ export default <DocumentType>(collection: Partial<Collection>) => {
       await validate(schema, doc)
     }
 
-    await collection.rawCollection.insertOne(doc)
+    await wrapErrors(async () => {
+      await collection.rawCollection.insertOne(doc)
+    })
 
     return doc._id
   }

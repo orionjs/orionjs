@@ -2,6 +2,7 @@ import getSelector from './getSelector'
 import {Collection, UpdateMany} from '../../types'
 import cleanModifier from './cleanModifier'
 import validateModifier from './validateModifier'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const updateMany: UpdateMany<DocumentType> = async function (
@@ -22,7 +23,9 @@ export default <DocumentType>(collection: Partial<Collection>) => {
       if (options.validate !== false) await validateModifier(schema, modifier)
     }
 
-    const result = await collection.rawCollection.updateMany(selector, modifier)
+    const result = await wrapErrors(() => {
+      return collection.rawCollection.updateMany(selector, modifier)
+    })
 
     return result
   }

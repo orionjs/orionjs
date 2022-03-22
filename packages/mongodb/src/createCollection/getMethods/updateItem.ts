@@ -1,8 +1,11 @@
 import {Collection, UpdateItem} from '../../types'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const updateItem: UpdateItem<DocumentType> = async function (item, modifier) {
-    const updated = await collection.updateAndFind({_id: item._id}, modifier)
+    const updated = await wrapErrors(async () => {
+      return await collection.updateAndFind({_id: item._id}, modifier)
+    })
 
     for (const key in item) {
       delete item[key]
