@@ -96,8 +96,6 @@ describe('InsertOne', () => {
     })
     await Tests.createIndexesPromise
 
-    console.log(await Tests.rawCollection.listIndexes().toArray())
-
     await Tests.insertOne({name: 'one'})
 
     expect.assertions(3)
