@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,11 +17,11 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.1.4",
-    "@orion-js/models": "^3.1.4",
-    "@orion-js/resolvers": "^3.1.4",
-    "@orion-js/schema": "^3.1.4",
-    "@orion-js/typed-model": "^3.1.4",
+    "@orion-js/helpers": "^3.1.5",
+    "@orion-js/models": "^3.1.5",
+    "@orion-js/resolvers": "^3.1.5",
+    "@orion-js/schema": "^3.1.5",
+    "@orion-js/typed-model": "^3.1.5",
     "dataloader": "2.0.0",
     "dot-object": "2.1.4",
     "mongodb": "4.1.4"
