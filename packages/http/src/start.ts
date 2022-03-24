@@ -1,8 +1,9 @@
+import {internalGetEnv} from '@orion-js/helpers'
 import express from 'express'
 
 global.appRef = null
 
-export const startServer = (port: number = Number(process.env.PORT)) => {
+export const startServer = (port: number = Number(internalGetEnv('http_port', 'PORT'))) => {
   const app = getApp()
 
   app.listen(port)
