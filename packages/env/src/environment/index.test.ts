@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import {asymmetric} from '../utils'
+import {asymmetric} from '@orion-js/crypto'
 
 describe('Environment', () => {
   beforeEach(() => {

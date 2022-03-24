@@ -1,4 +1,4 @@
-import {asymmetric} from '../utils'
+import {asymmetric} from '@orion-js/crypto'
 
 const env = {}
 
