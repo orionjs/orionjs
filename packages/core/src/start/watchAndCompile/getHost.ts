@@ -4,6 +4,7 @@ import {reportDiagnostic} from './reports'
 import colors from 'colors/safe'
 import writeIndex from './writeIndex'
 import {Runner} from '../runner'
+import {writeEnvFile} from './writeEnvFile'
 
 export function getHost(runner: Runner) {
   const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
@@ -25,8 +26,8 @@ export function getHost(runner: Runner) {
         }
       }
 
-      const basePath = `${process.cwd()}/.orion/build`
-      writeIndex({basePath})
+      writeIndex({basePath: runner.basePath})
+      writeEnvFile({basePath: runner.basePath, envPath: runner.envPath})
       runner.restart()
     }
   }

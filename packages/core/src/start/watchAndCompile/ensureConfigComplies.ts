@@ -1,4 +1,4 @@
-import {getFileContents} from '../../helpers/getFileContents'
+import getFileContents from '../../helpers/getFileContents'
 import writeFile from '../../helpers/writeFile'
 import {parse, stringify} from 'comment-json'
 

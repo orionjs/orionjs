@@ -1,5 +1,7 @@
 import fs from 'fs'
 
-export function getFileContents(path: string): string {
-  return fs.readFileSync(path).toString()
+export default function readFile(filePath: string) {
+  if (!fs.existsSync(filePath)) return null
+
+  return fs.readFileSync(filePath).toString()
 }
