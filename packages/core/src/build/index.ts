@@ -17,7 +17,7 @@ export default async function ({output, envPath}) {
   compile({output})
 
   writeIndex({basePath: output})
-  writeEnvFile({basePath: output, envPath})
+  writeEnvFile({basePath: output, envPath, createDtsFile: false})
 
   console.log(colors.bold('Build created'))
 }

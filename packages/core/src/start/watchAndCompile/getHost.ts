@@ -27,7 +27,7 @@ export function getHost(runner: Runner) {
       }
 
       writeIndex({basePath: runner.basePath})
-      writeEnvFile({basePath: runner.basePath, envPath: runner.envPath})
+      writeEnvFile({basePath: runner.basePath, envPath: runner.envPath, createDtsFile: true})
       runner.restart()
     }
   }
