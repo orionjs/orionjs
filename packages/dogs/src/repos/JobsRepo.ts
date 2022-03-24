@@ -1,6 +1,7 @@
 import {logger} from '@orion-js/logger'
 import {createCollection, ModelToUpdateFilter} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
+import {values} from 'lodash'
 import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
@@ -149,7 +150,11 @@ export class JobsRepo {
         type: 'event'
       })
     } catch (error) {
-      if (error.code === 11000 && options.uniqueIdentifier) {
+      if (
+        error.isValidationError &&
+        values(error.validationErrors).includes('notUnique') &&
+        options.uniqueIdentifier
+      ) {
         logger.info(
           `Job "${options.name}" with identifier "${options.uniqueIdentifier}" already exists`
         )
