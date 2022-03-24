@@ -23,12 +23,12 @@ export const writeEnvFile = async ({basePath, envPath}) => {
   const filePath = `${basePath}/env.js`
 
   if (!envPath) {
-    writeFile(filePath, `global.__orion_env = null`)
+    writeFile(filePath, `global.__orion_env__ = null`)
     return
   }
 
   const config = getConfig(envPath)
   const configJSON = JSON.stringify(config, null, 2)
 
-  writeFile(filePath, `global.__orion_env = ${configJSON}`)
+  writeFile(filePath, `global.__orion_env__ = ${configJSON}`)
 }
