@@ -1,12 +1,12 @@
-import {generateId} from '@orion-js/helpers'
 import {getInstance, Service} from '@orion-js/services'
 import symmetricDecrypt from './decrypt'
 import symmetricEncrypt from './encrypt'
+import generatePassword from './generatePassword'
 
 @Service()
 class Symmetric {
   generatePassword() {
-    return generateId(32)
+    return generatePassword(32)
   }
 
   public encrypt = symmetricEncrypt

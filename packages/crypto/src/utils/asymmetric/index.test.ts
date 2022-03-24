@@ -1,6 +1,6 @@
 import 'reflect-metadata'
-import {generateId} from '@orion-js/helpers'
 import {asymmetric} from '.'
+import generatePassword from '../symmetric/generatePassword'
 
 describe('ECDH', () => {
   it('should generate public and private keys', async () => {
@@ -18,7 +18,7 @@ describe('ECDH', () => {
   })
 
   it('should decrypt a message using de decrypt key', async () => {
-    const message = generateId(100)
+    const message = generatePassword(100)
     const {encryptKey, decryptKey} = asymmetric.generateKeys()
     const encrypted = asymmetric.encrypt(encryptKey, message)
     const decrypted = asymmetric.decrypt(decryptKey, encrypted)
