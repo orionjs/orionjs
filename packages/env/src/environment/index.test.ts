@@ -3,6 +3,7 @@ import {asymmetric} from '@orion-js/crypto'
 
 describe('Environment', () => {
   beforeEach(() => {
+    ;(global as any).__orion_env_final__ = undefined
     jest.resetModules()
   })
   it('should define all environment variables', async () => {
