@@ -1,0 +1,29 @@
+{
+  "name": "@orion-js/env",
+  "version": "3.1.10",
+  "main": "lib/index.js",
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "ORION_DEV=1 jest",
+    "prepare": "yarn run build",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "tsc -w",
+    "upgrade-interactive": "yarn upgrade-interactive"
+  },
+  "dependencies": {
+    "@orion-js/crypto": "3.1.7"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "jest": "27.3.1",
+    "reflect-metadata": "0.1.13",
+    "ts-jest": "27.0.7",
+    "typescript": "^4.4.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
+}

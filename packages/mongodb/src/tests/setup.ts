@@ -1,4 +1,4 @@
-import {getMongoConnection} from '..'
+import {createIndexesPromises, getMongoConnection} from '..'
 import {connections} from '../connect/connections'
 
 const url = `${global.__MONGO_URI__}jest`
@@ -10,6 +10,11 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  /**
+   * We need to wait on indexes promises to be resolved to close all the handlers
+   */
+  await Promise.all(createIndexesPromises)
+
   for (const connectionName in connections) {
     const connection = connections[connectionName]
     await connection.client.close()

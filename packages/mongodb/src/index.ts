@@ -1,6 +1,6 @@
-import createCollection from './createCollection'
+import createCollection, {createIndexesPromises} from './createCollection'
 
-export {createCollection}
+export {createCollection, createIndexesPromises}
 
 export * from './connect'
 

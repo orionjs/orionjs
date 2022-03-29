@@ -2,6 +2,7 @@ import getSelector from './getSelector'
 import validateUpsert from './validateModifier/validateUpsert'
 import cleanModifier from './cleanModifier'
 import {Collection, Upsert} from '../../types'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const upsert: Upsert<DocumentType> = async function (selectorArg, modifierArg, options = {}) {
@@ -20,7 +21,9 @@ export default <DocumentType>(collection: Partial<Collection>) => {
       if (options.validate !== false) await validateUpsert(schema, selector, modifier)
     }
 
-    const result = await collection.rawCollection.updateOne(selector, modifier, {upsert: true})
+    const result = await wrapErrors(() => {
+      return collection.rawCollection.updateOne(selector, modifier, {upsert: true})
+    })
 
     return result
   }

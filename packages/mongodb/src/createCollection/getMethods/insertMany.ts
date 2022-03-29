@@ -4,6 +4,7 @@ import {cloneDeep, values} from 'lodash'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
@@ -26,7 +27,9 @@ export default <DocumentType>(collection: Partial<Collection>) => {
 
       docs[index] = doc
     }
-    const {insertedIds} = await collection.rawCollection.insertMany(docs, options.mongoOptions)
+    const {insertedIds} = await wrapErrors(() => {
+      return collection.rawCollection.insertMany(docs, options.mongoOptions)
+    })
 
     const ids: Array<MongoDB.ObjectId> = values(insertedIds)
 

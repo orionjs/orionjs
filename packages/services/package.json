@@ -1,0 +1,36 @@
+{
+  "name": "@orion-js/services",
+  "version": "3.1.10",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "prepare": "yarn run build",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "tsc -w",
+    "upgrade-interactive": "yarn upgrade-interactive"
+  },
+  "dependencies": {
+    "@orion-js/helpers": "^3.1.10",
+    "typedi": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@types/lodash": "4.14.176",
+    "@types/node": "16.11.7",
+    "jest": "27.3.1",
+    "reflect-metadata": "^0.1.13",
+    "ts-jest": "27.0.7",
+    "typescript": "^4.4.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906"
+}

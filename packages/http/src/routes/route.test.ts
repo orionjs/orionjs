@@ -106,4 +106,26 @@ describe('Test routes', () => {
     expect(response2.statusCode).toBe(200)
     expect(response2.text).toBe('hello world')
   })
+
+  test('It should handle 302 route types', async () => {
+    const testRoute = route({
+      path: '/test7',
+      method: 'get',
+      async resolve(req, res, viewer) {
+        return {
+          statusCode: 302,
+          body: '',
+          headers: {
+            location: '/test8'
+          }
+        }
+      }
+    })
+
+    registerRoute(testRoute)
+
+    const response = await request(app).get('/test7')
+    expect(response.statusCode).toBe(302)
+    expect(response.header.location).toBe('/test8')
+  })
 })
