@@ -1,4 +1,4 @@
-import defaultTransporter from './transporter'
+import customTransporter from './transporter'
 import logMail from './logMail'
 import {SendMailOptions, SentMessageInfo, Transporter} from 'nodemailer'
 
@@ -8,8 +8,10 @@ const defaultMailOptions = {
 
 export default async function (
   options: SendMailOptions,
-  transporter: Transporter<any> = defaultTransporter
+  smtpURL?: string
 ): Promise<SentMessageInfo> {
+  const transporter: Transporter<any> = customTransporter(smtpURL || process.env.MAIL_URL)
+
   const mailOptions = {
     ...defaultMailOptions,
     ...options

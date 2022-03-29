@@ -1,20 +1,22 @@
 import nodemailer, {Transporter} from 'nodemailer'
 
-let transporter: Transporter<any> = {} as Transporter<any>
+export default function transporter(smtpURL: string): Transporter {
+  let transport: Transporter<any> = {} as Transporter<any>
 
-if (!process.env.MAIL_URL) {
-  if (!process.env.ORION_TEST) {
-    console.info('MAIL_URL env var not set. Will log emails to console instead.')
-  }
-} else {
-  const currTransporter = nodemailer.createTransport(process.env.MAIL_URL)
-
-  currTransporter.verify(function (error) {
-    if (error) {
-      console.error('Error connecting to mailing transport:', error)
+  if (!smtpURL) {
+    if (!process.env.ORION_TEST) {
+      console.info('SMTP URL env var was not provided. Will log emails to console instead.')
     }
-  })
-  transporter = currTransporter
-}
+  } else {
+    const currTransporter = nodemailer.createTransport(smtpURL)
 
-export default transporter
+    currTransporter.verify(function (error) {
+      if (error) {
+        console.error('Error connecting to mailing transport:', error)
+      }
+    })
+    transport = currTransporter
+  }
+
+  return transport
+}
