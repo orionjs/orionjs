@@ -5,16 +5,25 @@ sidebar_label: Collections
 sidebar_position: 4
 ---
 
-Orionjs is made to work with MongoDB de default. To connect to MongoDB and execute queries you must create `Collections`.
+Currently OrionJS only has support for connecting to and running queries against MongoDB.
 
-### The structure of the main collections of the application
+## Configure Database
+
+To continue, you need to have the database configured, [see more Database](../getting-started/database.md).
+
+## Install package
+
+```bash npm2yarn
+npm install @orion-js/mongodb
+```
+
+### Proposed structure
 
 ```
-server
-└── app
-    └── collections
-        └── Collection1
-            └── index.js
+app
+└── collections
+    └── Collection1
+        └── index.ts
 ```
 
 - `collections`: The directory of the set of collections.
@@ -24,29 +33,41 @@ server
 
 By convention collections are created in the `app/collections` folder, but you can create a collection anywhere.
 
-```js
-import {Collection} from '@orion-js/app'
+```ts title="app/collections/Counters/index.ts"
+import {createCollection} from '@orion-js/mongodb'
+import Counter from 'app/models/Counter'
 
-const MyCollection = new Collection({
-  name,
-  model,
-  indexes,
-  connection
+export default createCollection<Counter>({
+  name: 'counters',
+  model: Counter,
+  indexes: [
+    {
+      keys: {
+        name: 1
+      },
+      options: {
+        unique: true
+      }
+    }
+  ]
 })
 ```
 
 - `name`: The name of the collection in MongoDB.
-- `model`: A model assigned to the collection. The schema of the model will be used to validate inserts and updates into the collection, and it will be initialized when using find methods.
-- `indexes`: An array of indexes for this collection. Each item will be passed to the `collection.createIndex(keys, options)` function from MongoDB.
+- `model?`: A model assigned to the collection. The schema of the model will be used to validate inserts and updates into the collection, and it will be initialized when using find methods.
+- `indexes?`: An array of indexes for this collection. Each item will be passed to the `collection.createIndex(keys, options)` function from MongoDB.
   - `keys`: An object containing the keys.
   - `options` An object with the options of the index.
-- `connection`: Specify another database connection ([see more](#connecting-to-multiple-databases)).
+- `idGeneration?`: An string, use [Mongo ObjectID](https://www.mongodb.com/docs/manual/reference/method/ObjectId/) or one by Orion: `mongo`|`random`.
+- `connectionName?`: Specify another database connection ([see more](#connecting-to-multiple-databases)).
 
 ---
 
 ## Methods
 
-The Orionjs collection API is an abstraction of the Nodejs MongoDB Driver. It has the following methods:
+The Orionjs collection API is an abstraction of the [Nodejs MongoDB Driver](https://www.mongodb.com/docs/drivers/node/current/).
+
+It has the following methods:
 
 ### Find one
 
@@ -72,30 +93,51 @@ const items = await collection.find(selector).toArray()
 const count = await collection.find(selector).count()
 ```
 
-### Insert
+### Insert One
 
-Inserts documents to the DB. Each document will be cleaned and verified using the passed model's schema. This function will return the `_id` of the inserted item
+Inserts documents to the DB. Each document will be cleaned and verified using the passed model's schema.
 
 ```js
 const docId = await collection.insertOne(document)
+```
+
+**Returns:** A String containing `_id` of the inserted item.
+
+### Insert Many
+
+```js
 const docsIds = await collection.insertMany([document1, document2])
 ```
 
-### Update
+**Returns:** A Array of Strings containing `_id` of the inserted items.
+
+### Update One
 
 Updates documents in the DB. The changes will be verified using the passed model's schema. The fields that are not changed will not be verified.
 
 ```js
 await updateOne(selector, modifier)
+```
+
+### Update Many
+
+```js
 await updateMany(selector, modifier)
 ```
 
-### Delete
+### Delete One
 
-Deletes one or many documents.
+Delete one document.
 
 ```js
 await deleteOne(selector)
+```
+
+### Delete Many
+
+Deletes many documents.
+
+```js
 await deleteMany(selector)
 ```
 
@@ -111,36 +153,34 @@ const result = await collection.aggregate(pipeline).toArray()
 
 ## Connecting to multiple databases
 
-You can specify another database connection when initializing a collection. To connect to other database call the `connectToDatabase` function.
+You can specify another database connection when initializing a collection. To connect to other database use `connectionName` property.
 
-```js
-import {connectToDatabase} from '@orion-js/app'
+To establish the connection, need to define in your `.env` file the environment variable `MONGO_URL_ + connectionName` (in uppercase), as in the following example.
 
-const mongoURL = process.env.OTHER_MONGO_URL
+### Example
 
-export default connectToDatabase(mongoURL)
+```bash title=".env"
+...
+MONGO_URL_OTHER=mongodb://localhost:3003/other-typescript-starter
+...
 ```
 
-Then use the object returned by that function on the connection param for the collection.
-
-```js
-import {Collection} from '@orion-js/app'
+```ts title="app/collections/Users/index.ts"
+import {createCollection} from '@orion-js/mongodb'
 import User from 'app/models/User'
-import otherDatabaseConnection from '../otherDatabaseConnection'
 
-export default new Collection({
+export default createCollection<User>({
   name: 'users',
   model: User,
-  connection: otherDatabaseConnection
+  connectionName: 'other',
+  indexes: []
 })
 ```
+
+This will establish the connection between the name defined in `connectionName` and the environment variable defined `MONGO_URL_+connectionName.toUpperCase()`
 
 ---
 
 ## Using MongoDB node API
 
 If you need to use the native MongoDB collection api you can get it from the `rawCollection` variable of the collection.
-
-```
-
-```

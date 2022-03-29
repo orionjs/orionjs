@@ -33,7 +33,7 @@ startGraphQL({
 - `useGraphiql?`: A boolean to set up the graphiQL in-browser IDE for exploring GraphQL. Defaults to `false`.
 - `app?`: Pass another express app.
 
-If you follow the [GraphQL installation example](/docs/getting-started/installation), you will find a structure like the following:
+If you follow the [GraphQL installation example](../getting-started/installation), you will find a structure like the following:
 
 ```
 app

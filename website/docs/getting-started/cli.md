@@ -34,7 +34,6 @@ Available kits:
 - **typescript-starter**: Contains a basic Orionjs TypeScript starter project.
 - **graphql-starter**: Contains a basic Orionjs GraphQL server.
 - **http-starter**: Contains a basic Orionjs HTTP server.
-- **service-starter**: Contains a basic Orionjs 3.1 Service architecture.
 
 ## Start
 

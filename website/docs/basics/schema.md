@@ -5,11 +5,11 @@ sidebar_label: Schema
 sidebar_position: 1
 ---
 
-Orionjs schema has two main purposes. First, it describes the structure of each Model, which will set
-automatically the GraphQL schema for that Model. Second, if you specify a Model in the setup of
-a Collection, it will validate the structure of a document before it's get inserted or updated into the MongoDB.
-You can also use the [`validate`](https://orionjs.com/docs/models#validate-and-clean) Model function which will throw a `ValidationError` if the object doesn't
-fit the given schema. It's important to note that `validate` is `async`.
+:::info
+This concept is available for use only through the use of models without the use of decorators, [see more](../basics/models.md#create-a-model).
+:::
+
+Orionjs schema has two main purposes. First, it describes the structure of each Model, which will set automatically the GraphQL schema for that Model. Second, if you specify a Model in the setup of a Collection, it will validate the structure of a document before it's get inserted or updated into the MongoDB. You can also use the [`validate`](https://orionjs.com/docs/models#validate-and-clean) Model function which will throw a `ValidationError` if the object doesn't fit the given schema. It's important to note that `validate` is `async`.
 
 ## Basic Usage
 

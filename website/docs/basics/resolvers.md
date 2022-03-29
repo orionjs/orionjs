@@ -7,7 +7,7 @@ sidebar_position: 3
 
 Resolvers of the application are responsible for handling incoming requests and returning responses to the client.
 
-![Example banner](./assets/resolver-application.png)
+![Example banner](/img/docs/resolver-application.png)
 
 ## Install package
 

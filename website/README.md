@@ -12,17 +12,25 @@ Migrate list:
 - [x] Migrar la Documentación v2
 - [ ] Documentación v3
   - [x] Getting Started
+    - [x] Introduction
     - [x] Installation
-    - [x] Learn the Basics
-    - [x] Project structure
     - [x] Deploying
     - [x] CLI
     - [x] Database
   - [ ] Basics
     - [x] Resolvers
     - [x] Models
-    - [ ] Collections
-    - [ ] Schema
+    - [x] Collections
+      - [ ] Methods
+        - [ ] Syntax
+        - [ ] Returns
+        - [ ] initItem
+        - [ ] watch
+        - [ ] upsert
+        - [ ] findOneAndUpdate
+        - [ ] updateAndFind
+        - [ ] updateItem
+    - [x] Schema
     - [x] Jobs
     - [ ] Services (3.1)
   - [ ] Modules

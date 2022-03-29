@@ -7,6 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Orionjs',
+  staticDirectories: ['static'],
   tagline: 'A framework for modern Nodejs apps',
   url: 'https://orionjs.com',
   baseUrl: '/',

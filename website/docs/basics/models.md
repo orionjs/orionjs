@@ -46,8 +46,8 @@ export default createModel({
 ```
 
 - `name`: The name of the model.
-- `schema`: Describes the structure of each model. The complete documentation of the schemas is in [Orionjs Schemas](/docs/basics/schema).
-- `resolvers`: The resolvers of the models are controllers or specific functions to obtain data that are not directly in the database. You can use the current information in the database of a collection to create an custom output data. See more in [Orionjs Resolvers](/docs/basics/resolvers).
+- `schema`: Describes the structure of each model. The complete documentation of the schemas is in [Orionjs Schemas](../basics/schema).
+- `resolvers`: The resolvers of the models are controllers or specific functions to obtain data that are not directly in the database. You can use the current information in the database of a collection to create an custom output data. See more in [Orionjs Resolvers](../basics/resolvers).
 
 ## Create a Model with Decorators
 
