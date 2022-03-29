@@ -4,6 +4,7 @@ import start from './start'
 import build from './build'
 import colors from 'colors/safe'
 import test from './test'
+import create from './create'
 import './handleErrors'
 import version from './version'
 
@@ -33,6 +34,13 @@ program
   .description('Compiles an Orionjs app and exports it to a simple nodejs app')
   .option('-o, --output [output]', 'Output directory')
   .action(run(build))
+
+program
+  .command('create')
+  .description('Creates a new Orionjs project')
+  .option('--name [name]', 'Name of the project')
+  .option('--kit [kit]', 'Which starter kit to use')
+  .action(run(create))
 
 program.version(version, '-v --version')
 

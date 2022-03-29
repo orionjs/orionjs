@@ -5,16 +5,22 @@ sidebar_label: Project structure
 sidebar_position: 3
 ---
 
-After downloading the starter kit you will see two main folders in your project.
-The client folders holds the client-side code that connects to your Orionjs app,
-which is in the server folder.
+After installation, you will find a base structure like the one described below:
 
 ```
-server
-└── app
-    ├── collections
-    ├── jobs
-    ├── models
-    ├── resolvers
-    └── services
+app
+├── components
+│  ├── <Component>
+│  │  ├── collections
+│  │  ├── models
+│  │  ├── resolvers
+│  │  ├── http
+│  │  ├── jobs
+│  │  └── services
+├── helpers
+└── services
+    └── http
+    └── jobs
+    └── graphql
+    └── echoes
 ```

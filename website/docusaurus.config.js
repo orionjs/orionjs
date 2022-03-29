@@ -25,6 +25,7 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/',
+          remarkPlugins: [[require('@docusaurus/remark-plugin-npm2yarn'), {sync: true}]],
           editCurrentVersion: true,
           lastVersion: 'current',
           versions: {
@@ -76,7 +77,7 @@ const config = {
             items: [
               {
                 label: 'Docs',
-                to: '/docs/installation'
+                to: '/docs/getting-started/installation'
               }
             ]
           },

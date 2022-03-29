@@ -2,14 +2,17 @@
 id: database
 title: Database
 sidebar_label: Database
-sidebar_position: 6
+sidebar_position: 7
 ---
 
-By default Orionjs creates a MongoDB instace locally in `mongodb://127.0.0.1:3001/orionlocal`, you can overwrite a `MONGO_URL` environment variable in `start.sh`.
+By default OrionJS doesn't instantiate any connections to MongoDB, so this must be specified.
 
-```sh
-# Add local env vars to this file
-export CLIENT_URL="http://localhost:3010"
-export MONGO_URL="mongodb://127.0.0.1:3001/orionlocal"
-orion start --shell
+To add a connection instance to MongoDB, you will need to add a `MONGO_URL` environment variable in your `.env` configuration file.
+
+### Example add MONGO_URL environment variable
+
+```bash title=".env"
+...
+MONGO_URL="mongodb://localhost:3003/orionlocal"
+...
 ```

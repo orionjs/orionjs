@@ -7,8 +7,10 @@ sidebar_position: 7
 
 Echoes is an abstraction of [kafkajs](https://kafka.js.org/docs/consuming). It can be used as a standalone package without installing other orionjs packages.
 
-```
-yarn add @orion-js/echoes
+## Install package
+
+```bash npm2yarn
+npm install @orion-js/echoes
 ```
 
 ## `startService`

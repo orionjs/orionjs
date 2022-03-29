@@ -7,39 +7,51 @@ sidebar_position: 2
 
 Orionjs is deeply integrated with GraphQL. It generates automatically the schemas and all boilerplate code. It supports subscriptions over websockets and uses Apollo Server. It only requires few lines of configuration to get started.
 
-## Starting the GraphQL Server
+## Install package
+
+```bash npm2yarn
+npm install @orion-js/graphql
+```
+
+## Starting the GraphQL Server
 
 Create a file that it's included on the startup of your app that calls the `startGraphQL` function.
 
-```js
+```ts title="app/index.ts"
 import {startGraphQL} from '@orion-js/graphql'
 import resolvers from 'app/resolvers'
 
 startGraphQL({
   resolvers,
-  subscriptions,
-  pubsub,
   useGraphiql
 })
 ```
 
-- `resolvers`: An object with all the resolvers of your app. If you pass the option `private: true` when creating the resolver, it will be omitted (see [`Resolvers`](https://orionjs.com/docs/resolvers)).
-- `subscriptions`: An object containing all the subscriptions of your app.
-- `pubsub`: Only required if you use subscriptions. A pubsub implementation compatible with [apollo-subscriptions](https://github.com/apollographql/graphql-subscriptions#pubsub-implementations).
-- `useGraphiql`: A boolean to set up the graphiQL in-browser IDE for exploring GraphQL. Defaults to `false`.
+- `resolvers`: An object with all the resolvers of your app.
+- `subscriptions?`: An object containing all the subscriptions of your app.
+- `executeGraphQLCache?`: A function that executes the http level cache of graphql queries.
+- `useGraphiql?`: A boolean to set up the graphiQL in-browser IDE for exploring GraphQL. Defaults to `false`.
+- `app?`: Pass another express app.
 
-By default, Orionjs provides this functionality in the `index` file of the `services/graphql` folder:
+If you follow the [GraphQL installation example](/docs/getting-started/installation), you will find a structure like the following:
 
 ```
-server
-└── app
-    └── services
-        ├── graphql
-        │   └── index.js
-        └── index.js
+app
+└── services
+    ├── graphql
+    │   └── index.ts
+    └── index.ts
 ```
 
-In this file, Orionjs also provides a basic [CORS](https://orionjs.com/docs/http#cors) configuration for your app.
+In `app/services/graphql/index.ts `.
+
+### GraphiQL
+
+When running the server app, you can check the [`GraphiQL`](https://github.com/graphql/graphiql) GraphQL IDE for testing queries and mutations by following the next URL:
+
+```sh
+http://localhost:3000/graphiql
+```
 
 ## Subscriptions
 
@@ -64,12 +76,4 @@ To send an update you must call the subscription.
 
 ```js
 await mySubscription(params, updatedItem)
-```
-
-## GraphiQL
-
-When running the server app, you can check the [`GraphiQL`](https://github.com/graphql/graphiql) GraphQL IDE for testing queries and mutations by following the next URL:
-
-```sh
-http://localhost:3000/graphiql
 ```

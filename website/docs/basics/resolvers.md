@@ -5,36 +5,29 @@ sidebar_label: Resolvers
 sidebar_position: 3
 ---
 
-Resolvers in Orionjs are the controllers or main functions to execute routines, query the database and return data with defined structures.
-
-These are divided into two large groups of resolvers, the resolvers of the application and the resolvers of models.
-
-In the case of the resolvers of the application are generally defined to return data with the structures of the database, and the resolvers of models return dynamic information, generally not defined in the schemas of the application.
-
-## Application Resolver
-
 Resolvers of the application are responsible for handling incoming requests and returning responses to the client.
 
 ![Example banner](./assets/resolver-application.png)
+
+## Install package
+
+```bash npm2yarn
+npm install @orion-js/resolvers
+```
 
 ### The structure of the main resolvers of the application
 
 ```
 app
-└── components
-    ├── ExampleComponent
-    │   └── resolvers
-    │       ├── resolver1
-    │       │   └── index.ts
-    │       ├── resolver2
-    │       │   └── index.ts
-    │       └── index.ts
-    └── resolvers.ts
+└── resolvers
+    ├── resolver1
+    │   └── index.ts
+    ├── resolver2
+    │   └── index.ts
+    └── index.ts
 ```
 
-- `ExampleComponent`: The directory that groups a context.
 - Folder `resolvers`: The directory of the set of resolvers.
-- File `resolvers.ts`: File containing the list of resolvers exposed to the client using graphql.
 - `resolver1` & `resolver2`: Function to execute routines, query the database and return data with defined structures.
 
 :::info
@@ -48,19 +41,9 @@ The **routing** mechanism is self-managed by name as you **export default** in t
 
 :::
 
-### Example of the `resolvers.ts`
-
-```ts
-import ExampleComponent from './ExampleComponent/resolvers'
-
-export default {
-  ...ExampleComponent
-}
-```
-
 ### Example of the resolvers directory `index.ts`
 
-```ts
+```ts title="app/resolvers/index.ts"
 import resolver1 from './resolver1'
 import resolver2 from './resolver2'
 
@@ -72,9 +55,9 @@ export default {
 
 ## Resolver types
 
-### Basic resolver
+### Query resolver
 
-Basic resolvers are controllers that can receive parameters and use them for a specific calculation, or to make a GraphQL Query to the database to return an element with its defined schema or of some other specific type.
+Query resolvers are controllers that can receive parameters and use them for a specific calculation, or to make a GraphQL Query to the database to return an element with its defined schema or of some other specific type.
 
 ```js
 import {resolver} from '@orion-js/resolvers'
@@ -98,7 +81,7 @@ You can add cache policy to your resolvers by adding a `cache` property specifyi
 
 `cache: 1000 * 60 * 60, // Cache 1 hour in milliseconds`
 
-example:
+Example:
 
 ```ts
 import {resolver} from '@orion-js/resolvers'
@@ -131,59 +114,12 @@ You can check if the user perfoming the query or mutation has permission (or any
   ...
 ```
 
-### Paginated resolver
-
-:::info
-Paginated resolver, required install `@orion-js/paginated-mongodb` package
-
-```cli
-yarn add @orion-js/paginated-mongodb
-```
-
-:::
-
-paginatedResolvers are used to get MongoDB cursors for a GraphQL Query, into a paginated list. Notice the `async getCursor()` function with respect to the `async resolve()` function in the [`basicResolver`](resolvers.md#basic-resolver).
-
-```js
-import {paginatedResolver} from '@orion-js/paginated-mongodb'
-import Example from 'app/components/ExampleComponent/models/Example'
-import Examples from 'app/components/ExampleComponent/collections/Examples'
-
-export default paginatedResolver({
-  params: {},
-  returns: Example,
-  async getCursor(params, viewer) {
-    return Examples.find()
-  }
-})
-```
-
-`paginatedResolvers` also can receive parameters like in `resolver`:
-
-```ts
-import {paginatedResolver} from '@orion-js/paginated-mongodb'
-import Example from 'app/components/ExampleComponent/models/Example'
-import Examples from 'app/components/ExampleComponent/collections/Examples'
-
-export default paginatedResolver({
-  params: {
-    parameter1: {
-      type: String
-    }
-  },
-  returns: Example,
-  async getCursor({parameter1}, viewer) {
-    return Examples.find(parameter1)
-  }
-})
-```
-
 ### Mutation resolver
 
 Mutations are used to perform GraphQL mutations to create, update or delete documents of a collection over the database. notice the `mutation: true` property, which is used to make the distintion for different modules to use, like [`Autoform`](https://orionjs.com/docs/autoform)
 
 ```js
-import {resolver} from '@orion-js/app'
+import {resolver} from '@orion-js/resolvers'
 import Examples from 'app/collections/Examples'
 import Example from 'app/models/Example'
 
@@ -206,71 +142,50 @@ export default resolver({
 })
 ```
 
-### Crud resolver
+### Paginated resolver
 
-`crudResolvers` have the peculiarity of be called from `CRUD`, a React Component created for the [Orionjs fullstack Boilerplate](https://github.com/orionjs/boilerplate-graphql-fullstack).
+:::info
+Paginated resolver, required install `@orion-js/paginated-mongodb` package.
+:::
 
-#### React App
+#### Install package
 
-```js
-import React from 'react'
-import Crud from 'App/components/Crud'
-
-export default class Examples extends React.Component {
-  static propTypes = {}
-
-  getListFields() {
-    return [
-      {title: 'Field 1', name: 'field1'},
-      {title: 'Field 2', name: 'field2'}
-    ]
-  }
-
-  render() {
-    return (
-      <div className={styles.container}>
-        <br />
-        <Crud
-          path="/examples"
-          singular="Example"
-          plural="Examples"
-          allowSearch
-          listFields={this.getListFields()}
-        />
-      </div>
-    )
-  }
-}
+```bash npm2yarn
+npm install @orion-js/paginated-mongodb
 ```
 
-#### Orionjs Resolver
+**paginatedResolvers** are used to get MongoDB cursors for a GraphQL Query, into a paginated list. Notice the `async getCursor()` function with respect to the `async resolve()` function in the [`basicResolver`](resolvers.md#basic-resolver).
 
 ```js
-import {crudResolvers} from '@orion-js/app'
+import {paginatedResolver} from '@orion-js/paginated-mongodb'
+import Example from 'app/models/Example'
 import Examples from 'app/collections/Examples'
 
-export default {
-  ...crudResolvers({
-    collection: Examples,
-    paginatedOptions: {
-      async getCursor({field3}, viewer) {
-        return Examples.find({field3})
-      },
-      params: {
-        field3: {
-          type: String,
-          optional: true
-        }
-      }
-    }
-  })
-}
+export default paginatedResolver({
+  params: {},
+  returns: Example,
+  async getCursor(params, viewer) {
+    return Examples.find()
+  }
+})
 ```
 
----
+`paginatedResolvers` also can receive parameters like in `resolver`:
 
-## Model resolver
+```ts
+import {paginatedResolver} from '@orion-js/paginated-mongodb'
+import Example from 'app/models/Example'
+import Examples from 'app/collections/Examples'
 
-The resolvers of the model are responsible for returning data in a dynamic way, generally not defined in the application schemas.
-
-To learn about Model resolvers, refer to [`Model resolvers`](models.md#resolvers)
+export default paginatedResolver({
+  params: {
+    parameter1: {
+      type: String
+    }
+  },
+  returns: Example,
+  async getCursor({parameter1}, viewer) {
+    return Examples.find(parameter1)
+  }
+})
+```

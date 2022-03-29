@@ -7,8 +7,10 @@ sidebar_position: 5
 
 The `mailing` package helps you sending emails in your app.
 
-```sh
-yarn install @orion-js/mailing
+## Install Mailing package
+
+```bash npm2yarn
+npm install @orion-js/mailing
 ```
 
 ## Configuration
@@ -21,13 +23,22 @@ The configuration of `mailing` is done by setting the following environment vari
     You can use tools like [urlencoder](https://www.urlencoder.org/) to encode your `username` and `password`.
 - `MAIL_FROM`: A valid from address. You can also pass the `from` option when calling `sendEmail`.
 
-## Sending emails
+### Example .env
+
+```bash title=".env"
+...
+MAIL_URL="smtp://<user>:<password>@<smtp-server-url>:<port>"
+MAIL_FROM="example@domain.com"
+...
+```
+
+## Sending emails
 
 ### Plain text
 
 To send a email you must call the `sendEmail` function.
 
-```js
+```ts
 import {sendEmail} from '@orion-js/mailing'
 
 await sendEmail({
@@ -39,11 +50,26 @@ await sendEmail({
 
 All options will be passed to [nodemailer `sendMail` function](https://nodemailer.com/message/).
 
-### ReactDomServer
+### HTML
 
-Alternatively, instead of `text`, you can set a `html` property that can receive a [`React Component`](https://reactjs.org/docs/react-dom-server.html) template, allowing a more custom style to the sended emails.
+Alternatively, in addition to sending text you can also send HTML.
 
-```js
+```ts
+import {sendEmail} from '@orion-js/mailing'
+
+await sendEmail({
+  to: await user.email(),
+  subject: 'Welcome',
+  text: null,
+  html: getHTML()
+})
+```
+
+### Example using ReactDomServer
+
+In this example, `importHTML()` will use [`renderToString`](https://reactjs.org/docs/react-dom-server.html#rendertostring) to render the `Template` [React](https://reactjs.org/) element into an HTML string:
+
+```js title="index.js"
 import {sendEmail} from '@orion-js/mailing'
 
 await sendEmail({
@@ -54,14 +80,13 @@ await sendEmail({
 })
 ```
 
-In this case, `importHTML()` will use [`renderToString`](https://reactjs.org/docs/react-dom-server.html#rendertostring) to render the `Template` React element into an HTML string:
-
-```js
+```js title="importHTML.js"
 import {renderToString} from 'react-dom/server'
 import Template from './Template'
 
 export default function (nickName) {
   const bodyToInsert = renderToString(<Template>{nickName}</Template>)
+
   return `<html lang="es">
             <head>
               <meta charset="utf-8">
@@ -76,9 +101,7 @@ export default function (nickName) {
 }
 ```
 
-Creating the `Template` React component. Notice the `nickName` variable traveling as a children from `importHTML()` as a prop to `Template`:
-
-```js
+```ts title="Template.js"
 import React from 'react'
 import PropTypes from 'prop-types'
 

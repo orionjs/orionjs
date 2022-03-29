@@ -5,87 +5,76 @@ sidebar_label: HTTP
 sidebar_position: 3
 ---
 
-Orionjs comes with a `http` module, powered by [micro](https://github.com/zeit/micro).
+Orionjs comes with a `http` module, powered by [expressJS](https://expressjs.com).
+
+# Install http package
+
+```bash npm2yarn
+npm install @orion-js/http
+```
 
 ### Routes location
 
 Orionjs provides an example for routes management in the `services/http` folder:
 
 ```
-server
-└── app
-    └── services
-        ├── http
-        │   ├── home.js
-        │   └── index.js
-        └── index.js
+app
+└── services
+    ├── http
+    │   └── index.ts
+    └── index.ts
 ```
 
-## Defining a route
+## Start server
 
-To define a new route you must call the `route` function from the app module.
+```ts title="app/services/http/index.ts"
+import {startServer, registerRoutes} from '@orion-js/http'
 
-```js
-import {route} from '@orion-js/app'
-
-route(path, func)
+registerRoutes(routes)
+startServer()
 ```
 
-- `path`: A string that compilant with [path-to-regexp](https://github.com/pillarjs/path-to-regexp). To setup a route that responds when no other route is found, set `path` to `null`.
-- `func`: The function that will be executed when the route is visited. It must be a function, the result of this function will be the response.
+## Defining a route
 
-Function arguments:
+To define a new route you must call the `route` function from package.
 
-- `params`: The parameters defined in the route path.
-- `query`: The options passed in the url query.
-- `pathname`: The final pathname.
-- `request`: HTTP request object.
-- `response`: HTTP response object.
-- `headers`: An object with the passed headers.
-- `getBody`: A function that returns a promise resolving the request body in text.
-- `viewer`: An object with the information about the current viewer.
+```ts
+import {route} from '@orion-js/http'
+```
 
-## CORS
+The `route` function requires an argument of type Object that contains the following properties:
 
-You can define [`CORS`](https://developer.mozilla.org/es/docs/Web/HTTP/Access_control_CORS) options to all routes by calling this function:
+- `path`: string.
+- `method`: 'get' | 'post' | 'put' | 'delete' | 'all'
+- `bodyParser?`: 'json' | 'text' | 'urlencoded'
+- `bodyParserOptions?`: Custom options to body parser.
+- `middlewares?`: Add a middleware to the route, see https://expressjs.com/en/4x/api.html#middleware, for more information.
+- `resolve(request, response, viewer)`: Async function that returns the [RouteResponse](#routeresponse).
+  - `request`: HTTP request object.
+  - `response`: HTTP response object.
+  - `viewer`: An object with the information about the current viewer.
+- `app?`: Pass another [express app](https://expressjs.com).
 
-```js
-import {setCorsOptions} from '@orion-js/app'
+### RouteResponse
 
-setCorsOptions({
-  origin: '*'
+- `statusCode?`: Number, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status for more information.
+- `headers?`: {[key: string]: string}
+- `body?`: string | object
+
+### Example defining basic route
+
+The following is a basic example using defining a route that will be exposed under the GET method on the route '/' and return a message in its body 'Hello World'
+
+```ts title="app/http/hello/index.ts"
+import {route} from '@orion-js/http'
+
+export default route({
+  path: '/',
+  method: 'get',
+  async resolve(req, res, viewer) {
+    return {
+      body: 'Hello world'
+    }
+  }
 })
 ```
-
-By default, Orionjs provides this functionality in the `index` file of the `services/graphql` folder:
-
-```
-server
-└── app
-    └── services
-        ├── graphql
-        │   └── index.js
-        └── index.js
-```
-
-### Configuration
-
-The configuration of `CORS` is done by setting the following variables:
-
-- [`maxAge`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age) Default value: 86400
-- [`origin`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Allow-Origin) Default value: '\*'
-- [`allowHeaders`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Allow-Headers) Default value: ['X-Requested-With', 'Access-Control-Allow-Origin', 'X-HTTP-Method-Override', 'Content-Type', 'Authorization', 'Accept']
-- [`exposeHeaders`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Expose-Headers) Default value: []
-- [`allowMethods`](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Access-Control-Allow-Methods) Default value: ['POST', 'GET', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
-
-## Custom viewer
-
-The authentication module handles the viewer object, but if you want to define a custom viewer getter, there's a function for that.
-
-```js
-import {setGetViewer} from '@orion-js/app'
-
-setGetViewer(func)
-```
-
-- `func`: A async function. The object that this function returns will be the viewer in resolvers and http routes. This function will recieve the same arguments that the route handler recieves.

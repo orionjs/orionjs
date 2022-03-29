@@ -16,7 +16,7 @@ This page will help you install and build your first Orionjs project. If you alr
 Assuming that you have Node installed, you can use yarn to install the `orion` command line utility:
 
 ```sh
-yarn global add @orion-js/cli
+yarn global add @orion-js/cli@2.3.0
 ```
 
 ## Using a starter kit

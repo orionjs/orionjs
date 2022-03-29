@@ -11,13 +11,32 @@ Migrate list:
 - [x] Implementar multiples versiones
 - [x] Migrar la Documentación v2
 - [ ] Documentación v3
-  - [ ] Install
-  - [ ] Resolvers
-  - [ ] Models
-  - [ ] Collections
-  - [ ] Schema
+  - [x] Getting Started
+    - [x] Installation
+    - [x] Learn the Basics
+    - [x] Project structure
+    - [x] Deploying
+    - [x] CLI
+    - [x] Database
+  - [ ] Basics
+    - [x] Resolvers
+    - [x] Models
+    - [ ] Collections
+    - [ ] Schema
+    - [x] Jobs
+    - [ ] Services (3.1)
+  - [ ] Modules
+    - [ ] Authentication
+    - [x] GraphQL
+      - [ ] CORS
+    - [x] Http
+      - [ ] CORS
+    - [ ] Files
+    - [x] Mailing
+    - [x] Autoform
+    - [x] Echoes
+    - [ ] Logger
 - [ ] Documentación sobre como pasar de versión 2 a 3
-- [ ] Nuevo diseño
 - [ ] Agregar página de Sponsors
 - [ ] Agregar página de ayuda
 

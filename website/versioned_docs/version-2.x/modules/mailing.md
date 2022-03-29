@@ -7,8 +7,8 @@ sidebar_position: 5
 
 The `mailing` package helps you sending emails in your app.
 
-```sh
-yarn install @orion-js/mailing
+```bash npm2yarn
+npm install @orion-js/mailing
 ```
 
 ## Configuration
