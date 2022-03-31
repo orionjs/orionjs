@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import {Command} from 'commander'
 import start from './start'
 import build from './build'
+import create from './create'
 import colors from 'colors/safe'
 import test from './test'
 import './handleErrors'
@@ -52,6 +53,12 @@ program
   .option('--env-path <path>', 'Specify the env file name')
   .action(run(envAdd))
 
+program
+  .command('create')
+  .description('Creates a new Orionjs project')
+  .option('--name [name]', 'Name of the project')
+  .option('--kit [kit]', 'Which starter kit to use')
+  .action(run(create))
 program.version(version, '-v --version')
 
 program.parse(process.argv)
