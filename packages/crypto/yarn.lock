@@ -507,21 +507,6 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@orion-js/helpers@3.1.6", "@orion-js/helpers@^3.1.6":
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.1.6.tgz#53a3955cd4b2d88959a74c6f35bc5e7805afffed"
-  integrity sha512-UiEpFAvyWu/fFjeJpcVVYMlpKXKiuKCAqYuklc7vM3gbLlTVwnahTjlfMNDFM7rZwhxr0tgKpz945x8oShFQhw==
-  dependencies:
-    object-hash "^2.2.0"
-
-"@orion-js/services@3.1.6":
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.1.6.tgz#37dd7e7688556fd523b3873fcfd1219faa5ab154"
-  integrity sha512-C14P7r9oqeYeWfCOvIVmVPzCsvxO2Cx2sUmhpsNOVaqk0RHXi4b1b97c1Vxy0XQzXumosgqhlXZdEcJD0Rjxqg==
-  dependencies:
-    "@orion-js/helpers" "^3.1.6"
-    typedi "^0.10.0"
-
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"
@@ -2038,11 +2023,6 @@ nwsapi@^2.2.0:
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.0.tgz#204879a9e3d068ff2a55139c2c772780681a38b7"
   integrity sha512-h2AatdwYH+JHiZpv7pt/gSX1XoRGb7L/qSIeuqA6GwYoF9w1vP1cw42TO0aI2pNyshRK5893hNSl+1//vHK7hQ==
 
-object-hash@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-2.2.0.tgz#5ad518581eefc443bd763472b8ff2e9c2c0d54a5"
-  integrity sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==
-
 once@^1.3.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/once/-/once-1.4.0.tgz#583b1aa775961d4b113ac17d9c50baef9dd76bd1"
@@ -2506,11 +2486,6 @@ typedarray-to-buffer@^3.1.5:
   integrity sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
   dependencies:
     is-typedarray "^1.0.0"
-
-typedi@^0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/typedi/-/typedi-0.10.0.tgz#e8f9a5ee100b84addbdfb57fe90d8d9ed2a21dea"
-  integrity sha512-v3UJF8xm68BBj6AF4oQML3ikrfK2c9EmZUyLOfShpJuItAqVBHWP/KtpGinkSsIiP6EZyyb6Z3NXyW9dgS9X1w==
 
 typescript@^4.4.4:
   version "4.4.4"
