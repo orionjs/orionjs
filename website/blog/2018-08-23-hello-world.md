@@ -1,13 +1,10 @@
 ---
 title: Hello World
-authors:
-  name: Nicolás López
-  url: https://github.com/nicolaslopezj
-  image_url: https://avatars.githubusercontent.com/u/2042567?v=4
-  tags: [orionjs, meteor]
+author: Nicolás López
+authorURL: https://github.com/nicolaslopezj
 ---
 
-## Goodbye Meteor, hello Orionjs.
+## Goodbye Meteor, hello Orionjs.
 
 When I first used Meteor, I was amazed. It was so fast to write, so easy, it
 felt like magic. But after some years, the apps I was creating required more
