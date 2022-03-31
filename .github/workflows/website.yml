@@ -21,4 +21,4 @@ jobs:
           cache: 'yarn'
       - run: cd website
       - run: yarn install
-      - run: yarn yarn run publish-gh-pages
+      - run: yarn run publish-gh-pages
