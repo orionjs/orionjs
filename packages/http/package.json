@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/http",
-  "version": "3.1.12",
+  "version": "3.1.13",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -19,8 +19,8 @@
   "dependencies": {
     "@orion-js/env": "^3.1.12",
     "@orion-js/helpers": "^3.1.12",
-    "@orion-js/resolvers": "^3.1.12",
-    "@orion-js/schema": "^3.1.6",
+    "@orion-js/resolvers": "^3.1.13",
+    "@orion-js/schema": "^3.1.13",
     "body-parser": "1.19.0",
     "express": "4.17.1"
   },
