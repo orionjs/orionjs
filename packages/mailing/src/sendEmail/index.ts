@@ -1,9 +1,13 @@
 import defaultTransporter from './transporter'
 import logMail from './logMail'
 import {SendMailOptions, SentMessageInfo, Transporter} from 'nodemailer'
+import {internalGetEnv} from '@orion-js/env'
+
+const envMailFrom = internalGetEnv('mail_from', 'MAIL_FROM')
+const envMailURL = internalGetEnv('mail_url', 'MAIL_URL')
 
 const defaultMailOptions = {
-  from: process.env.MAIL_FROM || '"Orionjs App" <app@orionjs.com>'
+  from: envMailFrom || '"Orionjs App" <app@orionjs.com>'
 }
 
 export default async function (
@@ -15,7 +19,7 @@ export default async function (
     ...options
   }
 
-  if (!process.env.MAIL_URL) {
+  if (!envMailURL) {
     logMail(mailOptions)
   } else {
     const result = await transporter.sendMail(mailOptions)

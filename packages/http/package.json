@@ -17,6 +17,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
+    "@orion-js/env": "^3.1.10",
     "@orion-js/helpers": "^3.1.10",
     "@orion-js/resolvers": "^3.1.10",
     "@orion-js/schema": "^3.1.6",

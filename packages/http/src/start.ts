@@ -1,4 +1,4 @@
-import {internalGetEnv} from '@orion-js/helpers'
+import {internalGetEnv} from '@orion-js/env'
 import express from 'express'
 
 global.appRef = null

@@ -1,5 +1,5 @@
 import {connections} from './connections'
-import {internalGetEnv} from '@orion-js/helpers'
+import {internalGetEnv} from '@orion-js/env'
 
 export const getMongoURLFromEnv = (connectionName: string): string => {
   if (connectionName === 'main') {

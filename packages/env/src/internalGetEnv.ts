@@ -1,6 +1,6 @@
-import {env} from '@orion-js/env'
+import {env} from '.'
 
-export const internalGetEnv = (orionEnvName: string, processEnvName: string): any => {
+export const internalGetEnv = (orionEnvName: string, processEnvName: string): string | null => {
   if (env[orionEnvName]) {
     return env[orionEnvName]
   }

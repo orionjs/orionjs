@@ -13,7 +13,6 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.1.10",
     "object-hash": "^2.2.0"
   },
   "devDependencies": {
