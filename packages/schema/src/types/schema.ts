@@ -4,6 +4,8 @@ import {FieldType} from '../fieldType'
 
 export type Constructor<T> = new (...args: any[]) => T
 
+export type Blackbox = {[name: string]: any}
+
 export type FieldTypesList =
   | 'string'
   | 'date'
