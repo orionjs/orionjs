@@ -10,7 +10,7 @@ const config = {
   staticDirectories: ['static'],
   tagline: 'A framework for modern Nodejs apps',
   url: 'https://orionjs.com',
-  baseUrl: '/',
+  baseUrl: '/orionjs/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/logo-black.png',
