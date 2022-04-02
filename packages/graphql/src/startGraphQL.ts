@@ -18,7 +18,7 @@ export default async function (options: StartGraphQLOptions) {
   registerRoute(
     route({
       app: options.app,
-      method: 'post',
+      method: 'all',
       path: '/graphql',
       bodyParser: 'json',
       async resolve(req, res, viewer) {
