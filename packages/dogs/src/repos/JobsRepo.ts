@@ -133,9 +133,9 @@ export class JobsRepo {
     )
 
     if (result.upsertedId) {
-      logger.info(`Created job record for "${job.name}"`)
+      logger.debug(`Created job record for "${job.name}"`)
     } else {
-      logger.info(`Record for job "${job.name}" already exists`)
+      logger.debug(`Record for job "${job.name}" already exists`)
     }
   }
 
