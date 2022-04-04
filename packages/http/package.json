@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/http",
-  "version": "3.1.13",
+  "version": "3.1.16",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
