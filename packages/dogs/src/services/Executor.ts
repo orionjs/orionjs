@@ -117,7 +117,7 @@ export class Executor {
 
   async afterExecutionSuccess(job: JobDefinition, jobToRun: JobToRun, context: ExecutionContext) {
     if (job.type === 'recurrent') {
-      context.logger.info(`Scheduling next run for recurrent job "${jobToRun.name}"`)
+      context.logger.debug(`Scheduling next run for recurrent job "${jobToRun.name}"`)
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
@@ -125,7 +125,7 @@ export class Executor {
       })
     }
     if (job.type === 'event') {
-      context.logger.info(`Removing event job after success "${jobToRun.name}"`)
+      context.logger.debug(`Removing event job after success "${jobToRun.name}"`)
       await this.jobsRepo.deleteEventJob(jobToRun.jobId)
     }
   }

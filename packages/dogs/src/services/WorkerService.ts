@@ -37,7 +37,7 @@ export class WorkerService {
       return false
     }
 
-    logger.info(`Got job to run:`, jobToRun)
+    logger.debug(`Got job to run:`, jobToRun)
     await this.executor.executeJob(config.jobs, jobToRun)
 
     return true
@@ -83,17 +83,17 @@ export class WorkerService {
       jobs
         .filter(job => job.type === 'recurrent')
         .map(async job => {
-          logger.info(`Ensuring records for job "${job.name}"...`)
+          logger.debug(`Ensuring records for job "${job.name}"...`)
           await this.jobsRepo.ensureJobRecord(job)
         })
     )
   }
 
   async runWorkers(config: StartWorkersConfig, workersInstance: WorkersInstance) {
-    logger.info('Will ensure records for recurrent jobs')
+    logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
     for (const workerIndex of range(config.workersCount)) {
-      logger.info(`Starting worker ${workerIndex}`)
+      logger.debug(`Starting worker ${workerIndex}`)
       const workerPromise = this.startWorker(config, workersInstance)
       workersInstance.workers.push(workerPromise)
     }
@@ -114,7 +114,7 @@ export class WorkerService {
     }
 
     const workersInstance = this.createWorkersInstanceDefinition(config)
-    logger.info('Starting workers', config)
+    logger.debug('Starting workers', config)
 
     this.runWorkers(config, workersInstance)
 

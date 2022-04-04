@@ -11,7 +11,7 @@ export class EventsService {
   private jobsRepo: JobsRepo
 
   async scheduleJob(options: ScheduleJobOptions) {
-    logger.info('Scheduling job...', options)
+    logger.debug('Scheduling job...', options)
 
     await this.jobsRepo.scheduleJob({
       name: options.name,
