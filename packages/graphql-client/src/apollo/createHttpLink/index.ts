@@ -42,8 +42,10 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
       if (count > 10) return false
       return !!error
     },
-    delay(count, operation, error) {
-      return count * 500 * Math.random()
+    delay: {
+      initial: 250,
+      max: Infinity,
+      jitter: true
     }
   })
 
