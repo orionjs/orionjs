@@ -27,7 +27,7 @@ const defaultOptions: OrionApolloClientOpts = {
   wsOptions: {},
   getJWT: () => {},
   upgradeJWT: () => {},
-  refreshJWT: () => {}
+  refreshJWT: null
 }
 
 export default function createClient(passedOptions: OrionApolloClientOpts): OrionApolloClient<any> {

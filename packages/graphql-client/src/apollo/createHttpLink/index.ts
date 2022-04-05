@@ -6,16 +6,18 @@ import {RetryLink} from '@apollo/client/link/retry'
 import {ApolloLink} from '@apollo/client'
 import onNetworkError from '../onNetworkError'
 import getUri from './getUri'
+import {OrionApolloClientOpts} from '../../types'
 
-export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
-  const customFetch = async (uri, options) => {
-    const authHeaders = getAuthHeaders(options.body, getHeaders)
+export default (options: OrionApolloClientOpts) => {
+  const customFetch = async (uri: string, fetchOptions: RequestInit) => {
+    const authHeaders = getAuthHeaders(fetchOptions.body, options.getHeaders)
     for (const key of Object.keys(authHeaders)) {
-      options.headers[key] = authHeaders[key]
+      fetchOptions.headers[key] = authHeaders[key]
     }
     try {
-      const finalUri = getUri(uri, options)
-      const result = await fetch(finalUri, options)
+      const finalUri = getUri(uri, fetchOptions)
+      const fetchFunction = options.customFetch ? options.customFetch : fetch
+      const result = await fetchFunction(finalUri, fetchOptions)
       return result
     } catch (error) {
       console.warn('GraphQL request error:', error)
@@ -25,8 +27,8 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
 
   const retryLink = new RetryLink({
     attempts(count, operation, error) {
-      if (!canRetry) return false
-      if (typeof canRetry === 'function') return canRetry(count, operation, error)
+      if (!options.canRetry) return false
+      if (typeof options.canRetry === 'function') return options.canRetry(count, operation, error)
 
       if (error && error.result && error.result.error === 'AuthError') {
         if (error.result.message.toLowerCase().includes('jwt')) {
@@ -40,6 +42,9 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
         }
       }
       if (count > 10) return false
+
+      console.log('Received a request with error. Will retry', error)
+
       return !!error
     },
     delay: {
@@ -49,14 +54,14 @@ export default ({endpointURL, batchInterval, canRetry, batch, getHeaders}) => {
     }
   })
 
-  const httpLink = batch
+  const httpLink = options.batch
     ? new BatchHttpLink({
-        uri: endpointURL + '/graphql',
+        uri: options.endpointURL + '/graphql',
         fetch: customFetch,
-        batchInterval
+        batchInterval: options.batchInterval
       })
     : new HttpLink({
-        uri: endpointURL + '/graphql',
+        uri: options.endpointURL + '/graphql',
         fetch: customFetch
       })
 

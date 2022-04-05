@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
+    "@types/lodash": "^4.14.181",
     "graphql": "^16.0.0",
     "jest": "27.3.1",
     "react": "^17.0.0",

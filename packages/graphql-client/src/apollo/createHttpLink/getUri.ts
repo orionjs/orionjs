@@ -1,11 +1,8 @@
-import isArray from 'lodash/isArray'
+import {isArray} from 'lodash'
 
-export interface GetUriOptions {
-  body: string
-}
-export default function (uri: string, options: GetUriOptions): string {
+export default function (uri: string, options: RequestInit): string {
   try {
-    const body = JSON.parse(options.body)
+    const body = JSON.parse(String(options.body))
     if (isArray(body)) return uri
     const {operationName} = body
     return `${uri}?operationName=${operationName}`
