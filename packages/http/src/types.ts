@@ -4,7 +4,7 @@ import * as bodyParser from 'body-parser'
 export interface RouteResponse {
   statusCode?: number
   headers?: {[key: string]: string}
-  body?: string | object
+  body: string | object
 }
 
 export interface OrionRouteOptions {
