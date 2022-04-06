@@ -18,7 +18,7 @@ jobs:
           node-version: '14'
 
       # Install and build Docusaurus website
-      - name: Build Docusaurus website
+      - name: Build Docusaurus Website
         run: |
           cd website
           npm install 
