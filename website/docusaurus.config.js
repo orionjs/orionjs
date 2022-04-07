@@ -120,7 +120,7 @@ const config = {
         appId: 'UHBJGCYR8N',
         apiKey: '63cedd1409dcc676e86ca477d8805bf7',
         indexName: 'orionjs',
-        contextualSearch: false,
+        contextualSearch: true,
         algoliaOptions: {} // Optional, if provided by Algolia
       }
     })
