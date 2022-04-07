@@ -117,7 +117,7 @@ const config = {
         darkTheme: darkCodeTheme
       },
       algolia: {
-        appId: 'UHBJGCYR8N',
+        appId: 'BH4D9OD16A',
         apiKey: 'c7383946eb91c665407697fcf1b4ec3a',
         indexName: 'orionjs',
         algoliaOptions: {} // Optional, if provided by Algolia
