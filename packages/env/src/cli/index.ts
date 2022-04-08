@@ -17,15 +17,15 @@ const run = function (action) {
 }
 
 program
-  .command('env-init')
+  .command('init')
   .description('Creates a new encrypted env file')
-  .option('--env-path <path>', 'Specify the env file name')
+  .option('--path <path>', 'Specify the env file name')
   .action(run(envInit))
 
 program
-  .command('env-add')
+  .command('add')
   .description('Adds a new environment to the encrypted env file')
-  .option('--env-path <path>', 'Specify the env file name')
+  .option('--path <path>', 'Specify the env file name')
   .action(run(envAdd))
 
 program.parse(process.argv)

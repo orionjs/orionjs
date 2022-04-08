@@ -4,6 +4,9 @@
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
+  "bin": {
+    "orion-env": "./lib/cli/index.js"
+  },
   "scripts": {
     "test": "ORION_DEV=1 jest",
     "prepare": "yarn run build",

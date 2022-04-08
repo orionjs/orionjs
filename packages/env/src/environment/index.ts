@@ -12,6 +12,11 @@ const g = global as any
 const secretKey = process.env.ORION_ENV_SECRET_KEY
 const envFilePath = process.env.ORION_ENV_FILE_PATH
 
+export const readEnv = () => {
+  const data = getConfig(envFilePath)
+  return getVariables(data, secretKey)
+}
+
 if (g.__orion_env_final__) {
   variables = g.__orion_env_final__
 } else if (envFilePath) {
@@ -21,8 +26,7 @@ if (g.__orion_env_final__) {
     )
   }
 
-  const data = getConfig(envFilePath)
-  variables = getVariables(data, secretKey)
+  variables = readEnv()
 }
 
 g.__orion_env_final__ = variables
