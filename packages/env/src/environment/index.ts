@@ -1,36 +1,28 @@
-import {asymmetric} from '@orion-js/crypto'
+import {getConfig} from '../cli/add/getConfig'
+import {getVariables} from './getVariables'
 
-let variables = {}
+export interface Variables {
+  [key: string]: string
+}
+
+let variables: Variables = {}
 
 const g = global as any
 
+const secretKey = process.env.ORION_ENV_SECRET_KEY
+const envFilePath = process.env.ORION_ENV_FILE_PATH
+
 if (g.__orion_env_final__) {
   variables = g.__orion_env_final__
-} else if (g.__orion_env__) {
-  const secretKey = process.env.ORION_ENV_SECRET_KEY
+} else if (envFilePath) {
   if (!secretKey) {
     throw new Error(
       'Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not defined'
     )
   }
-  const cleanKeys = g.__orion_env__.cleanKeys
-  const encryptedKeys = g.__orion_env__.encryptedKeys
 
-  for (const key in cleanKeys) {
-    const value = cleanKeys[key]
-    variables[key] = value
-  }
-
-  for (const key in encryptedKeys) {
-    const encrypted = encryptedKeys[key]
-    try {
-      variables[key] = asymmetric.decrypt(secretKey, encrypted)
-    } catch (error) {
-      throw new Error(
-        `Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not the right key for "${key}"`
-      )
-    }
-  }
+  const data = getConfig(envFilePath)
+  variables = getVariables(data, secretKey)
 }
 
 g.__orion_env_final__ = variables
