@@ -5,13 +5,11 @@ import {startProcess} from './startProcess'
 export interface RunnerOptions {
   shell: boolean
   clean: boolean
-  envPath?: string
 }
 
 export interface Runner {
   restart: () => void
   stop: () => void
-  envPath?: string
   basePath: string
 }
 
@@ -50,7 +48,6 @@ export function getRunner(options: RunnerOptions): Runner {
   return {
     restart,
     stop,
-    envPath: options.envPath,
     basePath: `${process.cwd()}/.orion/build`
   }
 }

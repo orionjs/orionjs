@@ -1,10 +1,9 @@
 import colors from 'colors/safe'
 import execute from '../helpers/execute'
 import writeIndex from '../start/watchAndCompile/writeIndex'
-import {writeEnvFile} from '../start/watchAndCompile/writeEnvFile'
 import {compile} from './compile'
 
-export default async function ({output, envPath}) {
+export default async function ({output}) {
   if (!output) {
     output = './build'
   }
@@ -17,7 +16,6 @@ export default async function ({output, envPath}) {
   compile({output})
 
   writeIndex({basePath: output})
-  writeEnvFile({basePath: output, envPath, createDtsFile: false})
 
   console.log(colors.bold('Build created'))
 }

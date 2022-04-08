@@ -26,7 +26,6 @@ moduleAlias.addAlias('app', path)
     indexPath,
     `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-require("./env");
 require("./moduleAlias");
 require("./app");
   `
