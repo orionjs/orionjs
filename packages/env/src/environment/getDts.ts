@@ -6,7 +6,7 @@ export function getDts(config: Config) {
   const keys = [...Object.keys(config.cleanKeys), ...Object.keys(config.encryptedKeys)]
   return `declare module '@orion-js/env' {
   export const env: {
-${keys.map(key => `    ${key}: string;`).join('\n')}
+${keys.map(key => `    ${key}: string`).join('\n')}
   }
 }
 `
