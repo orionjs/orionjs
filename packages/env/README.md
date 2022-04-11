@@ -1,9 +1,4 @@
----
-id: env
-title: Env
-sidebar_label: Env
-sidebar_position: 4
----
+# Orion Env
 
 > This package works as standlaone package. It does not depend on any other orionjs package.
 
@@ -42,7 +37,7 @@ To add backwards compatibility you can also use this libary to set the environme
 
     import {loadEnv} from '@orion-js/env'
 
-    loadEnv()
+    loadEnv(options)
 
 This will set the environment variables for the current process.
 
