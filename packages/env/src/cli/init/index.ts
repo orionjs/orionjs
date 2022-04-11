@@ -3,9 +3,9 @@ import {generateKeys} from '../../crypto'
 import {Config} from '../../environment/getVariables'
 import {writeFile} from '../../files'
 
-export default async function envInit({envPath}) {
-  if (!envPath) {
-    envPath = '.env.local.yml'
+export default async function envInit({path}) {
+  if (!path) {
+    path = '.env.local.yml'
   }
 
   const keypair = generateKeys()
@@ -19,7 +19,7 @@ export default async function envInit({envPath}) {
 
   const text = YAML.stringify(envFile)
 
-  writeFile(envPath, text)
+  writeFile(path, text)
 
   console.log('')
 

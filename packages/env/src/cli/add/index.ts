@@ -14,12 +14,12 @@ const sortObjectByKeys = (object: any) => {
   return sorted
 }
 
-export default async function envAdd({envPath}) {
-  if (!envPath) {
-    envPath = '.env.local.yml'
+export default async function envAdd({path}) {
+  if (!path) {
+    path = '.env.local.yml'
   }
 
-  const config = getConfig(envPath)
+  const config = getConfig(path)
   const {key, value} = await getParams(config)
   if (!value) return
 
@@ -30,5 +30,5 @@ export default async function envAdd({envPath}) {
   config.encryptedKeys = sortObjectByKeys(config.encryptedKeys)
 
   const text = YAML.stringify(config)
-  writeFile(envPath, text)
+  writeFile(path, text)
 }
