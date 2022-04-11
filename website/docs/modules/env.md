@@ -33,3 +33,13 @@ Then you can access the variables by importing the package and all the env varia
     import {env} from '@orion-js/env'
 
     env.XX
+
+## Setting environment variables (process.env)
+
+To add backwards compatibility you can also use this libary to set the environment variables.
+
+    import {loadEnv} from '@orion-js/env'
+
+    loadEnv()
+
+This will set the environment variables for the current process.
