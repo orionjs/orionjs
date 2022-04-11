@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/http",
-  "version": "3.1.20",
+  "version": "3.1.22",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.1.20",
+    "@orion-js/env": "^3.1.22",
     "@orion-js/helpers": "^3.1.12",
     "@orion-js/resolvers": "^3.1.13",
     "@orion-js/schema": "^3.1.13",
