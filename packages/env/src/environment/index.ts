@@ -1,5 +1,6 @@
 import {getConfig} from '../cli/add/getConfig'
 import {getVariables} from './getVariables'
+export * from './getDts'
 
 export interface Variables {
   [key: string]: string
