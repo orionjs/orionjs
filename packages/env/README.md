@@ -1,8 +1,8 @@
 # Orion Env
 
-> This package works as standlaone package. It does not depend on any other orionjs package.
-
 Orion Env is a utility for managing a collection of secrets in source control. The secrets are encrypted using public key, elliptic curve cryptography.
+
+> This package works as standlaone package. It does not depend on any other orionjs package.
 
 It's like dotEnv but saved in source control.
 
