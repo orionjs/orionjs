@@ -1,8 +1,8 @@
 import {generateId, sleep} from '@orion-js/helpers'
-import {logger, setLogLevel} from '@orion-js/logger'
+import {setLogLevel} from '@orion-js/logger'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
 
-setLogLevel('debug')
+setLogLevel('none')
 
 describe('Stale Jobs Management', () => {
   it('Should spawn a new worker when a job is stale and kill the stale worker after it ends', async () => {
@@ -89,7 +89,39 @@ describe('Stale Jobs Management', () => {
     expect(executions).toEqual(['stale', 'success', 'stale'])
   })
 
-  it.only('Should revert priority of job when stale to the origina on recurrent jobs', async () => {
-    // TODO: implement
+  it('Should revert to original priority when execution was stale on recurrent jobs', async () => {
+    const priotities = []
+    let didStale = false
+    const jobName = 'job' + generateId()
+
+    const job = defineJob({
+      type: 'recurrent',
+      runEvery: 5,
+      async resolve(_, context) {
+        priotities.push(context.record.priority)
+        if (!didStale) {
+          didStale = true
+          await sleep(100)
+        }
+      }
+    })
+
+    const instance = startWorkers({
+      jobs: {[jobName]: job},
+      workersCount: 1,
+      pollInterval: 5,
+      cooldownPeriod: 5,
+      lockTime: 10
+    })
+
+    await sleep(150)
+    await instance.stop()
+
+    const [first, second, ...others] = priotities
+
+    expect(first).toBe(100)
+    expect(second).toBe(0)
+    expect(others.length).toBeGreaterThan(0)
+    expect(others).toEqual(Array(others.length).fill(100))
   })
 })

@@ -45,6 +45,7 @@ export class JobsRepo {
 
   async getJobAndLock(jobNames: string[], lockTime: number): Promise<JobToRun> {
     const lockedUntil = new Date(Date.now() + lockTime)
+
     const job = await this.jobs.findOneAndUpdate(
       {
         jobName: {$in: jobNames},
@@ -135,7 +136,7 @@ export class JobsRepo {
       {
         $set: {
           type: job.type,
-          priority: (job as RecurrentJobDefinition).priority || 100
+          priority: (job as RecurrentJobDefinition).priority
         },
         $setOnInsert: {
           nextRunAt: new Date()
