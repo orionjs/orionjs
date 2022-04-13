@@ -23,10 +23,18 @@ export interface ExecutionContext {
   clearStaleTimeout: () => void
 }
 
+export interface WorkerInstance {
+  running: boolean
+  workerIndex: number
+  stop: () => Promise<void>
+  respawn: () => Promise<void>
+  promise?: Promise<any>
+}
+
 export interface WorkersInstance {
   running: boolean
   workersCount: number
-  workers: Promise<any>[]
+  workers: WorkerInstance[]
   /**
    * Stop all workers and wait for them to finish
    */

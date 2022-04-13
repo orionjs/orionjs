@@ -131,7 +131,7 @@ export class Executor {
     }
   }
 
-  async executeJob(jobs: JobsDefinition, jobToRun: JobToRun) {
+  async executeJob(jobs: JobsDefinition, jobToRun: JobToRun, respawnWorker: Function) {
     const job = this.getJobDefinition(jobToRun, jobs)
     if (!job) return
 
@@ -144,6 +144,9 @@ export class Executor {
       } else {
         context.logger.error(`Job "${jobToRun.name}" is stale`)
       }
+
+      respawnWorker()
+
       this.saveExecution({
         startedAt,
         status: 'stale',

@@ -109,8 +109,10 @@ describe('Test Jobs History', () => {
     const jobId = generateId()
     const job = defineJob({
       type: 'event',
-      async resolve() {
-        await sleep(100)
+      async resolve(_, context) {
+        if (context.tries === 1) {
+          await sleep(100)
+        }
         return {status: 'ok'}
       }
     })
@@ -132,9 +134,9 @@ describe('Test Jobs History', () => {
 
     const executions = await jobsHistoryRepo.getExecutions(jobId)
 
-    expect(executions.length).toBe(1)
+    expect(executions.length).toBe(2)
 
-    const execution = executions[0]
+    const execution = executions.find(e => e.status === 'stale')
     expect(execution.duration).toBeGreaterThanOrEqual(100)
     expect(execution.duration).toBeLessThan(200)
     expect(execution).toEqual({

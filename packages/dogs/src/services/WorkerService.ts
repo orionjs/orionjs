@@ -5,7 +5,7 @@ import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {StartWorkersConfig} from '../types/StartConfig'
 import {sleep} from '@orion-js/helpers'
 import {Executor} from './Executor'
-import {WorkersInstance} from '../types/Worker'
+import {WorkerInstance, WorkersInstance} from '../types/Worker'
 import {logger} from '@orion-js/logger'
 
 @Service()
@@ -28,48 +28,51 @@ export class WorkerService {
     })
   }
 
-  async runWorkerLoop(config: StartWorkersConfig) {
+  async runWorkerLoop(config: StartWorkersConfig, workerInstance: WorkerInstance) {
     const names = this.getJobNames(config.jobs)
-    logger.debug(`Running worker loop for jobs "${names.join(', ')}"...`)
+    logger.debug(
+      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`
+    )
     const jobToRun = await this.jobsRepo.getJobAndLock(names, config.lockTime)
     if (!jobToRun) {
       logger.debug('No job to run')
       return false
     }
 
-    logger.debug(`Got job to run:`, jobToRun)
-    await this.executor.executeJob(config.jobs, jobToRun)
+    logger.debug(`Got job [w${workerInstance.workerIndex}] to run:`, jobToRun)
+    await this.executor.executeJob(config.jobs, jobToRun, workerInstance.respawn)
 
     return true
   }
 
-  async startWorker(config: StartWorkersConfig, workersInstance: WorkersInstance) {
+  async startWorker(config: StartWorkersConfig, workerInstance: WorkerInstance) {
     while (true) {
-      if (!workersInstance.running) {
-        logger.info('Got signal to stop. Stopping worker...')
+      if (!workerInstance.running) {
+        logger.info(`Got signal to stop. Stopping worker [w${workerInstance.workerIndex}]...`)
         return
       }
 
       try {
-        const didRun = await this.runWorkerLoop(config)
+        const didRun = await this.runWorkerLoop(config, workerInstance)
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
-        logger.error(`Error in job runner. Waiting and running again`, error)
+        logger.error(`Error in job runner.`, error)
         await sleep(config.pollInterval)
       }
     }
   }
 
   createWorkersInstanceDefinition(config: StartWorkersConfig): WorkersInstance {
-    const workersInstance = {
+    const workersInstance: WorkersInstance = {
       running: true,
       workersCount: config.workersCount,
       workers: [],
       stop: async () => {
         logger.debug('Stopping workers...', workersInstance.workers)
         workersInstance.running = false
-        await Promise.all(workersInstance.workers)
+        const stopingPromises = workersInstance.workers.map(worker => worker.stop())
+        await Promise.all(stopingPromises)
       }
     }
 
@@ -89,13 +92,38 @@ export class WorkerService {
     )
   }
 
+  async startANewWorker(config: StartWorkersConfig, workersInstance: WorkersInstance) {
+    const workerIndex = workersInstance.workers.length
+
+    logger.info(`Starting worker [w${workerIndex}]`)
+
+    const workerInstance: WorkerInstance = {
+      running: true,
+      workerIndex,
+      stop: async () => {
+        logger.info(`Stopping worker [w${workerIndex}]...`)
+        workerInstance.running = false
+        await workerInstance.promise
+      },
+      respawn: async () => {
+        logger.info(`Respawning worker [w${workerIndex}]...`)
+        workerInstance.stop()
+        await this.startANewWorker(config, workersInstance)
+      }
+    }
+
+    const workerPromise = this.startWorker(config, workerInstance)
+
+    workerInstance.promise = workerPromise
+    workersInstance.workers.push(workerInstance)
+  }
+
   async runWorkers(config: StartWorkersConfig, workersInstance: WorkersInstance) {
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
+
     for (const workerIndex of range(config.workersCount)) {
-      logger.debug(`Starting worker ${workerIndex}`)
-      const workerPromise = this.startWorker(config, workersInstance)
-      workersInstance.workers.push(workerPromise)
+      this.startANewWorker(config, workersInstance)
     }
   }
 
