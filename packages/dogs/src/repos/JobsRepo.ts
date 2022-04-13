@@ -18,7 +18,7 @@ export class JobsRepo {
         keys: {
           jobName: 1,
           nextRunAt: 1,
-          priority: 1,
+          priority: -1,
           lockedUntil: 1
         }
       },
@@ -57,7 +57,7 @@ export class JobsRepo {
       {
         mongoOptions: {
           sort: {
-            priority: 1,
+            priority: -1,
             nextRunAt: 1
           },
           returnDocument: 'before'
@@ -88,9 +88,18 @@ export class JobsRepo {
     }
   }
 
-  async scheduleNextRun(options: {jobId: string; nextRunAt: Date; addTries: boolean}) {
+  async setJobRecordPriority(jobId: string, priority: number) {
+    await this.jobs.updateOne(jobId, {$set: {priority}})
+  }
+
+  async scheduleNextRun(options: {
+    jobId: string
+    nextRunAt: Date
+    addTries: boolean
+    priority: number
+  }) {
     const updator: ModelToUpdateFilter<JobRecord> = {
-      $set: {nextRunAt: options.nextRunAt},
+      $set: {nextRunAt: options.nextRunAt, priority: options.priority},
       $unset: {lockedUntil: ''}
     }
 

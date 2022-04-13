@@ -53,7 +53,8 @@ export class Executor {
         await this.jobsRepo.scheduleNextRun({
           jobId: jobToRun.jobId,
           nextRunAt: getNextRunDate(job),
-          addTries: false
+          addTries: false,
+          priority: job.priority
         })
       }
     }
@@ -77,7 +78,8 @@ export class Executor {
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(result),
-        addTries: true
+        addTries: true,
+        priority: job.type === 'recurrent' ? job.priority : jobToRun.priority
       })
     }
   }
@@ -122,7 +124,8 @@ export class Executor {
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
-        addTries: false
+        addTries: false,
+        priority: job.priority
       })
     }
     if (job.type === 'event') {
@@ -137,13 +140,15 @@ export class Executor {
 
     const startedAt = new Date()
 
-    const onStale = () => {
+    const onStale = async () => {
       if (job.onStale) {
         context.logger.info(`Job "${jobToRun.name}" is stale`)
         job.onStale(jobToRun.params, context)
       } else {
         context.logger.error(`Job "${jobToRun.name}" is stale`)
       }
+
+      await this.jobsRepo.setJobRecordPriority(jobToRun.jobId, 0)
 
       respawnWorker()
 
