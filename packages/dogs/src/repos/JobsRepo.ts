@@ -1,3 +1,4 @@
+import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {createCollection, ModelToUpdateFilter} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
@@ -76,6 +77,7 @@ export class JobsRepo {
 
     return {
       jobId: job._id,
+      executionId: generateId(),
       name: job.jobName,
       params: job.params,
       type: job.type,

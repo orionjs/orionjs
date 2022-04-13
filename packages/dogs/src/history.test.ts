@@ -2,7 +2,7 @@ import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
 import {setLogLevel} from '@orion-js/logger'
 
-setLogLevel('error')
+setLogLevel('none')
 
 describe('Test Jobs History', () => {
   it('Should save success history types', async () => {
@@ -40,6 +40,7 @@ describe('Test Jobs History', () => {
     expect(execution.duration).toBeGreaterThan(49)
     expect(execution).toEqual({
       _id: expect.any(String),
+      jobId: expect.any(String),
       executionId: expect.any(String),
       jobName: jobId,
       type: 'event',
@@ -87,6 +88,7 @@ describe('Test Jobs History', () => {
     const execution = executions[0]
     expect(execution).toEqual({
       _id: expect.any(String),
+      jobId: expect.any(String),
       executionId: expect.any(String),
       jobName: jobId,
       type: 'event',
@@ -130,13 +132,14 @@ describe('Test Jobs History', () => {
 
     const executions = await jobsHistoryRepo.getExecutions(jobId)
 
-    expect(executions.length).toBe(2)
+    expect(executions.length).toBe(1)
 
-    const execution1 = executions[1]
-    expect(execution1.duration).toBeGreaterThanOrEqual(10)
-    expect(execution1.duration).toBeLessThan(100)
-    expect(execution1).toEqual({
+    const execution = executions[0]
+    expect(execution.duration).toBeGreaterThanOrEqual(100)
+    expect(execution.duration).toBeLessThan(200)
+    expect(execution).toEqual({
       _id: expect.any(String),
+      jobId: expect.any(String),
       executionId: expect.any(String),
       jobName: jobId,
       type: 'event',
@@ -147,25 +150,6 @@ describe('Test Jobs History', () => {
       duration: expect.any(Number),
       expiresAt: expect.any(Date),
       status: 'stale',
-      errorMessage: null,
-      params: null,
-      result: null
-    })
-
-    const execution2 = executions[0]
-    expect(execution2.duration).toBeGreaterThanOrEqual(100)
-    expect(execution2).toEqual({
-      _id: expect.any(String),
-      executionId: expect.any(String),
-      jobName: jobId,
-      type: 'event',
-      priority: 1,
-      tries: 1,
-      startedAt: expect.any(Date),
-      endedAt: expect.any(Date),
-      duration: expect.any(Number),
-      expiresAt: expect.any(Date),
-      status: 'success',
       errorMessage: null,
       params: null,
       result: {status: 'ok'}

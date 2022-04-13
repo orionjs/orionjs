@@ -97,7 +97,8 @@ export class Executor {
       const oneWeek = 1000 * 60 * 60 * 24 * 7
       const saveExecutionsFor = job.saveExecutionsFor || oneWeek
       await this.jobsHistoryRepo.saveExecution({
-        executionId: jobToRun.jobId,
+        jobId: jobToRun.jobId,
+        executionId: jobToRun.executionId,
         jobName: jobToRun.name,
         type: jobToRun.type,
         priority: jobToRun.priority,

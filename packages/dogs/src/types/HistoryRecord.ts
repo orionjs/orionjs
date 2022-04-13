@@ -8,6 +8,9 @@ export class HistoryRecord {
   _id: string
 
   @Prop()
+  jobId: string
+
+  @Prop()
   executionId: string
 
   @Prop()

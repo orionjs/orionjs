@@ -1,5 +1,6 @@
 import {createCollection, ModelToDocumentTypeWithoutId} from '@orion-js/mongodb'
 import {Service} from '@orion-js/services'
+import {omit} from 'lodash'
 import {HistoryRecord} from '../types/HistoryRecord'
 
 @Service()
@@ -26,7 +27,17 @@ export class JobsHistoryRepo {
   })
 
   async saveExecution(record: ModelToDocumentTypeWithoutId<HistoryRecord>) {
-    await this.history.insertOne(record)
+    await this.history.upsert(
+      {executionId: record.executionId},
+      {
+        $setOnInsert: {
+          status: record.status
+        },
+        $set: {
+          ...omit(record, 'status')
+        }
+      }
+    )
   }
 
   async getExecutions(jobName: string, limit?: number, skip?: number): Promise<HistoryRecord[]> {
