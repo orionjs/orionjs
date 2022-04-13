@@ -126,7 +126,7 @@ export class JobsRepo {
       {
         $set: {
           type: job.type,
-          priority: (job as RecurrentJobDefinition).priority || 1
+          priority: (job as RecurrentJobDefinition).priority || 100
         },
         $setOnInsert: {
           nextRunAt: new Date()

@@ -52,7 +52,7 @@ export interface RecurrentJobDefinition extends BaseJobDefinition {
   runEvery?: number
 
   /**
-   * The priority of the job. Higher is more priority. Default is 1.
+   * The priority of the job. Higher is more priority. Default is 100.
    */
   priority?: number
 }

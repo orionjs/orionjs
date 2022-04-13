@@ -15,7 +15,7 @@ export class EventsService {
 
     await this.jobsRepo.scheduleJob({
       name: options.name,
-      priority: options.priority || 1,
+      priority: options.priority || 100,
       nextRunAt: getNextRunDate(options),
       params: options.params || null,
       uniqueIdentifier: options.uniqueIdentifier
