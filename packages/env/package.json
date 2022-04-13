@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/env",
-  "version": "3.1.24",
+  "version": "3.1.25",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
