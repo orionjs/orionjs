@@ -147,7 +147,7 @@ test('run autovalue when field is not present', async () => {
   const schema = {
     text: {
       type: String,
-      autoValue(values) {
+      autoValue() {
         return 'a value'
       }
     }
@@ -276,7 +276,7 @@ test('perform custom cleaning', async () => {
     }
   }
 
-  // @ts-ignore TODO: Check why the __clean method is being used here instead of clean
+  // TODO: Check why the __clean method is being used here instead of clean
   const cleaned = await clean(schema, {
     persons: [{name: 'Nicolás'}, {name: 'Joaquin'}]
   })
@@ -299,7 +299,7 @@ test('perform non deep custom cleaning', async () => {
     }
   }
 
-  // @ts-ignore TODO: Check why the __clean method is being used here instead of clean
+  // TODO: Check why the __clean method is being used here instead of clean
   const cleaned = await clean(schema, {name: 'Joaquin'})
   expect(cleaned).toEqual({name: 'Roberto'})
 })
@@ -308,7 +308,7 @@ test('Handle errors while cleaning', async () => {
   const schema = {
     name: {
       type: String,
-      async autoValue(value) {
+      async autoValue() {
         throw new Error('an error')
       }
     }
@@ -367,7 +367,7 @@ test('omit undefined items in array', async () => {
     }
   }
 
-  // @ts-ignore TODO: Check why the __clean method is being used here instead of clean
+  // TODO: Check why the __clean method is being used here instead of clean
   const result = await clean(schema, doc)
   expect(result).toEqual({items: []})
 })
@@ -396,7 +396,7 @@ test('throws error when cleaning field with no type', async () => {
   const schema = {
     name: {
       type: null,
-      autoValue(name, info, arg1, arg2) {
+      autoValue() {
         return 'Nicolás'
       }
     }
@@ -404,7 +404,7 @@ test('throws error when cleaning field with no type', async () => {
 
   expect.assertions(1)
   try {
-    await clean(schema)
+    await clean(schema, {})
   } catch (error) {
     expect(error.message).toBe('Error cleaning field name, error: Cleaning field with no type')
   }
@@ -414,13 +414,13 @@ test('cleans when no argument is passed', async () => {
   const schema = {
     name: {
       type: String,
-      autoValue(name, info, arg1, arg2) {
+      autoValue() {
         return 'Nicolás'
       }
     }
   }
 
-  const result = await clean(schema)
+  const result = await clean(schema, {})
   expect(result).toEqual({name: 'Nicolás'})
 })
 
@@ -430,7 +430,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
   const aItem = {name: 'Nicolás', mom: aMom}
   const doc = {items: [aItem]}
 
-  const car = {
+  const car: Schema = {
     brand: {
       type: String,
       async autoValue(value, {currentDoc}) {
@@ -446,7 +446,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
     }
   }
 
-  const mom = {
+  const mom: Schema = {
     name: {
       type: String,
       async autoValue(value, {currentDoc}) {
@@ -457,7 +457,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
     },
     car: {
       type: car,
-      async autoValue(value, {currentDoc, doc}) {
+      async autoValue(value, {currentDoc}) {
         expect(value).toEqual(aMom.car)
         expect(currentDoc).toEqual(aMom)
         return value
@@ -465,7 +465,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
     }
   }
 
-  const item = {
+  const item: Schema = {
     name: {
       type: String,
       async autoValue(value, {currentDoc}) {
@@ -484,7 +484,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
     }
   }
 
-  const schema = {
+  const schema: Schema = {
     items: {
       type: [item],
       async autoValue(value, {currentDoc}) {
@@ -496,7 +496,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
   }
 
   expect.assertions(14)
-  // @ts-ignore TODO: Check why the __clean method is being used here instead of clean
+  // TODO: Check why the __clean method is being used here instead of clean
   await clean(schema, doc)
 })
 
@@ -505,7 +505,7 @@ test('On blackbox allow use of custom clean', async () => {
     info: {
       type: 'blackbox',
       optional: true,
-      async clean(info, {doc}) {
+      async clean() {
         return {hello: 'world'}
       }
     }
