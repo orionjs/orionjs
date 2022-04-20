@@ -9,7 +9,7 @@ export default (options: EchoesOptions) =>
     method: 'post',
     path: options.requests.handlerPath || '/echoes-services',
     bodyParser: 'json',
-    async resolve(req, res) {
+    async resolve(req) {
       try {
         const {body, signature} = req.body
 

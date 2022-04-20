@@ -8,6 +8,11 @@ import {registerRoute} from '@orion-js/http'
 export default function (options: EchoesOptions) {
   config.echoes = options.echoes
 
+  if (options.requests) {
+    config.requests = options.requests
+    registerRoute(requestsHandler(options))
+  }
+
   if (options.client) {
     const kafka = new Kafka(options.client)
 
@@ -32,10 +37,5 @@ export default function (options: EchoesOptions) {
         await echo.onMessage(payload)
       }
     })
-  }
-
-  if (options.requests) {
-    config.requests = options.requests
-    registerRoute(requestsHandler(options))
   }
 }
