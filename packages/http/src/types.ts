@@ -43,3 +43,6 @@ export interface OrionRouteOptions {
 }
 
 export interface Route extends OrionRouteOptions {}
+
+export type Request = express.Request
+export type Response = express.Response
