@@ -10,43 +10,44 @@ import {JobToRun} from '../types/Worker'
 
 @Service()
 export class JobsRepo {
-  public jobs = createCollection<JobRecord>({
-    name: 'orionjs.jobs_dogs_records',
-    model: JobRecord,
-    indexes: [
-      {
-        keys: {
-          jobName: 1,
-          nextRunAt: 1,
-          priority: -1,
-          lockedUntil: 1
-        }
-      },
-      {
-        keys: {
-          jobName: 1
+  public jobs = () =>
+    createCollection<JobRecord>({
+      name: 'orionjs.jobs_dogs_records',
+      model: JobRecord,
+      indexes: [
+        {
+          keys: {
+            jobName: 1,
+            nextRunAt: 1,
+            priority: -1,
+            lockedUntil: 1
+          }
         },
-        options: {
-          unique: true,
-          partialFilterExpression: {type: 'recurrent'}
-        }
-      },
-      {
-        keys: {
-          uniqueIdentifier: 1
+        {
+          keys: {
+            jobName: 1
+          },
+          options: {
+            unique: true,
+            partialFilterExpression: {type: 'recurrent'}
+          }
         },
-        options: {
-          unique: true,
-          sparse: true
+        {
+          keys: {
+            uniqueIdentifier: 1
+          },
+          options: {
+            unique: true,
+            sparse: true
+          }
         }
-      }
-    ]
-  })
+      ]
+    })
 
   async getJobAndLock(jobNames: string[], lockTime: number): Promise<JobToRun> {
     const lockedUntil = new Date(Date.now() + lockTime)
 
-    const job = await this.jobs.findOneAndUpdate(
+    const job = await this.jobs().findOneAndUpdate(
       {
         jobName: {$in: jobNames},
         nextRunAt: {$lte: new Date()},
@@ -72,7 +73,7 @@ export class JobsRepo {
 
     if (job.lockedUntil) {
       logger.info(`Running job "${job.jobName}" that was staled`)
-      this.jobs.updateOne(job._id, {$inc: {tries: 1}})
+      this.jobs().updateOne(job._id, {$inc: {tries: 1}})
       tries++
     }
 
@@ -90,7 +91,7 @@ export class JobsRepo {
   }
 
   async setJobRecordPriority(jobId: string, priority: number) {
-    await this.jobs.updateOne(jobId, {$set: {priority}})
+    await this.jobs().updateOne(jobId, {$set: {priority}})
   }
 
   async scheduleNextRun(options: {
@@ -108,16 +109,16 @@ export class JobsRepo {
       updator.$inc = {tries: 1}
     }
 
-    await this.jobs.updateOne(options.jobId, updator)
+    await this.jobs().updateOne(options.jobId, updator)
   }
 
   async deleteEventJob(jobId: string) {
-    await this.jobs.deleteOne({_id: jobId, type: 'event'})
+    await this.jobs().deleteOne({_id: jobId, type: 'event'})
   }
 
   async extendLockTime(jobId: string, extraTime: number) {
     const lockedUntil = new Date(Date.now() + extraTime)
-    await this.jobs.updateOne(
+    await this.jobs().updateOne(
       {
         _id: jobId
       },
@@ -128,8 +129,8 @@ export class JobsRepo {
   }
 
   async ensureJobRecord(job: JobDefinitionWithName) {
-    await this.jobs.connectionPromise
-    const result = await this.jobs.upsert(
+    await this.jobs().connectionPromise
+    const result = await this.jobs().upsert(
       {
         jobName: job.name
       },
@@ -153,7 +154,7 @@ export class JobsRepo {
 
   async scheduleJob(options: ScheduleJobRecordOptions) {
     try {
-      await this.jobs.insertOne({
+      await this.jobs().insertOne({
         jobName: options.name,
         uniqueIdentifier: options.uniqueIdentifier,
         params: options.params,

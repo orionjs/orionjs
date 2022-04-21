@@ -5,29 +5,30 @@ import {HistoryRecord} from '../types/HistoryRecord'
 
 @Service()
 export class JobsHistoryRepo {
-  public history = createCollection<HistoryRecord>({
-    name: 'orionjs.jobs_dogs_history',
-    model: HistoryRecord,
-    indexes: [
-      {
-        keys: {
-          jobName: 1,
-          startedAt: 1
-        }
-      },
-      {
-        keys: {
-          expiresAt: 1
+  public history = () =>
+    createCollection<HistoryRecord>({
+      name: 'orionjs.jobs_dogs_history',
+      model: HistoryRecord,
+      indexes: [
+        {
+          keys: {
+            jobName: 1,
+            startedAt: 1
+          }
         },
-        options: {
-          expireAfterSeconds: 0
+        {
+          keys: {
+            expiresAt: 1
+          },
+          options: {
+            expireAfterSeconds: 0
+          }
         }
-      }
-    ]
-  })
+      ]
+    })
 
   async saveExecution(record: ModelToDocumentTypeWithoutId<HistoryRecord>) {
-    await this.history.upsert(
+    await this.history().upsert(
       {executionId: record.executionId},
       {
         $setOnInsert: {
@@ -41,7 +42,7 @@ export class JobsHistoryRepo {
   }
 
   async getExecutions(jobName: string, limit?: number, skip?: number): Promise<HistoryRecord[]> {
-    const cursor = this.history.find({jobName}).sort({startedAt: -1})
+    const cursor = this.history().find({jobName}).sort({startedAt: -1})
 
     if (skip) {
       cursor.skip(skip)
