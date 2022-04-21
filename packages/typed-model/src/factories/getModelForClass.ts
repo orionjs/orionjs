@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
-import {PropOptions} from '..'
+import {getServiceModelResolvers, PropOptions} from '..'
 import {MetadataStorage} from '../storage/metadataStorage'
 import {Constructor} from '../utils/interfaces'
 import {processSchemaForProp} from './helpers/processSchemaForProp'
@@ -16,6 +16,13 @@ function processModelSchemaForProp(prop: PropOptions) {
 }
 
 export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
+  let modelResolvers = null
+
+  if (target.prototype.typedModel) {
+    modelResolvers = getServiceModelResolvers(target)
+    target = target.prototype.typedModel
+  }
+
   const schemaId = (target as any).__schemaId
 
   if (modelCache.has(schemaId)) {
@@ -49,7 +56,10 @@ export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
   const model = createModel({
     name: target.name,
     schema,
-    resolvers: resolverMap
+    resolvers: {
+      ...resolverMap,
+      ...modelResolvers
+    }
   })
 
   modelCache.set(schemaId, model)

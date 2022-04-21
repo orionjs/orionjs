@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import {Inject, Service} from '@orion-js/services'
-import {Prop, TypedModel} from '..'
+import {Prop, TypedSchema} from '..'
 import {getModelForClass} from '../factories'
-import {CreateModelResolver, CreateResolver, getServiceResolvers} from '.'
+import {ModelResolver, Query, getServiceResolvers, Resolvers, Model, Mutation} from './resolvers'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {
@@ -13,18 +13,22 @@ describe('Resolvers with service injection', () => {
       }
     }
 
-    @Service()
+    @Resolvers()
     class ExampleResolverService {
       @Inject()
       private repo: ExampleRepo
 
-      @CreateResolver({
-        thisService: ExampleResolverService,
+      @Query({
         params: {name: {type: 'string'}},
         returns: String
       })
       async sayHi(params) {
         return this.addAge(`My name is ${params.name} ${this.repo.getLastName()}`)
+      }
+
+      @Mutation({returns: String})
+      async setName() {
+        this.repo.getLastName()
       }
 
       async addAge(params: string) {
@@ -33,6 +37,7 @@ describe('Resolvers with service injection', () => {
     }
 
     const resolvers = getServiceResolvers(ExampleResolverService)
+
     expect(resolvers.sayHi).toBeDefined()
 
     const result = await resolvers.sayHi.execute({params: {name: 'Orion'}})
@@ -47,29 +52,26 @@ describe('Resolvers with service injection', () => {
       }
     }
 
-    @Service()
-    class PersonResolvers {
+    @TypedSchema()
+    class PersonSchema {
+      @Prop()
+      name: string
+    }
+
+    @Model(PersonSchema)
+    class PersonModel {
       @Inject()
       private repo: AgeRepo
 
-      @CreateModelResolver({
-        thisService: PersonResolvers,
-        returns: String
-      })
-      async getAge(person) {
+      @ModelResolver({returns: String})
+      async getAge(person: PersonSchema) {
         const result = this.repo.getAge(person.name)
 
         return result
       }
     }
 
-    @TypedModel({resolversService: PersonResolvers})
-    class Person {
-      @Prop()
-      name: string
-    }
-
-    const model = getModelForClass(Person)
+    const model = getModelForClass(PersonModel)
     const item = model.initItem({name: 'Orion'})
 
     expect(await item.getAge()).toBe(`Orion is 100 years old`)

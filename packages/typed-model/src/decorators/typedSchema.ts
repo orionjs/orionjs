@@ -1,10 +1,7 @@
 import {getModelForClass} from '..'
 import {MetadataStorage, TypedModelOptions} from '../storage/metadataStorage'
 
-/**
- * @deprecated Please use @TypedSchema instead
- */
-export function TypedModel(options: TypedModelOptions = {}): ClassDecorator {
+export function TypedSchema(options: TypedModelOptions = {}): ClassDecorator {
   return target => {
     MetadataStorage.addSchemaMetadata({target, options})
 

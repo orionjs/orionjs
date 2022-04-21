@@ -17,7 +17,10 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
+    "@orion-js/dogs": "^3.2.1",
+    "@orion-js/echoes": "^3.2.0",
     "@orion-js/helpers": "^3.2.0",
+    "@orion-js/http": "^3.2.0",
     "@orion-js/models": "^3.2.0",
     "@orion-js/resolvers": "^3.2.0",
     "@orion-js/schema": "^3.2.0",
@@ -34,6 +37,7 @@
     "eslint": "8.2.0",
     "eslint-plugin-import": "2.25.3",
     "jest": "27.3.1",
+    "kafkajs": "^1.16.0",
     "ts-jest": "27.0.7",
     "typescript": "^4.4.4"
   },

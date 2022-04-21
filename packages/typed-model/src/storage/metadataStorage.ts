@@ -3,7 +3,6 @@ import {PropertyAlreadyExistsError} from '../errors'
 import {ModelResolversMap} from '@orion-js/models'
 import {ModelResolver, ModelResolverResolve} from '@orion-js/resolvers'
 import {generateId} from '@orion-js/helpers'
-import {getServiceModelResolvers} from '../resolvers'
 
 export type PropertiesMap = {[key: string]: PropOptions}
 
@@ -14,9 +13,7 @@ interface SchemaStorage {
   resolvers: ModelResolversMap
 }
 
-export interface TypedModelOptions {
-  resolversService?: any
-}
+export type TypedModelOptions = Record<string, never>
 
 export class MetadataStorageHandler {
   private schemas = new Map<any, SchemaStorage>()
@@ -41,14 +38,6 @@ export class MetadataStorageHandler {
 
   public addSchemaMetadata({target, options}: {target: any; options?: TypedModelOptions}) {
     const schema = this.getSchema(target)
-
-    if (options.resolversService) {
-      const resolversService = getServiceModelResolvers(options.resolversService)
-      Object.entries(resolversService).forEach(([key, resolver]) => {
-        schema.resolvers[key] = resolver
-      })
-    }
-
     schema.options = options
   }
 
