@@ -1,7 +1,7 @@
 import getExecute from './getExecute'
 import cleanParams from './cleanParams'
 import {generateId} from '@orion-js/helpers'
-import {ResolverOptions, CreateResolver} from './types'
+import {CreateResolver} from './types'
 import {defaultCache} from '@orion-js/cache'
 import {CreateModelResolver} from '..'
 import cleanReturns from './cleanReturns'
@@ -22,9 +22,8 @@ const createResolver = function (options: any) {
   const execute = getExecute(options)
 
   const resolve = async (...args: any[]) => {
-    let {parent, params, viewer} = getArgs(...args)
-    const executeOptions = {parent, params, viewer}
-    return await execute(executeOptions)
+    const params: any = getArgs(...args)
+    return await execute(params)
   }
 
   const resolver = {

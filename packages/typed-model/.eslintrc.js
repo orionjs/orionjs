@@ -1,7 +1,7 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'eslint-plugin-import'],
-  extends: ['plugin:@typescript-eslint/recommended', 'eslint:recommended'],
+  extends: ['plugin:@typescript-eslint/recommended'],
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
@@ -11,8 +11,12 @@ module.exports = {
     }
   },
   rules: {
+    'no-console': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
     'func-names': 0,
     '@typescript-eslint/no-namespace': 0,
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     'import/extensions': [
       'error',
       'ignorePackages',

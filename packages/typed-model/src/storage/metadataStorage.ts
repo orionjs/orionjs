@@ -1,20 +1,25 @@
 import {PropOptions} from '..'
 import {PropertyAlreadyExistsError} from '../errors'
 import {ModelResolversMap} from '@orion-js/models'
-import {Resolver} from '@orion-js/resolvers'
+import {ModelResolver, ModelResolverResolve} from '@orion-js/resolvers'
 import {generateId} from '@orion-js/helpers'
+import {getServiceModelResolvers} from '../resolvers'
 
 export type PropertiesMap = {[key: string]: PropOptions}
 
 interface SchemaStorage {
-  schema: Function
+  schema: any
   options: object
   properties: PropertiesMap
   resolvers: ModelResolversMap
 }
 
+export interface TypedModelOptions {
+  resolversService?: any
+}
+
 export class MetadataStorageHandler {
-  private schemas = new Map<Function, SchemaStorage>()
+  private schemas = new Map<any, SchemaStorage>()
 
   private getSchema(target) {
     const schema = this.schemas.get(target.__schemaId)
@@ -34,8 +39,16 @@ export class MetadataStorageHandler {
     return newSchema
   }
 
-  public addSchemaMetadata({target, options}: {target: Function; options?: object}) {
+  public addSchemaMetadata({target, options}: {target: any; options?: TypedModelOptions}) {
     const schema = this.getSchema(target)
+
+    if (options.resolversService) {
+      const resolversService = getServiceModelResolvers(options.resolversService)
+      Object.entries(resolversService).forEach(([key, resolver]) => {
+        schema.resolvers[key] = resolver
+      })
+    }
+
     schema.options = options
   }
 
@@ -44,7 +57,7 @@ export class MetadataStorageHandler {
     propertyKey,
     options
   }: {
-    target: Function
+    target: any
     propertyKey: string
     options: PropOptions
   }) {
@@ -62,9 +75,9 @@ export class MetadataStorageHandler {
     propertyKey,
     options
   }: {
-    target: Function
+    target: any
     propertyKey: string
-    options: Resolver
+    options: ModelResolver<ModelResolverResolve>
   }) {
     const schema = this.getSchema(target)
 
@@ -75,13 +88,13 @@ export class MetadataStorageHandler {
     schema.resolvers[propertyKey] = options
   }
 
-  public getSchemaProps(target: Function): PropertiesMap | undefined {
+  public getSchemaProps(target: any): PropertiesMap | undefined {
     const schema = this.getSchema(target)
 
     return schema.properties
   }
 
-  public getSchemaResolvers(target: Function): ModelResolversMap | undefined {
+  public getSchemaResolvers(target: any): ModelResolversMap | undefined {
     const schema = this.getSchema(target)
 
     return schema.resolvers
