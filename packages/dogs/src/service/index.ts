@@ -1,5 +1,6 @@
 import {getInstance, Service} from '@orion-js/services'
-import {defineJob, JobDefinition} from '@orion-js/dogs'
+import {defineJob} from '../defineJob'
+import {JobDefinition} from '../types'
 
 export function Jobs(): ClassDecorator {
   return function (target: any) {

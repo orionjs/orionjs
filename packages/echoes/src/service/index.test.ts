@@ -1,4 +1,5 @@
-import {Echoes, EchoEvent, EchoRequest, getServiceEchoes} from './echoes'
+import 'reflect-metadata'
+import {Echoes, EchoEvent, EchoRequest, getServiceEchoes} from '.'
 
 describe('Echoes with service injections', () => {
   it('Should define a echoes map using services', async () => {

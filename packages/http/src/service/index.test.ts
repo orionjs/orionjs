@@ -1,4 +1,4 @@
-import {getServiceRoutes, Route, Routes} from './http'
+import {getServiceRoutes, Route, Routes} from '.'
 
 describe('Routes with service injections', () => {
   it('Should define a routes map using services', async () => {

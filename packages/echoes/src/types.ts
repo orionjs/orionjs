@@ -12,7 +12,7 @@ export interface EchoConfig {
   resolve(params: any, context?: any): Promise<any>
 }
 
-export interface Echo extends EchoConfig {
+export interface EchoType extends EchoConfig {
   onMessage(messageData: EachMessagePayload): Promise<void>
   onRequest(serializedParams: string): any
 }
@@ -71,21 +71,21 @@ export interface RequestsConfig {
   makeRequest?: RequestMaker
 }
 
+export interface EchoesMap {
+  [key: string]: EchoType
+}
+
 export interface EchoesOptions {
   client?: KafkaConfig
   producer?: ProducerConfig
   consumer?: ConsumerConfig
   requests?: RequestsConfig
-  echoes: {
-    [key: string]: Echo
-  }
+  echoes: EchoesMap
 }
 
 export interface EchoesConfigHandler {
   producer?: Producer
   consumer?: Consumer
   requests?: RequestsConfig
-  echoes?: {
-    [key: string]: Echo
-  }
+  echoes?: EchoesMap
 }

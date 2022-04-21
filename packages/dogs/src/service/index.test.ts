@@ -1,4 +1,4 @@
-import {getServiceJobs, Job, Jobs} from './jobs'
+import {getServiceJobs, Job, Jobs} from '.'
 
 describe('Jobs (dogs) with service injections', () => {
   it('Should define a jobs map using services', async () => {

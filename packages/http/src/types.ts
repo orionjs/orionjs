@@ -42,7 +42,11 @@ export interface OrionRouteOptions {
   app?: express.Application
 }
 
-export interface Route extends OrionRouteOptions {}
+export interface RouteType extends OrionRouteOptions {}
+
+export interface RoutesMap {
+  [key: string]: RouteType
+}
 
 export type Request = express.Request
 export type Response = express.Response

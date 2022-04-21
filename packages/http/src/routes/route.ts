@@ -1,6 +1,6 @@
-import {Route, OrionRouteOptions} from '../types'
+import {RouteType, OrionRouteOptions} from '../types'
 
-export default function route(options: OrionRouteOptions): Route {
+export default function route(options: OrionRouteOptions): RouteType {
   return {
     ...options
   }

@@ -1,5 +1,6 @@
 import {getInstance, Service} from '@orion-js/services'
-import {route, OrionRouteOptions, Route as RouteType} from '@orion-js/http'
+import route from '../routes/route'
+import {OrionRouteOptions, RoutesMap} from '../types'
 
 export function Routes(): ClassDecorator {
   return function (target: any) {
@@ -27,7 +28,7 @@ export function Route(options: Omit<OrionRouteOptions, 'resolve'>) {
   }
 }
 
-export function getServiceRoutes(target: any): {[key: string]: RouteType} {
+export function getServiceRoutes(target: any): RoutesMap {
   if (!target.prototype) {
     throw new Error('You must pass a class to getServiceRoutes')
   }

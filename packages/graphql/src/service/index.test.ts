@@ -1,8 +1,7 @@
 import 'reflect-metadata'
 import {Inject, Service} from '@orion-js/services'
-import {Prop, TypedSchema} from '..'
-import {getModelForClass} from '../factories'
-import {ModelResolver, Query, getServiceResolvers, Resolvers, Model, Mutation} from './resolvers'
+import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {ModelResolver, Query, getServiceResolvers, Resolvers, Model, Mutation} from '.'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {

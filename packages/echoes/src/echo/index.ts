@@ -1,9 +1,9 @@
 import {EachMessagePayload} from 'kafkajs'
-import {Echo, EchoConfig} from '../types'
+import {EchoType, EchoConfig} from '../types'
 import deserialize from './deserialize'
 import types from './types'
 
-const echo = function createNewEcho(options: EchoConfig): Echo {
+const echo = function createNewEcho(options: EchoConfig): EchoType {
   return {
     ...options,
     onMessage: async (messageData: EachMessagePayload) => {

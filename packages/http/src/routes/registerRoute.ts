@@ -1,10 +1,10 @@
 import {getApp} from './../start'
-import {Route} from '../types'
+import {RouteType} from '../types'
 import {executeRequest} from './executeRequest'
 import express from 'express'
 import * as bodyParser from 'body-parser'
 
-export default function registerRoute(route: Route): void {
+export default function registerRoute(route: RouteType): void {
   const app = route.app || getApp()
   const method = route.method
 

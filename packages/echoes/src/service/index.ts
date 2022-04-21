@@ -1,5 +1,6 @@
 import {getInstance, Service} from '@orion-js/services'
-import {Echo as EchoType, echo, EchoConfig} from '@orion-js/echoes'
+import echo from '../echo'
+import {EchoConfig, EchoesMap} from '../types'
 
 export function Echoes(): ClassDecorator {
   return function (target: any) {
@@ -44,7 +45,7 @@ export function EchoEvent(options: Omit<EchoConfig, 'resolve' | 'type'> = {}) {
   }
 }
 
-export function getServiceEchoes(target: any): {[key: string]: EchoType} {
+export function getServiceEchoes(target: any): EchoesMap {
   if (!target.prototype) {
     throw new Error('You must pass a class to getServiceRoutes')
   }

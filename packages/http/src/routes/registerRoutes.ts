@@ -1,12 +1,8 @@
 import {values} from 'lodash'
 import registerRoute from './registerRoute'
-import {Route} from '../types'
+import {RoutesMap} from '../types'
 
-interface OrionRoutesMap {
-  [key: string]: Route
-}
-
-export default function registerRoutes(routesMap: OrionRoutesMap): void {
+export default function registerRoutes(routesMap: RoutesMap): void {
   const routes = values(routesMap)
 
   for (const route of routes) {

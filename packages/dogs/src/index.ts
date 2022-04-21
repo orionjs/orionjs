@@ -8,6 +8,7 @@ import {JobsHistoryRepo} from './repos/JobsHistoryRepo'
 import {JobsRepo} from './repos/JobsRepo'
 
 export * from './types'
+export * from './service'
 
 const workerService = getInstance(WorkerService)
 const eventsService = getInstance(EventsService)

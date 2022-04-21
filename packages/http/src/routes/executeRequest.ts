@@ -1,10 +1,14 @@
-import {Route} from './../types'
+import {RouteType} from './../types'
 import {onError} from '../errors'
 import {getViewer} from './../viewer'
 import express from 'express'
 import {isNil, isPlainObject} from 'lodash'
 
-export async function executeRequest(route: Route, req: express.Request, res: express.Response) {
+export async function executeRequest(
+  route: RouteType,
+  req: express.Request,
+  res: express.Response
+) {
   try {
     const viewer = await getViewer(req)
     const result = await route.resolve(req, res, viewer)
