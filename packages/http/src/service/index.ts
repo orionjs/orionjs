@@ -20,9 +20,9 @@ export function Route(options: Omit<OrionRouteOptions, 'resolve'>) {
     target.routes = target.routes || {}
     target.routes[propertyKey] = route({
       ...options,
-      resolve: async (params, viewer) => {
+      resolve: async (req, res, viewer) => {
         const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
+        return await instance[propertyKey](req, res, viewer)
       }
     })
   }
