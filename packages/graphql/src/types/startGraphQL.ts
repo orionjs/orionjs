@@ -1,4 +1,4 @@
-import {GlobalResolversMap} from '@orion-js/models'
+import {GlobalResolversMap, ModelResolversMap} from '@orion-js/models'
 import {express} from '@orion-js/http'
 import {SubscriptionMap} from './subscription'
 import {GraphQLOptions} from 'apollo-server-core'
@@ -10,6 +10,10 @@ export type ExecuteGraphQLCache = (
   executeQuery: () => Promise<string>
 ) => Promise<string>
 
+export interface ModelsResolversMap {
+  [key: string]: ModelResolversMap
+}
+
 type SchemaOmits = 'schema' | 'schemaHash' | 'context' | 'useGraphiql'
 
 export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
@@ -17,6 +21,11 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
    * A map with all the global resolvers
    */
   resolvers: GlobalResolversMap
+
+  /**
+   * A map with all the models resolvers. You must only add the models that you want to extend with resolvers.
+   */
+  modelsResolvers?: ModelsResolversMap
 
   /**
    * A Map with all global subscriptions

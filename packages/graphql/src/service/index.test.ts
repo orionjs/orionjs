@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import {Inject, Service} from '@orion-js/services'
 import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {ModelResolver, Query, getServiceResolvers, Resolvers, Model, Mutation} from '.'
+import {ModelResolver, Query, getServiceResolvers, Resolvers, Mutation} from './index'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {
@@ -41,38 +41,5 @@ describe('Resolvers with service injection', () => {
 
     const result = await resolvers.sayHi.execute({params: {name: 'Orion'}})
     expect(result).toBe(`My name is Orion Lopez and I'm 100 years old`)
-  })
-
-  it('show allow to pass a service with resolvers to typed model', async () => {
-    @Service()
-    class AgeRepo {
-      getAge(name) {
-        return `${name} is 100 years old`
-      }
-    }
-
-    @TypedSchema()
-    class PersonSchema {
-      @Prop()
-      name: string
-    }
-
-    @Model(PersonSchema)
-    class PersonModel {
-      @Inject()
-      private repo: AgeRepo
-
-      @ModelResolver({returns: String})
-      async getAge(person: PersonSchema) {
-        const result = this.repo.getAge(person.name)
-
-        return result
-      }
-    }
-
-    const model = getModelForClass(PersonModel)
-    const item = model.initItem({name: 'Orion'})
-
-    expect(await item.getAge()).toBe(`Orion is 100 years old`)
   })
 })

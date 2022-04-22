@@ -6,8 +6,10 @@ import getScalar from './getScalar'
 import getTypeAsResolver from './getTypeAsResolver'
 import {getStaticFields} from '../../resolversSchemas/getStaticFields'
 import {getDynamicFields} from '../../resolversSchemas/getDynamicFields'
+import {getModelLoadedResolvers} from '../../resolversSchemas/getModelLoadedResolvers'
+import {StartGraphQLOptions} from '../../types/startGraphQL'
 
-export default function getGraphQLType(type, options) {
+export default function getGraphQLType(type: any, options: StartGraphQLOptions) {
   if (!type) {
     throw new Error('Type is undefined')
   }
@@ -49,6 +51,16 @@ export default function getGraphQLType(type, options) {
         }
 
         for (const resolver of getDynamicFields(model)) {
+          try {
+            fields[resolver.key] = getTypeAsResolver({resolver, getGraphQLType, options, model})
+          } catch (error) {
+            throw new Error(
+              `Error getting resolver type for resolver "${resolver.key}": ${error.message}`
+            )
+          }
+        }
+
+        for (const resolver of getModelLoadedResolvers(model, options)) {
           try {
             fields[resolver.key] = getTypeAsResolver({resolver, getGraphQLType, options, model})
           } catch (error) {

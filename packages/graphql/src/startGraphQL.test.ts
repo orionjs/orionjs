@@ -2,7 +2,7 @@ import {startGraphQL} from '.'
 import {resolver} from '@orion-js/resolvers'
 import {express} from '@orion-js/http'
 import request from 'supertest'
-import {TypedModel, Prop, getModelForClass} from '@orion-js/typed-model'
+import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {cleanResolvers} from './cleanResolvers'
 import {createModel} from '@orion-js/models'
 
@@ -109,13 +109,13 @@ describe('Test GraphQL Server', () => {
   })
 
   it('Should make requests to schemas with typed models', async () => {
-    @TypedModel()
+    @TypedSchema()
     class Params {
       @Prop()
       userId: string
     }
 
-    @TypedModel()
+    @TypedSchema()
     class User {
       @Prop()
       name: string

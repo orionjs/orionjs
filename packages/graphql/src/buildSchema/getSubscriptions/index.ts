@@ -1,7 +1,9 @@
 import getType from '../getType'
 import getArgs from '../getArgs'
+import {StartGraphQLOptions} from '../../types/startGraphQL'
 
-export default async function ({subscriptions, options}) {
+export default async function (options: StartGraphQLOptions) {
+  const {subscriptions} = options
   const fields = {}
 
   for (const key of Object.keys(subscriptions)) {

@@ -2,9 +2,11 @@ import getType from '../getType'
 import getArgs from '../getArgs'
 import errorHandler from '../../errorHandler'
 import {resolversStore} from './resolversStore'
-import {GraphQLFieldConfig, GraphQLObjectType, ThunkObjMap} from 'graphql'
+import {GraphQLFieldConfig, ThunkObjMap} from 'graphql'
+import {StartGraphQLOptions} from '../../types/startGraphQL'
 
-export default async function ({resolvers, mutation, options}) {
+export default async function (options: StartGraphQLOptions, mutation: boolean) {
+  const {resolvers} = options
   const filteredResolvers = Object.keys(resolvers)
     .map(key => {
       return {

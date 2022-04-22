@@ -33,8 +33,8 @@ describe('Test get resolvers schema', () => {
 
     const resolvers = {globalResolver}
     const mutation = false
-    const options = {}
-    const schema: any = await getResolvers({resolvers, mutation, options})
+    const options = {resolvers}
+    const schema: any = await getResolvers(options, mutation)
 
     expect(schema.globalResolver.type.toString()).toEqual('TestModel')
     expect(schema.globalResolver.args).toHaveProperty('userId')
