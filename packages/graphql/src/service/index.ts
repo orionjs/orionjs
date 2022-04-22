@@ -89,10 +89,10 @@ export function Resolvers(): ClassDecorator {
   }
 }
 
-export function Model(typedModel: any): ClassDecorator {
+export function Model(typedSchema: any): ClassDecorator {
   return function (target: any) {
     Service()(target)
-    target.prototype.typedModel = typedModel
+    target.prototype.typedSchema = typedSchema
     target.prototype.service = target
 
     // @ts-expect-error this is a trick to make it work in resolvers without having to call getModelForClass
