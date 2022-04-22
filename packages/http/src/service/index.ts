@@ -1,6 +1,6 @@
 import {getInstance, Service} from '@orion-js/services'
 import route from '../routes/route'
-import {OrionRouteOptions, RoutesMap} from '../types'
+import {OrionRouteOptions, RouteResolve, RoutesMap} from '../types'
 
 export function Routes(): ClassDecorator {
   return function (target: any) {
@@ -9,12 +9,12 @@ export function Routes(): ClassDecorator {
   }
 }
 
-export interface RoutesPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
-  value?: OrionRouteOptions['resolve']
-}
-
 export function Route(options: Omit<OrionRouteOptions, 'resolve'>) {
-  return function (target: any, propertyKey: string, descriptor: RoutesPropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<RouteResolve>
+  ) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.routes = target.routes || {}

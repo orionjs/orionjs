@@ -1,4 +1,5 @@
 import {getServiceRoutes, Route, Routes} from '.'
+import {RouteResponse} from '../types'
 
 describe('Routes with service injections', () => {
   it('Should define a routes map using services', async () => {

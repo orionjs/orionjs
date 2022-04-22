@@ -1,11 +1,19 @@
 import express from 'express'
 import * as bodyParser from 'body-parser'
 
-export interface RouteResponse {
+export interface RouteResponseObject {
   statusCode?: number
   headers?: {[key: string]: string}
   body: string | object
 }
+
+export type RouteResponse = Promise<RouteResponseObject | void>
+
+export type RouteResolve = (
+  req: express.Request,
+  res: express.Response,
+  viewer: any
+) => RouteResponse
 
 export interface OrionRouteOptions {
   /**
@@ -30,11 +38,7 @@ export interface OrionRouteOptions {
    * for more information.
    */
   middlewares?: Array<express.RequestHandler>
-  resolve: (
-    req: express.Request,
-    res: express.Response,
-    viewer: any
-  ) => Promise<RouteResponse> | Promise<void>
+  resolve: RouteResolve
 
   /**
    * Pass another express app
