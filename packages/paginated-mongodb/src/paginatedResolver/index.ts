@@ -4,7 +4,6 @@ import getParams from './params'
 import setOptions from './setOptions'
 import {getArgs} from '@orion-js/resolvers/lib/resolver/getArgs'
 import {Collection, FindCursor} from '@orion-js/mongodb'
-import {Model} from '@orion-js/models'
 
 export interface PaginatedResolverOpts<T = any> {
   returns: any

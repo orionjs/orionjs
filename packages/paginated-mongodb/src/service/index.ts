@@ -1,9 +1,8 @@
-import {GlobalResolverResolve} from '@orion-js/resolvers'
 import paginatedResolver, {PaginatedResolverOpts} from '../paginatedResolver'
 import {getInstance} from '@orion-js/services'
 
 export interface PagiantedQueryDescriptor extends Omit<PropertyDecorator, 'value'> {
-  value?: GlobalResolverResolve
+  value?: PaginatedResolverOpts['getCursor']
 }
 
 export function PaginatedQuery(options: Omit<PaginatedResolverOpts<any>, 'getCursor'>) {
