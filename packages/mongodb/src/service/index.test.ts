@@ -1,4 +1,4 @@
-import {getInstance} from '@orion-js/services'
+import {getInstance, Service} from '@orion-js/services'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {WithoutId} from 'mongodb'
 import {MongoCollection, Repository} from '.'
@@ -35,5 +35,22 @@ describe('Collection as IOC', () => {
     const user = await instance.getUserByName('Nico')
 
     expect(user._id).toBe(userId)
+  })
+
+  it('should throw an error when trying to set a collection param in a service that is not a repo', () => {
+    expect.assertions(1)
+    try {
+      @Service()
+      class UserErrorRepo {
+        @MongoCollection({name: 'users2'})
+        users: Collection
+      }
+
+      const instance = getInstance(UserErrorRepo)
+    } catch (error) {
+      expect(error.message).toBe(
+        'You must pass a class decorated with @Repository if you want to use @MongoCollection'
+      )
+    }
   })
 })
