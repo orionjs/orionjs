@@ -3,6 +3,11 @@ import {Model} from '@orion-js/models'
 import {Schema} from '@orion-js/schema'
 import {OrionMongoClient} from '../connect/connections'
 
+type RemoveFunctions<T> = OmitByValue<T, Function>
+type Overwrite<T1, T2> = {
+  [P in Exclude<keyof T1, keyof T2>]: T1[P]
+} & T2
+
 export type DocumentWithId<T> = T & {
   /**
    * The ID of the document
@@ -10,6 +15,7 @@ export type DocumentWithId<T> = T & {
   _id: string
 }
 
+export type DocumentWithIdOptional<T> = Overwrite<T, {_id?: string}>
 export type DocumentWithoutId<T> = Omit<T, '_id'>
 
 type OmitByValue<T, ValueType> = Pick<
@@ -17,11 +23,12 @@ type OmitByValue<T, ValueType> = Pick<
   {[Key in keyof T]-?: T[Key] extends ValueType ? never : Key}[keyof T]
 >
 
-type RemoveFunctions<T> = OmitByValue<T, Function>
-
 export type ModelToDocumentType<ModelClass> = RemoveFunctions<ModelClass>
 export type ModelToDocumentTypeWithId<ModelClass> = DocumentWithId<RemoveFunctions<ModelClass>>
 export type ModelToDocumentTypeWithoutId<ModelClass> = DocumentWithoutId<
+  ModelToDocumentType<ModelClass>
+>
+export type ModelToDocumentTypeWithIdOptional<ModelClass> = DocumentWithIdOptional<
   ModelToDocumentType<ModelClass>
 >
 export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentType<ModelClass>>
@@ -119,12 +126,12 @@ export type UpdateItem<ModelClass> = (
 ) => Promise<void>
 
 export type InsertOne<ModelClass> = (
-  doc: ModelToDocumentTypeWithoutId<ModelClass>,
+  doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
   options?: InsertOptions
 ) => Promise<string>
 
 export type InsertMany<ModelClass> = (
-  doc: Array<ModelToDocumentTypeWithoutId<ModelClass>>,
+  doc: Array<ModelToDocumentTypeWithIdOptional<ModelClass>>,
   options?: InsertOptions
 ) => Promise<Array<string>>
 
@@ -164,6 +171,15 @@ export interface CreateCollectionOptions {
   idGeneration?: 'mongo' | 'random'
 }
 
+export type EstimatedDocumentCount<ModelClass> = (
+  options?: MongoDB.EstimatedDocumentCountOptions
+) => Promise<number>
+
+export type CountDocuments<ModelClass> = (
+  selector: ModelToMongoSelector<ModelClass>,
+  options?: MongoDB.CountDocumentsOptions
+) => Promise<number>
+
 export type CreateCollection = <ModelClass = any>(
   options: CreateCollectionOptions
 ) => Collection<ModelClass>
@@ -198,6 +214,9 @@ export interface Collection<ModelClass = any> {
 
   updateAndFind: UpdateAndFind<ModelClass>
   updateItem: UpdateItem<ModelClass>
+
+  estimatedDocumentCount: EstimatedDocumentCount<ModelClass>
+  countDocuments: CountDocuments<ModelClass>
 
   aggregate: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],

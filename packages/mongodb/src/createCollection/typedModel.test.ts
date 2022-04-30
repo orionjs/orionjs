@@ -59,4 +59,22 @@ describe('Collections with typed model', () => {
 
     expect(title).toBe('Mr. John Doe')
   })
+
+  it('Should allow passing _id on insert', async () => {
+    const Persons = createCollection<Person>({
+      name: generateId(),
+      model: getModelForClass(Person)
+    })
+
+    await Persons.insertOne({
+      _id: '1',
+      firstName: 'John',
+      lastName: 'Doe'
+    })
+
+    const person = await Persons.findOne('1')
+    const title = await person.title({title: 'Mr.'})
+
+    expect(title).toBe('Mr. John Doe')
+  })
 })
