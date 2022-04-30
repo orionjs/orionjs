@@ -13,7 +13,7 @@ it('insert documents without errors', async () => {
   const Tests = createCollection({name: generateId()})
 
   await Tests.insertMany([{hello: 'world'}, {hello: 'world'}])
-  const count = await Tests.find({}).count()
+  const count = await Tests.estimatedDocumentCount()
   expect(count).toBe(2)
 })
 

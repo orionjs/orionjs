@@ -28,7 +28,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
       docs[index] = doc
     }
     const {insertedIds} = await wrapErrors(() => {
-      return collection.rawCollection.insertMany(docs, options.mongoOptions)
+      return collection.rawCollection.insertMany(docs as any, options.mongoOptions)
     })
 
     const ids: Array<MongoDB.ObjectId> = values(insertedIds)

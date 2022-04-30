@@ -10,6 +10,8 @@ import deleteMany from './deleteMany'
 import insertOne from './insertOne'
 import insertMany from './insertMany'
 import updateItem from './updateItem'
+import countDocuments from './countDocuments'
+import estimatedDocumentCount from './estimatedDocumentCount'
 
 export {
   findOne,
@@ -23,5 +25,7 @@ export {
   updateItem,
   deleteOne,
   deleteMany,
-  upsert
+  upsert,
+  estimatedDocumentCount,
+  countDocuments
 }

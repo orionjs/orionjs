@@ -1,8 +1,10 @@
 import initItem from './initItem'
 import {Collection, CreateCollection, CreateCollectionOptions} from '../types'
 import {
+  countDocuments,
   deleteMany,
   deleteOne,
+  estimatedDocumentCount,
   find,
   findOne,
   findOneAndUpdate,
@@ -72,6 +74,10 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.deleteMany = deleteMany(collection)
   collection.deleteOne = deleteOne(collection)
   collection.upsert = upsert(collection)
+
+  // counts
+  collection.estimatedDocumentCount = estimatedDocumentCount(collection)
+  collection.countDocuments = countDocuments(collection)
 
   // update and find
   collection.updateAndFind = updateAndFind(collection)

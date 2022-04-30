@@ -14,7 +14,7 @@ describe('InsertOne', () => {
     const Tests = createCollection({name: generateId()})
 
     await Tests.insertOne({hello: 'world'})
-    const count = await Tests.find({}).count()
+    const count = await Tests.estimatedDocumentCount()
     expect(count).toBe(1)
   })
 
