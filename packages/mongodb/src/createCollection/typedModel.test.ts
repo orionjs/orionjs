@@ -1,6 +1,6 @@
 import {ValidationError} from '@orion-js/schema'
 import createCollection from '.'
-import {TypedModel, Prop, getModelForClass, ResolverProp} from '@orion-js/typed-model'
+import {TypedModel, Prop, getModelForClass, ResolverProp, TypedSchema} from '@orion-js/typed-model'
 import {generateId} from '@orion-js/helpers'
 import {resolver, modelResolver} from '@orion-js/resolvers'
 
@@ -61,20 +61,30 @@ describe('Collections with typed model', () => {
   })
 
   it('Should allow passing _id on insert', async () => {
-    const Persons = createCollection<Person>({
+    @TypedSchema()
+    class PersonOptionalId {
+      @Prop()
+      _id: string
+
+      @Prop()
+      firstName: string
+
+      @Prop({optional: true})
+      lastName?: string
+    }
+
+    const Persons = createCollection<PersonOptionalId>({
       name: generateId(),
-      model: getModelForClass(Person)
+      model: PersonOptionalId
     })
 
     await Persons.insertOne({
       _id: '1',
-      firstName: 'John',
-      lastName: 'Doe'
+      firstName: 'John'
     })
 
     const person = await Persons.findOne('1')
-    const title = await person.title({title: 'Mr.'})
 
-    expect(title).toBe('Mr. John Doe')
+    expect(person.firstName).toBe('John')
   })
 })

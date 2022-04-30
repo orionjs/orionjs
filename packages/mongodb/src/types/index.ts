@@ -4,9 +4,6 @@ import {Schema} from '@orion-js/schema'
 import {OrionMongoClient} from '../connect/connections'
 
 type RemoveFunctions<T> = OmitByValue<T, Function>
-type Overwrite<T1, T2> = {
-  [P in Exclude<keyof T1, keyof T2>]: T1[P]
-} & T2
 
 export type DocumentWithId<T> = T & {
   /**
@@ -15,7 +12,13 @@ export type DocumentWithId<T> = T & {
   _id: string
 }
 
-export type DocumentWithIdOptional<T> = Overwrite<T, {_id?: string}>
+export type DocumentWithIdOptional<T> = Omit<T, '_id'> & {
+  /**
+   * The ID of the document
+   */
+  _id?: string
+}
+
 export type DocumentWithoutId<T> = Omit<T, '_id'>
 
 type OmitByValue<T, ValueType> = Pick<
