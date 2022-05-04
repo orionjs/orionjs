@@ -7,26 +7,12 @@ sidebar_position: 5
 
 An Orionjs app compiles to a standard Node.js project.
 
-You can deploy Orionjs to any server that run Node v14.
+You can deploy Orionjs to any server that run Node.
 
-## Building
+The deploy script is very standard and should look like this:
 
-Build your site for production:
+- `yarn install` will install all the dependencies of your project, including the needed for the build
+- `yarn build` will compile the project to a standard Node.js project and leave the files in the build folder
+- `yarn start` will start the Node.js server on build/index.js
 
-```bash
-yarn build
-```
-
-The static files are generated in the `build` folder.
-
-## Deploy
-
-Test your production build locally:
-
-```bash
-yarn start:prod
-```
-
-The build folder is now served at [http://localhost:3000](http://localhost:3000), (3000 is PORT defined in environment variable).
-
-Now it's time to upload the folder to a server that allows you to run the compiled in production 🚀.
+Rembember that you must set the environment variables needed to load the .env file before starting the server (`ORION_ENV_SECRET_KEY` and `ORION_ENV_FILE_PATH`).

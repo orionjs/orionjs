@@ -25,20 +25,20 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/',
+          editUrl: 'https://github.com/orionjs/orionjs/edit/master/website/',
           remarkPlugins: [[require('@docusaurus/remark-plugin-npm2yarn'), {sync: true}]],
           editCurrentVersion: true,
           lastVersion: 'current',
           versions: {
             current: {
-              label: '3.x'
+              label: '3.2'
             }
           }
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
-          editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/blog/'
+          editUrl: 'https://github.com/orionjs/orionjs/edit/master/website/blog/'
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css')
