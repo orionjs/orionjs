@@ -71,7 +71,7 @@ describe('Service with graphql models', () => {
     const app = express()
     await startGraphQL({
       resolvers: getServiceResolvers(GlobalResolvers),
-      modelsResolvers: getServiceModelResolvers(PersonResolvers),
+      modelResolvers: getServiceModelResolvers(PersonResolvers),
       app
     })
 

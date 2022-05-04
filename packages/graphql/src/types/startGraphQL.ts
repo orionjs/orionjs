@@ -23,9 +23,9 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
   resolvers: GlobalResolversMap
 
   /**
-   * A map with all the models resolvers. You must only add the models that you want to extend with resolvers.
+   * A map with all the model resolvers. You must only add the models that you want to extend with resolvers.
    */
-  modelsResolvers?: ModelsResolversMap
+  modelResolvers?: ModelsResolversMap
 
   /**
    * A Map with all global subscriptions
