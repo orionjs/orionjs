@@ -16,7 +16,9 @@
     "@orion-js/dogs": "^3.2.10",
     "@orion-js/echoes": "^3.2.10",
     "@orion-js/graphql": "^3.2.16",
+    "@orion-js/helpers": "^3.2.0",
     "@orion-js/http": "^3.2.10",
+    "@orion-js/models": "^3.2.0",
     "@orion-js/services": "^3.2.10"
   },
   "devDependencies": {
