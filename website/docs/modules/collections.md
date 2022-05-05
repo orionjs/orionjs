@@ -5,11 +5,8 @@ sidebar_label: Collections
 sidebar_position: 4
 ---
 
-Currently OrionJS only has support for connecting to and running queries against MongoDB.
-
-## Configure Database
-
-To continue, you need to have the database configured, [see more Database](../getting-started/database.md).
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
 ## Install package
 
@@ -17,29 +14,18 @@ To continue, you need to have the database configured, [see more Database](../ge
 npm install @orion-js/mongodb
 ```
 
-### Proposed structure
-
-```
-app
-└── collections
-    └── Collection1
-        └── index.ts
-```
-
-- `collections`: The directory of the set of collections.
-- `Collection1`: Represents the collection use to manage its respective documents.
-
 ## Create a collection
 
-By convention collections are created in the `app/collections` folder, but you can create a collection anywhere.
+<Tabs>
+  <TabItem value="standard" label="Standard">
 
-```ts title="app/collections/Counters/index.ts"
+```ts
 import {createCollection} from '@orion-js/mongodb'
-import Counter from 'app/models/Counter'
+import Counter from '../schemas/Counter'
 
-export default createCollection<Counter>({
+const Counters = createCollection<Counter>({
   name: 'counters',
-  model: Counter,
+  schema: Counter,
   indexes: [
     {
       keys: {
@@ -53,8 +39,39 @@ export default createCollection<Counter>({
 })
 ```
 
+  </TabItem>
+
+  <TabItem value="services" label="Services">
+
+```ts
+import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
+import Counter from '../schemas/Counter'
+
+@Repository()
+export class CountersRepository {
+  @MongoCollection({
+    name: 'counters',
+    schema: Counter,
+    indexes: [
+      {
+        keys: {
+          name: 1
+        },
+        options: {
+          unique: true
+        }
+      }
+    ]
+  })
+  private counters: Collection<Counter>
+}
+```
+
+  </TabItem>
+</Tabs>
+
 - `name`: The name of the collection in MongoDB.
-- `model?`: A model assigned to the collection. The schema of the model will be used to validate inserts and updates into the collection, and it will be initialized when using find methods.
+- `schema?`: The schema assigned to the collection. The schema of the collection will be used to validate inserts and updates into the collection.
 - `indexes?`: An array of indexes for this collection. Each item will be passed to the `collection.createIndex(keys, options)` function from MongoDB.
   - `keys`: An object containing the keys.
   - `options` An object with the options of the index.
@@ -71,7 +88,7 @@ It has the following methods:
 
 ### Find one
 
-Returns a document initializing it with the passed model.
+Returns a document.
 
 ```js
 const item = await collection.findOne(selector)
@@ -90,7 +107,6 @@ The `toArray()` function of the cursor will initialize all the items with the pa
 
 ```js
 const items = await collection.find(selector).toArray()
-const count = await collection.find(selector).count()
 ```
 
 ### Insert One
@@ -149,35 +165,43 @@ Returns a MongoDB cursor using the MongoDB aggregate function. This will not ini
 const result = await collection.aggregate(pipeline).toArray()
 ```
 
+### Count documents
+
+Counts the documents in the collection using a selector.
+
+```js
+await countDocuments(selector)
+```
+
 ---
 
 ## Connecting to multiple databases
 
 You can specify another database connection when initializing a collection. To connect to other database use `connectionName` property.
 
-To establish the connection, need to define in your `.env` file the environment variable `MONGO_URL_ + connectionName` (in uppercase), as in the following example.
+To establish the connection, need to define in your `env` with the `mongo_url + connectionName`, as in the following example.
 
 ### Example
 
-```bash title=".env"
-...
-MONGO_URL_OTHER=mongodb://localhost:3003/other-typescript-starter
-...
+```yml title=".env.local.yml"
+version: '1.0'
+publicKey: nOQ9F5UxfKBM8RIYtC/NFJldBiEMfnb9nOXyVUrb/mY=
+cleanKeys:
+  http_port: 8080
+  mongo_url_other: mongodb://localhost:3003/orionjs-example
+encryptedKeys: {}
 ```
 
-```ts title="app/collections/Users/index.ts"
+```ts
 import {createCollection} from '@orion-js/mongodb'
-import User from 'app/models/User'
 
-export default createCollection<User>({
+export default createCollection({
   name: 'users',
-  model: User,
-  connectionName: 'other',
-  indexes: []
+  connectionName: 'other'
 })
 ```
 
-This will establish the connection between the name defined in `connectionName` and the environment variable defined `MONGO_URL_+connectionName.toUpperCase()`
+This will establish the connection between the name defined in `connectionName` and the environment variable defined `mongo_url + connectionName`
 
 ---
 
