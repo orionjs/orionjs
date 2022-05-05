@@ -11,7 +11,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
 
     modifier.$setOnInsert = {...modifier.$setOnInsert, _id: collection.generateId()}
 
-    if (collection.model) {
+    if (collection.schema) {
       const schema = collection.getSchema()
 
       if (options.clean !== false) {

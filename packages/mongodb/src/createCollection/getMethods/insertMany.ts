@@ -19,7 +19,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
         doc._id = collection.generateId()
       }
 
-      if (collection.model) {
+      if (collection.schema) {
         const schema = collection.getSchema()
         doc = await clean(schema, fromDot(doc))
         await validate(schema, doc)

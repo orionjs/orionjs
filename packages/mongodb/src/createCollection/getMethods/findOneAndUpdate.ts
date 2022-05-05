@@ -16,7 +16,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
       throw new Error('Modifier is required when making an update')
     }
 
-    if (collection.model) {
+    if (collection.schema) {
       const schema = collection.getSchema()
       modifier = options.clean !== false ? await cleanModifier(schema, modifier) : modifier
       if (options.validate !== false) await validateModifier(schema, modifier)

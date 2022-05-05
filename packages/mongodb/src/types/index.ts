@@ -167,10 +167,31 @@ export type Upsert<ModelClass> = (
 ) => Promise<MongoDB.UpdateResult>
 
 export interface CreateCollectionOptions {
+  /**
+   * The name of the collection on the Mongo Database
+   */
   name: string
+  /**
+   * The name of the connection to use. The Mongo URL of this connection will be search on env variables.
+   * If not found, the connection url will be `env.mongo_url`
+   * If defined, the connection url will be `env.mongo_url_${name}`
+   */
   connectionName?: string
+  /**
+   * The schema used for cleaning and validation of the documents
+   */
+  schema?: any
+  /**
+   * @deprecated Use schema instead. If you use model, all items will be initialized with the model to add resolvers (which are also deprecated)
+   */
   model?: any
+  /**
+   * The indexes to use
+   */
   indexes?: Array<CollectionIndex>
+  /**
+   * Select between random id generation o mongo (time based) id generation
+   */
   idGeneration?: 'mongo' | 'random'
 }
 
@@ -190,6 +211,10 @@ export type CreateCollection = <ModelClass = any>(
 export interface Collection<ModelClass = any> {
   name: string
   connectionName?: string
+  schema?: Schema
+  /**
+   * @deprecated Use schema instead. If you use model, all items will be initialized with the model to add resolvers (which are also deprecated)
+   */
   model?: Model
   indexes: Array<CollectionIndex>
   generateId: () => string

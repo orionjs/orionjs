@@ -22,6 +22,7 @@ import {Model} from '@orion-js/models'
 import {loadIndexes} from './createIndexes'
 import {cloneDeep} from 'lodash'
 import {getMongoConnection} from '..'
+import {getSchemaAndModel} from './getSchemaAndModel'
 
 export const createIndexesPromises = []
 
@@ -36,12 +37,12 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   const db = orionConnection.db
   const rawCollection = db.collection(options.name)
 
-  const model: Model =
-    options.model && options.model.getModel ? options.model.getModel() : options.model
+  const {schema, model} = getSchemaAndModel(options)
 
   const collection: Partial<Collection<DocumentType>> = {
     name: options.name,
     connectionName,
+    schema,
     model,
     indexes: options.indexes || [],
     db,
@@ -49,15 +50,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
     connectionPromise: orionConnection.connectionPromise,
     rawCollection,
     generateId: getIdGenerator(options),
-    getSchema: () => {
-      const schema = cloneDeep(model.getCleanSchema())
-      if (!schema._id) {
-        schema._id = {
-          type: 'ID'
-        }
-      }
-      return schema
-    }
+    getSchema: () => schema
   }
 
   // helpers

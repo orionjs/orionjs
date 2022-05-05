@@ -87,4 +87,56 @@ describe('Collections with typed model', () => {
 
     expect(person.firstName).toBe('John')
   })
+
+  it('Should validate but not initialize documents when passed typed schema', async () => {
+    const resolve = async (person: Person, {title}: {title: string}, viewer?: any) => {
+      return `${title} ${person.firstName} ${person.lastName}`
+    }
+
+    const titleResolver = modelResolver({
+      returns: String,
+      resolve
+    })
+
+    @TypedSchema()
+    class Person {
+      @Prop()
+      firstName: string
+
+      @Prop({max: 3})
+      lastName: string
+
+      @ResolverProp(titleResolver)
+      title: typeof titleResolver.modelResolve
+    }
+
+    const Persons = createCollection<Person>({
+      name: generateId(),
+      schema: Person
+    })
+
+    expect.assertions(3)
+
+    try {
+      await Persons.insertOne({
+        _id: '1',
+        firstName: 'John',
+        lastName: 'ppoo'
+      })
+    } catch (error) {
+      expect(error.message).toBe('Validation Error: {lastName: stringTooLong}')
+    }
+
+    await Persons.insertOne({
+      _id: '1',
+      firstName: 'John',
+      lastName: 'Doe'
+    })
+
+    const person = await Persons.findOne('1')
+
+    expect(person.firstName).toBe('John')
+
+    expect(person.title).toBeUndefined()
+  })
 })
