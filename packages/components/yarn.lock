@@ -620,10 +620,10 @@
     tweetnacl-util "0.15.1"
     yaml "^2.0.0"
 
-"@orion-js/graphql@^3.2.10":
-  version "3.2.11"
-  resolved "https://registry.yarnpkg.com/@orion-js/graphql/-/graphql-3.2.11.tgz#2af4ed828884f3a1d4e35528d9b8baaefcba7532"
-  integrity sha512-qZ+eWUuO9APhKrcIv9M1RJuBoQlOlMbuHKHcBj0PC9avJUQsugmqwLV0u5otcHs7Z9A0EiInkRTNM9HxAhmRAw==
+"@orion-js/graphql@^3.2.16":
+  version "3.2.16"
+  resolved "https://registry.yarnpkg.com/@orion-js/graphql/-/graphql-3.2.16.tgz#3cf2188a9e669c8d56221c454a8ad85bf664e9c2"
+  integrity sha512-2kx8mts0276JKDLdEBhia3/WIK0EgyJqdCPcSxowsYwFx6gwNLVvn7MrdeTM+9lyEhRoSbKtyMFWxBhx5zrZrg==
   dependencies:
     "@orion-js/helpers" "^3.2.0"
     "@orion-js/http" "^3.2.11"
@@ -2724,9 +2724,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+  integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
 mongodb-connection-string-url@^2.5.2:
   version "2.5.2"
