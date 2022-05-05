@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "3.2.17",
+  "version": "3.2.18",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,12 +13,12 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/dogs": "^3.2.10",
-    "@orion-js/echoes": "^3.2.10",
-    "@orion-js/graphql": "^3.2.16",
+    "@orion-js/dogs": "^3.2.18",
+    "@orion-js/echoes": "^3.2.18",
+    "@orion-js/graphql": "^3.2.18",
     "@orion-js/helpers": "^3.2.0",
-    "@orion-js/http": "^3.2.10",
-    "@orion-js/models": "^3.2.0",
+    "@orion-js/http": "^3.2.18",
+    "@orion-js/models": "^3.2.18",
     "@orion-js/services": "^3.2.10"
   },
   "devDependencies": {

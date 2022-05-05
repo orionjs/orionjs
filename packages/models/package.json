@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/models",
-  "version": "3.2.0",
+  "version": "3.2.18",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.2.0",
-    "@orion-js/resolvers": "^3.2.0",
-    "@orion-js/schema": "^3.2.0"
+    "@orion-js/resolvers": "^3.2.18",
+    "@orion-js/schema": "^3.2.18"
   },
   "peerDependencies": {
     "@orion-js/cache": "^3.0.0-alpha.10"

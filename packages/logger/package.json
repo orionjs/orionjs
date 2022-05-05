@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/logger",
-  "version": "3.2.0",
+  "version": "3.2.18",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
