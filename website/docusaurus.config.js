@@ -121,7 +121,7 @@ const config = {
         apiKey: '63cedd1409dcc676e86ca477d8805bf7',
         indexName: 'orionjs',
         contextualSearch: true,
-        algoliaOptions: {} // Optional, if provided by Algolia
+        searchPagePath: 'search'
       }
     })
 }
