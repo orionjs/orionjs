@@ -24,6 +24,8 @@ In order to create a basic controller, we use classes and decorators. Decorators
 
 Repositories are the data access layer. They are responsible for fetching data from the database and storing it. You can also use repositories access any kind of data, such as files, external services, etc.
 
+You should only use repositories to fetch data from the database and not to manipulate it.
+
 ## Services
 
 Services are the business logic layer. Controllers activate functions in services.

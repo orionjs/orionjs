@@ -1,7 +1,7 @@
 ---
-id: collections
-title: Collections
-sidebar_label: Collections
+id: mongodb
+title: MongoDB
+sidebar_label: MongoDB
 sidebar_position: 4
 ---
 
