@@ -19,6 +19,7 @@
     "colors": "^1.4.0",
     "commander": "^9.1.0",
     "prompts": "^2.4.2",
+    "tweetnacl": "^1.0.3",
     "tweetnacl-util": "0.15.1",
     "yaml": "^2.0.0"
   },
