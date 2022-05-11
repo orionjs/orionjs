@@ -6,6 +6,7 @@ import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const upsert: Upsert<DocumentType> = async function (selectorArg, modifierArg, options = {}) {
+    await collection.connectionPromise
     let modifier = modifierArg as any
     let selector = getSelector(arguments)
 

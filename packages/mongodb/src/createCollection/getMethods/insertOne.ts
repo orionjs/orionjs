@@ -6,6 +6,7 @@ import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const insertOne: InsertOne<DocumentType> = async (insertDoc, options) => {
+    await collection.connectionPromise
     let doc = insertDoc as any
     if (!doc || !isPlainObject(doc)) {
       throw new Error('Insert must receive a document')

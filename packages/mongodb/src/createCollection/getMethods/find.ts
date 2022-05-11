@@ -10,6 +10,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
     cursor._oldToArray = cursor.toArray
 
     cursor.toArray = async (): Promise<DocumentType> => {
+      await collection.connectionPromise
       const items = await cursor._oldToArray()
       return items.map(item => collection.initItem(item))
     }

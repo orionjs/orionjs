@@ -3,6 +3,7 @@ import {Collection, FindOne} from '../../types'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const findOne: FindOne<DocumentType> = async function (selectorArg, options) {
+    await collection.connectionPromise
     const selector = getSelector(arguments)
     const item = await collection.rawCollection.findOne(selector, options)
 

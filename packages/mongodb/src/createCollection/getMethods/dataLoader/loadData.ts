@@ -5,6 +5,8 @@ import dataLoad from './dataLoad'
 
 export default function <ModelClass>(collection: Partial<Collection>) {
   const loadData: DataLoader.LoadData<ModelClass> = async options => {
+    await collection.connectionPromise
+
     const result = await dataLoad({
       loaderKey: {
         key: options.key,

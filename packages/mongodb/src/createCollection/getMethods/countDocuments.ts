@@ -3,6 +3,7 @@ import {Collection, CountDocuments, DeleteOne} from '../../types'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const func: CountDocuments<DocumentType> = async function (selectorArg, options) {
+    await collection.connectionPromise
     const selector = getSelector(arguments)
     const result = await collection.rawCollection.countDocuments(selector, options)
 

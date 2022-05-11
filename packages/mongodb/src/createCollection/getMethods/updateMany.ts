@@ -10,6 +10,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
     modifierArg,
     options = {}
   ) {
+    await collection.connectionPromise
     let modifier = modifierArg as any
     const selector = getSelector(arguments)
 

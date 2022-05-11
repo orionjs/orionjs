@@ -8,6 +8,7 @@ export default <DocumentType>(collection: Partial<Collection>) => {
     modifier,
     options = {}
   ) {
+    await collection.connectionPromise
     return await wrapErrors(async () => {
       return await collection.findOneAndUpdate(selector, modifier, {
         ...options,

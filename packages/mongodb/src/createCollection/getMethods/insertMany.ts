@@ -8,6 +8,7 @@ import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
   const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
+    await collection.connectionPromise
     for (let index = 0; index < docs.length; index++) {
       let doc = cloneDeep(docs[index]) as any
 
