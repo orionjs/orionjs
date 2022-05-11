@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "3.2.19",
+  "version": "3.2.20",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/dogs": "^3.2.19",
+    "@orion-js/dogs": "^3.2.20",
     "@orion-js/echoes": "^3.2.19",
     "@orion-js/graphql": "^3.2.19",
     "@orion-js/helpers": "^3.2.0",
