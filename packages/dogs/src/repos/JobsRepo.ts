@@ -18,9 +18,8 @@ export class JobsRepo {
         {
           keys: {
             jobName: 1,
-            nextRunAt: 1,
             priority: -1,
-            lockedUntil: 1
+            nextRunAt: 1
           }
         },
         {
