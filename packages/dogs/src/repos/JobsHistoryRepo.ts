@@ -18,6 +18,11 @@ export class JobsHistoryRepo {
         },
         {
           keys: {
+            executionId: 1
+          }
+        },
+        {
+          keys: {
             expiresAt: 1
           },
           options: {
