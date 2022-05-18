@@ -6,5 +6,6 @@ module.exports = {
     '^.+\\.(ts|tsx)$': 'ts-jest'
   },
   setupFilesAfterEnv: ['./src/tests/setup.ts'],
+  watchPathIgnorePatterns: ['globalConfig'],
   verbose: true
 }
