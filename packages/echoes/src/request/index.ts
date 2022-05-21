@@ -14,7 +14,7 @@ export default async function (options: RequestOptions): Promise<any> {
   const signature = getSignature(body)
 
   try {
-    const requestMaker: RequestMaker = config.requests.makeRequest || makeRequest
+    const requestMaker: RequestMaker = config?.requests?.makeRequest || makeRequest
     const requestOptions = {
       url: getURL(service),
       data: {
