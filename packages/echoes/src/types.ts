@@ -52,9 +52,10 @@ export type RequestMaker = (options: MakeRequestParams) => Promise<RequestMakerR
 
 export interface RequestsConfig {
   /**
-   * The secret key used to sign all requests. Shared between all your services
+   * The secret key used to sign all requests. Shared between all your services.
+   * You can also set the env var echoes_password or process.env.ECHOES_PASSWORD
    */
-  key: string
+  key?: string
   /**
    * The path of the echoes http receiver. Defaults to /echoes-services
    */
