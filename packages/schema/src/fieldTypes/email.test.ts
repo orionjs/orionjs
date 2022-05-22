@@ -9,6 +9,7 @@ test('return an error when the value is incorrect', async () => {
   expect(email.validate(null)).toBe(Errors.REQUIRED)
   expect(email.validate('')).toBe(Errors.REQUIRED)
   expect(email.validate('', {currentSchema: {optional: true}})).toBeFalsy()
+  expect(email.validate(null, {currentSchema: {optional: true}})).toBeFalsy()
 })
 
 test('return no error when the value is correct', async () => {

@@ -10,7 +10,7 @@ export default fieldType({
       return Errors.REQUIRED
     }
 
-    if (!isString(value)) return Errors.NOT_A_STRING
+    if (value && !isString(value)) return Errors.NOT_A_STRING
 
     // eslint-disable-next-line
     const regex =
