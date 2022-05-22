@@ -240,6 +240,9 @@ export interface Collection<ModelClass = any> {
   upsert: Upsert<ModelClass>
   findOneAndUpdate: FindOneAndUpdate<ModelClass>
 
+  /**
+   * Updates a document and returns the updated document with the changes
+   */
   updateAndFind: UpdateAndFind<ModelClass>
   updateItem: UpdateItem<ModelClass>
 
