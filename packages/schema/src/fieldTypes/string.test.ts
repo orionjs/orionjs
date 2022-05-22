@@ -2,11 +2,8 @@ import string from './string'
 import Errors from '../Errors'
 
 test('return an error when the value is incorrect', async () => {
-  //@ts-ignore
   expect(string.validate(['Hello'])).toBe(Errors.NOT_A_STRING)
-  //@ts-ignore
   expect(string.validate({name: 'Nicolás'})).toBe(Errors.NOT_A_STRING)
-  //@ts-ignore
   expect(string.validate(new Date())).toBe(Errors.NOT_A_STRING)
 })
 
