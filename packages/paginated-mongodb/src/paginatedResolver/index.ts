@@ -11,6 +11,7 @@ export interface PaginatedResolverOpts<T = any> {
   params?: object
   getCursor: (params?: any, viewer?: any) => Promise<FindCursor<T>>
   modelName?: string
+  permissionsOptions?: any
 }
 
 export default function paginatedResolver<T = any>({
