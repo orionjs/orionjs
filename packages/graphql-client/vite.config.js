@@ -1,5 +1,6 @@
 const path = require('path')
 const {defineConfig} = require('vite')
+const {visualizer} = require('rollup-plugin-visualizer')
 
 module.exports = defineConfig({
   build: {
@@ -21,5 +22,6 @@ module.exports = defineConfig({
         }
       }
     }
-  }
+  },
+  plugins: [visualizer()]
 })
