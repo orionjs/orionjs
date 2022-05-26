@@ -6,7 +6,7 @@ module.exports = defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'orion-graphq-client',
-      fileName: format => `orion-graphq-client.${format}.js`
+      fileName: format => `orion-graphql-client.${format}.js`
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
