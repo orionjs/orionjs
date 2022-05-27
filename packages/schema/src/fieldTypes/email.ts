@@ -1,7 +1,7 @@
 import fieldType from '../fieldType'
 import isString from 'lodash/isString'
 import Errors from '../Errors'
-import {isNil} from 'lodash'
+import isNil from 'lodash/isNil'
 
 export default fieldType({
   name: 'email',
