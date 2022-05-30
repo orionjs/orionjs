@@ -12,7 +12,7 @@
     "watch": "tsc -w",
     "upgrade-interactive": "yarn upgrade-interactive"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@orion-js/dogs": "^3.2.33",
     "@orion-js/echoes": "^3.2.33",
     "@orion-js/graphql": "^3.2.33",
