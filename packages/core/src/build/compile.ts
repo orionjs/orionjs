@@ -4,9 +4,9 @@ import colors from 'colors/safe'
 import {reportDiagnostic} from '../start/watchAndCompile/reports'
 
 export function compile({output}): void {
-  const {options, fileNames} = getOptions({output})
+  const options = getOptions({output})
 
-  const program = ts.createProgram(fileNames, options)
+  const program = ts.createProgram(['./app/index.ts'], options)
 
   const preEmitDiagnostics = ts.getPreEmitDiagnostics(program)
 

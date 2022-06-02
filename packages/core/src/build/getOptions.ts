@@ -17,7 +17,7 @@ export function getCompilerOptionsJSONFollowExtends(filename: string): {[key: st
   }
 }
 
-export function getOptions({output}): {fileNames: string[]; options: ts.CompilerOptions} {
+export function getOptions({output}): ts.CompilerOptions {
   const configPath = getConfigPath()
   const config = getCompilerOptionsJSONFollowExtends(configPath)
   config.outDir = `${output}/app`
@@ -29,13 +29,5 @@ export function getOptions({output}): {fileNames: string[]; options: ts.Compiler
     process.exit(1)
   }
 
-  const data = ts.parseJsonConfigFileContent(
-    options,
-    ts.sys,
-    path.dirname(configPath),
-    undefined,
-    configPath
-  )
-
-  return {options, fileNames: data.fileNames}
+  return options
 }
