@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "3.2.36",
+  "version": "3.2.37",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -19,7 +19,7 @@
   "dependencies": {
     "@orion-js/env": "^3.2.21",
     "@orion-js/helpers": "^3.2.21",
-    "@orion-js/logger": "^3.2.36",
+    "@orion-js/logger": "^3.2.37",
     "@orion-js/models": "^3.2.33",
     "@orion-js/resolvers": "^3.2.33",
     "@orion-js/schema": "^3.2.33",
