@@ -15,6 +15,11 @@ describe('Log', () => {
     logger.info('info', ['array'])
   })
 
+  it('should log errors correctly', () => {
+    logger.error('an error', new Error('message'))
+    logger.error('an error2', {error: new Error('message'), info: 'of the log'})
+  })
+
   it('should pass the context', () => {
     const withMeta = logger.addMetadata({context: 'context'})
     withMeta.info('info', {notContext: 'notContext'})

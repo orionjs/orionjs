@@ -5,10 +5,18 @@ import {isEmpty} from 'lodash'
 const {metadata, timestamp, json, colorize, combine, printf} = format
 
 const metaError = format(info => {
-  if (info.metadata && info.metadata.error && info.metadata.error instanceof Error) {
-    info.stack = info.metadata.error.stack
-    info.metadata.error = info.metadata.error.message
+  if (info?.metadata?.value?.error instanceof Error) {
+    info.stack = info?.metadata?.value?.error.stack
+    info.errorMessage = info?.metadata?.value?.error.message
+    delete info?.metadata?.value?.error
   }
+
+  if (info?.metadata?.value instanceof Error) {
+    info.stack = info?.metadata?.value.stack
+    info.errorMessage = info?.metadata?.value.message
+    delete info?.metadata?.value
+  }
+
   return info
 })
 
@@ -23,17 +31,30 @@ export const sentryFormat = format(info => {
   }
 })
 
+function getMetadataText(metadata: any) {
+  const {value, ...rest} = metadata
+  if (isEmpty(rest)) {
+    if (typeof value === 'undefined') return ''
+    return util.inspect(value)
+  }
+  return `${util.inspect(value)} ${util.inspect(rest)}`
+}
+
 export const textConsoleFormat = combine(
   colorize(),
   metadata({fillExcept: ['fileName', 'level', 'message', 'stack']}),
   metaError(),
   timestamp(),
   printf(info => {
-    return `[${info.level}] [${info.timestamp}] ${info.fileName ? `[${info.fileName}]` : ''} ${
-      info.message
-    } ${info.stack ? `\n${info.stack}` : ''} ${
-      isEmpty(info.metadata?.value) ? '' : util.inspect(info.metadata?.value)
-    } ${isEmpty(info.metadata?.parent) ? '' : util.inspect(info.metadata?.parent)}`
+    // console.log(info)
+
+    const date = new Date(info.timestamp)
+    const timeLabel = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+    const fileNameLabel = info.fileName ? `[${info.fileName}]` : ''
+    const stack = info.stack ? `\n${info.stack}` : ''
+    const value = getMetadataText(info.metadata)
+
+    return `[${info.level}] [${timeLabel}] ${fileNameLabel} ${info.message} ${value} ${stack}`
   })
 )
 

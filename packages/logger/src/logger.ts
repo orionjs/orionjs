@@ -32,21 +32,21 @@ export const getLogger = (context: string) => {
 
 const createLogger = (logger: winston.Logger): OrionLogger => {
   return {
-    debug: (message: string, value: any = {}) => {
+    debug: (message: string, value: any) => {
       const fileName = getFileName()
-      return logger.debug(message, {value, fileName})
+      return logger.debug({message, fileName, value})
     },
-    info: (message: string, value: any = {}) => {
+    info: (message: string, value: any) => {
       const fileName = getFileName()
-      return logger.info(message, {value, fileName})
+      return logger.info({message, fileName, value})
     },
-    warn: (message: string, value: any = {}) => {
+    warn: (message: string, value: any) => {
       const fileName = getFileName()
-      return logger.warn(message, {value, fileName})
+      return logger.warn({message, fileName, value})
     },
-    error: (message: string, value: any = {}) => {
+    error: (message: string, value: any) => {
       const fileName = getFileName()
-      return logger.error(message, {value, fileName})
+      return logger.error({message, fileName, value})
     },
     addContext: (module: NodeJS.Module) => {
       if (module.id) {
@@ -57,7 +57,7 @@ const createLogger = (logger: winston.Logger): OrionLogger => {
       return createLogger(logger.child({}))
     },
     addMetadata: (metadata: any) => {
-      return createLogger(logger.child({parent: metadata}))
+      return createLogger(logger.child(metadata))
     }
   }
 }
