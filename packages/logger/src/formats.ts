@@ -1,5 +1,6 @@
 import {format, transports} from 'winston'
 import util from 'util'
+import {isEmpty} from 'lodash'
 
 const {metadata, timestamp, json, colorize, combine, printf} = format
 
@@ -30,7 +31,9 @@ export const textConsoleFormat = combine(
   printf(info => {
     return `[${info.level}] [${info.timestamp}] ${info.fileName ? `[${info.fileName}]` : ''} ${
       info.message
-    } ${info.stack ? `\n${info.stack}` : ''} ${util.inspect(info.metadata)}`
+    } ${info.stack ? `\n${info.stack}` : ''} ${
+      isEmpty(info.metadata?.value) ? '' : util.inspect(info.metadata?.value)
+    } ${isEmpty(info.metadata?.parent) ? '' : util.inspect(info.metadata?.parent)}`
   })
 )
 

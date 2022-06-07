@@ -2,7 +2,7 @@ export const getFileName = () => {
   try {
     const stack = new Error().stack
     const lines = stack.split('\n')
-    const filePath = lines[4].split('(')[1].split(')')[0]
+    const filePath = lines[3].split('(')[1].split(')')[0]
     return improveFileName(filePath)
   } catch (error) {
     return
@@ -31,9 +31,4 @@ export const improveFileName = (path: string) => {
   }
 
   return path
-}
-
-export const setFileName = (metadata: any) => {
-  if (metadata.fileName) return
-  metadata.fileName = getFileName()
 }

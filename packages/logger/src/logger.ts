@@ -1,6 +1,6 @@
 import winston, {createLogger as winstonCreateLogger, config, format} from 'winston'
 import {jsonConsoleTransport, textConsoleTransport} from './formats'
-import {setFileName} from './helpers/getFileName'
+import {getFileName} from './helpers/getFileName'
 import {OrionLogger} from './types'
 
 const transports: winston.transport[] = [
@@ -32,21 +32,21 @@ export const getLogger = (context: string) => {
 
 const createLogger = (logger: winston.Logger): OrionLogger => {
   return {
-    debug: (message: string, metadata: any = {}) => {
-      setFileName(metadata)
-      return logger.debug(message, metadata)
+    debug: (message: string, value: any = {}) => {
+      const fileName = getFileName()
+      return logger.debug(message, {value, fileName})
     },
-    info: (message: string, metadata: any = {}) => {
-      setFileName(metadata)
-      return logger.info(message, metadata)
+    info: (message: string, value: any = {}) => {
+      const fileName = getFileName()
+      return logger.info(message, {value, fileName})
     },
-    warn: (message: string, metadata: any = {}) => {
-      setFileName(metadata)
-      return logger.warn(message, metadata)
+    warn: (message: string, value: any = {}) => {
+      const fileName = getFileName()
+      return logger.warn(message, {value, fileName})
     },
-    error: (message: string, metadata: any = {}) => {
-      setFileName(metadata)
-      return logger.error(message, metadata)
+    error: (message: string, value: any = {}) => {
+      const fileName = getFileName()
+      return logger.error(message, {value, fileName})
     },
     addContext: (module: NodeJS.Module) => {
       if (module.id) {
@@ -57,7 +57,7 @@ const createLogger = (logger: winston.Logger): OrionLogger => {
       return createLogger(logger.child({}))
     },
     addMetadata: (metadata: any) => {
-      return createLogger(logger.child(metadata))
+      return createLogger(logger.child({parent: metadata}))
     }
   }
 }
