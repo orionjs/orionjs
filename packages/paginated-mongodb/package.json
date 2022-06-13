@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/paginated-mongodb",
-  "version": "3.2.38",
+  "version": "3.2.39",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,10 +17,10 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/models": "^3.2.38",
-    "@orion-js/mongodb": "^3.2.38",
-    "@orion-js/resolvers": "^3.2.38",
-    "@orion-js/services": "^3.2.38"
+    "@orion-js/models": "^3.2.39",
+    "@orion-js/mongodb": "^3.2.39",
+    "@orion-js/resolvers": "^3.2.39",
+    "@orion-js/services": "^3.2.39"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",

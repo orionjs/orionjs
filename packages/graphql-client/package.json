@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql-client",
-  "version": "3.2.38",
+  "version": "3.2.39",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"

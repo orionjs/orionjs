@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/core",
-  "version": "3.2.38",
+  "version": "3.2.39",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.2.38",
+    "@orion-js/env": "^3.2.39",
     "chokidar": "3.5.3",
     "colors": "^1.4.0",
     "commander": "^8.3.0",
