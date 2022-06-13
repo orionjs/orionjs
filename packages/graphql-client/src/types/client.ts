@@ -1,5 +1,5 @@
 import {InMemoryCache} from '@apollo/client/cache'
-import {Resolvers, ApolloClient} from '@apollo/client'
+import {Resolvers, ApolloClient, ApolloClientOptions} from '@apollo/client'
 import {ClientOptions, SubscriptionClient} from 'subscriptions-transport-ws'
 import {RetryFunction} from '@apollo/client/link/retry/retryFunction'
 
@@ -25,6 +25,7 @@ export interface OrionApolloClientOpts {
   wsClient?: SubscriptionClient
   ssrMode?: boolean
   customFetch?: typeof fetch
+  apolloOverrides?: Partial<ApolloClientOptions<any>>
 }
 
 export interface OrionApolloClient<T> extends ApolloClient<T> {

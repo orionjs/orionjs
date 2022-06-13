@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/generator",
-  "version": "3.2.21",
+  "version": "3.2.39",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [

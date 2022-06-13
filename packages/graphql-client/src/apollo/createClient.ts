@@ -27,7 +27,8 @@ const defaultOptions: OrionApolloClientOpts = {
   wsOptions: {},
   getJWT: () => {},
   upgradeJWT: () => {},
-  refreshJWT: null
+  refreshJWT: null,
+  apolloOverrides: {}
 }
 
 export default function createClient(passedOptions: OrionApolloClientOpts): OrionApolloClient<any> {
@@ -54,7 +55,8 @@ export default function createClient(passedOptions: OrionApolloClientOpts): Orio
     ssrMode: isSsrMode(options),
     link,
     cache: options.cache,
-    resolvers: options.resolvers
+    resolvers: options.resolvers,
+    ...options.apolloOverrides
   })
 
   options.apolloClient = client

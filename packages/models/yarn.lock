@@ -487,33 +487,33 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/cache@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.2.0.tgz#5d0d07f13e5dbc7c949488077d02b3c24881d8cb"
-  integrity sha512-aqytkaXUysql6cGMngmjdzGtIblGSkUI087ZgZdvwXAuu8cAahtevdvAR/ynd5BvQWsrHSlsMYE9IigyeTmNag==
+"@orion-js/cache@^3.2.21":
+  version "3.2.21"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.2.21.tgz#695338a27c57e4286b3dd2ace204a973156cce41"
+  integrity sha512-/XEyxqliB1mHZw8mgFo2BbrjTSoSn40Qttbe/kQojBfQY45AQ5xq49weAbOXsamXyRpEcj+sq5VqyW/uaPY36g==
   dependencies:
-    "@orion-js/helpers" "^3.2.0"
+    "@orion-js/helpers" "^3.2.21"
 
-"@orion-js/helpers@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.2.0.tgz#765a21d76a756899e7d924212524ab6f8a9d7425"
-  integrity sha512-BiqWyycFBGz4NX/ZJP3Q7cDYzDWK3N2/mDZeOCKzvw9zfKnPuKHjDaUpxJ4ogpRTwKbJWN9EoSC/pQOov3m9jw==
+"@orion-js/helpers@^3.2.21":
+  version "3.2.21"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.2.21.tgz#50ce418438b75b535f1357d2c7a6c9f181584c83"
+  integrity sha512-NMrLUZO0uOUq0HugVByYEYBcjL4YTXztGK5GGPKw/j7m8c5NfG4Yf8LyUG4yYWmH03cdlC/u5sKy9zKVyPnShg==
   dependencies:
     object-hash "^2.2.0"
 
-"@orion-js/resolvers@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.2.0.tgz#d1727063c595a63ec6be74e73b3ea7a81b862bb5"
-  integrity sha512-teqfkp31KkNkW/ODvm1QdrbZkCDzQGFyB9kg8Wcxx9t/1j68TOp8AKdres0fvCItpRCMxU5nzA+rGKATyWU0+A==
+"@orion-js/resolvers@^3.2.33":
+  version "3.2.33"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.2.33.tgz#98cb2491ab49f750d5e5fe2a2724f3e2851264e6"
+  integrity sha512-T+7NoNJTGVoppfyYr0SKfJc7l193XrELKIMqPcg3ZuKB1YjnPAGrGmMY8lpObsTYZb7RlVt/1USzwz73ajjoSw==
   dependencies:
-    "@orion-js/cache" "^3.2.0"
-    "@orion-js/helpers" "^3.2.0"
-    "@orion-js/schema" "^3.2.0"
+    "@orion-js/cache" "^3.2.21"
+    "@orion-js/helpers" "^3.2.21"
+    "@orion-js/schema" "^3.2.33"
 
-"@orion-js/schema@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.2.0.tgz#722a8089ca48677e632c515aedaaab94063ed356"
-  integrity sha512-40iMciTp/9fWVQ14GWtglRftFhauU47akeV7r/Ptg2NAFRPJCaqxWysFY+njAgTZ4IlCflrXD783ZpCbX+x6cQ==
+"@orion-js/schema@^3.2.33":
+  version "3.2.33"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.2.33.tgz#3215fffe73208c54d0c9871bb218c839a216cd28"
+  integrity sha512-N2pk5nsR4+OKR0150sr7PXlpMd9DADWmcV6wse7ZwmV8DNANF43MKI1O9FjdqjwlvUl3xnfSfOol3jUaPzXAYw==
   dependencies:
     dot-object "^2.1.4"
     lodash "^4.17.10"

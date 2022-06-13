@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/crypto",
-  "version": "3.2.21",
+  "version": "3.2.39",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/services": "^3.2.21",
+    "@orion-js/services": "^3.2.39",
     "tweetnacl": "1.0.3",
     "tweetnacl-util": "0.15.1"
   },

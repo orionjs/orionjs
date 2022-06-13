@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mailing",
-  "version": "3.2.33",
+  "version": "3.2.39",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,9 +13,9 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.2.21",
-    "@orion-js/resolvers": "^3.2.33",
-    "@orion-js/schema": "^3.2.33",
+    "@orion-js/env": "^3.2.39",
+    "@orion-js/resolvers": "^3.2.39",
+    "@orion-js/schema": "^3.2.39",
     "lodash": "^4.17.21",
     "luxon": "^2.1.1",
     "nodemailer": "^6.7.1"
