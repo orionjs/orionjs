@@ -22,6 +22,13 @@
     "@orion-js/services": "^3.2.21"
   },
   "devDependencies": {
+    "@orion-js/dogs": "^3.2.33",
+    "@orion-js/echoes": "^3.2.33",
+    "@orion-js/graphql": "^3.2.33",
+    "@orion-js/helpers": "^3.2.21",
+    "@orion-js/http": "^3.2.33",
+    "@orion-js/models": "^3.2.33",
+    "@orion-js/services": "^3.2.21",
     "@types/jest": "^27.0.2",
     "jest": "27.3.1",
     "reflect-metadata": "0.1.13",

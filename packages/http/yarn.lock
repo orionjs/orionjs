@@ -487,54 +487,55 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/cache@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.2.0.tgz#5d0d07f13e5dbc7c949488077d02b3c24881d8cb"
-  integrity sha512-aqytkaXUysql6cGMngmjdzGtIblGSkUI087ZgZdvwXAuu8cAahtevdvAR/ynd5BvQWsrHSlsMYE9IigyeTmNag==
+"@orion-js/cache@^3.2.21":
+  version "3.2.21"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.2.21.tgz#695338a27c57e4286b3dd2ace204a973156cce41"
+  integrity sha512-/XEyxqliB1mHZw8mgFo2BbrjTSoSn40Qttbe/kQojBfQY45AQ5xq49weAbOXsamXyRpEcj+sq5VqyW/uaPY36g==
   dependencies:
-    "@orion-js/helpers" "^3.2.0"
+    "@orion-js/helpers" "^3.2.21"
 
-"@orion-js/env@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/env/-/env-3.2.0.tgz#f22d78a6dc54cca83fe12c113e980d5662182a2a"
-  integrity sha512-LVuz3BxAiO4iW8CQaw/CDB8TxP4mNVMb+JedHEc8GopYSs4lBO7IMzvUVkxQ0ATUjzk9dgvNxTQVDF8dJAQDnQ==
+"@orion-js/env@^3.2.21":
+  version "3.2.21"
+  resolved "https://registry.yarnpkg.com/@orion-js/env/-/env-3.2.21.tgz#e6f5348a350d86e777e92d879dbc3c57b7c771e6"
+  integrity sha512-oipxksQDdA8/09Vrja8dOJmK/72GcAKbSlXc5D29zMnzhn7nxIz+YQo9Hnxc7/xLBg9Zb8QXA2VulAMmxnqitg==
   dependencies:
     colors "^1.4.0"
     commander "^9.1.0"
     prompts "^2.4.2"
+    tweetnacl "^1.0.3"
     tweetnacl-util "0.15.1"
     yaml "^2.0.0"
 
-"@orion-js/helpers@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.2.0.tgz#765a21d76a756899e7d924212524ab6f8a9d7425"
-  integrity sha512-BiqWyycFBGz4NX/ZJP3Q7cDYzDWK3N2/mDZeOCKzvw9zfKnPuKHjDaUpxJ4ogpRTwKbJWN9EoSC/pQOov3m9jw==
+"@orion-js/helpers@^3.2.21":
+  version "3.2.21"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.2.21.tgz#50ce418438b75b535f1357d2c7a6c9f181584c83"
+  integrity sha512-NMrLUZO0uOUq0HugVByYEYBcjL4YTXztGK5GGPKw/j7m8c5NfG4Yf8LyUG4yYWmH03cdlC/u5sKy9zKVyPnShg==
   dependencies:
     object-hash "^2.2.0"
 
-"@orion-js/resolvers@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.2.0.tgz#d1727063c595a63ec6be74e73b3ea7a81b862bb5"
-  integrity sha512-teqfkp31KkNkW/ODvm1QdrbZkCDzQGFyB9kg8Wcxx9t/1j68TOp8AKdres0fvCItpRCMxU5nzA+rGKATyWU0+A==
+"@orion-js/resolvers@^3.2.33":
+  version "3.2.33"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.2.33.tgz#98cb2491ab49f750d5e5fe2a2724f3e2851264e6"
+  integrity sha512-T+7NoNJTGVoppfyYr0SKfJc7l193XrELKIMqPcg3ZuKB1YjnPAGrGmMY8lpObsTYZb7RlVt/1USzwz73ajjoSw==
   dependencies:
-    "@orion-js/cache" "^3.2.0"
-    "@orion-js/helpers" "^3.2.0"
-    "@orion-js/schema" "^3.2.0"
+    "@orion-js/cache" "^3.2.21"
+    "@orion-js/helpers" "^3.2.21"
+    "@orion-js/schema" "^3.2.33"
 
-"@orion-js/schema@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.2.0.tgz#722a8089ca48677e632c515aedaaab94063ed356"
-  integrity sha512-40iMciTp/9fWVQ14GWtglRftFhauU47akeV7r/Ptg2NAFRPJCaqxWysFY+njAgTZ4IlCflrXD783ZpCbX+x6cQ==
+"@orion-js/schema@^3.2.33":
+  version "3.2.33"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.2.33.tgz#3215fffe73208c54d0c9871bb218c839a216cd28"
+  integrity sha512-N2pk5nsR4+OKR0150sr7PXlpMd9DADWmcV6wse7ZwmV8DNANF43MKI1O9FjdqjwlvUl3xnfSfOol3jUaPzXAYw==
   dependencies:
     dot-object "^2.1.4"
     lodash "^4.17.10"
 
-"@orion-js/services@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.2.0.tgz#b11cdd3ce58a8e6a232f89dbff8d103f85c92816"
-  integrity sha512-cEtCOQG+l2O9nGlT3AF5yLEJ+Brn49apEqpApO2v7b4C5cDRYQLa8zV6HLuAxPZQRwp/tTkqaMI61NjGLtljbw==
+"@orion-js/services@^3.2.21":
+  version "3.2.21"
+  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.2.21.tgz#1911f95522f10cacc400355b5eb7845e91068318"
+  integrity sha512-kPqSvUq1XAxki1/HWOw6GybTmmvHsGTftsOqEWt/sKKC32voU2uZ3lefjHmMxGs/bwb4Wrma6tCsHIrvtRKNqQ==
   dependencies:
-    "@orion-js/helpers" "^3.2.0"
+    "@orion-js/helpers" "^3.2.21"
     typedi "^0.10.0"
 
 "@shelf/jest-mongodb@^2.1.0":
@@ -3231,6 +3232,11 @@ tweetnacl-util@0.15.1:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/tweetnacl-util/-/tweetnacl-util-0.15.1.tgz#b80fcdb5c97bcc508be18c44a4be50f022eea00b"
   integrity sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==
+
+tweetnacl@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
+  integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
 
 type-check@~0.3.2:
   version "0.3.2"
