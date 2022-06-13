@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strict": false,
-    "emitDeclarationOnly": true,
+    "emitDeclarationOnly": false,
     "noUnusedParameters": false,
     "noUnusedLocals": true,
     "skipLibCheck": true,
