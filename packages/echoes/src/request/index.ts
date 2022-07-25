@@ -25,18 +25,20 @@ export default async function (options: RequestOptions): Promise<any> {
     const result = await requestMaker(requestOptions)
 
     if (result.statusCode !== 200) {
-      throw new Error(`Echoes request network error ${result.statusCode}`)
+      throw new Error(
+        `Echoes request network error calling ${service}/${method}: Wrong status code ${result.statusCode}`
+      )
     }
 
     const data: RequestHandlerResponse = result.data
 
     if (data.error) {
-      throw new Error(`Echoes request error: ${data.error}`)
+      throw new Error(`Echoes request error calling ${service}/${method}: ${data.error}`)
     }
 
     const response = deserialize(data.result)
     return response
   } catch (error) {
-    throw new Error(`Echoes request network error ${error.message}`)
+    throw new Error(`Echoes request network error calling ${service}/${method}: ${error.message}`)
   }
 }
