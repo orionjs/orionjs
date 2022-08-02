@@ -1,5 +1,5 @@
 import {getInstance, Service} from '@orion-js/services'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 const saltRounds = 12
 
