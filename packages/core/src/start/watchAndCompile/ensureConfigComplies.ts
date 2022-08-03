@@ -12,9 +12,12 @@ export function ensureConfigComplies(configPath) {
       compilerOptions: {
         ...config.compilerOptions,
         outDir: `./.orion/build/app`,
-        rootDir: `./app`,
         baseUrl: `./`
       }
+    }
+
+    if (!config.compilerOptions?.rootDir && !config.compilerOptions?.rootDirs) {
+      newConfig.compilerOptions.rootDir = `./app`
     }
 
     writeFile(configPath, stringify(newConfig, null, 2))
