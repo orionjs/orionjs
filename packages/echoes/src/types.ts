@@ -24,10 +24,10 @@ export interface PublishOptions {
   timeout?: number
 }
 
-export interface RequestOptions {
+export interface RequestOptions<TParams> {
   method: string
   service: string
-  params: any
+  params: TParams
 }
 
 export interface RequestHandlerResponse {

@@ -6,7 +6,9 @@ import {RequestHandlerResponse, RequestMaker, RequestOptions} from '../types'
 import config from '../config'
 import {makeRequest} from './makeRequest'
 
-export default async function (options: RequestOptions): Promise<any> {
+export default async function request<TData = any, TParams = any>(
+  options: RequestOptions<TParams>
+): Promise<TData> {
   const {method, service, params} = options
   const serializedParams = serialize(params)
   const date = new Date()
