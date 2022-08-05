@@ -1,11 +1,7 @@
-interface CreateMapArrayItemsMap<T> {
-  [key: string]: T
-}
-
 export default function createMapArray<T>(
   array: Array<T>,
   key: string = '_id'
-): CreateMapArrayItemsMap<T> {
+): Record<string, Array<T>> {
   const map = {}
 
   for (const item of array) {

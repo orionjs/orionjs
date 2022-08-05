@@ -1,8 +1,4 @@
-interface CreateMapItemsMap<T> {
-  [key: string]: T
-}
-
-export default function createMap<T>(array: Array<T>, key: string = '_id'): CreateMapItemsMap<T> {
+export default function createMap<T>(array: Array<T>, key: string = '_id'): Record<string, T> {
   const map = {}
 
   for (const item of array) {
