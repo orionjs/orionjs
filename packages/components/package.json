@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "3.2.48",
+  "version": "3.2.49",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@orion-js/dogs": "^3.2.48",
-    "@orion-js/echoes": "^3.2.48",
+    "@orion-js/echoes": "^3.2.49",
     "@orion-js/graphql": "^3.2.48",
     "@orion-js/helpers": "^3.2.48",
     "@orion-js/http": "^3.2.48",
