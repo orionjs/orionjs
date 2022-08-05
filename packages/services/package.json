@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/services",
-  "version": "3.2.40",
+  "version": "3.2.48",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.2.40",
+    "@orion-js/helpers": "^3.2.48",
     "typedi": "^0.10.0"
   },
   "devDependencies": {
