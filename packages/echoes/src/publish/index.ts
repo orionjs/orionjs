@@ -5,7 +5,7 @@ import serialize from './serialize'
 /**
  * Publish
  */
-export default async function (options: PublishOptions) {
+export default async function publish<TParams = any>(options: PublishOptions<TParams>) {
   if (!config.producer) {
     throw new Error('You must initialize echoes configruation to use publish')
   }

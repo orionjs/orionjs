@@ -17,9 +17,9 @@ export interface EchoType extends EchoConfig {
   onRequest(serializedParams: string): any
 }
 
-export interface PublishOptions {
+export interface PublishOptions<TParams = any> {
   topic: string
-  params: any
+  params: TParams
   acks?: number
   timeout?: number
 }
