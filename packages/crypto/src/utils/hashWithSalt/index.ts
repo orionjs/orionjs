@@ -1,8 +1,6 @@
 import {getInstance, Service} from '@orion-js/services'
 import bcrypt from 'bcryptjs'
 
-const saltRounds = 12
-
 @Service()
 class HashWithSalt {
   /**
@@ -10,7 +8,7 @@ class HashWithSalt {
    * @param password The password to hash
    * @returns The hash
    */
-  hash(password: string): Promise<string> {
+  hash(password: string, saltRounds: number = 10): Promise<string> {
     return bcrypt.hash(password, saltRounds)
   }
 
