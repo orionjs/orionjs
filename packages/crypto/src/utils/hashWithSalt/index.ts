@@ -8,8 +8,8 @@ class HashWithSalt {
    * @param password The password to hash
    * @returns The hash
    */
-  hash(password: string, saltRounds: number = 10): Promise<string> {
-    return bcrypt.hash(password, saltRounds)
+  hash(password: string, saltRounds: number = 10): string {
+    return bcrypt.hashSync(password, saltRounds)
   }
 
   /**
@@ -18,8 +18,8 @@ class HashWithSalt {
    * @param hash The hash to check against
    * @returns If the password is correct
    */
-  compare(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash)
+  compare(password: string, hash: string): boolean {
+    return bcrypt.compareSync(password, hash)
   }
 }
 
