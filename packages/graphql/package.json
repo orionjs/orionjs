@@ -20,7 +20,7 @@
     "@orion-js/schema": "^3.2.40",
     "@orion-js/services": "^3.2.48",
     "@orion-js/typed-model": "^3.2.48",
-    "apollo-server-core": "3.5.0",
+    "apollo-server-core": "3.10.1",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^2.0.0",
     "lodash": "^4.17.21",
