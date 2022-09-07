@@ -28,9 +28,11 @@ export default async function doValidation(params: CurrentNodeInfo) {
   if (isPlainObject(currentSchema.type)) {
     const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
 
-    if (typeof type?.__skipChildValidation === 'function') {
-      if (await type?.__skipChildValidation(value, info)) {
-        return
+    if (type) {
+      if (typeof type.__skipChildValidation === 'function') {
+        if (await type.__skipChildValidation(value, info)) {
+          return
+        }
       }
     }
 
