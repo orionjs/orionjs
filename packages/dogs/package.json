@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "3.2.48",
+  "version": "3.2.53",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,9 +18,9 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.2.48",
-    "@orion-js/mongodb": "^3.2.48",
+    "@orion-js/mongodb": "^3.2.53",
     "@orion-js/services": "^3.2.48",
-    "@orion-js/typed-model": "^3.2.48"
+    "@orion-js/typed-model": "^3.2.53"
   },
   "peerDependencies": {
     "@orion-js/logger": "*"
