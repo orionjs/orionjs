@@ -9,7 +9,7 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "exit 0",
+    "test": "jest",
     "prepare": "yarn run build",
     "clean": "rm -rf ./lib",
     "build": "yarn run clean && tsc",
@@ -20,7 +20,8 @@
     "@orion-js/models": "^3.2.53",
     "@orion-js/mongodb": "^3.2.55",
     "@orion-js/resolvers": "^3.2.53",
-    "@orion-js/services": "^3.2.48"
+    "@orion-js/services": "^3.2.48",
+    "@orion-js/typed-model": "^3.2.53"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
