@@ -5,7 +5,7 @@ export interface PagiantedQueryDescriptor extends Omit<PropertyDecorator, 'value
   value?: PaginatedResolverOpts['getCursor']
 }
 
-export function PaginatedQuery(options: Omit<PaginatedResolverOpts<any>, 'getCursor'>) {
+export function PaginatedQuery(options: Omit<PaginatedResolverOpts, 'getCursor'>) {
   return function (target: any, propertyKey: string, descriptor: PagiantedQueryDescriptor) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
