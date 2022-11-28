@@ -1,11 +1,11 @@
 import isPlainObject from 'lodash/isPlainObject'
-import {Collection, InsertOne} from '../../types'
+import {Collection, InsertAndFind} from '../../types'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
 import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType>(collection: Partial<Collection>) => {
-  const insertAndFind: InsertOne<DocumentType> = async (insertDoc, options) => {
+  const insertAndFind: InsertAndFind<DocumentType> = async (insertDoc, options) => {
     await collection.connectionPromise
     let doc = insertDoc as any
     if (!doc || !isPlainObject(doc)) {
