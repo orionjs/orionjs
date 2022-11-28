@@ -14,7 +14,8 @@ import {
   updateItem,
   updateMany,
   updateOne,
-  upsert
+  upsert,
+  insertAndFind
 } from './getMethods'
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
@@ -62,6 +63,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   collection.findOneAndUpdate = findOneAndUpdate(collection)
   collection.insertOne = insertOne(collection)
   collection.insertMany = insertMany(collection)
+  collection.insertAndFind = insertAndFind(collection)
   collection.updateOne = updateOne(collection)
   collection.updateMany = updateMany(collection)
   collection.deleteMany = deleteMany(collection)

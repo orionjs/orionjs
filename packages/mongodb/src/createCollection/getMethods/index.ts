@@ -12,6 +12,7 @@ import insertMany from './insertMany'
 import updateItem from './updateItem'
 import countDocuments from './countDocuments'
 import estimatedDocumentCount from './estimatedDocumentCount'
+import insertAndFind from './insertAndFind'
 
 export {
   findOne,
@@ -19,6 +20,7 @@ export {
   findOneAndUpdate,
   insertOne,
   insertMany,
+  insertAndFind,
   updateOne,
   updateMany,
   updateAndFind,

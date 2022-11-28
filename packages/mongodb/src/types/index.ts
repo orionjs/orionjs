@@ -138,6 +138,11 @@ export type InsertMany<ModelClass> = (
   options?: InsertOptions
 ) => Promise<Array<string>>
 
+export type InsertAndFind<ModelClass> = (
+  doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
+  options?: InsertOptions
+) => Promise<ModelClass>
+
 export type DeleteMany<ModelClass> = (
   selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.DeleteOptions
@@ -230,6 +235,7 @@ export interface Collection<ModelClass = any> {
 
   insertOne: InsertOne<ModelClass>
   insertMany: InsertMany<ModelClass>
+  insertAndFind: InsertAndFind<ModelClass>
 
   deleteMany: DeleteMany<ModelClass>
   deleteOne: DeleteOne<ModelClass>
