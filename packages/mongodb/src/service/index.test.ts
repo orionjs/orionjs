@@ -6,10 +6,12 @@ import {Collection} from '../types'
 
 describe('Collection as IOC', () => {
   it('should create the collection and set the methods', async () => {
+    type UserId = `user_${string}`
+
     @TypedSchema()
     class User {
       @Prop()
-      _id: string
+      _id: UserId
 
       @Prop()
       name: string
@@ -17,7 +19,12 @@ describe('Collection as IOC', () => {
 
     @Repository()
     class UserRepo {
-      @MongoCollection({name: 'users'})
+      @MongoCollection<User>({
+        name: 'users',
+        schema: User,
+        idGeneration: 'random',
+        idPrefix: 'user_'
+      })
       users: Collection<User>
 
       async createUser(user: WithoutId<User>) {

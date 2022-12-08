@@ -1,8 +1,10 @@
 import {Container, Service} from '@orion-js/services'
 import createCollection from '../createCollection'
-import {CreateCollectionOptions} from '../types'
+import {CreateCollectionOptions, ModelClassBase} from '../types'
 
-export function MongoCollection(options: CreateCollectionOptions) {
+export function MongoCollection<ModelClass extends ModelClassBase = ModelClassBase>(
+  options: CreateCollectionOptions<ModelClass>
+) {
   return function (object: any, propertyName: string, index?: number) {
     Container.registerHandler({
       object,
