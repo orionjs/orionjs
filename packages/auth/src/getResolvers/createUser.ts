@@ -5,17 +5,14 @@ import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
 import {User} from '../types/user'
 import {Collection} from '@orion-js/mongodb'
 
-export default ({
-  Session,
-  Users,
-  onCreateUser,
-  sendEmailVerificationToken
-}: {
+export interface Params<UserType extends User = User> {
   Session: any
-  Users: Collection
-  onCreateUser?: Function
-  sendEmailVerificationToken?: Function
-}) => {
+  Users: Collection<UserType>
+  onCreateUser?: (user: UserType) => Promise<void>
+  sendEmailVerificationToken?: (user: UserType, token: string) => Promise<void>
+}
+
+export default ({Session, Users, onCreateUser, sendEmailVerificationToken}: Params) => {
   const profile = Users.model.getSchema().profile || null
   return resolver({
     params: {
@@ -41,7 +38,7 @@ export default ({
     returns: Session,
     mutation: true,
     resolve: async function ({email, password, profile}, viewer) {
-      const newUser: User = {
+      const newUser: Omit<User, '_id'> = {
         emails: [
           {
             address: email.toLowerCase(),

@@ -28,19 +28,16 @@
     "speakeasy": "^2.0.0"
   },
   "devDependencies": {
-    "@shelf/jest-mongodb": "^2.1.0",
-    "@types/jest": "^27.0.2",
-    "@types/lodash": "4.14.176",
-    "@typescript-eslint/eslint-plugin": "5.3.1",
-    "@typescript-eslint/parser": "5.3.1",
-    "eslint": "8.2.0",
-    "eslint-plugin-import": "2.25.3",
+    "@shelf/jest-mongodb": "^2.2.1",
+    "@types/dot-object": "^2.1.2",
+    "@types/jest": "^27.4.1",
+    "@types/lodash": "4.14.181",
     "jest": "27.3.1",
     "ts-jest": "27.0.7",
-    "typescript": "^4.4.4"
+    "typescript": "^4.6.3"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a03464d9b8799e07a543bd275ec1388a9db6ea18"
+  "gitHead": "2a5177cdb89ce840ea6da8c2e331e35ad1b251b8"
 }

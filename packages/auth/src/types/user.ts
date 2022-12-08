@@ -4,6 +4,7 @@ export interface UserEmail {
 }
 
 export interface User {
+  _id: string
   emails: [UserEmail]
   services: any
   profile: any
