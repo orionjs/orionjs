@@ -2,6 +2,7 @@ import {generateId} from '@orion-js/helpers'
 import createCollection from './index'
 import {ObjectID} from 'bson'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {DistinctDocumentId} from '../types'
 
 it('generates a usable mongo objectId as string', async () => {
   const Tests = createCollection({name: generateId()})
@@ -49,4 +50,33 @@ it('generates a ids with a prefix', async () => {
   await Tests.updateOne({_id: 'pref_123'}, {$set: {name: 'Nicolás'}})
 
   expect(userId).toMatch(/^pref_/)
+})
+
+it('generates a ids with a distinct type', async () => {
+  type DocId = DistinctDocumentId<'users'>
+
+  @TypedSchema()
+  class Schema {
+    @Prop()
+    _id: DocId
+
+    @Prop()
+    name: string
+  }
+
+  const Tests = createCollection<Schema>({
+    name: generateId(),
+    schema: Schema
+  })
+
+  const userId = await Tests.insertOne({
+    name: 'Nico'
+  })
+  await Tests.findOne(userId)
+
+  // This should throw an error
+  // await Tests.findOne(anId)
+
+  const anId = '123' as DocId
+  await Tests.findOne(anId)
 })

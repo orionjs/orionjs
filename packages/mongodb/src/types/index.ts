@@ -287,3 +287,7 @@ export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> 
   createIndexesPromise: Promise<string[]>
   connectionPromise: Promise<MongoDB.MongoClient>
 }
+
+export type DistinctDocumentId<DistinctId extends string> = string & {
+  __TYPE__: `DistinctDocumentId<${DistinctId}>`
+}
