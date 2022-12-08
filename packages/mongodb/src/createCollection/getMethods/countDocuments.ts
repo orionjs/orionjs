@@ -1,7 +1,9 @@
 import getSelector from './getSelector'
-import {Collection, CountDocuments, DeleteOne} from '../../types'
+import {Collection, CountDocuments, DeleteOne, ModelClassBase} from '../../types'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default function <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) {
   const func: CountDocuments<DocumentType> = async function (selectorArg, options) {
     await collection.connectionPromise
     const selector = getSelector(arguments)

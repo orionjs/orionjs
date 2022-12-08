@@ -1,7 +1,9 @@
-import {Collection, Find} from '../../types'
+import {Collection, Find, ModelClassBase} from '../../types'
 import getSelector from './getSelector'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default function <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) {
   const find: Find<DocumentType> = function (selectorArg, options) {
     const selector = getSelector(arguments)
 

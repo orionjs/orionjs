@@ -1,5 +1,5 @@
 import initItem from './initItem'
-import {Collection, CreateCollection, CreateCollectionOptions} from '../types'
+import {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
 import {
   countDocuments,
   deleteMany,
@@ -27,7 +27,9 @@ import {getSchemaAndModel} from './getSchemaAndModel'
 
 export const createIndexesPromises = []
 
-const createCollection: CreateCollection = <DocumentType>(options: CreateCollectionOptions) => {
+const createCollection: CreateCollection = <DocumentType extends ModelClassBase>(
+  options: CreateCollectionOptions<DocumentType>
+) => {
   const connectionName = options.connectionName || 'main'
 
   const orionConnection = getMongoConnection({name: connectionName})
@@ -36,7 +38,7 @@ const createCollection: CreateCollection = <DocumentType>(options: CreateCollect
   }
 
   const db = orionConnection.db
-  const rawCollection = db.collection(options.name)
+  const rawCollection = db.collection<DocumentType>(options.name)
 
   const {schema, model} = getSchemaAndModel(options)
 

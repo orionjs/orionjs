@@ -4,7 +4,9 @@ import {CreateCollectionOptions} from '..'
 
 const getIdGenerator = (options: CreateCollectionOptions): (() => string) => {
   if (options.idGeneration === 'random') {
-    return () => generateId()
+    const prefix = options.idPrefix || ''
+    const random = generateId()
+    return () => `${prefix}${random}`
   }
 
   return () => {

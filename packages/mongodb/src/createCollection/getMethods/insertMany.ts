@@ -1,12 +1,14 @@
 import isPlainObject from 'lodash/isPlainObject'
-import {Collection, InsertMany} from '../../types'
+import {Collection, InsertMany, ModelClassBase} from '../../types'
 import {cloneDeep, values} from 'lodash'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
 import {wrapErrors} from './wrapErrors'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
     await collection.connectionPromise
     for (let index = 0; index < docs.length; index++) {

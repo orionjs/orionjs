@@ -1,10 +1,12 @@
 import getSelector from './getSelector'
 import validateUpsert from './validateModifier/validateUpsert'
 import cleanModifier from './cleanModifier'
-import {Collection, Upsert} from '../../types'
+import {Collection, ModelClassBase, Upsert} from '../../types'
 import {wrapErrors} from './wrapErrors'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const upsert: Upsert<DocumentType> = async function (selectorArg, modifierArg, options = {}) {
     await collection.connectionPromise
     let modifier = modifierArg as any

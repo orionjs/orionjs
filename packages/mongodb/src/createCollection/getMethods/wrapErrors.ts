@@ -1,6 +1,8 @@
 import {ValidationError} from '@orion-js/schema'
 
-export const wrapErrors = async <TFunc extends Function>(operation: TFunc) => {
+export const wrapErrors = async <TFunc extends () => Promise<any>>(
+  operation: TFunc
+): Promise<ReturnType<TFunc>> => {
   try {
     return await operation()
   } catch (error) {

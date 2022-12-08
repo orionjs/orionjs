@@ -1,10 +1,12 @@
 import {createMap, createMapArray} from '@orion-js/helpers'
-import {DataLoader, Collection} from '../../../types'
+import {DataLoader, Collection, ModelClassBase} from '../../../types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
-export default function <ModelClass>(collection: Partial<Collection>) {
-  const loadData: DataLoader.LoadData<ModelClass> = async options => {
+export default function <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) {
+  const loadData: DataLoader.LoadData<DocumentType> = async options => {
     await collection.connectionPromise
 
     const result = await dataLoad({

@@ -1,7 +1,8 @@
-import getSelector from './getSelector'
-import {Collection, CountDocuments, DeleteOne, EstimatedDocumentCount} from '../../types'
+import {Collection, EstimatedDocumentCount, ModelClassBase} from '../../types'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const func: EstimatedDocumentCount<DocumentType> = async function (options) {
     await collection.connectionPromise
     const result = await collection.rawCollection.estimatedDocumentCount(options)

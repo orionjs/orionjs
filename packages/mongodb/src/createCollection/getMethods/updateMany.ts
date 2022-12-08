@@ -1,10 +1,12 @@
 import getSelector from './getSelector'
-import {Collection, UpdateMany} from '../../types'
+import {Collection, ModelClassBase, UpdateMany} from '../../types'
 import cleanModifier from './cleanModifier'
 import validateModifier from './validateModifier'
 import {wrapErrors} from './wrapErrors'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const updateMany: UpdateMany<DocumentType> = async function (
     selectorArg,
     modifierArg,

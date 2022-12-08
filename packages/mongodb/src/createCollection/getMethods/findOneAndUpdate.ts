@@ -1,9 +1,11 @@
 import getSelector from './getSelector'
 import validateModifier from './validateModifier'
 import cleanModifier from './cleanModifier'
-import {Collection, FindOneAndUpdate} from '../../types'
+import {Collection, FindOneAndUpdate, ModelClassBase} from '../../types'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const findOneAndUpdate: FindOneAndUpdate<DocumentType> = async function (
     selectorArg,
     modifierArg,

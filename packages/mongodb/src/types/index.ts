@@ -1,41 +1,38 @@
 import * as MongoDB from 'mongodb'
 import {Model} from '@orion-js/models'
-import {Schema} from '@orion-js/schema'
+import {Blackbox, Schema} from '@orion-js/schema'
 import {OrionMongoClient} from '../connect/connections'
 
-type RemoveFunctions<T> = OmitByValue<T, Function>
+type RemoveFunctions<T extends ModelClassBase> = Pick<
+  T,
+  {[Key in keyof T]-?: T[Key] extends Function ? never : Key}[keyof T]
+> & {_id: ModelClassBase['_id']}
 
-export type DocumentWithId<T> = T & {
-  /**
-   * The ID of the document
-   */
+export type ModelClassBase = {
   _id: string
-}
+} & Blackbox
 
-export type DocumentWithIdOptional<T> = Omit<T, '_id'> & {
+export type DocumentWithIdOptional<T extends ModelClassBase> = Omit<T, '_id'> & {
   /**
    * The ID of the document
    */
-  _id?: string
+  _id?: T['_id']
 }
 
 export type DocumentWithoutId<T> = Omit<T, '_id'>
 
-type OmitByValue<T, ValueType> = Pick<
-  T,
-  {[Key in keyof T]-?: T[Key] extends ValueType ? never : Key}[keyof T]
->
-
-export type ModelToDocumentType<ModelClass> = RemoveFunctions<ModelClass>
-export type ModelToDocumentTypeWithId<ModelClass> = DocumentWithId<RemoveFunctions<ModelClass>>
-export type ModelToDocumentTypeWithoutId<ModelClass> = DocumentWithoutId<
+export type ModelToDocumentType<ModelClass extends ModelClassBase> = RemoveFunctions<ModelClass>
+export type ModelToDocumentTypeWithId<ModelClass extends ModelClassBase> =
+  RemoveFunctions<ModelClass>
+export type ModelToDocumentTypeWithoutId<ModelClass extends ModelClassBase> = DocumentWithoutId<
   ModelToDocumentType<ModelClass>
 >
-export type ModelToDocumentTypeWithIdOptional<ModelClass> = DocumentWithIdOptional<
+export type ModelToDocumentTypeWithIdOptional<ModelClass extends ModelClassBase> =
+  DocumentWithIdOptional<ModelToDocumentType<ModelClass>>
+export type ModelToMongoSelector<ModelClass extends ModelClassBase> = MongoSelector<
   ModelToDocumentType<ModelClass>
 >
-export type ModelToMongoSelector<ModelClass> = MongoSelector<ModelToDocumentType<ModelClass>>
-export type ModelToUpdateFilter<ModelClass> =
+export type ModelToUpdateFilter<ModelClass extends ModelClassBase> =
   | MongoDB.UpdateFilter<ModelToDocumentTypeWithoutId<ModelClass>>
   | Partial<ModelToDocumentTypeWithoutId<ModelClass>>
 
@@ -47,7 +44,7 @@ export interface CollectionIndex {
 type KeyOf<T extends object> = Extract<keyof T, string>
 
 export namespace DataLoader {
-  interface LoadDataOptionsBase<ModelClass> {
+  interface LoadDataOptionsBase<ModelClass extends ModelClassBase> {
     key: KeyOf<ModelToDocumentTypeWithId<ModelClass>>
     match?: MongoDB.Filter<ModelToDocumentTypeWithId<ModelClass>>
     sort?: MongoDB.Sort
@@ -56,26 +53,34 @@ export namespace DataLoader {
     debug?: boolean
   }
 
-  export interface LoadDataOptions<ModelClass> extends LoadDataOptionsBase<ModelClass> {
+  export interface LoadDataOptions<ModelClass extends ModelClassBase>
+    extends LoadDataOptionsBase<ModelClass> {
     value?: any
     values?: Array<any>
   }
 
-  export interface LoadOneOptions<ModelClass> extends LoadDataOptionsBase<ModelClass> {
+  export interface LoadOneOptions<ModelClass extends ModelClassBase>
+    extends LoadDataOptionsBase<ModelClass> {
     value: any
   }
 
-  export type LoadData<ModelClass> = (
+  export type LoadData<ModelClass extends ModelClassBase> = (
     options: LoadDataOptions<ModelClass>
   ) => Promise<Array<ModelClass>>
-  export type LoadOne<ModelClass> = (options: LoadOneOptions<ModelClass>) => Promise<ModelClass>
-  export type LoadMany<ModelClass> = (
+  export type LoadOne<ModelClass extends ModelClassBase> = (
+    options: LoadOneOptions<ModelClass>
+  ) => Promise<ModelClass>
+  export type LoadMany<ModelClass extends ModelClassBase> = (
     options: LoadDataOptions<ModelClass>
   ) => Promise<Array<ModelClass>>
-  export type LoadById<ModelClass> = (id: string) => Promise<ModelClass>
+  export type LoadById<ModelClass extends ModelClassBase> = (
+    id: ModelClass['_id']
+  ) => Promise<ModelClass>
 }
 
-export type MongoSelector<DocumentType = MongoDB.Document> = string | MongoDB.Filter<DocumentType>
+export type MongoSelector<ModelClass extends ModelClassBase = ModelClassBase> =
+  | ModelClass['_id']
+  | MongoDB.Filter<ModelClass>
 
 export interface FindCursor<ModelClass> extends MongoDB.FindCursor {
   toArray: () => Promise<Array<ModelClass>>
@@ -99,79 +104,79 @@ export interface InsertOptions {
   mongoOptions?: MongoDB.InsertOneOptions
 }
 
-export type InitItem<ModelClass> = (doc: MongoDB.Document) => ModelClass
+export type InitItem<ModelClass extends ModelClassBase> = (doc: any) => ModelClass
 
-export type FindOne<ModelClass> = (
+export type FindOne<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
 ) => Promise<ModelClass>
 
-export type Find<ModelClass> = (
+export type Find<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.FindOptions
 ) => FindCursor<ModelClass>
 
-export type FindOneAndUpdate<ModelClass> = (
+export type FindOneAndUpdate<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions
 ) => Promise<ModelClass>
 
-export type UpdateAndFind<ModelClass> = (
+export type UpdateAndFind<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions
 ) => Promise<ModelClass>
 
-export type UpdateItem<ModelClass> = (
-  item: {_id: string} & ModelClass,
+export type UpdateItem<ModelClass extends ModelClassBase> = (
+  item: ModelClass,
   modifier: ModelToUpdateFilter<ModelClass>
 ) => Promise<void>
 
-export type InsertOne<ModelClass> = (
+export type InsertOne<ModelClass extends ModelClassBase> = (
   doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
   options?: InsertOptions
-) => Promise<string>
+) => Promise<ModelClass['_id']>
 
-export type InsertMany<ModelClass> = (
+export type InsertMany<ModelClass extends ModelClassBase> = (
   doc: Array<ModelToDocumentTypeWithIdOptional<ModelClass>>,
   options?: InsertOptions
-) => Promise<Array<string>>
+) => Promise<Array<ModelClass['_id']>>
 
-export type InsertAndFind<ModelClass> = (
+export type InsertAndFind<ModelClass extends ModelClassBase> = (
   doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
   options?: InsertOptions
 ) => Promise<ModelClass>
 
-export type DeleteMany<ModelClass> = (
+export type DeleteMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.DeleteOptions
 ) => Promise<MongoDB.DeleteResult>
 
-export type DeleteOne<ModelClass> = (
+export type DeleteOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.DeleteOptions
 ) => Promise<MongoDB.DeleteResult>
 
-export type UpdateOne<ModelClass> = (
+export type UpdateOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: UpdateOptions
 ) => Promise<MongoDB.UpdateResult>
 
-export type UpdateMany<ModelClass> = (
+export type UpdateMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: UpdateOptions
 ) => Promise<MongoDB.UpdateResult | MongoDB.Document>
 
-export type Upsert<ModelClass> = (
+export type Upsert<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
   options?: UpdateOptions
 ) => Promise<MongoDB.UpdateResult>
 
-export interface CreateCollectionOptions {
+export interface CreateCollectionOptions<ModelClass extends ModelClassBase = ModelClassBase> {
   /**
    * The name of the collection on the Mongo Database
    */
@@ -198,22 +203,26 @@ export interface CreateCollectionOptions {
    * Select between random id generation o mongo (time based) id generation
    */
   idGeneration?: 'mongo' | 'random'
+  /**
+   * ID prefix. Only used if idGeneration is random
+   */
+  idPrefix?: ModelClass['_id']
 }
 
-export type EstimatedDocumentCount<ModelClass> = (
+export type EstimatedDocumentCount<ModelClass extends ModelClassBase> = (
   options?: MongoDB.EstimatedDocumentCountOptions
 ) => Promise<number>
 
-export type CountDocuments<ModelClass> = (
+export type CountDocuments<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   options?: MongoDB.CountDocumentsOptions
 ) => Promise<number>
 
-export type CreateCollection = <ModelClass = any>(
-  options: CreateCollectionOptions
+export type CreateCollection = <ModelClass extends ModelClassBase = any>(
+  options: CreateCollectionOptions<ModelClass>
 ) => Collection<ModelClass>
 
-export interface Collection<ModelClass = any> {
+export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
   connectionName?: string
   schema?: Schema
@@ -222,12 +231,12 @@ export interface Collection<ModelClass = any> {
    */
   model?: Model
   indexes: Array<CollectionIndex>
-  generateId: () => string
+  generateId: () => ModelClass['_id']
   getSchema: () => Schema
 
   db: MongoDB.Db
   client: OrionMongoClient
-  rawCollection: MongoDB.Collection
+  rawCollection: MongoDB.Collection<ModelClass>
   initItem: InitItem<ModelClass>
 
   findOne: FindOne<ModelClass>

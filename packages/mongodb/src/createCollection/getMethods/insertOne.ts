@@ -1,10 +1,12 @@
 import isPlainObject from 'lodash/isPlainObject'
-import {Collection, InsertOne} from '../../types'
+import {Collection, InsertOne, ModelClassBase} from '../../types'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
 import {wrapErrors} from './wrapErrors'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const insertOne: InsertOne<DocumentType> = async (insertDoc, options) => {
     await collection.connectionPromise
     let doc = insertDoc as any

@@ -2,6 +2,7 @@ import {generateId} from '@orion-js/helpers'
 import createCollection from '.'
 import {allConnectionPromises} from '..'
 import {MockTests} from './createIndexPromisesTest'
+
 jest.mock('./createIndexPromisesTest')
 
 export const Tests = createCollection({

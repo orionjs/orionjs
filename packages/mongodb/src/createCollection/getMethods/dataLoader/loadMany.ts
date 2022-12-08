@@ -1,7 +1,9 @@
-import {Collection, DataLoader} from '../../../types'
+import {Collection, DataLoader, ModelClassBase} from '../../../types'
 
-export default function <ModelClass>(collection: Partial<Collection>) {
-  const loadMany: DataLoader.LoadMany<ModelClass> = async options => {
+export default function <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) {
+  const loadMany: DataLoader.LoadMany<DocumentType> = async options => {
     const results = await collection.loadData(options)
     return results
   }

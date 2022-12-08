@@ -17,6 +17,9 @@ describe('Collections with typed model', () => {
   @TypedModel()
   class Person {
     @Prop()
+    _id: string
+
+    @Prop()
     firstName: string
 
     @Prop({max: 10})
@@ -100,6 +103,9 @@ describe('Collections with typed model', () => {
 
     @TypedSchema()
     class Person {
+      @Prop()
+      _id: string
+
       @Prop()
       firstName: string
 

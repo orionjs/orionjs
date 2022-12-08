@@ -1,5 +1,5 @@
 import {MongoExpiredSessionError} from 'mongodb'
-import {Collection} from '..'
+import {Collection, ModelClassBase} from '..'
 
 function matchingDefinition(defIndex, curIndex) {
   if (defIndex.options && defIndex.options.name === curIndex.name) return true
@@ -9,7 +9,9 @@ function matchingDefinition(defIndex, curIndex) {
   return defIndexName === curIndex.name
 }
 
-export async function checkIndexes(collection: Partial<Collection>) {
+export async function checkIndexes<DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) {
   let currentIndexes = []
   try {
     currentIndexes = await collection.rawCollection.indexes()
@@ -35,7 +37,9 @@ export async function checkIndexes(collection: Partial<Collection>) {
     )
   }
 }
-export async function loadIndexes(collection: Partial<Collection>): Promise<string[]> {
+export async function loadIndexes<DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+): Promise<string[]> {
   if (!collection.indexes) return
   if (!collection.indexes.length) return
 

@@ -1,8 +1,10 @@
-import {Collection, UpdateAndFind} from '../../types'
+import {Collection, ModelClassBase, UpdateAndFind} from '../../types'
 import getSelector from './getSelector'
 import {wrapErrors} from './wrapErrors'
 
-export default <DocumentType>(collection: Partial<Collection>) => {
+export default <DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>
+) => {
   const updateAndFind: UpdateAndFind<DocumentType> = async function (
     selector,
     modifier,
