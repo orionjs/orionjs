@@ -9,7 +9,7 @@ export default resolver({
     }
   },
   returns: File,
-  async resolve({fileId}, viewer) {
+  async resolve({fileId}) {
     return await Files.findOne(fileId)
   }
 })

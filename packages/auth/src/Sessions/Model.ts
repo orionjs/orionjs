@@ -1,8 +1,8 @@
-import {getModelForClass, TypedModel, Prop, ResolverProp} from '@orion-js/typed-model'
+import {getModelForClass, TypedSchema, Prop, ResolverProp} from '@orion-js/typed-model'
 import {GetSessionOpts} from '../types'
 import userResolver from './userResolver'
 
-@TypedModel()
+@TypedSchema()
 export class AbstractSession {
   @Prop({type: 'ID'})
   _id: string
@@ -38,10 +38,10 @@ export class AbstractSession {
   options: object
 }
 
-export default (options: GetSessionOpts) => {
+export default function (options: GetSessionOpts) {
   const currResolver = userResolver(options)
 
-  @TypedModel()
+  @TypedSchema()
   class Session extends AbstractSession {
     @ResolverProp(currResolver)
     user: typeof currResolver.modelResolve
