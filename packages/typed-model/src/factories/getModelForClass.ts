@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
+import {FieldType} from '@orion-js/schema/lib/fieldType'
 import {PropOptions} from '..'
 import {MetadataStorage} from '../storage/metadataStorage'
 import {Constructor} from '../utils/interfaces'
@@ -9,6 +10,10 @@ const modelCache = new Map<Constructor<any>, Model>()
 
 function processModelSchemaForProp(prop: PropOptions) {
   if ((prop.type as Model)?.__isModel === true) {
+    return prop
+  }
+
+  if ((prop.type as FieldType)?._isFieldType === true) {
     return prop
   }
 

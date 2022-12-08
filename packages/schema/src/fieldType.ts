@@ -4,12 +4,16 @@ export interface FieldTypeOpts {
   name: string
   validate?: ValidateFunction
   clean?: CleanFunction
+  toGraphQLType?: (GraphQL: any) => any
+  meta?: any
 }
 
 export interface FieldType {
   name: string
   validate: ValidateFunction
   clean: CleanFunction
+  meta?: any
+  toGraphQLType?: (GraphQL: any) => any
   _isFieldType: boolean
 }
 

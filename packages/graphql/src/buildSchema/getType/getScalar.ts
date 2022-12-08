@@ -1,7 +1,9 @@
 import BigIntScalar from './BigIntScalar'
 import DateScalar from './DateScalar'
 import JSONScalar from './JSONScalar'
-import {GraphQLFloat, GraphQLString, GraphQLID, GraphQLBoolean} from 'graphql'
+import * as GraphQL from 'graphql'
+
+const {GraphQLFloat, GraphQLString, GraphQLID, GraphQLBoolean} = GraphQL
 
 const fieldMap = {
   string: GraphQLString,
@@ -19,7 +21,7 @@ export default function (fieldType) {
     return fieldMap[fieldType.name]
   }
   if (fieldType.toGraphQLType) {
-    const result = fieldType.toGraphQLType()
+    const result = fieldType.toGraphQLType(GraphQL)
     if (result.then) {
       throw new Error('toGraphQLType cant return a promise')
     }

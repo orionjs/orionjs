@@ -8,6 +8,7 @@ import clean from './clean'
 import cleanKey from './cleanKey'
 import validateKey from './validateKey'
 import dotGetSchema from './dotGetSchema'
+import createEnum from './fieldTypes/enum'
 
 export {
   validate,
@@ -19,7 +20,8 @@ export {
   clean,
   cleanKey,
   dotGetSchema,
-  validateKey
+  validateKey,
+  createEnum
 }
 
 export * from './types'

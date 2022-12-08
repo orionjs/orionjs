@@ -21,17 +21,12 @@
     "lodash": "^4.17.10"
   },
   "devDependencies": {
-    "@types/eslint": "^7.29.0",
-    "@types/jest": "27.0.2",
-    "@types/lodash": "4.14.176",
-    "@types/node": "16.11.7",
-    "@typescript-eslint/eslint-plugin": "5.3.1",
-    "@typescript-eslint/parser": "5.3.1",
-    "eslint": "8.2.0",
-    "eslint-plugin-import": "2.25.3",
+    "@types/dot-object": "^2.1.2",
+    "@types/jest": "^27.4.1",
+    "@types/lodash": "4.14.181",
     "jest": "27.3.1",
     "ts-jest": "27.0.7",
-    "typescript": "^4.4.4"
+    "typescript": "^4.6.3"
   },
   "publishConfig": {
     "access": "public"

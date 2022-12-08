@@ -25,6 +25,7 @@ export type ConstructorsTypesList =
   | Constructor<Date>
 
 export type SchemaRecursiveNodeTypeExtras = {
+  _isFieldType?: boolean
   __clean?: CleanFunction
   __validate?: ValidateFunction
   __skipChildValidation?: (value: any, info: CurrentNodeInfo) => Promise<boolean>
