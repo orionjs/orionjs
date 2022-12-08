@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/core",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.3.4",
+    "@orion-js/env": "^3.3.5",
     "chokidar": "3.5.3",
     "colors": "^1.4.0",
     "commander": "^8.3.0",
@@ -34,7 +34,7 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "gitHead": "80d7ff4f8452fdc0d046ed7a37dde041916a2906",
+  "gitHead": "495fc206a254857bf619ee1d8f8efa238a14a898",
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/prompts": "^2.0.14"

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -22,13 +22,13 @@
     "@orion-js/services": "^3.2.21"
   },
   "devDependencies": {
-    "@orion-js/dogs": "^3.3.4",
-    "@orion-js/echoes": "^3.3.4",
-    "@orion-js/graphql": "^3.3.4",
-    "@orion-js/helpers": "^3.3.4",
-    "@orion-js/http": "^3.3.4",
-    "@orion-js/models": "^3.3.4",
-    "@orion-js/services": "^3.3.4",
+    "@orion-js/dogs": "^3.3.5",
+    "@orion-js/echoes": "^3.3.5",
+    "@orion-js/graphql": "^3.3.5",
+    "@orion-js/helpers": "^3.3.5",
+    "@orion-js/http": "^3.3.5",
+    "@orion-js/models": "^3.3.5",
+    "@orion-js/services": "^3.3.5",
     "@types/jest": "^27.0.2",
     "jest": "27.3.1",
     "reflect-metadata": "0.1.13",
@@ -38,5 +38,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "2a5177cdb89ce840ea6da8c2e331e35ad1b251b8"
+  "gitHead": "495fc206a254857bf619ee1d8f8efa238a14a898"
 }
