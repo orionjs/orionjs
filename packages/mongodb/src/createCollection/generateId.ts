@@ -3,10 +3,12 @@ import {ObjectID} from 'bson'
 import {CreateCollectionOptions} from '..'
 
 const getIdGenerator = (options: CreateCollectionOptions): (() => string) => {
-  if (options.idGeneration === 'random') {
-    const prefix = options.idPrefix || ''
-    const random = generateId()
-    return () => `${prefix}${random}`
+  if (options.idPrefix || options.idGeneration === 'random') {
+    return () => {
+      const prefix = options.idPrefix || ''
+      const random = generateId()
+      return `${prefix}${random}`
+    }
   }
 
   return () => {

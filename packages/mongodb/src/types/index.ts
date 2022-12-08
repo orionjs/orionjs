@@ -204,7 +204,7 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
    */
   idGeneration?: 'mongo' | 'random'
   /**
-   * ID prefix. Only used if idGeneration is random. Recommended for type checking
+   * ID prefix. idGeneration will be forced to random. Recommended for type checking
    */
   idPrefix?: ModelClass['_id']
 }
