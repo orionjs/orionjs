@@ -21,6 +21,11 @@ function processModelSchemaForProp(prop: PropOptions) {
 }
 
 export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
+  const targetAsModel = target as any as Model
+  if (targetAsModel.__isModel) {
+    return targetAsModel
+  }
+
   let modelResolvers = null
 
   if (target.prototype.typedModel) {

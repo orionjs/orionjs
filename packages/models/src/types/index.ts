@@ -56,8 +56,8 @@ export interface GlobalResolversMap {
 
 export interface CloneOptions {
   name: string
-  omitFields?: readonly string[]
-  pickFields?: readonly string[]
+  omitFields?: string[]
+  pickFields?: string[]
   mapFields?: (field: any, key: string) => any
   extendSchema?: Schema
   extendResolvers?: ModelResolversMap
