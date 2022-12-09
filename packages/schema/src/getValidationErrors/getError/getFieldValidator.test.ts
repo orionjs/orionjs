@@ -1,6 +1,7 @@
 import getFieldValidator from './getFieldValidator'
 import fieldType from '../../fieldType'
 import getFieldType from './getFieldType'
+import {clean, Schema, validate} from '../..'
 
 test('returns object validator when an object is passed', async () => {
   const validator = getFieldValidator({name: {type: String}})
@@ -62,4 +63,15 @@ test('returns unkown field validator when an unkown type string is passed', asyn
   } catch (error) {
     expect(error.message).toMatch(/Field type does not exist/)
   }
+})
+
+test('passes when field type is custom (for client side)', async () => {
+  const schema: Schema = {
+    name: {
+      type: 'enum' as any
+    }
+  }
+  await clean(schema, {name: 'test'})
+  await validate(schema, {name: 'test'})
+  getFieldValidator('enum')
 })

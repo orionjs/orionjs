@@ -15,6 +15,7 @@ export default function (type: any): FieldValidatorType {
   if (type === Date) return 'date'
   if (type === Number) return 'number'
   if (type === Boolean) return 'boolean'
+  if (type === 'enum') return 'string'
 
   if (!isString(type)) {
     throw new Error('Field type is invalid. Pass a string or a custom field type. Got ' + type)
