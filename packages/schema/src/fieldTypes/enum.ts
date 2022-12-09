@@ -3,6 +3,8 @@ import isString from 'lodash/isString'
 import Errors from '../Errors'
 import includes from 'lodash/includes'
 
+global.GraphQLEnums = global.GraphQLEnums || {}
+
 export default function createEnum<TValues extends readonly string[]>(
   name: string,
   values: TValues
@@ -16,13 +18,17 @@ export default function createEnum<TValues extends readonly string[]>(
         enumValues: values
       },
       toGraphQLType: GraphQL => {
-        return new GraphQL.GraphQLEnumType({
-          name,
-          values: values.reduce((result, value) => {
-            result[value] = {value}
-            return result
-          }, {})
-        })
+        global.GraphQLEnums[name] =
+          global.GraphQLEnums[name] ||
+          new GraphQL.GraphQLEnumType({
+            name,
+            values: values.reduce((result, value) => {
+              result[value] = {value}
+              return result
+            }, {})
+          })
+
+        return global.GraphQLEnums[name]
       },
       validate(value: string, {currentSchema}) {
         if (!isString(value)) return Errors.NOT_A_STRING
