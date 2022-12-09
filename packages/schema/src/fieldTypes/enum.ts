@@ -3,8 +3,6 @@ import isString from 'lodash/isString'
 import Errors from '../Errors'
 import includes from 'lodash/includes'
 
-global.GraphQLEnums = global.GraphQLEnums || {}
-
 export default function createEnum<TValues extends readonly string[]>(
   name: string,
   values: TValues
@@ -18,6 +16,8 @@ export default function createEnum<TValues extends readonly string[]>(
         enumValues: values
       },
       toGraphQLType: GraphQL => {
+        global.GraphQLEnums = global.GraphQLEnums || {}
+
         global.GraphQLEnums[name] =
           global.GraphQLEnums[name] ||
           new GraphQL.GraphQLEnumType({
