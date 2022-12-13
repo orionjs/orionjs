@@ -25,7 +25,8 @@ const defaultOptions = {
   wsOptions: {},
   getJWT: () => {},
   upgradeJWT: () => {},
-  refreshJWT: () => {}
+  refreshJWT: () => {},
+  refreshJWTEvery: 5 * 60 * 1000 // every 5 minutes
 }
 
 export default function (passedOptions) {
@@ -45,7 +46,7 @@ export default function (passedOptions) {
         }
       }, 1000)
     }
-    setInterval(() => refreshJWT(options), 5 * 60 * 1000) // every 5 minutes
+    setInterval(() => refreshJWT(options), options.refreshJWTEvery)
   }
 
   const client = new ApolloClient({link, cache: options.cache, resolvers: options.resolvers})
