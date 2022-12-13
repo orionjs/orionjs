@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/auth",
-  "version": "3.3.15",
+  "version": "3.3.16",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",

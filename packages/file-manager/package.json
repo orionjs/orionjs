@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "3.3.15",
+  "version": "3.3.16",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "@orion-js/helpers": "^3.3.6",
     "@orion-js/models": "^3.3.14",
     "@orion-js/mongodb": "^3.3.15",
-    "@orion-js/paginated-mongodb": "^3.3.15",
+    "@orion-js/paginated-mongodb": "^3.3.16",
     "@orion-js/resolvers": "^3.3.14",
     "@orion-js/schema": "^3.3.14",
     "aws-sdk": "^2.1028.0",
