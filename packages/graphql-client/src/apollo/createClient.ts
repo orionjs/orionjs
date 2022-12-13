@@ -25,9 +25,10 @@ const defaultOptions: OrionApolloClientOpts = {
   getHeaders: () => {},
   resolvers: null,
   wsOptions: {},
-  getJWT: () => {},
+  getJWT: () => null,
   upgradeJWT: () => {},
   refreshJWT: null,
+  refreshJWTEvery: 5 * 60 * 1000,
   apolloOverrides: {}
 }
 
@@ -48,7 +49,7 @@ export default function createClient(passedOptions: OrionApolloClientOpts): Orio
         }
       }, 1000)
     }
-    setInterval(() => refreshJWT(options), 5 * 60 * 1000) // every 5 minutes
+    setInterval(() => refreshJWT(options), options.refreshJWTEvery) // every 5 minutes
   }
 
   const client: OrionApolloClient<any> = new ApolloClient({

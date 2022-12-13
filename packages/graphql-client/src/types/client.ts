@@ -18,9 +18,10 @@ export interface OrionApolloClientOpts {
   getHeaders?: Function
   resolvers?: Resolvers | Resolvers[]
   wsOptions?: Partial<ClientOptions>
-  getJWT?: Function
+  getJWT?: () => Promise<string>
   upgradeJWT?: Function
-  refreshJWT?: Function
+  refreshJWT?: () => Promise<void>
+  refreshJWTEvery?: number
   apolloClient?: ApolloClient<any>
   wsClient?: SubscriptionClient
   ssrMode?: boolean
