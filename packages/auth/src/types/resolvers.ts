@@ -6,7 +6,7 @@ export interface TwoFactor {
   issuer: string
 }
 
-export interface GetAuthResolversOpts<UserType = any> {
+export interface GetAuthResolversOpts<UserType extends {_id: string} = any> {
   Users: Collection<UserType>
   customSessionModel?: Model
   twoFactor?: TwoFactor
