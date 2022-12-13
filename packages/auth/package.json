@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/auth",
-  "version": "3.3.14",
+  "version": "3.3.15",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "@orion-js/helpers": "^3.3.6",
     "@orion-js/http": "^3.3.14",
     "@orion-js/models": "^3.3.14",
-    "@orion-js/mongodb": "^3.3.14",
+    "@orion-js/mongodb": "^3.3.15",
     "@orion-js/resolvers": "^3.3.14",
     "@orion-js/schema": "^3.3.14",
     "@orion-js/typed-model": "^3.3.14",
