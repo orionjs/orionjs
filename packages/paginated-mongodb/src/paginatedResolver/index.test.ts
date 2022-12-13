@@ -9,6 +9,9 @@ describe('Full example of paginated resolver', () => {
     @TypedSchema()
     class ItemSchema {
       @Prop()
+      _id: string
+
+      @Prop()
       name: string
 
       @Prop()
