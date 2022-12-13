@@ -23,9 +23,10 @@ import {Resolver} from '@orion-js/resolvers'
 import {GetAuthResolversOpts} from '..'
 import {Collection} from '@orion-js/mongodb'
 import {Model} from '@orion-js/models'
+import {AbstractSession} from '../Sessions/Model'
 
 export interface ExtendedGetResolversOpts extends GetAuthResolversOpts {
-  Sessions: Collection
+  Sessions: Collection<AbstractSession>
   Session: Model
 }
 

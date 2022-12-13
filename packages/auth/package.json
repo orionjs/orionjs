@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "exit 0",
+    "ts-check": "tsc --noEmit",
     "prepare": "yarn run build",
     "clean": "rm -rf ./lib",
     "build": "yarn run clean && tsc",
