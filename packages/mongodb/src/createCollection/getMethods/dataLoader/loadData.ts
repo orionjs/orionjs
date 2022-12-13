@@ -1,5 +1,11 @@
 import {createMap, createMapArray} from '@orion-js/helpers'
-import {DataLoader, Collection, ModelClassBase} from '../../../types'
+import {
+  DataLoader,
+  Collection,
+  ModelClassBase,
+  MongoFilter,
+  ModelToMongoSelector
+} from '../../../types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
@@ -21,8 +27,10 @@ export default function <DocumentType extends ModelClassBase>(
       ids: options.values,
       timeout: options.timeout,
       load: async values => {
-        const query: typeof options.match = cloneDeep(options.match) || {}
-        query[options.key] = {$in: values}
+        const query = {
+          ...cloneDeep(options.match),
+          [options.key]: {$in: values}
+        } as ModelToMongoSelector<DocumentType>
 
         const cursor = collection.find(query)
 
@@ -40,7 +48,7 @@ export default function <DocumentType extends ModelClassBase>(
 
         const items = await cursor.toArray()
 
-        const itemsMap = createMapArray(items, options.key)
+        const itemsMap = createMapArray(items, options.key as string)
         return values.map(value => {
           return itemsMap[value] || []
         })

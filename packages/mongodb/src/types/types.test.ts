@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {modelResolver} from '@orion-js/resolvers'
-import {Prop, ResolverProp, TypedModel} from '@orion-js/typed-model'
+import {Prop, ResolverProp, TypedSchema} from '@orion-js/typed-model'
 import createCollection from '../createCollection/index'
 
 it('uses correctly typescript for collections', async () => {
@@ -11,10 +11,12 @@ it('uses correctly typescript for collections', async () => {
     }
   })
 
-  @TypedModel()
+  type UserId = `userId-${string}`
+
+  @TypedSchema()
   class User {
     @Prop()
-    _id: string
+    _id: UserId
 
     /**
      * The users first name
@@ -35,14 +37,14 @@ it('uses correctly typescript for collections', async () => {
     fullName: typeof fullName.modelResolve
   }
 
-  const Users = createCollection<User>({name: generateId(), model: User})
+  const Users = createCollection<User>({name: generateId(), model: User, idPrefix: `userId-`})
 
   const userId = await Users.insertOne({
     firstName: 'Nico',
     lastName: 'López'
   })
 
-  const user1 = await Users.findOne(userId)
+  const user1 = await Users.findOne({_id: userId})
 
   expect(user1.firstName).toBe('Nico')
   expect(await user1.fullName()).toBe('Nico López')

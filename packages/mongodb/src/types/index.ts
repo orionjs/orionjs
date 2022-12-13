@@ -41,12 +41,10 @@ export interface CollectionIndex {
   options?: MongoDB.CreateIndexesOptions
 }
 
-type KeyOf<T extends object> = Extract<keyof T, string>
-
 export namespace DataLoader {
   interface LoadDataOptionsBase<ModelClass extends ModelClassBase> {
-    key: KeyOf<ModelToDocumentTypeWithId<ModelClass>>
-    match?: MongoDB.Filter<ModelToDocumentTypeWithId<ModelClass>>
+    key: keyof ModelClass
+    match?: MongoFilter<ModelClass>
     sort?: MongoDB.Sort
     project?: MongoDB.Document
     timeout?: number
@@ -78,9 +76,12 @@ export namespace DataLoader {
   ) => Promise<ModelClass>
 }
 
+export type MongoFilter<ModelClass extends ModelClassBase = ModelClassBase> =
+  MongoDB.Filter<ModelClass> & {_id?: ModelClass['_id']}
+
 export type MongoSelector<ModelClass extends ModelClassBase = ModelClassBase> =
   | ModelClass['_id']
-  | MongoDB.Filter<ModelClass>
+  | MongoFilter<ModelClass>
 
 export interface FindCursor<ModelClass> extends MongoDB.FindCursor {
   toArray: () => Promise<Array<ModelClass>>
