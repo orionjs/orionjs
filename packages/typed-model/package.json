@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.3.14",
+  "version": "3.3.19",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@orion-js/helpers": "^3.3.6",
-    "@orion-js/models": "^3.3.14",
+    "@orion-js/models": "^3.3.19",
     "@orion-js/resolvers": "^3.3.14",
     "@orion-js/schema": "^3.3.14",
     "@orion-js/services": "^3.3.6",
