@@ -1,5 +1,5 @@
 import initItem from './initItem'
-import {CreateModel, CloneOptions, Model} from '../types'
+import {CreateModel, CloneOptions, Model, CreateModelOptions} from '../types'
 import resolveParam from './resolveParam'
 import {validate, clean} from '@orion-js/schema'
 import clone from './clone'
@@ -9,7 +9,9 @@ interface GetSchemaOptions {
   omitModel?: boolean
 }
 
-const createModel: CreateModel = modelOptions => {
+export default function createModel<TSchema = any>(
+  modelOptions: CreateModelOptions
+): Model<TSchema> {
   const name = modelOptions.name
   let resolvedSchema = null
   let resolvedCleanSchema = null
@@ -67,7 +69,7 @@ const createModel: CreateModel = modelOptions => {
     return initItem({schema, resolvers, name}, item)
   }
 
-  const model: Model = {
+  const model: Model<TSchema> = {
     __isModel: true,
     name,
     getSchema,
@@ -92,10 +94,9 @@ const createModel: CreateModel = modelOptions => {
         },
         cloneOptions
       )
-    }
+    },
+    type: null
   }
 
   return model
 }
-
-export default createModel

@@ -63,7 +63,7 @@ export interface CloneOptions {
   extendResolvers?: ModelResolversMap
 }
 
-export interface Model {
+export interface Model<TSchema = any> {
   __isModel: boolean
 
   /**
@@ -105,6 +105,11 @@ export interface Model {
    * Creates a new model using this one as a base
    */
   clone: (cloneOptions: CloneOptions) => Model
+
+  /**
+   * The type of the model. Only use this in typescript
+   */
+  type: TSchema
 }
 
-export type CreateModel = (options: CreateModelOptions) => Model
+export type CreateModel<TSchema = any> = (options: CreateModelOptions) => Model<TSchema>

@@ -18,10 +18,11 @@ describe('cloneSchemaClass', () => {
 
     const ClonedSchema = cloneSchemaClass(SchemaName, {
       name: 'Test',
-      pickFields: ['name']
+      pickFields: ['name'] as const
     })
 
-    type fields2 = keyof typeof ClonedSchema
+    type ClonedType = typeof ClonedSchema.type
+    type fields2 = keyof ClonedType
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const test: fields2 = 'name'
   })

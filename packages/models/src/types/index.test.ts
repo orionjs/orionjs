@@ -28,4 +28,10 @@ it('should create correctly a model with its schema', async () => {
       }
     }
   })
+
+  const model4 = createModel<{name: string}>({
+    name: 'Name',
+    schema: {}
+  })
+  type Model4 = typeof model4.type
 })
