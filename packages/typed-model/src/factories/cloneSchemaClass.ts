@@ -12,7 +12,7 @@ export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
 
 /**
  * This function returns a cloned model but the type is a subset of the original Schema.
- * It will work as a Model but the type will not be the Type of the Model.
+ * To use the type of the cloned schema use `typeof ClonedModel.type`
  *
  * Example:
  * ```ts
