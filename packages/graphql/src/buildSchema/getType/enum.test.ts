@@ -49,7 +49,7 @@ describe('Enum test', () => {
     const globalResolver = resolver({
       params: TestParams,
       returns: Clone1,
-      async resolve(params: TestParams): Promise<typeof Clone1> {
+      async resolve(params: TestParams): Promise<typeof Clone1.type> {
         return params
       }
     })
@@ -60,7 +60,7 @@ describe('Enum test', () => {
     const globalResolver2 = resolver({
       params: Clone2,
       returns: Clone3,
-      async resolve(params: TestParams): Promise<typeof Clone3> {
+      async resolve(params: TestParams): Promise<typeof Clone3.type> {
         return params
       }
     })
