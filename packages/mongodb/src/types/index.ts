@@ -77,7 +77,7 @@ export namespace DataLoader {
 }
 
 export type MongoFilter<ModelClass extends ModelClassBase = ModelClassBase> =
-  MongoDB.Filter<ModelClass> & {_id?: ModelClass['_id']}
+  MongoDB.Filter<ModelClass> & ({_id?: ModelClass['_id']} | {_id?: {$in: ModelClass['_id'][]}})
 
 export type MongoSelector<ModelClass extends ModelClassBase = ModelClassBase> =
   | ModelClass['_id']
