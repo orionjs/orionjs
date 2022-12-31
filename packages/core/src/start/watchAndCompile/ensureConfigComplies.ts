@@ -5,7 +5,7 @@ import {parse, stringify} from 'comment-json'
 export function ensureConfigComplies(configPath) {
   try {
     const configJSON = getFileContents(configPath)
-    const config = parse(configJSON)
+    const config = parse(configJSON) as any
 
     const newConfig = {
       ...config,
