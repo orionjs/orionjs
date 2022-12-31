@@ -29,10 +29,10 @@ const getConnectionParams = function () {
 
 export default function createWsLink(options) {
   const {endpointURL, subscriptionsPath} = options
-  const uri = endpointURL.replace('http', 'ws') + subscriptionsPath
+  const url = endpointURL.replace('http', 'ws') + subscriptionsPath
 
   const client = createClient({
-    uri,
+    url,
     reconnect: true,
     lazy: true,
     reconnectionAttempts: 10,
