@@ -4,11 +4,13 @@ import {PubSub} from 'graphql-subscriptions'
 import {setPubsub} from './pubsub'
 import {getApp} from '@orion-js/http'
 import {getWebsockerViewer} from './websockerViewer'
+import {StartGraphQLOptions} from './types/startGraphQL'
 
-export default function ({schema}, options) {
-  setPubsub(options.pubsub || new PubSub())
+export default function ({schema}, options: StartGraphQLOptions) {
+  const pubsub = options.pubsub || new PubSub()
+  setPubsub(pubsub)
 
-  const server = options.server || getApp()
+  const server = options.app || getApp()
   if (!server) {
     throw new Error(
       'Error starting GraphQL WebSocket. You must start http server before starting GraphQL WebSocket'

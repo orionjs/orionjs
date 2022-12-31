@@ -1,19 +1,19 @@
 import {ResolverOptions} from '@orion-js/resolvers'
 
-export interface Subscription<T = any, ReturnType = any> {
+export interface OrionSubscription<TParams = any, ReturnType = any> {
   key: string
   params: object
   subscribe: (callParams: object, viewer: object) => {}
   returns: ReturnType
-  publish: (params: T, data: ReturnType) => Promise<void>
+  publish: (params: TParams, data: ReturnType) => Promise<void>
 }
 
-export type CreateSubscriptionFunction = <T = any, ReturnType = any>(
-  options: SubscriptionOptions
-) => Subscription<T, ReturnType>
+export type CreateOrionSubscriptionFunction = <T = any, ReturnType = any>(
+  options: OrionSubscriptionOptions
+) => OrionSubscription<T, ReturnType>
 
-export interface SubscriptionMap {
-  [key: string]: Subscription
+export interface OrionSubscriptionsMap {
+  [key: string]: OrionSubscription
 }
 
-export interface SubscriptionOptions extends Omit<ResolverOptions, 'resolve'> {}
+export interface OrionSubscriptionOptions extends Omit<ResolverOptions, 'resolve'> {}

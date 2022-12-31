@@ -1,5 +1,6 @@
 export type EchoesController = {new (...args: any[]): any}
 export type ResolversController = {new (...args: any[]): any}
+export type SubscriptionsController = {new (...args: any[]): any}
 export type JobsController = {new (...args: any[]): any}
 export type RoutesController = {new (...args: any[]): any}
 export type ModelResolversController = {new (...args: any[]): any}
@@ -9,6 +10,7 @@ export interface ComponentControllers {
   routes?: RoutesController[]
   jobs?: JobsController[]
   resolvers?: ResolversController[]
+  subscriptions?: SubscriptionsController[]
   modelResolvers?: ModelResolversController[]
 }
 

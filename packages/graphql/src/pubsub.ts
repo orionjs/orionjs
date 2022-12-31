@@ -1,11 +1,11 @@
-import {PubSub} from 'graphql-subscriptions'
+import {PubSubEngine} from 'graphql-subscriptions'
 
 let pubsub = null
 
-export const setPubsub = function (newPubsub: PubSub) {
+export const setPubsub = function (newPubsub: PubSubEngine) {
   pubsub = newPubsub
 }
 
-export const getPubsub: () => PubSub = function () {
+export const getPubsub: () => PubSubEngine = function () {
   return pubsub
 }

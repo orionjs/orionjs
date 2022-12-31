@@ -1,6 +1,12 @@
 import {Component} from '../components'
 import {EchoesMap, getServiceEchoes} from '@orion-js/echoes'
-import {getServiceModelResolvers, getServiceResolvers, ModelsResolversMap} from '@orion-js/graphql'
+import {
+  getServiceModelResolvers,
+  getServiceResolvers,
+  getServiceSubscriptions,
+  SubscriptionsMap,
+  ModelsResolversMap
+} from '@orion-js/graphql'
 import {getServiceRoutes, RoutesMap} from '@orion-js/http'
 import {getServiceJobs, JobsDefinition} from '@orion-js/dogs'
 import {GlobalResolversMap} from '@orion-js/models'
@@ -10,6 +16,7 @@ export interface MergedComponentControllers {
   echoes: EchoesMap
   resolvers: GlobalResolversMap
   modelResolvers: ModelsResolversMap
+  subscriptions: SubscriptionsMap
   routes: RoutesMap
   jobs: JobsDefinition
 }
@@ -54,6 +61,18 @@ export function mergeComponentControllers(component: Component): MergedComponent
     })
   }
 
+  const subscriptions: SubscriptionsMap = {}
+
+  if (component.controllers.subscriptions) {
+    component.controllers.subscriptions.forEach(Controller => {
+      const serviceResolvers = getServiceSubscriptions(Controller)
+      for (const subsrcriptionName in serviceResolvers) {
+        const subsrcription = serviceResolvers[subsrcriptionName]
+        subscriptions[subsrcriptionName] = subsrcription
+      }
+    })
+  }
+
   const routes: RoutesMap = {}
 
   if (component.controllers.routes) {
@@ -86,6 +105,7 @@ export function mergeComponentControllers(component: Component): MergedComponent
     echoes,
     resolvers,
     modelResolvers,
+    subscriptions,
     routes,
     jobs
   }
@@ -96,6 +116,7 @@ export function mergeComponents(components: Component[]): MergedComponentControl
     echoes: {},
     resolvers: {},
     modelResolvers: {},
+    subscriptions: {},
     routes: {},
     jobs: {}
   }
@@ -113,6 +134,10 @@ export function mergeComponents(components: Component[]): MergedComponentControl
     mergedControllers.modelResolvers = {
       ...mergedControllers.modelResolvers,
       ...componentControllers.modelResolvers
+    }
+    mergedControllers.subscriptions = {
+      ...mergedControllers.subscriptions,
+      ...componentControllers.subscriptions
     }
     mergedControllers.routes = {
       ...mergedControllers.routes,

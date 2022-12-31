@@ -1,5 +1,5 @@
 import {getPubsub} from '../pubsub'
-import {CreateSubscriptionFunction, Subscription, SubscriptionOptions} from '../types/subscription'
+import {CreateOrionSubscriptionFunction, OrionSubscription} from '../types/subscription'
 import getChannelName from './getChannelName'
 import {
   checkPermissions as checkResolverPermissions,
@@ -8,10 +8,10 @@ import {
   ResolverOptions
 } from '@orion-js/resolvers'
 
-const createSubscription: CreateSubscriptionFunction = function (options) {
+const createSubscription: CreateOrionSubscriptionFunction = function (options) {
   const subscription = {
     key: 'notInitialized'
-  } as Subscription
+  } as OrionSubscription
 
   // the publish function
   subscription.publish = async (params, data) => {

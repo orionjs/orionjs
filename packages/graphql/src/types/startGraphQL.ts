@@ -1,7 +1,8 @@
 import {GlobalResolversMap, ModelResolversMap} from '@orion-js/models'
 import {express} from '@orion-js/http'
-import {SubscriptionMap} from './subscription'
+import {OrionSubscriptionsMap} from './subscription'
 import {GraphQLOptions} from 'apollo-server-core'
+import {PubSubEngine} from 'graphql-subscriptions'
 
 export type ExecuteGraphQLCache = (
   req: express.Request,
@@ -30,7 +31,7 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
   /**
    * A Map with all global subscriptions
    */
-  subscriptions?: SubscriptionMap
+  subscriptions?: OrionSubscriptionsMap
 
   /**
    * A function that executes the http level cache of graphql queries
@@ -46,4 +47,9 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
    * Pass another express app
    */
   app?: express.Application
+
+  /**
+   * The pubsub instance to use. If not passed, a new instance will be created
+   */
+  pubsub?: PubSubEngine
 }

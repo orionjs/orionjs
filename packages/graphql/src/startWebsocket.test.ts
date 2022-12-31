@@ -106,8 +106,8 @@ const gqClient = async () => {
   const {apolloOptions, subscriptions} = await getStartServerOptions()
 
   const uri = `ws://localhost:${RANDOM_WS_PORT}`
-  const server = new Server(uri)
-  startWebsocket({schema: apolloOptions.schema}, {server})
+  const app = new Server(uri)
+  startWebsocket({schema: apolloOptions.schema}, {app, resolvers: {}})
 
   const getConnectionParams = () => {
     return {jwt: 'hi'}
