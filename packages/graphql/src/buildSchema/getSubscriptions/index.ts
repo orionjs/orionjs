@@ -8,11 +8,11 @@ export default async function (options: StartGraphQLOptions) {
 
   for (const key of Object.keys(subscriptions)) {
     const subscription = subscriptions[key]
-    subscription.key = key
+    subscription.name = subscription.name || key
 
     const type = await getType(subscription.returns, options)
     const args = await getArgs(subscription.params)
-    fields[key] = {
+    fields[subscription.name] = {
       type,
       args,
       async subscribe(root, params, viewer) {

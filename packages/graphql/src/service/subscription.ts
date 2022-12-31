@@ -1,10 +1,6 @@
 import {Container, Service} from '@orion-js/services'
 import {UserError} from '@orion-js/helpers'
-import {
-  CreateOrionSubscriptionFunction,
-  OrionSubscription,
-  OrionSubscriptionOptions
-} from '../types/subscription'
+import {OrionSubscription, OrionSubscriptionOptions} from '../types/subscription'
 import {subscription} from '..'
 
 export function Subscriptions(): ClassDecorator {
@@ -17,7 +13,10 @@ export function Subscriptions(): ClassDecorator {
 
 export function Subscription<T = any, ReturnType = any>(options: OrionSubscriptionOptions) {
   return function (object: any, propertyName: string, index?: number) {
-    const sub: OrionSubscription<T, ReturnType> = subscription(options)
+    const sub: OrionSubscription<T, ReturnType> = subscription({
+      name: propertyName,
+      ...options
+    })
 
     object.subscriptions = object.subscriptions || {}
     object.subscriptions[propertyName] = sub

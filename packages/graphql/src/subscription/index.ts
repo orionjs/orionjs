@@ -10,14 +10,14 @@ import {
 
 const createSubscription: CreateOrionSubscriptionFunction = function (options) {
   const subscription = {
-    key: 'notInitialized'
+    name: options.name
   } as OrionSubscription
 
   // the publish function
   subscription.publish = async (params, data) => {
     const pubsub = getPubsub()
-    const channelName = getChannelName(subscription.key, params)
-    await pubsub.publish(channelName, {[subscription.key]: data})
+    const channelName = getChannelName(subscription.name, params)
+    await pubsub.publish(channelName, {[subscription.name]: data})
   }
 
   subscription.subscribe = async (params, viewer) => {
@@ -25,7 +25,7 @@ const createSubscription: CreateOrionSubscriptionFunction = function (options) {
     try {
       await checkResolverPermissions({params, viewer}, options as ResolverOptions)
 
-      const channelName = getChannelName(subscription.key, params)
+      const channelName = getChannelName(subscription.name, params)
       return pubsub.asyncIterator(channelName)
     } catch (error) {
       return pubsub.asyncIterator('unauthorized')

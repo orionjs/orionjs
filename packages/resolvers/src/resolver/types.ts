@@ -3,8 +3,12 @@ import {OrionCache} from '@orion-js/cache'
 export type GlobalResolverResolve = (params: any, viewer: any) => Promise<any>
 export type ModelResolverResolve = (item: any, params: any, viewer: any) => Promise<any>
 
-export type GlobalCheckPermissions = (params: any, viewer: any) => Promise<string>
-export type ModelCheckPermissions = (parent: any, params: any, viewer: any) => Promise<string>
+export type GlobalCheckPermissions = (params: any, viewer: any) => Promise<string | void>
+export type ModelCheckPermissions = (
+  parent: any,
+  params: any,
+  viewer: any
+) => Promise<string | void>
 
 export type GlobalGetCacheKey = (params: any, viewer: any) => Promise<any>
 export type ModelGetCacheKey = (parent: any, params: any, viewer: any) => Promise<any>

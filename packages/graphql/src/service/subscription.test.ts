@@ -33,6 +33,7 @@ describe('Subscriptions classes', () => {
 
     const instance = getInstance(ExampleSubscriptionsService)
     expect(instance.onUserCreated.publish).toBeDefined()
+    expect(instance.onUserCreated.name).toBe('onUserCreated')
 
     // await instance.onUserCreated.publish({name: 'test'}, {name: 'test'})
   })
