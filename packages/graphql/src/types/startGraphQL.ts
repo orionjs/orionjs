@@ -49,7 +49,8 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
   app?: express.Application
 
   /**
-   * The pubsub instance to use. If not passed, a new instance will be created
+   * The pubsub provider to use. Default to the single server pubsub.
+   * If you are using multiple servers you must pass a pubsub provider like RedisPubSub
    */
   pubsub?: PubSubEngine
 }

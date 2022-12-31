@@ -4,7 +4,7 @@ import {
   getServiceModelResolvers,
   getServiceResolvers,
   getServiceSubscriptions,
-  SubscriptionsMap,
+  OrionSubscriptionsMap,
   ModelsResolversMap
 } from '@orion-js/graphql'
 import {getServiceRoutes, RoutesMap} from '@orion-js/http'
@@ -16,7 +16,7 @@ export interface MergedComponentControllers {
   echoes: EchoesMap
   resolvers: GlobalResolversMap
   modelResolvers: ModelsResolversMap
-  subscriptions: SubscriptionsMap
+  subscriptions: OrionSubscriptionsMap
   routes: RoutesMap
   jobs: JobsDefinition
 }
@@ -61,7 +61,7 @@ export function mergeComponentControllers(component: Component): MergedComponent
     })
   }
 
-  const subscriptions: SubscriptionsMap = {}
+  const subscriptions: OrionSubscriptionsMap = {}
 
   if (component.controllers.subscriptions) {
     component.controllers.subscriptions.forEach(Controller => {
