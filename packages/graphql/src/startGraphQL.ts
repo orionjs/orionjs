@@ -1,74 +1,39 @@
 import startGraphiQL from './startGraphiQL'
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import {runHttpQuery, convertNodeHttpToRequest, isHttpQueryError} from 'apollo-server-core'
-import {registerRoute, route} from '@orion-js/http'
+import {getApp, getServer, getViewer, registerRoute, route} from '@orion-js/http'
 import {StartGraphQLOptions} from './types/startGraphQL'
+import {ApolloServer} from '@apollo/server'
+import {expressMiddleware} from '@apollo/server/express4'
+import {ApolloServerPluginDrainHttpServer} from '@apollo/server/plugin/drainHttpServer'
+import {bodyParser} from '@orion-js/http'
 
 export default async function (options: StartGraphQLOptions) {
   const apolloOptions = await getApolloOptions(options)
+
+  const app = options.app || getApp()
+  const httpServer = getServer()
+
   if (options.useGraphiql) {
     startGraphiQL(apolloOptions, options)
   }
 
-  if (options.subscriptions) {
-    startWebsocket(apolloOptions, options)
-  }
+  const subPlugins = startWebsocket(apolloOptions, options)
 
-  registerRoute(
-    route({
-      app: options.app,
-      method: 'all',
-      path: '/graphql',
-      bodyParser: 'json',
-      async resolve(req, res, viewer) {
-        try {
-          const executeQuery = async () => {
-            return await runHttpQuery([req, res], {
-              method: req.method,
-              options: {...apolloOptions, context: viewer},
-              query: req.method === 'POST' ? req.body : req.query,
-              request: convertNodeHttpToRequest(req)
-            })
-          }
+  const drainPlugins = httpServer ? [ApolloServerPluginDrainHttpServer({httpServer})] : []
 
-          if (options.executeGraphQLCache) {
-            try {
-              const result = await options.executeGraphQLCache(req, res, viewer, () =>
-                executeQuery().then(r => r.graphqlResponse)
-              )
-              if (result) {
-                return {
-                  body: result,
-                  headers: {
-                    'Content-Type': 'application/json'
-                  }
-                }
-              }
-            } catch (error) {
-              console.log('Error executing GraphQL cache:', error)
-            }
-          }
+  const server = new ApolloServer({
+    ...apolloOptions,
+    plugins: [...(apolloOptions.plugins || []), ...drainPlugins, ...subPlugins]
+  })
 
-          const {graphqlResponse, responseInit} = await executeQuery()
+  await server.start()
 
-          return {
-            body: graphqlResponse,
-            headers: responseInit.headers,
-            statusCode: responseInit.status || 200
-          }
-        } catch (error) {
-          if (!isHttpQueryError(error)) {
-            throw error
-          }
-
-          return {
-            headers: error.headers,
-            statusCode: error.statusCode,
-            body: error.message
-          }
-        }
-      }
+  app.use(
+    '/graphql',
+    bodyParser.json(),
+    expressMiddleware(server, {
+      context: async ({req}) => await getViewer(req)
     })
   )
 }

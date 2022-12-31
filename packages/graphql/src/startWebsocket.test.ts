@@ -2,14 +2,20 @@ import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
 import {resolver, addPermissionChecker} from '@orion-js/resolvers'
 import {subscription} from '.'
-import {Server, WebSocket} from 'mock-socket-with-protocol'
 import {ApolloClient, InMemoryCache} from '@apollo/client/core'
-import {WebSocketLink} from '@apollo/client/link/ws'
 import gql from 'graphql-tag'
 import {sleep} from '@orion-js/helpers'
 import {random} from 'lodash'
 import {setGetWebsockerViewer} from './websockerViewer'
 import {TypedModel, Prop, getModelForClass, TypedSchema} from '@orion-js/typed-model'
+import {GraphQLWsLink} from '@apollo/client/link/subscriptions'
+import {createClient} from 'graphql-ws'
+import ws, {WebSocketServer} from 'ws'
+import crypto from 'crypto'
+import {express, getServer} from '@orion-js/http'
+import WebSocket from 'ws'
+import http from 'http'
+import request from 'superwstest'
 
 const getStartServerOptions = async () => {
   const resolvers = {
@@ -105,26 +111,36 @@ const gqClient = async () => {
   // We pass customServer instead of typical configuration of a default WebSocket server
   const {apolloOptions, subscriptions} = await getStartServerOptions()
 
-  const uri = `ws://localhost:${RANDOM_WS_PORT}`
-  const app = new Server(uri)
-  startWebsocket({schema: apolloOptions.schema}, {app, resolvers: {}})
+  const uri = `ws://localhost:${RANDOM_WS_PORT}/subscriptions`
+  const server = new WebSocketServer({
+    server: getServer(),
+    path: '/subscriptions',
+    port: RANDOM_WS_PORT
+  })
+  startWebsocket({schema: apolloOptions.schema}, {resolvers: {}, subscriptions: {}}, server)
 
   const getConnectionParams = () => {
     return {jwt: 'hi'}
   }
 
-  // The uri of the WebSocketLink has to match the customServer uri.
-  const wsLink = new WebSocketLink({
-    uri,
-    webSocketImpl: WebSocket,
-    options: {
-      connectionParams: getConnectionParams,
-      connectionCallback: error => {
-        if (error) throw error
-      },
-      lazy: false
-    }
+  const client = createClient({
+    url: uri,
+    webSocketImpl: ws,
+    connectionParams: getConnectionParams,
+    lazy: false,
+    /**
+     * Generates a v4 UUID to be used as the ID.
+     * Reference: https://gist.github.com/jed/982883
+     */
+    generateID: () =>
+      // @ts-expect-error this is the way to do it segun la doc
+      ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ (crypto.randomBytes(1)[0] & (15 >> (c / 4)))).toString(16)
+      )
   })
+
+  // The uri of the WebSocketLink has to match the customServer uri.
+  const wsLink = new GraphQLWsLink(client)
 
   // Nothing new here
   return {

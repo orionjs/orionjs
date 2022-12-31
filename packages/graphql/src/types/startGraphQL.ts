@@ -1,8 +1,8 @@
 import {GlobalResolversMap, ModelResolversMap} from '@orion-js/models'
 import {express} from '@orion-js/http'
 import {OrionSubscriptionsMap} from './subscription'
-import {GraphQLOptions} from 'apollo-server-core'
 import {PubSubEngine} from 'graphql-subscriptions'
+import {ApolloServerOptions} from '@apollo/server'
 
 export type ExecuteGraphQLCache = (
   req: express.Request,
@@ -17,7 +17,7 @@ export interface ModelsResolversMap {
 
 type SchemaOmits = 'schema' | 'schemaHash' | 'context' | 'useGraphiql'
 
-export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
+export interface StartGraphQLOptions extends Omit<ApolloServerOptions<any>, SchemaOmits> {
   /**
    * A map with all the global resolvers
    */
@@ -36,7 +36,7 @@ export interface StartGraphQLOptions extends Omit<GraphQLOptions, SchemaOmits> {
   /**
    * A function that executes the http level cache of graphql queries
    */
-  executeGraphQLCache?: ExecuteGraphQLCache
+  // executeGraphQLCache?: ExecuteGraphQLCache
 
   /**
    * Should use GraphiQL. Default to true

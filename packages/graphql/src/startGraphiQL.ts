@@ -1,6 +1,6 @@
 import {registerRoute, route} from '@orion-js/http'
-import {GraphQLOptions} from 'apollo-server-core'
 import {StartGraphQLOptions} from './types/startGraphQL'
+import {ApolloServerOptions} from '@apollo/server'
 
 // Ensures string values are safe to be used within a <script> tag.
 // TODO: I don't think that's the right escape function
@@ -8,7 +8,11 @@ function safeSerialize(data) {
   return data ? JSON.stringify(data).replace(/\//g, '\\/') : null
 }
 
-const getHTML = function (apolloOptions: GraphQLOptions, options: StartGraphQLOptions, data) {
+const getHTML = function (
+  apolloOptions: ApolloServerOptions<any>,
+  options: StartGraphQLOptions,
+  data
+) {
   // Current latest version of GraphiQL.
   const GRAPHIQL_VERSION = '0.11.11'
 
@@ -203,7 +207,7 @@ const getHTML = function (apolloOptions: GraphQLOptions, options: StartGraphQLOp
 </html>`
 }
 
-export default function (apolloOptions: GraphQLOptions, options: StartGraphQLOptions) {
+export default function (apolloOptions: ApolloServerOptions<any>, options: StartGraphQLOptions) {
   registerRoute(
     route({
       path: '/graphiql',

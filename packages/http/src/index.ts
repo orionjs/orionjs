@@ -1,6 +1,6 @@
 import {setOnError, onError} from './errors'
 import {getViewer, setGetViewer} from './viewer'
-import {startServer, getApp} from './start'
+import {startServer, getApp, getServer} from './start'
 import express from 'express'
 import route from './routes/route'
 import registerRoute from './routes/registerRoute'
@@ -13,6 +13,7 @@ export {
   express,
   startServer,
   getApp,
+  getServer,
   getViewer,
   setGetViewer,
   setOnError,
