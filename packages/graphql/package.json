@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.3.21",
+  "version": "3.3.23",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
