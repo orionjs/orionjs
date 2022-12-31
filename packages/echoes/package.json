@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "3.3.25",
+  "version": "3.4.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,10 +17,10 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.3.20",
-    "@orion-js/helpers": "^3.3.20",
-    "@orion-js/http": "^3.3.25",
-    "@orion-js/services": "^3.3.20",
+    "@orion-js/env": "^3.4.0",
+    "@orion-js/helpers": "^3.4.0",
+    "@orion-js/http": "^3.4.0",
+    "@orion-js/services": "^3.4.0",
     "axios": "^0.24.0",
     "jssha": "^3.2.0",
     "kafkajs": "^1.15.0",
