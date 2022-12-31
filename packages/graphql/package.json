@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.4.1",
+  "version": "3.4.4",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,9 +13,9 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.4.1",
     "@apollo/server": "^4.3.0",
     "@graphql-tools/schema": "^9.0.12",
+    "@orion-js/env": "^3.4.1",
     "@orion-js/helpers": "^3.4.1",
     "@orion-js/http": "^3.4.1",
     "@orion-js/models": "^3.4.1",
