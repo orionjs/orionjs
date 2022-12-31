@@ -35,6 +35,7 @@ describe('Merge components', () => {
       jobs: {},
       modelResolvers: {},
       resolvers: {},
+      subscriptions: {},
       routes: {
         test: aRoute,
         test2: aRoute,
