@@ -1,8 +1,8 @@
-import {WebSocketLink} from '@apollo/client/link/ws'
-import {SubscriptionClient} from 'subscriptions-transport-ws'
+import {GraphQLWsLink} from '@apollo/client/link/subscriptions'
 import getJWT from '../auth/getJWT'
 import getSession from '../auth/getSession'
 import getSignature from '../auth/getSignature'
+import {createClient} from 'graphql-ws'
 
 const getConnectionParams = function () {
   let params = {}
@@ -31,7 +31,8 @@ export default function createWsLink(options) {
   const {endpointURL, subscriptionsPath} = options
   const uri = endpointURL.replace('http', 'ws') + subscriptionsPath
 
-  const client = new SubscriptionClient(uri, {
+  const client = createClient({
+    uri,
     reconnect: true,
     lazy: true,
     reconnectionAttempts: 10,
@@ -41,5 +42,5 @@ export default function createWsLink(options) {
 
   options.wsClient = client
 
-  return new WebSocketLink(client)
+  return new GraphQLWsLink(client)
 }
