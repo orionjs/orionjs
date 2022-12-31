@@ -6,6 +6,7 @@ import {WebSocketServer} from 'ws'
 import {useServer} from 'graphql-ws/lib/use/ws'
 import {getWebsockerViewer} from './websockerViewer'
 import {getServer} from '@orion-js/http'
+import {internalGetEnv} from '@orion-js/env'
 
 export default function (
   apolloOptions: ApolloServerOptions<any>,
@@ -55,7 +56,4 @@ export default function (
       }
     }
   ]
-}
-function internalGetEnv(arg0: string, arg1: string): any {
-  throw new Error('Function not implemented.')
 }
