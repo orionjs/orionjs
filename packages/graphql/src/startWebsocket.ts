@@ -6,7 +6,6 @@ import {WebSocketServer} from 'ws'
 import {useServer} from 'graphql-ws/lib/use/ws'
 import {getWebsockerViewer} from './websockerViewer'
 import {getServer} from '@orion-js/http'
-import {internalGetEnv} from '@orion-js/env'
 
 export default function (
   apolloOptions: ApolloServerOptions<any>,
@@ -27,8 +26,7 @@ export default function (
   if (!wsServer) {
     wsServer = new WebSocketServer({
       server: getServer(),
-      path: '/subscriptions',
-      port: Number(internalGetEnv('http_port', 'PORT'))
+      path: '/subscriptions'
     })
   }
 
