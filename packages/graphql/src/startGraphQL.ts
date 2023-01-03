@@ -1,7 +1,7 @@
 import startGraphiQL from './startGraphiQL'
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import {getApp, getServer, getViewer, registerRoute, route} from '@orion-js/http'
+import {getApp, getServer, getViewer, onError, registerRoute, Request, route} from '@orion-js/http'
 import {StartGraphQLOptions} from './types/startGraphQL'
 import {ApolloServer} from '@apollo/server'
 import {expressMiddleware} from '@apollo/server/express4'
@@ -33,7 +33,16 @@ export default async function (options: StartGraphQLOptions) {
     '/graphql',
     bodyParser.json(),
     expressMiddleware(server, {
-      context: async ({req}) => await getViewer(req)
+      context: async ({req, res}) => {
+        try {
+          const viewer = await getViewer(req)
+          return viewer
+        } catch (error) {
+          console.log(error, JSON.stringify(error))
+          await onError(req, res, error)
+          return {}
+        }
+      }
     })
   )
 }
