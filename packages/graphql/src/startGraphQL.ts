@@ -29,19 +29,21 @@ export default async function (options: StartGraphQLOptions) {
 
   await server.start()
 
-  app.use(
-    '/graphql',
-    bodyParser.json(),
-    expressMiddleware(server, {
-      context: async ({req, res}) => {
-        try {
-          const viewer = await getViewer(req)
-          return viewer
-        } catch (error) {
-          console.log(error, JSON.stringify(error))
-          await onError(req, res, error)
-          return {}
-        }
+  const middleware = expressMiddleware(server, {
+    // @ts-expect-error
+    context: ({req, res}) => req._viewer
+  })
+
+  registerRoute(
+    route({
+      app,
+      method: 'all',
+      path: '/graphql',
+      bodyParser: 'json',
+      async resolve(req, res, viewer) {
+        // @ts-expect-error
+        req._viewer = viewer
+        return middleware(req, res, req.next)
       }
     })
   )
