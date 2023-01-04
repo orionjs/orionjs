@@ -10,7 +10,7 @@ export default function createEnum<TValues extends readonly string[]>(
   return {
     type: values[0],
     ...fieldType({
-      name: 'custom',
+      name: 'enum',
       meta: {
         enumName: name,
         enumValues: values
