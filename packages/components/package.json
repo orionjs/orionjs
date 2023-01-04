@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "3.4.8",
+  "version": "3.4.9",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -22,12 +22,12 @@
     "@orion-js/services": "^3.2.21"
   },
   "devDependencies": {
-    "@orion-js/dogs": "^3.4.1",
-    "@orion-js/echoes": "^3.4.1",
-    "@orion-js/graphql": "^3.4.8",
+    "@orion-js/dogs": "^3.4.9",
+    "@orion-js/echoes": "^3.4.9",
+    "@orion-js/graphql": "^3.4.9",
     "@orion-js/helpers": "^3.4.1",
-    "@orion-js/http": "^3.4.1",
-    "@orion-js/models": "^3.4.1",
+    "@orion-js/http": "^3.4.9",
+    "@orion-js/models": "^3.4.9",
     "@orion-js/services": "^3.4.1",
     "@types/jest": "^29.2.5",
     "jest": "29.3.1",
