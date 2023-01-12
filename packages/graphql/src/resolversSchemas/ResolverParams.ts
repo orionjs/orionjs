@@ -32,7 +32,9 @@ export default createModel({
     result: resolver({
       returns: String,
       resolve: async function ({resolver}: ResolverMetaParam) {
-        return resolver.returns.name
+        const returns = isArray(resolver.returns) ? resolver.returns[0] : resolver.returns
+        if (resolverReturnsIsModel(returns)) return returns.name
+        return
       }
     }),
     basicResultQuery: resolver({

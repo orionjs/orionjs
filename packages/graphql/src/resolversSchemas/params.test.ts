@@ -34,6 +34,36 @@ describe('Get params tests', () => {
     expect(basicResultQuery).toEqual('')
   })
 
+  it('Should return the correct information for a resolver that returns a string', async () => {
+    resolversStore.aaResolver = resolver({
+      params: {
+        aParam: {
+          type: String
+        }
+      },
+      returns: [String],
+      async resolve() {
+        return 'a'
+      }
+    })
+
+    const response = (await paramsResolver.execute({
+      params: {
+        name: 'aaResolver',
+        mutation: false
+      }
+    })) as any
+
+    const params = await response.params()
+    const result = await response.result()
+    const basicResultQuery = await response.basicResultQuery()
+
+    expect(response.name).toEqual('aaResolver')
+    expect(params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
+    expect(result).toEqual(undefined)
+    expect(basicResultQuery).toEqual('')
+  })
+
   it('Should return the correct information for a resolver that returns a array of a model', async () => {
     const model = createModel({
       name: 'Item',
@@ -68,7 +98,7 @@ describe('Get params tests', () => {
     const basicResultQuery = await response.basicResultQuery()
     expect(response.name).toEqual('bResolver')
     expect(params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
-    expect(result).toEqual(undefined)
+    expect(result).toEqual('Item')
     expect(basicResultQuery).toEqual('{ name }')
   })
 
