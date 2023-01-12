@@ -2,6 +2,7 @@ import serializeSchema from './serializeSchema'
 import getBasicResultQuery from './getBasicResultQuery'
 import {createModel, Model} from '@orion-js/models'
 import {Resolver, resolver} from '@orion-js/resolvers'
+import {isArray} from 'lodash'
 
 export interface ResolverMetaParam {
   resolver: {
@@ -37,8 +38,9 @@ export default createModel({
     basicResultQuery: resolver({
       returns: String,
       resolve: async function ({resolver}: ResolverMetaParam) {
+        const returns = isArray(resolver.returns) ? resolver.returns[0] : resolver.returns
         return await getBasicResultQuery({
-          type: resolverReturnsIsModel(resolver.returns) ? resolver.returns.getSchema() : ''
+          type: resolverReturnsIsModel(returns) ? returns.getSchema() : ''
         })
       }
     })
