@@ -5,6 +5,7 @@ import request from 'supertest'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {cleanResolvers} from './cleanResolvers'
 import {createModel} from '@orion-js/models'
+import {UserError} from '@orion-js/helpers'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {
@@ -106,6 +107,137 @@ describe('Test GraphQL Server', () => {
     expect(response.body.errors[0].message).toEqual(
       'Cannot query field "helloWorld_doesntExists" on type "Query".'
     )
+  })
+
+  it('should return validation errors correctly', async () => {
+    const resolvers = {
+      helloWorld: resolver({
+        params: {
+          name: {
+            type: 'string',
+            validate: () => {
+              return 'notUnique'
+            }
+          }
+        },
+        returns: 'string',
+        async resolve({name}) {
+          return `Hello ${name}`
+        }
+      })
+    }
+
+    const app = express()
+    await startGraphQL({
+      resolvers,
+      app
+    })
+
+    const response = await request(app)
+      .post('/graphql')
+      .send({
+        operationName: 'testOperation',
+        variables: {
+          name: 'Nico'
+        },
+        query: `query testOperation($name: String) {
+          helloWorld(name: $name)
+      }`
+      })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: 'Validation Error: {name: notUnique}',
+          locations: [
+            {
+              line: 2,
+              column: 11
+            }
+          ],
+          path: ['helloWorld'],
+          extensions: {
+            isOrionError: true,
+            isValidationError: true,
+            code: 'validationError',
+            info: {
+              error: 'validationError',
+              message: 'Validation Error',
+              validationErrors: {
+                name: 'notUnique'
+              }
+            }
+          }
+        }
+      ],
+      data: {
+        helloWorld: null
+      }
+    })
+  })
+
+  it('should return user errors correctly', async () => {
+    const resolvers = {
+      helloWorld: resolver({
+        params: {
+          name: {
+            type: 'string'
+          }
+        },
+        returns: 'string',
+        async resolve({name}) {
+          throw new UserError('code', 'message')
+          return `Hello ${name}`
+        }
+      })
+    }
+
+    const app = express()
+    await startGraphQL({
+      resolvers,
+      app
+    })
+
+    const response = await request(app)
+      .post('/graphql')
+      .send({
+        operationName: 'testOperation',
+        variables: {
+          name: 'Nico'
+        },
+        query: `query testOperation($name: String) {
+          helloWorld(name: $name)
+      }`
+      })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: 'message',
+          locations: [
+            {
+              line: 2,
+              column: 11
+            }
+          ],
+          path: ['helloWorld'],
+          extensions: {
+            isOrionError: true,
+            isValidationError: false,
+            code: 'code',
+            info: {
+              error: 'code',
+              message: 'message'
+            }
+          }
+        }
+      ],
+      data: {
+        helloWorld: null
+      }
+    })
   })
 
   it('Should make requests to schemas with typed models', async () => {
