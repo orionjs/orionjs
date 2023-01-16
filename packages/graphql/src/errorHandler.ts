@@ -7,6 +7,7 @@ export default function errorHandler(error, data) {
     data.model ? `of model "${data.model.name}"` : ''
   }`
   if (error && error.isOrionError) {
+    console.warn(message, error)
     throw new GraphQLError(error.message, {
       originalError: error,
       extensions: {
