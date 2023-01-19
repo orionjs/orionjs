@@ -1,6 +1,6 @@
 import {resolver} from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
-import ResolverParams from './ResolverParams'
+import ResolverParams from './ResolverParamsInfo'
 import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
 
 declare const global: any

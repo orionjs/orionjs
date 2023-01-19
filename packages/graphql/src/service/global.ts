@@ -1,6 +1,7 @@
 import {getInstance, Service} from '@orion-js/services'
 import {GlobalResolverResolve, ResolverOptions, resolver, Resolver} from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
+import {getTargetMetadata} from './otherParams'
 
 export function Resolvers(): ClassDecorator {
   return function (target: any) {
@@ -13,19 +14,16 @@ export interface GlobalResolverPropertyDescriptor extends Omit<PropertyDecorator
   value?: GlobalResolverResolve
 }
 
-export function getTargetMiddlewares(target: any, propertyKey: string) {
-  const middlewares = target.middlewares || {}
-  return middlewares[propertyKey] || []
-}
-
-export function Query(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation' | 'middlewares'>) {
+export function Query(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
   return function (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}
     target.resolvers[propertyKey] = resolver({
+      params: getTargetMetadata(target, propertyKey, 'params'),
+      returns: getTargetMetadata(target, propertyKey, 'returns'),
+      middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
       ...options,
-      middlewares: getTargetMiddlewares(target, propertyKey),
       resolve: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)
@@ -34,17 +32,17 @@ export function Query(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'
   }
 }
 
-export function Mutation(
-  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation' | 'middlewares'>
-) {
+export function Mutation(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
   return function (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}
     target.resolvers[propertyKey] = resolver({
+      params: getTargetMetadata(target, propertyKey, 'params'),
+      returns: getTargetMetadata(target, propertyKey, 'returns'),
+      middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
       ...options,
       mutation: true,
-      middlewares: getTargetMiddlewares(target, propertyKey),
       resolve: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)

@@ -4,12 +4,11 @@ import {
   Query,
   getServiceResolvers,
   Resolvers,
-  Mutation,
   ModelResolvers,
   ModelResolver,
   getServiceModelResolvers
 } from './index'
-import {createResolverServiceMiddleware, UseMiddleware} from './middlewares'
+import {ResolverParams, ResolverReturns, UseMiddleware} from './otherParams'
 import {createResolverMiddleware} from '@orion-js/resolvers'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 
@@ -30,7 +29,7 @@ describe('Resolvers with service injection and middlewares', () => {
     })
 
     const CheckRoles = (rolesToCheck: string[]) => {
-      return createResolverServiceMiddleware(async (executeOptions, next) => {
+      return UseMiddleware(async (executeOptions, next) => {
         // check roles here
         await next()
         return 'intercepted2'
@@ -39,10 +38,9 @@ describe('Resolvers with service injection and middlewares', () => {
 
     @Resolvers()
     class ExampleResolverService {
-      @Query({
-        params: {name: {type: 'string'}},
-        returns: String
-      })
+      @Query()
+      @ResolverParams({name: {type: 'string'}})
+      @ResolverReturns(String)
       @UseMiddleware(exampleMiddleware)
       @CheckRoles(['admin'])
       async sayHi(params) {
@@ -65,14 +63,15 @@ describe('Resolvers with service injection and middlewares', () => {
       name: string
     }
 
-    const NiceToMeetYou = createResolverServiceMiddleware(async (executeOptions, next) => {
+    const NiceToMeetYou = UseMiddleware(async (executeOptions, next) => {
       const result = await next()
       return `${result}, nice to meet you`
     })
 
     @ModelResolvers(Person)
     class PersonResolvers {
-      @ModelResolver({returns: String})
+      @ModelResolver()
+      @ResolverReturns(String)
       @NiceToMeetYou
       async getAge(person: Person) {
         return `hello ${person.name}`

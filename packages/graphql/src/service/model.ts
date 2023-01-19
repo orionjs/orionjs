@@ -7,22 +7,22 @@ import {
   ModelResolver
 } from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
-import {getTargetMiddlewares} from './global'
+import {getTargetMetadata} from './otherParams'
 
 export interface ModelResolverPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: ModelResolverResolve
 }
 
-export function ModelResolver(options: Omit<ResolverOptions<any>, 'resolve' | 'middlewares'>) {
+export function ModelResolver(options?: Omit<ResolverOptions<any>, 'resolve' | 'middlewares'>) {
   return function (target: any, propertyKey: string, descriptor: ModelResolverPropertyDescriptor) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
-    const middlewares = getTargetMiddlewares(target, propertyKey)
-
     target.resolvers = target.resolvers || {}
     target.resolvers[propertyKey] = modelResolver({
+      params: getTargetMetadata(target, propertyKey, 'params'),
+      returns: getTargetMetadata(target, propertyKey, 'returns'),
+      middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
       ...options,
-      middlewares,
       resolve: async (item, params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](item, params, viewer)
