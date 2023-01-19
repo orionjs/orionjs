@@ -17,7 +17,7 @@
     "@orion-js/resolvers": "^3.5.0",
     "@orion-js/schema": "^3.5.0",
     "lodash": "^4.17.21",
-    "luxon": "^2.1.1",
+    "luxon": "^2.5.2",
     "nodemailer": "^6.7.1"
   },
   "devDependencies": {
