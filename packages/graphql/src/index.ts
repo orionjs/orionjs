@@ -2,7 +2,7 @@ import subscription from './subscription'
 import startGraphQL from './startGraphQL'
 import startGraphiQL from './startGraphiQL'
 import resolversSchemas from './resolversSchemas'
-import ResolverParams from './resolversSchemas/ResolverParamsInfo'
+import ResolverParamsInfo from './resolversSchemas/ResolverParamsInfo'
 import serializeSchema from './resolversSchemas/serializeSchema'
 import getBasicResultQuery from './resolversSchemas/getBasicResultQuery'
 import * as GraphQL from 'graphql'
@@ -12,7 +12,7 @@ export {
   startGraphQL,
   startGraphiQL,
   resolversSchemas,
-  ResolverParams,
+  ResolverParamsInfo,
   serializeSchema,
   subscription,
   getBasicResultQuery
