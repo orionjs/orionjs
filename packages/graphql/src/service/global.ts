@@ -13,13 +13,19 @@ export interface GlobalResolverPropertyDescriptor extends Omit<PropertyDecorator
   value?: GlobalResolverResolve
 }
 
-export function Query(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
+export function getTargetMiddlewares(target: any, propertyKey: string) {
+  const middlewares = target.middlewares || {}
+  return middlewares[propertyKey] || []
+}
+
+export function Query(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation' | 'middlewares'>) {
   return function (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}
     target.resolvers[propertyKey] = resolver({
       ...options,
+      middlewares: getTargetMiddlewares(target, propertyKey),
       resolve: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)
@@ -28,7 +34,9 @@ export function Query(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'
   }
 }
 
-export function Mutation(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
+export function Mutation(
+  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation' | 'middlewares'>
+) {
   return function (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
@@ -36,6 +44,7 @@ export function Mutation(options: Omit<ResolverOptions<any>, 'resolve' | 'mutati
     target.resolvers[propertyKey] = resolver({
       ...options,
       mutation: true,
+      middlewares: getTargetMiddlewares(target, propertyKey),
       resolve: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)

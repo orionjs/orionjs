@@ -1,4 +1,5 @@
 import {OrionCache} from '@orion-js/cache'
+import {Blackbox} from '@orion-js/schema'
 
 export type GlobalResolverResolve = (params: any, viewer: any) => Promise<any>
 export type ModelResolverResolve = (item: any, params: any, viewer: any) => Promise<any>
@@ -14,7 +15,7 @@ export type GlobalGetCacheKey = (params: any, viewer: any) => Promise<any>
 export type ModelGetCacheKey = (parent: any, params: any, viewer: any) => Promise<any>
 
 export interface ExecuteOptions {
-  params: object
+  params: Blackbox
   viewer: any
   parent?: any
 }
@@ -82,7 +83,6 @@ export interface PermissionCheckerOptions {
 export type PermissionChecker = (options: PermissionCheckerOptions) => Promise<string | void>
 
 export type ResolverMiddleware = (
-  params: any,
-  viewer: any,
+  executeOptions: ExecuteOptions,
   next: () => Promise<any>
 ) => Promise<any>
