@@ -3,8 +3,9 @@ import cleanAndValidate from './cleanAndValidate'
 import initResult from './initResult'
 import getResult from './getResult'
 import {ResolverOptions, Execute} from '../types'
+import {getResultWithMiddlewares} from './getResultWithMiddlewares'
 
-export default function (options: ResolverOptions) {
+export default function getExecute(options: ResolverOptions) {
   const execute: Execute = async executeParams => {
     const executeOptions = {
       params: await cleanAndValidate({
@@ -17,7 +18,7 @@ export default function (options: ResolverOptions) {
 
     await checkPermissions(executeOptions, options)
 
-    const result = await getResult(options, executeOptions)
+    const result = await getResultWithMiddlewares(options, executeOptions)
 
     return initResult(options, result)
   }

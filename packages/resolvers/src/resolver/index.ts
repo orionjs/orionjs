@@ -7,7 +7,7 @@ import {CreateModelResolver} from '..'
 import cleanReturns from './cleanReturns'
 import {getArgs} from './getArgs'
 
-const createResolver = function (options: any) {
+function createResolver(options: any) {
   options.params = cleanParams(options.params)
   options.returns = cleanReturns(options.returns)
 
@@ -17,6 +17,10 @@ const createResolver = function (options: any) {
 
   if (!options.resolverId) {
     options.resolverId = generateId()
+  }
+
+  if (!options.middlewares) {
+    options.middlewares = []
   }
 
   const execute = getExecute(options)

@@ -7,6 +7,8 @@ import PermissionsError from './Errors/PermissionsError'
 import UserError from './Errors/UserError'
 import createMapArray from './createMapArray'
 
+export * from './composeMiddlewares'
+
 export {
   createMap,
   createMapArray,

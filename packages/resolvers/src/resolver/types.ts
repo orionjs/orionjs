@@ -47,6 +47,7 @@ export interface SharedResolverOptions {
   cache?: number
   cacheProvider?: OrionCache
   permissionsOptions?: any
+  middlewares?: ResolverMiddleware[]
 }
 
 export interface ResolverOptions<Resolve = Function> extends SharedResolverOptions {
@@ -79,3 +80,9 @@ export interface PermissionCheckerOptions {
 }
 
 export type PermissionChecker = (options: PermissionCheckerOptions) => Promise<string | void>
+
+export type ResolverMiddleware = (
+  params: any,
+  viewer: any,
+  next: () => Promise<any>
+) => Promise<any>
