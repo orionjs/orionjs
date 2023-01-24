@@ -160,6 +160,7 @@ describe('Test GraphQL Server', () => {
           extensions: {
             isOrionError: true,
             isValidationError: true,
+            hash: 'f3c9a8e163',
             code: 'validationError',
             info: {
               error: 'validationError',
@@ -227,10 +228,73 @@ describe('Test GraphQL Server', () => {
             isOrionError: true,
             isValidationError: false,
             code: 'code',
+            hash: '6f9b9af3cd',
             info: {
               error: 'code',
               message: 'message'
             }
+          }
+        }
+      ],
+      data: {
+        helloWorld: null
+      }
+    })
+  })
+
+  it('should return server errors correctly', async () => {
+    const resolvers = {
+      helloWorld: resolver({
+        params: {
+          name: {
+            type: 'string'
+          }
+        },
+        returns: 'string',
+        async resolve({name}) {
+          throw new Error('message')
+          return `Hello ${name}`
+        }
+      })
+    }
+
+    const app = express()
+    await startGraphQL({
+      resolvers,
+      app
+    })
+
+    const response = await request(app)
+      .post('/graphql')
+      .send({
+        operationName: 'testOperation',
+        variables: {
+          name: 'Nico'
+        },
+        query: `query testOperation($name: String) {
+          helloWorld(name: $name)
+      }`
+      })
+
+    expect(response.statusCode).toBe(200)
+
+    const hash = '6f9b9af3cd'
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: `message [${hash}]`,
+          locations: [
+            {
+              line: 2,
+              column: 11
+            }
+          ],
+          path: ['helloWorld'],
+          extensions: {
+            isOrionError: false,
+            isValidationError: false,
+            code: 'INTERNAL_SERVER_ERROR',
+            hash: hash
           }
         }
       ],

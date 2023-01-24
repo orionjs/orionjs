@@ -6,6 +6,14 @@ export default function errorHandler(error, data) {
   const message = `Error in resolver "${data.name}" ${
     data.model ? `of model "${data.model.name}"` : ''
   }`
+
+  const hash = crypto
+    .createHash('sha1')
+    .update(error.message, 'utf8')
+    .digest('hex')
+    .substring(0, 10)
+  error.hash = hash
+
   if (error && error.isOrionError) {
     console.warn(message, error)
     throw new GraphQLError(error.message, {
@@ -14,17 +22,20 @@ export default function errorHandler(error, data) {
         isOrionError: !!error.isOrionError,
         isValidationError: !!error.isValidationError,
         code: error.code,
+        hash,
         info: error.getInfo()
       }
     })
   } else {
-    const hash = crypto
-      .createHash('sha1')
-      .update(error.message, 'utf8')
-      .digest('hex')
-      .substring(0, 10)
-    error.hash = hash
     console.error(message, error)
-    throw new UserError('INTERNAL_SERVER_ERROR', 'Internal server error', {hash})
+    throw new GraphQLError(`${error.message} [${hash}]`, {
+      // originalError: error,
+      extensions: {
+        isOrionError: false,
+        isValidationError: false,
+        code: 'INTERNAL_SERVER_ERROR',
+        hash: hash
+      }
+    })
   }
 }
