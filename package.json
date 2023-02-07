@@ -6,6 +6,7 @@
     "publish-all": "lerna publish --force-publish=*"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "eslint": "^6.8.0",
     "eslint-config-orionsoft": "^2.0.1",
     "eslint-plugin-react": "^7.18.3",

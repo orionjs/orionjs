@@ -754,15 +754,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@orion-js/helpers@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-2.1.0.tgz#1bf9c223587a5205191358c5b853312e9cee7bda"
-  integrity sha512-G8tnTfgEzrSsYzOPWslRPHfeFggQimaF5Kh9UDLbYMXZ7psyQeSI0ZyaHHEVfRXzX79qmIHAFQxnVTLJ6mtwfQ==
-  dependencies:
-    kafkajs "^1.15.0"
-    object-hash "^2.1.1"
-    serialize-javascript "^5.0.1"
-
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -1802,11 +1793,6 @@ object-copy@^0.1.0:
     copy-descriptor "^0.1.0"
     define-property "^0.2.5"
     kind-of "^3.0.3"
-
-object-hash@^2.1.1:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-2.2.0.tgz#5ad518581eefc443bd763472b8ff2e9c2c0d54a5"
-  integrity sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==
 
 object-keys@^1.0.11:
   version "1.1.1"
