@@ -2,7 +2,7 @@ import JobsCollection from '../JobsCollection'
 import defaultGetNextRun from '../helpers/defaultGetNextRun'
 import {generateId, config} from '@orion-js/app'
 
-export default function(job) {
+export default function (job) {
   const {logger} = config()
   return async (params, jobData) => {
     try {
@@ -13,7 +13,11 @@ export default function(job) {
         // eslint-disable-next-line
         result.result = await job.run.call(job, params, jobData)
       } catch (error) {
-        logger.error('Error running job:', {error, jobData})
+        if (error.isUserError) {
+          logger.warn('UserError running job:', {error, jobData})
+        } else {
+          logger.error('Error running job:', {error, jobData})
+        }
         result.error = error
       }
 
