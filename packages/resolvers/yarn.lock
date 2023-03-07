@@ -487,24 +487,24 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/cache@^3.2.21":
-  version "3.2.21"
-  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.2.21.tgz#695338a27c57e4286b3dd2ace204a973156cce41"
-  integrity sha512-/XEyxqliB1mHZw8mgFo2BbrjTSoSn40Qttbe/kQojBfQY45AQ5xq49weAbOXsamXyRpEcj+sq5VqyW/uaPY36g==
+"@orion-js/cache@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.5.0.tgz#47f31c1cc90a33419aa92188e1d0571357fade48"
+  integrity sha512-hU71atXFe5LOmWBZcxlSQc6jcLvfaaF0ecdNAnr41rdbvZgSwn+WA3abCvRyyRrjxPDa3YHZdixBZaIUb5JQUw==
   dependencies:
-    "@orion-js/helpers" "^3.2.21"
+    "@orion-js/helpers" "^3.5.0"
 
-"@orion-js/helpers@^3.2.21":
-  version "3.2.21"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.2.21.tgz#50ce418438b75b535f1357d2c7a6c9f181584c83"
-  integrity sha512-NMrLUZO0uOUq0HugVByYEYBcjL4YTXztGK5GGPKw/j7m8c5NfG4Yf8LyUG4yYWmH03cdlC/u5sKy9zKVyPnShg==
+"@orion-js/helpers@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.5.0.tgz#ee0027421cc9db83a915f3a09d97635acb88ad30"
+  integrity sha512-sSprjMzWXvn+hdZaHlyUaYORITWY6LSGtC3OPVi4hlWnJmliwOPd6pnvM0t8Lgv58ab+oAV+KxAp1D8/lbUx+g==
   dependencies:
     object-hash "^2.2.0"
 
-"@orion-js/schema@^3.2.33":
-  version "3.2.33"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.2.33.tgz#3215fffe73208c54d0c9871bb218c839a216cd28"
-  integrity sha512-N2pk5nsR4+OKR0150sr7PXlpMd9DADWmcV6wse7ZwmV8DNANF43MKI1O9FjdqjwlvUl3xnfSfOol3jUaPzXAYw==
+"@orion-js/schema@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.5.0.tgz#ca1b537284c96247ba5369053710774640f0f932"
+  integrity sha512-SFXA8nONA6szpVIZpW9mgDtOWIsu/UJjwUjA+OCR//tDOYRgZiysG4obU8Fp57uFhBA701lBdGwi071md00cvA==
   dependencies:
     dot-object "^2.1.4"
     lodash "^4.17.10"
@@ -2101,9 +2101,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
+  integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
 mkdirp@^1.0.4:
   version "1.0.4"
