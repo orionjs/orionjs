@@ -28,6 +28,8 @@ export interface RequestOptions<TParams> {
   method: string
   service: string
   params: TParams
+  retries?: number
+  timeout?: number
 }
 
 export interface RequestHandlerResponse {
@@ -37,6 +39,8 @@ export interface RequestHandlerResponse {
 
 export interface MakeRequestParams {
   url: string
+  retries?: number
+  timeout?: number
   data: {
     body: object
     signature: string

@@ -2,7 +2,7 @@ import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
-import {RequestHandlerResponse, RequestMaker, RequestOptions} from '../types'
+import {MakeRequestParams, RequestHandlerResponse, RequestMaker, RequestOptions} from '../types'
 import config from '../config'
 import {makeRequest} from './makeRequest'
 
@@ -17,8 +17,10 @@ export default async function request<TData = any, TParams = any>(
 
   try {
     const requestMaker: RequestMaker = config?.requests?.makeRequest || makeRequest
-    const requestOptions = {
+    const requestOptions: MakeRequestParams = {
       url: getURL(service),
+      retries: options.retries,
+      timeout: options.timeout,
       data: {
         body,
         signature
