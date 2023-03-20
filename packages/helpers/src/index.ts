@@ -8,6 +8,7 @@ import UserError from './Errors/UserError'
 import createMapArray from './createMapArray'
 
 export * from './composeMiddlewares'
+export * from './retries'
 
 export {
   createMap,
