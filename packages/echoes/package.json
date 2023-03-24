@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "test:watch": "jest src --coverage --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "^2.4.1",
+    "@orion-js/helpers": "^2.5.1",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
     "kafkajs": "^1.15.0",
@@ -28,5 +28,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "4a35ac0c324fe05db344032f64f6025d8cc8ed42"
+  "gitHead": "7afc5fb1b3ec7279d415736d09c44dee7eca1057"
 }
