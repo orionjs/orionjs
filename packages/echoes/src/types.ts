@@ -86,6 +86,11 @@ export interface EchoesOptions {
   consumer?: ConsumerConfig
   requests?: RequestsConfig
   echoes: EchoesMap
+
+  /**
+   * Defaults to false. When true, allows a reconnecting service to read missed messages.
+   */
+  readTopicsFromBeginning?: boolean
 }
 
 export interface EchoesConfigHandler {
