@@ -5,7 +5,7 @@ import types from '../echo/types'
 import {EchoesOptions} from '../types'
 import {registerRoute} from '@orion-js/http'
 
-export default function (options: EchoesOptions) {
+export default async function startService(options: EchoesOptions) {
   config.echoes = options.echoes
 
   if (options.requests) {
@@ -19,14 +19,17 @@ export default function (options: EchoesOptions) {
     config.producer = kafka.producer(options.producer)
     config.consumer = kafka.consumer(options.consumer)
 
-    config.producer.connect()
-    config.consumer.connect()
+    await config.producer.connect()
+    await config.consumer.connect()
 
     for (const topic in options.echoes) {
       const echo = options.echoes[topic]
       if (echo.type !== types.event) continue
 
-      config.consumer.subscribe({topic})
+      await config.consumer.subscribe({
+        topic,
+        fromBeginning: options.readTopicsFromBeginning ?? false
+      })
     }
 
     config.consumer.run({
