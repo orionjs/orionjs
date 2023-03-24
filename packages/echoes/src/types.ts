@@ -88,7 +88,7 @@ export interface EchoesOptions {
   echoes: EchoesMap
 
   /**
-   * Defaults to false. When true, allows a reconnecting service to read missed messages.
+   * Defaults to true. When true, allows a reconnecting service to read missed messages.
    */
   readTopicsFromBeginning?: boolean
 }
