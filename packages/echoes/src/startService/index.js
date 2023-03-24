@@ -18,7 +18,7 @@ export default async function startService(options) {
 
     await config.consumer.subscribe({
       topic,
-      fromBeginning: options.readTopicsFromBeginning ?? false
+      fromBeginning: options.readTopicsFromBeginning || false
     })
   }
 
