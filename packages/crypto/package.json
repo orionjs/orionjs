@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/crypto",
-  "version": "3.5.3",
+  "version": "3.6.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
