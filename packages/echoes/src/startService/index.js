@@ -3,20 +3,23 @@ import config from '../config'
 import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
 
-export default function (options) {
+export default async function startService(options) {
   const kafka = new Kafka(options.client)
 
   config.producer = kafka.producer(options.producer)
   config.consumer = kafka.consumer(options.consumer)
 
-  config.producer.connect()
-  config.consumer.connect()
+  await config.producer.connect()
+  await config.consumer.connect()
 
   for (const topic in options.echoes) {
     const echo = options.echoes[topic]
     if (echo.type !== types.event) continue
 
-    config.consumer.subscribe({topic})
+    await config.consumer.subscribe({
+      topic,
+      fromBeginning: options.readTopicsFromBeginning ?? false
+    })
   }
 
   config.consumer.run({
