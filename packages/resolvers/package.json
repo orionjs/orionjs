@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/resolvers",
-  "version": "3.5.3",
+  "version": "3.6.1",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -19,7 +19,7 @@
   "dependencies": {
     "@orion-js/cache": "^3.5.3",
     "@orion-js/helpers": "^3.5.3",
-    "@orion-js/schema": "^3.5.0"
+    "@orion-js/schema": "^3.6.1"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
