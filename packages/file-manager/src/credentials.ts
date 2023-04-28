@@ -5,6 +5,8 @@ export interface Credentials {
   bucket: string
   canUpload: Function
   basePath: string
+  endpoint?: string
+  s3ForcePathStyle?: boolean
 }
 
 let credentials: Partial<Credentials> = {}

@@ -36,11 +36,22 @@ export default resolver({
   }),
   mutation: true,
   async resolve(params, viewer) {
-    const {accessKeyId, secretAccessKey, region, bucket, canUpload, basePath} = getAWSCredentials()
+    const {
+      accessKeyId,
+      secretAccessKey,
+      region,
+      bucket,
+      endpoint,
+      s3ForcePathStyle,
+      canUpload,
+      basePath
+    } = getAWSCredentials()
     const s3 = new AWS.S3({
       accessKeyId,
       secretAccessKey,
-      region
+      region,
+      endpoint,
+      s3ForcePathStyle
     })
 
     if (canUpload) {
