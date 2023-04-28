@@ -4,6 +4,7 @@ export interface Credentials {
   region: string
   bucket: string
   canUpload: Function
+  getFileURL?: Function
   basePath: string
   endpoint?: string
   s3ForcePathStyle?: boolean
