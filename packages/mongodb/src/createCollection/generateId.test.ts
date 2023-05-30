@@ -22,6 +22,31 @@ it('generates a usable mongo objectId as string', async () => {
   expect(diff).toBeGreaterThan(0)
 })
 
+it('generates a ids with uuidv4', async () => {
+  type DocId = `prefix-${string}`
+
+  @TypedSchema()
+  class Schema {
+    @Prop()
+    _id: DocId
+
+    @Prop()
+    name: string
+  }
+
+  const Tests = createCollection<Schema>({
+    name: generateId(),
+    schema: Schema,
+    idPrefix: 'prefix-'
+  })
+
+  const userId = await Tests.insertOne({
+    name: 'Nico'
+  })
+
+  expect(userId).toMatch(/^prefix\-/)
+})
+
 it('generates a ids with a prefix', async () => {
   type DocId = `pref_${string}`
 

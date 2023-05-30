@@ -9,6 +9,7 @@ import createMapArray from './createMapArray'
 
 export * from './composeMiddlewares'
 export * from './retries'
+export * from './generateUUID'
 
 export {
   createMap,

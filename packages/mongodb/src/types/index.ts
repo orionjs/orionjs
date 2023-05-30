@@ -203,7 +203,7 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
   /**
    * Select between random id generation o mongo (time based) id generation
    */
-  idGeneration?: 'mongo' | 'random'
+  idGeneration?: 'mongo' | 'random' | 'uuid'
   /**
    * ID prefix. idGeneration will be forced to random. Recommended for type checking
    */
