@@ -15,6 +15,7 @@ export type FieldTypesList =
   | 'boolean'
   | 'email'
   | 'blackbox'
+  | 'any'
 
 export type TypedModelOnSchema = Function
 

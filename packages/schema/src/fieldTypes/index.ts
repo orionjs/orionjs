@@ -8,6 +8,7 @@ import ID from './ID'
 import boolean from './boolean'
 import email from './email'
 import blackbox from './blackbox'
+import any from './any'
 
 export default {
   array,
@@ -19,5 +20,6 @@ export default {
   ID,
   boolean,
   email,
-  blackbox
+  blackbox,
+  any
 }

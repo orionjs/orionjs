@@ -341,6 +341,17 @@ test('allow custom validation to pass an error object', async () => {
   })
 })
 
+test('allow to set type any', async () => {
+  const schema: Schema = {
+    person: {
+      type: 'any'
+    }
+  }
+
+  const errors = await getValidationErrors(schema, {person: {lastName: 'López'}})
+  expect(errors).toEqual(null)
+})
+
 test('allow custom validation to pass an complex error object', async () => {
   const schema: Schema = {
     person: {
