@@ -487,10 +487,10 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/helpers@^3.2.21":
-  version "3.2.21"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.2.21.tgz#50ce418438b75b535f1357d2c7a6c9f181584c83"
-  integrity sha512-NMrLUZO0uOUq0HugVByYEYBcjL4YTXztGK5GGPKw/j7m8c5NfG4Yf8LyUG4yYWmH03cdlC/u5sKy9zKVyPnShg==
+"@orion-js/helpers@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.5.0.tgz#ee0027421cc9db83a915f3a09d97635acb88ad30"
+  integrity sha512-sSprjMzWXvn+hdZaHlyUaYORITWY6LSGtC3OPVi4hlWnJmliwOPd6pnvM0t8Lgv58ab+oAV+KxAp1D8/lbUx+g==
   dependencies:
     object-hash "^2.2.0"
 
@@ -1949,9 +1949,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
+  integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
 ms@2.1.2:
   version "2.1.2"
