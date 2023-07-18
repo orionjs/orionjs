@@ -1,0 +1,44 @@
+{
+  "name": "@orion-js/migrations",
+  "version": "3.6.5",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "prepare": "yarn run build",
+    "clean": "rm -rf ./lib",
+    "build": "yarn run clean && tsc",
+    "watch": "tsc -w",
+    "upgrade-interactive": "yarn upgrade-interactive"
+  },
+  "dependencies": {
+    "@orion-js/dogs": "^3.6.5",
+    "@orion-js/helpers": "^3.6.4",
+    "@orion-js/mongodb": "^3.6.5",
+    "@orion-js/services": "^3.6.4",
+    "@orion-js/typed-model": "^3.6.5"
+  },
+  "peerDependencies": {
+    "@orion-js/logger": "*"
+  },
+  "devDependencies": {
+    "@orion-js/logger": "^3.5.0",
+    "@shelf/jest-mongodb": "^4.1.7",
+    "@types/jest": "^29.5.3",
+    "@types/lodash": "4.14.195",
+    "@types/node": "20.4.2",
+    "jest": "29.6.1",
+    "reflect-metadata": "^0.1.13",
+    "ts-jest": "29.1.1",
+    "typescript": "^5.1.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "f7a4e860bd7d3c5058e885bc32f5ec9d87aaf43b"
+}
