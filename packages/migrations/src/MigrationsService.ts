@@ -3,6 +3,7 @@ import {keys} from 'lodash'
 import {MigrationsRepo} from './Repo'
 import {logger} from '@orion-js/logger'
 import {MigrationExecutable} from './service'
+import {ExecutionContext} from '@orion-js/dogs'
 
 @Service()
 export class MigrationsService {
@@ -18,41 +19,47 @@ export class MigrationsService {
     }
   }
 
-  async runMigrations(migrationsList: MigrationExecutable[]) {
+  async runMigrations(migrationsList: MigrationExecutable[], context: ExecutionContext) {
     const next = await this.getNextMigration(migrationsList)
     if (!next) return
 
     logger.info('[orionjs/migrations] Running migration...', {name: next.name})
 
     if (next.useMongoTransactions) {
-      await this.runAsTransaction(next.runMigration)
+      await this.runAsTransaction(next.runMigration, context)
     } else {
-      await this.runMigration(next.runMigration)
+      await this.runMigration(next.runMigration, context)
     }
 
     logger.info('[orionjs/migrations] Migration executed correctly', {name: next.name})
 
     await this.migrationsRepo.saveCompletedMigration(next.name)
 
-    await this.runMigrations(migrationsList)
+    await this.runMigrations(migrationsList, context)
   }
 
-  async runMigration(func: () => Promise<void>) {
+  async runMigration(
+    func: (context: ExecutionContext) => Promise<void>,
+    context: ExecutionContext
+  ) {
     try {
-      await func()
+      await func(context)
     } catch (error) {
       logger.error('[orionjs/migrations] Error running migration', error)
       throw error
     }
   }
 
-  async runAsTransaction(func: () => Promise<void>) {
+  async runAsTransaction(
+    func: (context: ExecutionContext) => Promise<void>,
+    context: ExecutionContext
+  ) {
     const {client} = this.migrationsRepo.collection.client
     const session = client.startSession()
 
     await session.withTransaction(async () => {
       try {
-        await func()
+        await func(context)
       } catch (error) {
         logger.error('[orionjs/migrations] Error running migration, will abort transaction', error)
         throw error

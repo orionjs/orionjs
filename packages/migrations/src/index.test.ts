@@ -5,6 +5,7 @@ import {MigrationsService} from './MigrationsService'
 import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
 import {generateId} from '../../helpers/lib'
 import {MigrationsRepo} from './Repo'
+import {ExecutionContext} from '@orion-js/dogs'
 
 describe('Migrations end to end', () => {
   it('should create a migration service', async () => {
@@ -23,12 +24,13 @@ describe('Migrations end to end', () => {
     const migrationExecutables = loadMigrations([MoveUsersMigrationService], {omitJob: true})
 
     const instance = getInstance(MigrationsService)
+    const context: ExecutionContext = {} as any
 
-    await instance.runMigrations(migrationExecutables)
-    await instance.runMigrations(migrationExecutables)
-    await instance.runMigrations(migrationExecutables)
-    await instance.runMigrations(migrationExecutables)
-    await instance.runMigrations(migrationExecutables)
+    await instance.runMigrations(migrationExecutables, context)
+    await instance.runMigrations(migrationExecutables, context)
+    await instance.runMigrations(migrationExecutables, context)
+    await instance.runMigrations(migrationExecutables, context)
+    await instance.runMigrations(migrationExecutables, context)
 
     expect(executions).toBe(1)
   })
@@ -49,9 +51,10 @@ describe('Migrations end to end', () => {
     const migrationExecutables = loadMigrations([MoveUsersMigrationService], {omitJob: true})
 
     const instance = getInstance(MigrationsService)
+    const context: ExecutionContext = {} as any
 
     try {
-      await instance.runMigrations(migrationExecutables)
+      await instance.runMigrations(migrationExecutables, context)
     } catch {}
 
     const migrationsRepo = getInstance(MigrationsRepo)

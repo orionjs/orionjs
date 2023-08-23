@@ -21,9 +21,9 @@ export function loadMigrations(migrationServices: any[], options?: Options) {
       orionjsRunMigrations: defineJob({
         type: 'recurrent',
         runEvery: 30 * 1000,
-        async resolve() {
+        async resolve(params, context) {
           const instance = getInstance(MigrationsService)
-          await instance.runMigrations(migrations)
+          await instance.runMigrations(migrations, context)
         }
       })
     }
