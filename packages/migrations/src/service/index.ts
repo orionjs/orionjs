@@ -1,3 +1,4 @@
+import {ExecutionContext} from '@orion-js/dogs'
 import {getInstance} from '@orion-js/services'
 import {Service} from '@orion-js/services'
 
@@ -16,7 +17,7 @@ export function MigrationService(options: MigrationServiceOptions): ClassDecorat
 }
 
 export type MigrationExecutable = {
-  runMigration(): Promise<void>
+  runMigration(context: ExecutionContext): Promise<void>
 } & MigrationServiceOptions
 
 export function getMigrationsFromServices(services: any[]): MigrationExecutable[] {
@@ -26,9 +27,9 @@ export function getMigrationsFromServices(services: any[]): MigrationExecutable[
       const options = service.prototype.options
       return {
         ...options,
-        runMigration: async () => {
+        runMigration: async (context: ExecutionContext) => {
           const instance = getInstance(service) as any
-          return await instance.runMigration()
+          return await instance.runMigration(context)
         }
       }
     })
