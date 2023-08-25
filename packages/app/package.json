@@ -30,10 +30,10 @@
     "@babel/preset-env": "^7.5.5",
     "babel-jest": "^24.9.0",
     "jest": "^24.9.0",
-    "mongodb-memory-server": "^5.2.0"
+    "mongodb-memory-server": "^8.15.1"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "7afc5fb1b3ec7279d415736d09c44dee7eca1057"
+  "gitHead": "a572bf8bfc8236b4c063f1988cd64660532b51ef"
 }
