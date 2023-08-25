@@ -6,8 +6,6 @@ const echo = function (options) {
     ...options,
     onMessage: async messageData => {
       const {message} = messageData
-      const key = message.key.toString()
-      if (key !== 'pink_floyd') return // not made by this library
 
       const data = deserialize(message.value.toString())
 
