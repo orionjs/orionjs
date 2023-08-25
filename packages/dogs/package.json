@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "3.6.5",
+  "version": "3.7.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,16 +17,16 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.6.4",
-    "@orion-js/mongodb": "^3.6.5",
-    "@orion-js/services": "^3.6.4",
-    "@orion-js/typed-model": "^3.6.5"
+    "@orion-js/helpers": "^3.7.0",
+    "@orion-js/mongodb": "^3.7.0",
+    "@orion-js/services": "^3.7.0",
+    "@orion-js/typed-model": "^3.7.0"
   },
   "peerDependencies": {
     "@orion-js/logger": "*"
   },
   "devDependencies": {
-    "@orion-js/logger": "^3.5.0",
+    "@orion-js/logger": "^3.7.0",
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "^27.0.2",
     "@types/lodash": "4.14.176",
