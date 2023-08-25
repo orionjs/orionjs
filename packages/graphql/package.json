@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,14 +15,14 @@
   "dependencies": {
     "@apollo/server": "^4.3.0",
     "@graphql-tools/schema": "^9.0.12",
-    "@orion-js/env": "^3.7.0",
-    "@orion-js/helpers": "^3.7.0",
-    "@orion-js/http": "^3.7.0",
-    "@orion-js/models": "^3.7.0",
-    "@orion-js/resolvers": "^3.7.0",
-    "@orion-js/schema": "^3.7.0",
-    "@orion-js/services": "^3.7.0",
-    "@orion-js/typed-model": "^3.7.0",
+    "@orion-js/env": "^3.7.1",
+    "@orion-js/helpers": "^3.7.1",
+    "@orion-js/http": "^3.7.1",
+    "@orion-js/models": "^3.7.1",
+    "@orion-js/resolvers": "^3.7.1",
+    "@orion-js/schema": "^3.7.1",
+    "@orion-js/services": "^3.7.1",
+    "@orion-js/typed-model": "^3.7.1",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "2.0.0",
     "graphql-ws": "^5.11.2",
@@ -51,5 +51,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "c7268edc857c47c0836f2c2a707153bd92def4b0"
+  "gitHead": "890aeba5fb515c87db802502ff97bd7bb1314516"
 }

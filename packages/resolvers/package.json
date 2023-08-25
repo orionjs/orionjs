@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/resolvers",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,9 +17,9 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/cache": "^3.7.0",
-    "@orion-js/helpers": "^3.7.0",
-    "@orion-js/schema": "^3.7.0"
+    "@orion-js/cache": "^3.7.1",
+    "@orion-js/helpers": "^3.7.1",
+    "@orion-js/schema": "^3.7.1"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
@@ -33,5 +33,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "c8014109e337dc98256ebfe0f0c2739746bd9eaf"
+  "gitHead": "890aeba5fb515c87db802502ff97bd7bb1314516"
 }

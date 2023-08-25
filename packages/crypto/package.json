@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/crypto",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/services": "^3.7.0",
+    "@orion-js/services": "^3.7.1",
     "bcryptjs": "^2.4.3",
     "tweetnacl": "1.0.3",
     "tweetnacl-util": "0.15.1"
@@ -29,5 +29,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9ae882316ac662d4e2e47c005d1569ed11757bea"
+  "gitHead": "890aeba5fb515c87db802502ff97bd7bb1314516"
 }
