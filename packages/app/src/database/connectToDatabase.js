@@ -3,12 +3,12 @@ const getDbName = require('./getDbName')
 
 const connections = {}
 
-const connect = async function(mongoURL) {
+const connect = async function (mongoURL, mongoOptions = {}) {
   connections[mongoURL].connecting = true
 
   const options = {useNewUrlParser: true, useUnifiedTopology: true}
 
-  const client = await MongoClient.connect(mongoURL, options)
+  const client = await MongoClient.connect(mongoURL, {...options, ...mongoOptions})
 
   const dbName = getDbName(mongoURL)
   connections[mongoURL].client = client
