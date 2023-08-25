@@ -9,9 +9,6 @@ const echo = function createNewEcho(options: EchoConfig): EchoType {
     onMessage: async (messageData: EachMessagePayload) => {
       const {message} = messageData
 
-      const key = message.key.toString()
-      if (key !== 'pink_floyd') return // not made by this library
-
       const data = deserialize(message.value.toString())
 
       const context = {

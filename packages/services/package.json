@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/services",
-  "version": "3.6.4",
+  "version": "3.7.1",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.6.4",
+    "@orion-js/helpers": "^3.7.1",
     "typedi": "^0.10.0"
   },
   "devDependencies": {
@@ -32,5 +32,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9ae882316ac662d4e2e47c005d1569ed11757bea"
+  "gitHead": "890aeba5fb515c87db802502ff97bd7bb1314516"
 }
