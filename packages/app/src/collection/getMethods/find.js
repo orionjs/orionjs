@@ -9,7 +9,11 @@ export default ({rawCollection, initItem}) =>
     const cursor = {
       rawCursor,
       setReadPreference(...args) {
-        cursor.rawCursor.setReadPreference(...args)
+        cursor.rawCursor.withReadPreference(...args)
+        return cursor
+      },
+      withReadPreference(...args) {
+        cursor.rawCursor.withReadPreference(...args)
         return cursor
       },
       sort(...args) {
@@ -29,7 +33,10 @@ export default ({rawCollection, initItem}) =>
         return cursor
       },
       async count() {
-        return await cursor.rawCursor.count()
+        return await rawCollection.countDocuments(selector)
+      },
+      async estimatedCount() {
+        return await rawCollection.estimatedDocumentCount(selector)
       },
       async toArray() {
         const items = await cursor.rawCursor.toArray()

@@ -12,6 +12,14 @@ export default ({initItem, rawCollection, model, schema}) =>
       throw new Error('Modifier is required when making an update')
     }
 
+    if (options?.returnOriginal === false) {
+      delete options.returnOriginal
+      options.returnDocument = 'after'
+    } else if (options?.returnOriginal === true) {
+      delete options.returnOriginal
+      options.returnDocument = 'before'
+    }
+
     if (schema) {
       modifier = options.clean !== false ? await cleanModifier(schema, modifier) : modifier
       if (options.validate !== false) await validateModifier(schema, modifier)

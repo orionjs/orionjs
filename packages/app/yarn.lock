@@ -1545,10 +1545,10 @@
     readdirp "^2.2.1"
     upath "^1.1.1"
 
-"@orion-js/schema@^2.6.0":
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.5.1.tgz#c0c2d396910ba03b871525bcba033465e8d72b43"
-  integrity sha512-uKDdAsQSgudH54SRV9SvPx7PBev82Go3bXj49B6dgE7PTvRewBIGiFzWLe1bQ4MEX+yNXV8QHi9JUq7IabZtWA==
+"@orion-js/schema@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.6.1.tgz#d95b70fd8e85a8972b1385488b75bb528e57b8ea"
+  integrity sha512-+sgDMlAmcuKHrKGEkwavvrM89+sLzr+z79zcFKy8cJ/+fKnlaZo/lE+eifszwl3MWP3075R1duTHKU48t7+Efg==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dot-object "^1.9.0"
