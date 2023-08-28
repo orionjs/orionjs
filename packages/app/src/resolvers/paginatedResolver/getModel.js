@@ -5,7 +5,7 @@ import resolver from '../resolver'
 export default ({returns, modelName}) => {
   const getTotalCount = async function (paginated) {
     if (typeof paginated.count === 'undefined') {
-      paginated.count = paginated.cursor.count()
+      paginated.count = paginated.cursor.estimatedCount()
     }
     return await paginated.count
   }
