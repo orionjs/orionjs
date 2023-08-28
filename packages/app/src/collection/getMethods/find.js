@@ -9,7 +9,11 @@ export default ({rawCollection, initItem}) =>
     const cursor = {
       rawCursor,
       setReadPreference(...args) {
-        cursor.rawCursor.setReadPreference(...args)
+        cursor.rawCursor.withReadPreference(...args)
+        return cursor
+      },
+      withReadPreference(...args) {
+        cursor.rawCursor.withReadPreference(...args)
         return cursor
       },
       sort(...args) {
