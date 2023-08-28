@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "test:watch": "jest src --coverage --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "^2.6.2",
+    "@orion-js/helpers": "^2.6.3",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
     "kafkajs": "^1.15.0",
