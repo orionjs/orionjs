@@ -1,9 +1,9 @@
-const {default: MongodbMemoryServer} = require('mongodb-memory-server')
+const {MongoMemoryServer} = require('mongodb-memory-server')
 const connect = require('../database/connect')
 
-module.exports = async function() {
+module.exports = async function () {
   const MONGO_DB_NAME = 'jest'
-  const mongod = new MongodbMemoryServer({
+  const mongod = new MongoMemoryServer({
     instance: {
       dbName: MONGO_DB_NAME
     },
@@ -11,6 +11,7 @@ module.exports = async function() {
   })
 
   global.MONGOD = mongod
-  process.env.MONGO_URL = await mongod.getConnectionString()
+  await mongod.start()
+  process.env.MONGO_URL = await mongod.getUri()
   global.MONGODB_DB = await connect()
 }
