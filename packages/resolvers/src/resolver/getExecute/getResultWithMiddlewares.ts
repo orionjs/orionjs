@@ -3,16 +3,13 @@ import {createResolverMiddleware} from '../../createResolverMiddleware'
 import {ExecuteOptions, ResolverOptions} from '../types'
 import getResult from './getResult'
 
-export async function getResultWithMiddlewares(
-  options: ResolverOptions,
-  executeOptions: ExecuteOptions
-) {
+export async function getResultWithMiddlewares(executeOptions: ExecuteOptions) {
   const resolveMiddleware = createResolverMiddleware(async (executeOptions, next) => {
-    return await getResult(options, executeOptions)
+    return await getResult(executeOptions)
   })
 
   const composedMiddlewares = composeMiddlewares([
-    ...(options.middlewares || []),
+    ...(executeOptions.options.middlewares || []),
     resolveMiddleware
   ])
 

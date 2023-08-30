@@ -1,8 +1,8 @@
 import {hashObject} from '@orion-js/helpers'
 import {ResolverOptions, ExecuteOptions, ModelGetCacheKey, GlobalGetCacheKey} from '../types'
 
-const getBaseKey = async (options: ResolverOptions, executeOptions: ExecuteOptions) => {
-  const {parent, params, viewer} = executeOptions
+const getBaseKey = async (executeOptions: ExecuteOptions) => {
+  const {parent, params, viewer, options} = executeOptions
   if (parent) {
     const getKey = options.getCacheKey as ModelGetCacheKey
     return await getKey(parent, params, viewer)
@@ -12,13 +12,10 @@ const getBaseKey = async (options: ResolverOptions, executeOptions: ExecuteOptio
   }
 }
 
-export default async function (
-  options: ResolverOptions,
-  executeOptions: ExecuteOptions
-): Promise<string> {
-  const {parent, params, viewer} = executeOptions
+export default async function (executeOptions: ExecuteOptions): Promise<string> {
+  const {parent, params, viewer, options} = executeOptions
   if (options.getCacheKey) {
-    const baseKey = await getBaseKey(options, executeOptions)
+    const baseKey = await getBaseKey(executeOptions)
     return options.resolverId + '_' + baseKey
   } else {
     const key = hashObject({parent, params, resolverId: options.resolverId})

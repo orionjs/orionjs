@@ -10,7 +10,7 @@ it('should execute the function', async () => {
   }
 
   const params = {num: 321}
-  const result = await getResult({resolve}, {params, viewer: {}})
+  const result = await getResult({options: {resolve}, params, viewer: {}})
 
   expect(result).toBe(321 * 2)
 })
@@ -25,23 +25,23 @@ it('should use the cache if passed', async () => {
 
   const cache = 10
   const resolverId = '1234'
-  const emptyCall = {params: {}, viewer: {}}
   const resolver = {
     resolve,
     cacheProvider,
     cache,
     resolverId
   }
+  const emptyCall = {options: resolver, params: {}, viewer: {}}
 
-  const result1 = await getResult(resolver, emptyCall)
+  const result1 = await getResult(emptyCall)
   expect(result1).toBe(2)
 
-  const result2 = await getResult(resolver, emptyCall)
+  const result2 = await getResult(emptyCall)
   expect(result2).toBe(2)
 
   await sleep(15)
 
-  const result3 = await getResult(resolver, emptyCall)
+  const result3 = await getResult(emptyCall)
   expect(result3).toBe(3)
 })
 
@@ -62,6 +62,6 @@ it('should use the custom cache Provider', async () => {
   const resolverId = '1234'
   const resolver = {resolve, cacheProvider: provider, cache, resolverId}
 
-  const result = await getResult(resolver, {params: {}, viewer: {}})
+  const result = await getResult({options: resolver, params: {}, viewer: {}})
   expect(result).toBe('fromcache')
 })

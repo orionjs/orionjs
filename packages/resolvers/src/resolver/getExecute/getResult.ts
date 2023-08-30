@@ -1,8 +1,8 @@
 import getCacheKey from './getCacheKey'
 import {ResolverOptions, ExecuteOptions} from '../types'
 
-export default async function (options: ResolverOptions, executeOptions: ExecuteOptions) {
-  const {parent, params, viewer} = executeOptions
+export default async function (executeOptions: ExecuteOptions) {
+  const {parent, params, viewer, options} = executeOptions
   const executeResolver = async (): Promise<any> => {
     const resultFunc = options.resolve as (...args: any) => any
     if (parent) {
@@ -13,7 +13,7 @@ export default async function (options: ResolverOptions, executeOptions: Execute
   }
 
   if (options.cache && options.cacheProvider) {
-    const key = await getCacheKey(options, executeOptions)
+    const key = await getCacheKey(executeOptions)
     const result = await options.cacheProvider.get(key, {
       fallback: executeResolver,
       ttl: options.cache

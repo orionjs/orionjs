@@ -84,4 +84,27 @@ describe('Resolvers with service injection and middlewares', () => {
     const result = await data.Person.getAge.execute({parent: item})
     expect(result).toBe(`hello Orion, nice to meet you`)
   })
+
+  it('should pass the mutation name in the middleware', async () => {
+    let mutationName = ''
+
+    const exampleMiddleware = createResolverMiddleware(async (executeOptions, next) => {
+      mutationName = executeOptions.options.resolverId
+      await next()
+    })
+
+    @Resolvers()
+    class ExampleResolverService {
+      @Query()
+      @ResolverReturns(String)
+      @UseMiddleware(exampleMiddleware)
+      async sayHi(params) {
+        return 'text'
+      }
+    }
+
+    const resolvers = getServiceResolvers(ExampleResolverService)
+    await resolvers.sayHi.execute({params: {}})
+    expect(mutationName).toBe('sayHi')
+  })
 })

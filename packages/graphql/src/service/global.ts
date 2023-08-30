@@ -20,6 +20,7 @@ export function Query(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation
 
     target.resolvers = target.resolvers || {}
     target.resolvers[propertyKey] = resolver({
+      resolverId: propertyKey,
       params: getTargetMetadata(target, propertyKey, 'params'),
       returns: getTargetMetadata(target, propertyKey, 'returns'),
       middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
@@ -38,6 +39,7 @@ export function Mutation(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutat
 
     target.resolvers = target.resolvers || {}
     target.resolvers[propertyKey] = resolver({
+      resolverId: propertyKey,
       params: getTargetMetadata(target, propertyKey, 'params'),
       returns: getTargetMetadata(target, propertyKey, 'returns'),
       middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),

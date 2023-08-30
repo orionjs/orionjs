@@ -18,6 +18,7 @@ export interface ExecuteOptions {
   params: Blackbox
   viewer: any
   parent?: any
+  options: ResolverOptions
 }
 
 type Parameters<T> = T extends (...args: infer P) => any ? P : never

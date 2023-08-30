@@ -23,7 +23,7 @@ const createSubscription: CreateOrionSubscriptionFunction = function (options) {
   subscription.subscribe = async (params, viewer) => {
     const pubsub = getPubsub()
     try {
-      await checkResolverPermissions({params, viewer}, options as ResolverOptions)
+      await checkResolverPermissions({params, viewer, options: null}, options as ResolverOptions)
 
       const channelName = getChannelName(subscription.name, params)
       return pubsub.asyncIterator(channelName)
