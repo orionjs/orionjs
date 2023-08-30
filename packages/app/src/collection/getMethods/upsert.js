@@ -25,8 +25,9 @@ export default ({rawCollection, schema, collection}) =>
     await runHooks(collection, 'before.upsert', selector, modifier, options, ...otherArgs)
     const result = await rawCollection.updateOne(selector, modifier, {...options, upsert: true})
     await runHooks(collection, 'after.upsert', selector, modifier, options, ...otherArgs)
+
     return {
       ...cleanResult(result),
-      upsertedId: result && result.upsertedId ? result.upsertedId._id : null
+      upsertedId: result?.upsertedId ?? null
     }
   }

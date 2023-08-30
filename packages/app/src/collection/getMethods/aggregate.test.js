@@ -11,8 +11,7 @@ it('ensuring the options are passed properly to the aggregate command', async ()
     }
   ])
 
-  expect(cursorDefault.operation.readPreference.mode).toBe(ReadPreference.PRIMARY)
-  expect(cursorDefault.options.readPreference.mode).toBe(ReadPreference.PRIMARY)
+  expect(cursorDefault.readPreference.mode).toBe(ReadPreference.PRIMARY)
 
   const cursorSecondary = await Tests.aggregate(
     [
@@ -25,6 +24,5 @@ it('ensuring the options are passed properly to the aggregate command', async ()
     }
   )
 
-  expect(cursorSecondary.operation.readPreference.mode).toBe(ReadPreference.SECONDARY)
-  expect(cursorSecondary.options.readPreference.mode).toBe(ReadPreference.SECONDARY)
+  expect(cursorSecondary.readPreference.mode).toBe(ReadPreference.SECONDARY)
 })
