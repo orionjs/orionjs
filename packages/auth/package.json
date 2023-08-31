@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/auth",
-  "version": "3.7.2",
+  "version": "3.7.3",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -14,13 +14,13 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.7.2",
-    "@orion-js/http": "^3.7.2",
-    "@orion-js/models": "^3.7.2",
-    "@orion-js/mongodb": "^3.7.2",
-    "@orion-js/resolvers": "^3.7.2",
-    "@orion-js/schema": "^3.7.2",
-    "@orion-js/typed-model": "^3.7.2",
+    "@orion-js/helpers": "^3.7.3",
+    "@orion-js/http": "^3.7.3",
+    "@orion-js/models": "^3.7.3",
+    "@orion-js/mongodb": "^3.7.3",
+    "@orion-js/resolvers": "^3.7.3",
+    "@orion-js/schema": "^3.7.3",
+    "@orion-js/typed-model": "^3.7.3",
     "bcryptjs": "^2.4.3",
     "jssha": "^3.2.0",
     "lodash": "^4.17.21",
