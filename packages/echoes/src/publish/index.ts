@@ -20,7 +20,6 @@ export default async function publish<TParams = any>(options: PublishOptions<TPa
     topic: options.topic,
     messages: [
       {
-        key: 'pink_floyd', // TODO: Remove this in the next release. Kept only to prevent downtime.
         value: serialize(payload)
       }
     ]
