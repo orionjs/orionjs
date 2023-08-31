@@ -21,7 +21,6 @@ export default async function (options) {
     topic: options.topic,
     messages: [
       {
-        key: 'pink_floyd', // TODO: Remove this in the next release. Kept only to prevent downtime.
         value: serialize(payload)
       }
     ]

@@ -35,8 +35,15 @@ export default ({rawCollection, initItem}) =>
       async count() {
         return await rawCollection.countDocuments(selector)
       },
+      async fastCount() {
+        if (Object.keys(selector ?? {})?.length === 0) {
+          return await rawCollection.estimatedDocumentCount()
+        }
+
+        return await rawCollection.countDocuments(selector)
+      },
       async estimatedCount() {
-        return await rawCollection.estimatedDocumentCount(selector)
+        return await rawCollection.estimatedDocumentCount()
       },
       async toArray() {
         const items = await cursor.rawCursor.toArray()
