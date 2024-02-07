@@ -1,12 +1,9 @@
-import {route} from '@orion-js/app'
 import {ApolloServer} from 'apollo-server-micro'
+import {route} from '@orion-js/app'
 import startGraphiQL from './startGraphiQL'
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import micro from 'micro'
 import {runHttpQuery} from 'apollo-server-core'
-
-global.globalMicro = micro
 
 export default async function (options) {
   const apolloOptions = await getApolloOptions(options)
