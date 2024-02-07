@@ -26,12 +26,12 @@ export default async function ({resolvers, mutation, options}) {
     fields[name] = {
       type,
       args,
-      async resolve(root, params, context) {
+      async resolve(root, params, context, info) {
         if (process.env.DEBUG && process.env.DEBUG.split(',').includes('resolver')) {
           console.log(`[resolver]: name="${name}"`, params)
         }
         try {
-          const result = await resolver(params, context)
+          const result = await resolver(params, context, info)
           return result
         } catch (error) {
           errorHandler(error, {context, resolver, options, name})
