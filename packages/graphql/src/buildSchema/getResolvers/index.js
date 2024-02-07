@@ -31,7 +31,8 @@ export default async function ({resolvers, mutation, options}) {
           console.log(`[resolver]: name="${name}"`, params)
         }
         try {
-          const result = await resolver(params, context, info)
+          context.info = info
+          const result = await resolver(params, context)
           return result
         } catch (error) {
           errorHandler(error, {context, resolver, options, name})
