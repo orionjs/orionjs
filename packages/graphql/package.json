@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "2.8.0",
+  "version": "2.8.2",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "dependencies": {
     "@orion-js/schema": "^2.6.6",
     "apollo-server-core": "3.4.0",
-    "apollo-server-micro": "3.13.0",
+    "apollo-server-micro": "3.4.0",
     "deep-sort-object": "^1.0.2",
     "graphql-iso-date": "^3.6.1",
     "graphql-subscriptions": "^1.2.1",
