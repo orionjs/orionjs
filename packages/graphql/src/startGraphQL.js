@@ -3,7 +3,12 @@ import {route} from '@orion-js/app'
 import startGraphiQL from './startGraphiQL'
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
+import micro from 'micro'
 import {runHttpQuery} from 'apollo-server-core'
+import {InMemoryLRUCache} from 'apollo-server-caching'
+import getOperationName from './getOperationName'
+
+global.globalMicro = micro
 
 export default async function (options) {
   const apolloOptions = await getApolloOptions(options)
@@ -16,9 +21,14 @@ export default async function (options) {
   const apolloServer = new ApolloServer(apolloOptions)
   await apolloServer.start()
   const handler = apolloServer.createHandler() // highlight-line
+  const cacheControlCache = apolloOptions.persistedQueries?.cache
+    ? apolloOptions.persistedQueries.cache
+    : new InMemoryLRUCache()
 
   route('/graphql', async function (params) {
     const {request, response, viewer, getBodyJSON} = params
+    const operationName = await getOperationName(params)
+    const cacheKey = operationName ? `orion-cache-control-${operationName}` : null
 
     if (options.executeGraphQLCache) {
       try {
@@ -37,12 +47,30 @@ export default async function (options) {
 
         const result = await options.executeGraphQLCache(params, fallback)
         if (result) {
+          if (result.cacheControl && cacheKey) {
+            cacheControlCache.set(cacheKey, result.cacheControl)
+            response.setHeader('Cache-Control', result.cacheControl)
+          }
           return result
         }
       } catch (error) {
         console.log('Error executing GraphQL cache:', error)
       }
     }
+
+    if (cacheKey) {
+      let shouldCache = true
+      if (apolloOptions?.shouldAddCacheControl) {
+        shouldCache = apolloOptions.shouldAddCacheControl(operationName)
+      }
+      if (shouldCache) {
+        const cacheControl = await cacheControlCache.get(cacheKey)
+        if (cacheControl) {
+          response.setHeader('Cache-Control', cacheControl)
+        }
+      }
+    }
+
     request._orionjsViewer = viewer
     handler(request, response)
   })
