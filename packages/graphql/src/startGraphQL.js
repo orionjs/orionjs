@@ -7,6 +7,7 @@ import micro from 'micro'
 import {runHttpQuery} from 'apollo-server-core'
 import {InMemoryLRUCache} from 'apollo-server-caching'
 import getOperationName from './getOperationName'
+import storePersistedQuery from './storePersistedQuery'
 
 global.globalMicro = micro
 
@@ -47,6 +48,8 @@ export default async function (options) {
 
         const result = await options.executeGraphQLCache(params, fallback)
         if (result) {
+          await storePersistedQuery(apolloOptions, params)
+
           if (result.cacheControl && cacheKey) {
             cacheControlCache.set(cacheKey, result.cacheControl)
             response.setHeader('Cache-Control', result.cacheControl)
