@@ -3,7 +3,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "test": "lerna run test",
-    "publish-all": "lerna publish --force-publish=*"
+    "publish-all": "lerna publish --force-publish=* --dist-tag v2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
