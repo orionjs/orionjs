@@ -8,6 +8,7 @@ export class JobsHistoryRepo {
   public history = () =>
     createCollection<HistoryRecord>({
       name: 'orionjs.jobs_dogs_history',
+      idGeneration: 'uuid',
       model: HistoryRecord,
       indexes: [
         {
