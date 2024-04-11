@@ -12,6 +12,7 @@ import {JobToRun} from '../types/Worker'
 export class JobsRepo {
   public jobs = () =>
     createCollection<JobRecord>({
+      idGeneration: 'uuid',
       name: 'orionjs.jobs_dogs_records',
       model: JobRecord,
       indexes: [
