@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import createCollection from './index'
-import {ObjectID} from 'bson'
+import {ObjectId} from 'bson'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {DistinctDocumentId} from '../types'
 
@@ -13,7 +13,7 @@ it('generates a usable mongo objectId as string', async () => {
     name: 'Nico'
   })
 
-  const objectId = new ObjectID(userId)
+  const objectId = ObjectId.createFromHexString(userId)
 
   expect(objectId.toString()).toBe(userId)
 

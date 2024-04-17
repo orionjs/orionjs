@@ -1,5 +1,5 @@
 import {generateId, generateUUID} from '@orion-js/helpers'
-import {ObjectID} from 'bson'
+import {ObjectId} from 'bson'
 import {CreateCollectionOptions} from '..'
 
 const getIdGenerator = (options: CreateCollectionOptions): (() => string) => {
@@ -20,7 +20,7 @@ const getIdGenerator = (options: CreateCollectionOptions): (() => string) => {
   }
 
   return () => {
-    const id = new ObjectID()
+    const id = new ObjectId()
 
     return id.toString()
   }

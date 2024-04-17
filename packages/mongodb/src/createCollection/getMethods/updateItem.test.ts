@@ -1,9 +1,9 @@
 import {generateId} from '@orion-js/helpers'
-import {Prop, TypedModel} from '@orion-js/typed-model'
+import {Prop, TypedModel, TypedSchema} from '@orion-js/typed-model'
 import createCollection from '..'
 
 it('updates the item variable using updateItem', async () => {
-  @TypedModel()
+  @TypedSchema()
   class Item {
     @Prop()
     _id: string

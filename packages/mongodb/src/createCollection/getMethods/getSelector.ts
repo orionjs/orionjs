@@ -10,7 +10,7 @@ export default function getSelector<ModelClass extends ModelClassBase>(
   const selector = args[0] as ModelToMongoSelector<ModelClass>
 
   if (typeof selector === 'string') {
-    return {_id: selector}
+    return {_id: selector} as Filter<ModelClass>
   }
 
   if (isPlainObject(selector)) {

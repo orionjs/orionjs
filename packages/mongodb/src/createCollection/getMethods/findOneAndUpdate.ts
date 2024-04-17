@@ -30,8 +30,9 @@ export default <DocumentType extends ModelClassBase>(
       modifier,
       options.mongoOptions
     )
-    if (!result || !result.value) return null
-    return collection.initItem(result.value)
+
+    if (!result) return null
+    return collection.initItem(result)
   }
 
   return findOneAndUpdate

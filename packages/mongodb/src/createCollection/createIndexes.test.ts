@@ -40,7 +40,7 @@ describe('Test indexes', () => {
     })
 
     const result = await collection2.createIndexesPromise
-    expect(result[0]).toEqual('E11000 duplicate key error dup key: { : 1 }')
+    expect(result[0]).toContain('E11000')
     expect(console.error).toHaveBeenCalled()
   })
 

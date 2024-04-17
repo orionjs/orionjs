@@ -103,14 +103,8 @@ describe('InsertOne', () => {
       await Tests.insertOne({name: 'one'})
     } catch (error) {
       expect(error.code).toBe('validationError')
-      expect(error.validationErrors).toHaveProperty('unknownKey')
-      expect(error.validationErrors.unknownKey).toBe('notUnique')
-      /**
-       * This should work on a real db, but on memory-server it doesnt give the name of the index.
-       */
-      // expect(error.code).toBe('validationError')
-      // expect(error.validationErrors).toHaveProperty('name')
-      // expect(error.validationErrors.name).toBe('notUnique')
+      expect(error.validationErrors).toHaveProperty('name')
+      expect(error.validationErrors.name).toBe('notUnique')
     }
   })
 })
