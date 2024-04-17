@@ -13,8 +13,10 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
+    "color": "^4.2.3",
     "lodash": "^4.17.21",
     "object-hash": "^2.2.0",
+    "text-hex": "^1.0.0",
     "winston": "^3.6.0"
   },
   "devDependencies": {
