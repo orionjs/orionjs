@@ -11,12 +11,12 @@ export default async function () {
     })
     const pjson = require('../../package.json')
 
-    const latestVersion = response['dist-tags'].latest
+    const latestVersion = response['dist-tags'].v2
     const currentVersion = pjson.version
 
     if (currentVersion !== latestVersion) {
       console.log('You are running an outdated version of the orionjs cli')
-      console.log('Please upgrade by running "yarn global upgrade @orion-js/cli"\n')
+      console.log(`Please upgrade by running "yarn add --dev @orion-js/cli@${latestVersion}"\n`)
     }
   } catch (error) {}
 }
