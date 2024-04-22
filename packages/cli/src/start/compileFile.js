@@ -13,7 +13,6 @@ export default async function (relativeFilePath, dirPath = '.orion/build') {
   const finalPath = path.resolve(relativeFilePath.replace(/^app/, dirPath))
 
   if (!filePath.endsWith('.js') && !/\.tsx?$/.test(filePath)) {
-    console.log('passindg as is file', filePath)
     const content = fs.readFileSync(filePath)
     writeFile(finalPath, content)
     return
