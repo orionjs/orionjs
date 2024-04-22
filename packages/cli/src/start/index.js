@@ -9,7 +9,7 @@ export default async function (options) {
   global.processOptions = options
   console.log(
     colors.bold(
-      '\nOrionjs App ' + colors.green(colors.bold('V2.6')) + colors.blue(colors.bold(' [TS]\n'))
+      '\nOrionjs App ' + colors.green(colors.bold('V2')) + colors.blue(colors.bold(' [TS]\n'))
     )
   )
 
