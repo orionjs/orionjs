@@ -1,50 +1,42 @@
-import {ModelSchema} from '@orion-js/models'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 
-const schema: ModelSchema = {
-  _id: {
-    type: 'ID'
-  },
-  hash: {
-    type: String,
+@TypedSchema()
+export class FileSchema {
+  @Prop({type: 'ID'})
+  _id: string
+
+  @Prop({
     optional: true
-  },
-  externalUrl: {
-    type: String,
+  })
+  hash?: string
+
+  @Prop({
     optional: true,
     private: true
-  },
-  key: {
-    type: String,
-    optional: true
-  },
-  bucket: {
-    type: String,
-    optional: true
-  },
-  name: {
-    type: String,
-    optional: true
-  },
-  type: {
-    type: String,
-    optional: true
-  },
-  size: {
-    type: Number,
-    optional: true
-  },
-  status: {
-    type: String,
-    optional: true
-  },
-  createdBy: {
-    type: String,
-    optional: true
-  },
-  createdAt: {
-    type: Date,
-    optional: true
-  }
-}
+  })
+  externalUrl?: string
 
-export default schema
+  @Prop({optional: true})
+  key?: string
+
+  @Prop({optional: true})
+  bucket?: string
+
+  @Prop({optional: true})
+  name?: string
+
+  @Prop({optional: true})
+  type?: string
+
+  @Prop({optional: true})
+  size?: number
+
+  @Prop({optional: true})
+  status?: string
+
+  @Prop({optional: true})
+  createdBy?: string
+
+  @Prop({optional: true})
+  createdAt?: Date
+}

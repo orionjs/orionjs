@@ -64,8 +64,10 @@ export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
   }
 
   const model = createModel({
-    name: target.name,
+    name: targetAsModel.name,
     schema,
+    clean: targetAsModel.clean,
+    validate: targetAsModel.validate,
     resolvers: {
       ...resolverMap,
       ...modelResolvers

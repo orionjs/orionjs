@@ -1,4 +1,3 @@
-import {ModelSchema, modelToSchema} from '..'
 import createModel from '.'
 import {clean} from '@orion-js/schema'
 
@@ -17,33 +16,37 @@ it('should add the __model field when converting to schema', async () => {
 })
 
 it('can clean a schema with nested models', async () => {
-  const modelSchema: ModelSchema = {
-    name: {
-      type: String,
-      clean: () => 'Model Schema'
-    }
-  }
   const model = createModel({
     name: 'AModel',
-    schema: modelSchema
+    schema: {
+      name: {
+        type: String
+      }
+    },
+    clean: () => ({name: 'Model Schema'})
   })
 
-  const schema: ModelSchema = {
-    subModel: {
-      type: model
-    },
-    subModelArray: {
-      type: [model]
-    },
-    primitive: {
-      type: String,
-      clean: () => 'Primitive'
+  const finalModel = createModel({
+    name: 'Test',
+    schema: {
+      subModel: {
+        type: model
+      },
+      subModelArray: {
+        type: [model]
+      },
+      primitive: {
+        type: String,
+        clean: () => 'Primitive'
+      }
     }
-  }
+  })
 
   const doc = {subModel: {name: 'Joaquin'}, subModelArray: [{name: 'Roberto'}], primitive: 'hello'}
 
-  expect(await clean(modelToSchema(schema), doc)).toEqual({
+  const schema = finalModel.getSchema()
+
+  expect(await clean(schema, doc)).toEqual({
     subModel: {name: 'Model Schema'},
     subModelArray: [{name: 'Model Schema'}],
     primitive: 'Primitive'

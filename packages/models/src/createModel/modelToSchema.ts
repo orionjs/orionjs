@@ -1,6 +1,6 @@
 import isArray from 'lodash/isArray'
 import {Model, ModelSchema} from '..'
-import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
+import {Schema, SchemaMetaFieldType, SchemaNode, validate} from '@orion-js/schema'
 import {lowerFirst} from 'lodash'
 
 function isModelSchema(type: Model | [Model] | SchemaMetaFieldType): type is Model {

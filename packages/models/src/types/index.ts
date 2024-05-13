@@ -99,7 +99,12 @@ export interface Model<TSchema = any> {
   /**
    * Cleans an item using @orion-js/schema
    */
-  clean: (item: any) => Promise<any>
+  clean: (item: any) => Promise<TSchema>
+
+  /**
+   * Cleans and validates an item using @orion-js/schema
+   */
+  cleanAndValidate: (item: any) => Promise<TSchema>
 
   /**
    * Creates a new model using this one as a base

@@ -5,7 +5,7 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "exit 0",
+    "test": "jest",
     "prepare": "yarn run build",
     "clean": "rm -rf ./lib",
     "build": "yarn run clean && tsc",

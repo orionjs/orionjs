@@ -84,6 +84,12 @@ export default function createModel<TSchema = any>(
       const schema = getSchema()
       return await clean(schema, doc)
     },
+    cleanAndValidate: async doc => {
+      const schema = getSchema()
+      const cleaned = await clean(schema, doc)
+      await validate(schema, cleaned)
+      return cleaned
+    },
     clone: (cloneOptions: CloneOptions) => {
       return clone(
         {

@@ -1,9 +1,11 @@
-import {createCollection} from '@orion-js/mongodb'
+import {Collection, createCollection} from '@orion-js/mongodb'
 import File from '../File'
+import {FileSchema} from '../File/schema'
 
-export default createCollection({
+export const Files: Collection<FileSchema> = createCollection<FileSchema>({
   name: 'filemanager_files',
   model: File,
+  schema: FileSchema,
   indexes: [
     {
       keys: {

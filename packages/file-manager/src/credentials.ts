@@ -1,4 +1,4 @@
-export interface Credentials {
+export interface FileManagerOptions {
   accessKeyId: string
   secretAccessKey: string
   region: string
@@ -10,8 +10,10 @@ export interface Credentials {
   s3ForcePathStyle?: boolean
 }
 
-let credentials: Partial<Credentials> = {}
+let savedOptions: Partial<FileManagerOptions> = {}
 
-export const setupFileManager = options => (credentials = options)
+export const setupFileManager = (options: FileManagerOptions) => {
+  savedOptions = options
+}
 
-export const getAWSCredentials = () => credentials
+export const getAWSCredentials = () => savedOptions

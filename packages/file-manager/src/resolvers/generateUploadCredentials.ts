@@ -3,7 +3,7 @@ import {generateId} from '@orion-js/helpers'
 import {createModel} from '@orion-js/models'
 import AWS from 'aws-sdk'
 import {getAWSCredentials} from '../credentials'
-import Files from '../Files'
+import {Files} from '../Files'
 
 export default resolver({
   params: {

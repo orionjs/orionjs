@@ -1,6 +1,6 @@
 import {resolver} from '@orion-js/resolvers'
 import File from '../File'
-import Files from '../Files'
+import {Files} from '../Files'
 
 export default resolver({
   params: {
