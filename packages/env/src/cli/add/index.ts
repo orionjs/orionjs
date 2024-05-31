@@ -5,6 +5,7 @@ import YAML from 'yaml'
 import {writeFile} from '../../files'
 
 const sortObjectByKeys = (object: any) => {
+  if (!object) return {}
   const sorted = {}
   Object.keys(object)
     .sort()
@@ -28,6 +29,7 @@ export default async function envAdd({path}) {
   // sort keys alphabetically
   config.cleanKeys = sortObjectByKeys(config.cleanKeys)
   config.encryptedKeys = sortObjectByKeys(config.encryptedKeys)
+  config.readFromSecret = sortObjectByKeys(config.readFromSecret)
 
   const text = YAML.stringify(config)
   writeFile(path, text)
