@@ -22,12 +22,6 @@ export const readEnv = () => {
 if (g.__orion_env_final__) {
   variables = g.__orion_env_final__
 } else if (envFilePath) {
-  if (!secretKey) {
-    throw new Error(
-      'Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not defined'
-    )
-  }
-
   variables = readEnv()
 }
 

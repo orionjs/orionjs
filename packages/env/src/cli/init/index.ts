@@ -14,7 +14,8 @@ export default async function envInit({path}) {
     version: '1.0',
     publicKey: keypair.encryptKey,
     cleanKeys: {},
-    encryptedKeys: {}
+    encryptedKeys: {},
+    readFromSecret: {}
   }
 
   const text = YAML.stringify(envFile)
