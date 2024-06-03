@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "3.7.6",
+  "version": "3.8.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,9 +15,9 @@
   "dependencies": {
     "@apollo/server": "^4.3.0",
     "@graphql-tools/schema": "^9.0.12",
-    "@orion-js/env": "^3.7.4",
+    "@orion-js/env": "^3.8.0",
     "@orion-js/helpers": "^3.7.4",
-    "@orion-js/http": "^3.7.4",
+    "@orion-js/http": "^3.8.0",
     "@orion-js/models": "^3.7.6",
     "@orion-js/resolvers": "^3.7.4",
     "@orion-js/schema": "^3.7.4",
