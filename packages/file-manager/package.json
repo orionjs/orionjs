@@ -18,6 +18,7 @@
     "@orion-js/paginated-mongodb": "^3.7.6",
     "@orion-js/resolvers": "^3.7.4",
     "@orion-js/schema": "^3.7.4",
+    "@orion-js/typed-model": "^3.7.4",
     "aws-sdk": "^2.1367.0",
     "escape-string-regexp": "^4.0.0",
     "lodash": "^4.17.21",
