@@ -48,9 +48,9 @@ class JobRepository {
       {
         $group: {
           _id: {
-            $cond: [
+            $cond: [ 
               {
-                $gt: ['$runAfter', new Date()]
+                $gt: ['$runAfter', DateTime.local().minus({minutes: 1}).toJSDate()]
               },
               'delayed',
               {
