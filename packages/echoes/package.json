@@ -20,6 +20,7 @@
     "@orion-js/env": "^3.7.4",
     "@orion-js/helpers": "^3.7.4",
     "@orion-js/http": "^3.7.4",
+    "@orion-js/schema": "^3.7.4",
     "@orion-js/services": "^3.7.4",
     "axios": "^0.24.0",
     "jssha": "^3.2.0",

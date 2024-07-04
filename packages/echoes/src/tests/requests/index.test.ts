@@ -2,6 +2,7 @@ import {echo, request, startService} from '../..'
 import testRequest from 'supertest'
 import {getApp} from '@orion-js/http'
 import {RequestMaker} from '../../types'
+import {ValidationError} from '@orion-js/schema'
 
 describe('Test echoes requests', () => {
   const makeRequest: RequestMaker = async options => {
@@ -9,7 +10,7 @@ describe('Test echoes requests', () => {
     const response = await testRequest(app).post('/echoes-services').send(options.data)
     return {
       statusCode: response.statusCode,
-      data: response.body
+      data: response.body,
     }
   }
 
@@ -17,16 +18,16 @@ describe('Test echoes requests', () => {
     const echoes = {
       test: echo({
         type: 'request',
-        async resolve() {}
-      })
+        async resolve() {},
+      }),
     }
 
     startService({
       echoes,
       requests: {
         key: 'secret',
-        services: {}
-      }
+        services: {},
+      },
     })
   })
 
@@ -41,10 +42,10 @@ describe('Test echoes requests', () => {
           expect(params.date).toBeInstanceOf(Date)
           return {
             text: 'Hello world',
-            date: params.date
+            date: params.date,
           }
-        }
-      })
+        },
+      }),
     }
 
     startService({
@@ -52,8 +53,8 @@ describe('Test echoes requests', () => {
       requests: {
         key: 'secret',
         services: {test: 'mockURL'},
-        makeRequest
-      }
+        makeRequest,
+      },
     })
 
     const date = new Date()
@@ -62,12 +63,44 @@ describe('Test echoes requests', () => {
       service: 'test',
       params: {
         hello: 'world',
-        date
-      }
+        date,
+      },
     })
 
     expect(result.text).toBe('Hello world')
     expect(result.date).toBeInstanceOf(Date)
     expect(result.date.getTime()).toBe(date.getTime())
+  })
+
+  it('should pass errors to Orion errors', async () => {
+    const echoes = {
+      test: echo({
+        type: 'request',
+        async resolve() {
+          throw new ValidationError({hello: 'world'})
+        },
+      }),
+    }
+
+    startService({
+      echoes,
+      requests: {
+        key: 'secret',
+        services: {test: 'mockURL'},
+        makeRequest,
+      },
+    })
+
+    expect.assertions(1)
+
+    try {
+      await request({
+        method: 'test',
+        service: 'test',
+        params: {},
+      })
+    } catch (error) {
+      expect(error.validationErrors).toEqual({hello: 'world'})
+    }
   })
 })

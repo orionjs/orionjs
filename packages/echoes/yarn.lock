@@ -580,17 +580,17 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@orion-js/cache@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.7.2.tgz#358e65cffeab1b3187116550195298b476ffd6d5"
-  integrity sha512-ap2yHAPDIjqMpnH26o8oGXeK1pZt3+CYMGMzrnla8mqyRYhGCXwtiJiJ50BjMTnGLZDV6hl1cNv0QEpxpidTlQ==
+"@orion-js/cache@^3.7.4":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.7.4.tgz#eba5586e159e25cc7c589b684b7319f7542a505c"
+  integrity sha512-dLxCJNBAxhPY6HG0JHOYcMlqy/CuufPARDnaqwl0YjCncrrmAgiqbdxhyTdG0tI724WdgVkZquVwvaX7nfr2CA==
   dependencies:
-    "@orion-js/helpers" "^3.7.2"
+    "@orion-js/helpers" "^3.7.4"
 
-"@orion-js/env@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/env/-/env-3.7.2.tgz#234100fea9fcd0590918ca1f705120668f7a1e63"
-  integrity sha512-MBvIByV8A4CWZy7mRS6B5ABCmNClOIkInCvohxi6/fsQQIGjlhHUVC2sqMNFZ0PHI/iWiGv3J6Q/SWZWQ+pBXw==
+"@orion-js/env@^3.7.4", "@orion-js/env@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/env/-/env-3.8.0.tgz#2f53077b6a83a895046720b35e53264ba4a7758c"
+  integrity sha512-WkbSZiQL7bGS5IMCwmIaHpnChG5RRh6aMUNkgUI3zFH5lbNWFBKyu9mDQ1H/1/Plw+Fnp1lwtjzTZkroMpb9DA==
   dependencies:
     colors "^1.4.0"
     commander "^9.1.0"
@@ -599,50 +599,50 @@
     tweetnacl-util "0.15.1"
     yaml "^2.0.0"
 
-"@orion-js/helpers@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.7.2.tgz#f91b045377b2352376114abd9ddfab8cf2639992"
-  integrity sha512-0YBmaC0DmfGS/OD+7acZynZ157bfL5Sh0VvmFvQG3T+JGY8X2X2jAZXONTwZLD8z4hkyDGd892dBvSEYRV7vGA==
+"@orion-js/helpers@^3.7.4":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.7.4.tgz#91aece27b90716010afae69017ba493e9ee04120"
+  integrity sha512-CpfJyxCIxpuD8af4axTMVdm8fkazPA3rlkwkzU983Fuzx3ukoxzUtk+CWMky1m00UvoaAV0fQPWdmFRfWcYecw==
   dependencies:
     object-hash "^2.2.0"
 
-"@orion-js/http@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/http/-/http-3.7.2.tgz#1312bfe6374e0714e83de7ac2cb9ec6719bfba31"
-  integrity sha512-bkPhea1fKgViWIm9hTuz1xcaslGqnooijXghT+0ozudRDzpY5L2wA4YoOiBLtAB85b9tI1spSKSJLB8zCjCP/w==
+"@orion-js/http@^3.7.4":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/http/-/http-3.8.0.tgz#f2eb292948a83b6a4c9ea1a7ec76f74b06149583"
+  integrity sha512-NTnqdPorjUdlUiwvrMjfxK6yCICxeHbf5HYv7uHxeb5QQ3tHSiuzuv2Wp80Uc3+vhtqwxBe2VUma/a3W8WnR+Q==
   dependencies:
-    "@orion-js/env" "^3.7.2"
-    "@orion-js/helpers" "^3.7.2"
-    "@orion-js/resolvers" "^3.7.2"
-    "@orion-js/schema" "^3.7.2"
-    "@orion-js/services" "^3.7.2"
+    "@orion-js/env" "^3.8.0"
+    "@orion-js/helpers" "^3.7.4"
+    "@orion-js/resolvers" "^3.7.4"
+    "@orion-js/schema" "^3.7.4"
+    "@orion-js/services" "^3.7.4"
     body-parser "1.19.0"
     express "4.17.1"
     reflect-metadata "^0.1.13"
 
-"@orion-js/resolvers@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.7.2.tgz#c13dd2e8dfa0b542a8452da6fe992f8cd36dfe5f"
-  integrity sha512-RhlT37IqEu4rhbnygWn8C/qtGjH+x6pzTmug7U7WaN4bcLuBy6GRGKWZLAb+pb56GUTvwqdeIYiLFD2nHmwmZg==
+"@orion-js/resolvers@^3.7.4":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.7.4.tgz#9728037caca0237940c95dfa461409dd36f69a19"
+  integrity sha512-1APoym7NaBeewgrOok5llrhzN/Oy/LxKW8C1uL1cAhz6OCCYfoCIR2qpETHk3ZrdzOj+Zi6nE927X5vFcNuhnA==
   dependencies:
-    "@orion-js/cache" "^3.7.2"
-    "@orion-js/helpers" "^3.7.2"
-    "@orion-js/schema" "^3.7.2"
+    "@orion-js/cache" "^3.7.4"
+    "@orion-js/helpers" "^3.7.4"
+    "@orion-js/schema" "^3.7.4"
 
-"@orion-js/schema@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.7.2.tgz#e2544afbf2a91d5919e32cd1766bbd63698b2830"
-  integrity sha512-Ji8LyWJ4CED8/u78nNLaHHKo0xrey0GRD7ufp3B6BoG5x4WS+c6dLmAf0/UQx2n+YaLe3WAyLy4TZWqfpduJqQ==
+"@orion-js/schema@^3.7.4":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.7.4.tgz#4979961db28bc6ebc697b09851f143983c28e573"
+  integrity sha512-EVGE3iH1P+X0vqYvMOmeH3diCC5ioTZCBc/FgEjAI/UGMEij/NRZf+dAvqZy9BOmpF3mgUYXn15QSIc3ulxNQw==
   dependencies:
     dot-object "^2.1.4"
     lodash "^4.17.10"
 
-"@orion-js/services@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.7.2.tgz#876346a1522b47976fafa41c3b4df77a5be2e1c2"
-  integrity sha512-WASonezNEuAI4kC8wL/jXUglaEBRGbUwT1H+Riu7YlRTOp3APtxNbADsdJTVGrlw+EsYXOsAw30qfDYVoxW6rg==
+"@orion-js/services@^3.7.4":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.7.4.tgz#4d4e6c8989457d0e5861c40dcdee4c6b9ae42bdd"
+  integrity sha512-SchNy24zcHuInxlZODk2TMtEn/vRCLV1Gz9CIpZ99oDn3qVsFXg6mteuDftgBs8lL+KsQ+nBeZQpztaOrbl6hw==
   dependencies:
-    "@orion-js/helpers" "^3.7.2"
+    "@orion-js/helpers" "^3.7.4"
     typedi "^0.10.0"
 
 "@shelf/jest-mongodb@^2.1.0":

@@ -2,12 +2,19 @@ import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
-import {MakeRequestParams, RequestHandlerResponse, RequestMaker, RequestOptions} from '../types'
+import type {
+  MakeRequestParams,
+  RequestHandlerResponse,
+  RequestMaker,
+  RequestOptions,
+} from '../types'
 import config from '../config'
 import {makeRequest} from './makeRequest'
+import {ValidationError} from '@orion-js/schema'
+import {UserError} from '@orion-js/helpers'
 
 export default async function request<TData = any, TParams = any>(
-  options: RequestOptions<TParams>
+  options: RequestOptions<TParams>,
 ): Promise<TData> {
   const {method, service, params} = options
   const serializedParams = serialize(params)
@@ -23,26 +30,36 @@ export default async function request<TData = any, TParams = any>(
       timeout: options.timeout,
       data: {
         body,
-        signature
-      }
+        signature,
+      },
     }
     const result = await requestMaker(requestOptions)
 
     if (result.statusCode !== 200) {
-      throw new Error(
-        `Echoes request network error calling ${service}/${method}: Wrong status code ${result.statusCode}`
-      )
+      throw new Error(`Wrong status code ${result.statusCode}`)
     }
 
     const data: RequestHandlerResponse = result.data
 
     if (data.error) {
-      throw new Error(`Echoes request error calling ${service}/${method}: ${data.error}`)
+      const info = data.errorInfo
+      if (info) {
+        if (data.isValidationError) {
+          throw new ValidationError(info.validationErrors)
+        }
+        if (data.isUserError) {
+          throw new UserError(info.error, info.message, info.extra)
+        }
+      }
+
+      throw new Error(`${data.error}`)
     }
 
     const response = deserialize(data.result)
     return response
   } catch (error) {
+    if (error.isOrionError) throw error
+
     throw new Error(`Echoes request network error calling ${service}/${method}: ${error.message}`)
   }
 }

@@ -4,7 +4,7 @@ import {
   ProducerConfig,
   Consumer,
   Producer,
-  EachMessagePayload
+  EachMessagePayload,
 } from 'kafkajs'
 
 export interface EchoConfig {
@@ -35,6 +35,14 @@ export interface RequestOptions<TParams> {
 export interface RequestHandlerResponse {
   result?: any
   error?: any
+  isUserError?: boolean
+  isValidationError?: boolean
+  errorInfo?: {
+    error: string // 'validationError',
+    message: string // 'Validation Error',
+    extra?: any // this.extra
+    validationErrors?: any // this.validationErrors
+  }
 }
 
 export interface MakeRequestParams {
