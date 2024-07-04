@@ -3,6 +3,8 @@ import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
+import {ValidationError} from '@orion-js/schema'
+import UserError from './UserError'
 
 export default async function ({method, service, params}) {
   const serializedParams = serialize(params)
@@ -15,25 +17,37 @@ export default async function ({method, service, params}) {
       method: 'post',
       url: getURL(service),
       headers: {
-        'User-Agent': 'Orionjs-Echoes/1.1'
+        'User-Agent': 'Orionjs-Echoes/1.1',
       },
       data: {
         body,
-        signature
-      }
+        signature,
+      },
     })
 
     if (result.status !== 200) {
-      throw new Error(`Echoes request network error ${result.status}`)
+      throw new Error(`${result.status}`)
     }
 
     if (result.data.error) {
-      throw new Error(`Echoes request error: ${result.data.error}`)
+      const info = result.data.errorInfo
+      if (info) {
+        if (result.data.isValidationError) {
+          throw new ValidationError(info.validationErrors)
+        }
+        if (result.data.isUserError) {
+          throw new UserError(info.error, info.message, info.extra)
+        }
+      }
+
+      throw new Error(`${result.data.error}`)
     }
 
     const response = deserialize(result.data.result)
     return response
   } catch (error) {
+    if (error.isOrionError) throw error
+
     throw new Error(`Echoes request network error ${error.message}`)
   }
 }

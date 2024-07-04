@@ -14,14 +14,18 @@ export default async function ({getBodyJSON}) {
     const result = await echo.onRequest(serializedParams)
 
     return {
-      result: serialize(result)
+      result: serialize(result),
     }
   } catch (error) {
-    console.error('Error at echo requests handler:')
-    console.error(error)
+    if (!error.getInfo) {
+      console.error('Error at echo requests handler:', error)
+    }
 
     return {
-      error: error.message
+      error: error.message,
+      errorInfo: error.getInfo ? error.getInfo() : null,
+      isValidationError: !!error.isValidationError,
+      isUserError: !!error.isUserError,
     }
   }
 }
