@@ -10,6 +10,17 @@ export async function generateImageInfo(file: FileSchema) {
   const options = getFileManagerOptions()
 
   if (isImage(file)) {
+    if (!file.dimensions && options.getImageDimensions) {
+      try {
+        file.dimensions = await options.getImageDimensions(file)
+        if (!isEmpty(file.dimensions)) {
+          await Files.updateOne(file._id, {$set: {dimensions: file.dimensions}})
+        }
+      } catch (error) {
+        console.error('Error getting image dimensions', error)
+      }
+    }
+
     if (!file.resizedData && options.getResizedImages) {
       try {
         file.resizedData = await options.getResizedImages(file)

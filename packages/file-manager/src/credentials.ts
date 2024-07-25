@@ -1,4 +1,9 @@
-import {FileSchema, FileSchemaColorsData, FileSchemaResizeData} from './File/schema'
+import {
+  FileSchema,
+  FileSchemaColorsData,
+  FileSchemaDimensionsData,
+  FileSchemaResizeData,
+} from './File/schema'
 
 export interface FileManagerOptions {
   accessKeyId: string
@@ -11,6 +16,7 @@ export interface FileManagerOptions {
   endpoint?: string
   s3ForcePathStyle?: boolean
 
+  getImageDimensions?: (file: FileSchema) => Promise<FileSchemaDimensionsData>
   getResizedImages?: (file: FileSchema) => Promise<FileSchemaResizeData>
   getImageColors?: (file: FileSchema) => Promise<FileSchemaColorsData>
 }

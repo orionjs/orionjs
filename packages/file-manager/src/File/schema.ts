@@ -19,6 +19,15 @@ export class FileSchemaResizeData {
 }
 
 @TypedSchema()
+export class FileSchemaDimensionsData {
+  @Prop({optional: true})
+  width?: number
+
+  @Prop({optional: true})
+  height?: number
+}
+
+@TypedSchema()
 export class FileSchemaColorsData {
   @Prop({optional: true})
   vibrant?: string
@@ -79,6 +88,9 @@ export class FileSchema {
 
   @Prop({optional: true})
   createdAt?: Date
+
+  @Prop({optional: true, type: getModelForClass(FileSchemaDimensionsData)})
+  dimensions?: FileSchemaDimensionsData
 
   @Prop({optional: true, type: getModelForClass(FileSchemaResizeData)})
   resizedData?: FileSchemaResizeData
