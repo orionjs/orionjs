@@ -1,4 +1,4 @@
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
 
 @TypedSchema()
 export class FileSchemaResizeData {
@@ -80,9 +80,9 @@ export class FileSchema {
   @Prop({optional: true})
   createdAt?: Date
 
-  @Prop({optional: true})
+  @Prop({optional: true, type: getModelForClass(FileSchemaResizeData)})
   resizedData?: FileSchemaResizeData
 
-  @Prop({optional: true})
+  @Prop({optional: true, type: getModelForClass(FileSchemaColorsData)})
   colorsData?: FileSchemaColorsData
 }
