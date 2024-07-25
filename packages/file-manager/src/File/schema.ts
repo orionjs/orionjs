@@ -13,9 +13,6 @@ export class FileSchemaResizeData {
 
   @Prop({optional: true})
   largeURL?: string // 1400 max
-
-  @Prop({optional: true})
-  extraLargeURL?: string // 2800 max
 }
 
 @TypedSchema()
