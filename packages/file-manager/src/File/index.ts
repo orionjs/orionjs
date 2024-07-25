@@ -6,6 +6,7 @@ import {FileSchema} from './schema'
 import {getModelForClass} from '@orion-js/typed-model'
 import {isImage} from './resolvers/isImage'
 import {getFileManagerOptions} from '../credentials'
+import {isEmpty} from 'lodash'
 
 const schema = getModelForClass(FileSchema).getSchema()
 
@@ -25,7 +26,9 @@ export default createModel<FileSchema>({
       if (!file.resizedData && options.getResizedImages) {
         try {
           file.resizedData = await options.getResizedImages(file)
-          await Files.updateOne(file, {$set: {resizedData: file.resizedData}})
+          if (!isEmpty(file.resizedData)) {
+            await Files.updateOne(file, {$set: {resizedData: file.resizedData}})
+          }
         } catch (error) {
           console.error('Error getting resized images', error)
         }
@@ -33,7 +36,9 @@ export default createModel<FileSchema>({
       if (!file.colorsData && options.getImageColors) {
         try {
           file.colorsData = await options.getImageColors(file)
-          await Files.updateOne(file, {$set: {colorsData: file.colorsData}})
+          if (!isEmpty(file.colorsData)) {
+            await Files.updateOne(file, {$set: {colorsData: file.colorsData}})
+          }
         } catch (error) {
           console.error('Error getting image colors', error)
         }
