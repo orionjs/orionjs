@@ -30,22 +30,10 @@ export class FileSchemaDimensionsData {
 @TypedSchema()
 export class FileSchemaColorsData {
   @Prop({optional: true})
-  vibrant?: string
+  front?: string
 
   @Prop({optional: true})
-  lightVibrant?: string
-
-  @Prop({optional: true})
-  darkVibrant?: string
-
-  @Prop({optional: true})
-  muted?: string
-
-  @Prop({optional: true})
-  lightMuted?: string
-
-  @Prop({optional: true})
-  darkMuted?: string
+  background?: string
 
   @Prop({optional: true})
   blurhash?: string
