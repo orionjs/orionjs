@@ -1,18 +1,58 @@
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 
 @TypedSchema()
+export class FileSchemaResizeData {
+  @Prop({optional: true})
+  thumbnailURL?: string // 100 max
+
+  @Prop({optional: true})
+  smallURL?: string // 300 max
+
+  @Prop({optional: true})
+  mediumURL?: string // 800 max
+
+  @Prop({optional: true})
+  largeURL?: string // 1400 max
+
+  @Prop({optional: true})
+  extraLargeURL?: string // 2800 max
+}
+
+@TypedSchema()
+export class FileSchemaColorsData {
+  @Prop({optional: true})
+  vibrant?: string
+
+  @Prop({optional: true})
+  lightVibrant?: string
+
+  @Prop({optional: true})
+  darkVibrant?: string
+
+  @Prop({optional: true})
+  muted?: string
+
+  @Prop({optional: true})
+  lightMuted?: string
+
+  @Prop({optional: true})
+  darkMuted?: string
+
+  @Prop({optional: true})
+  blurhash?: string
+}
+
+@TypedSchema()
 export class FileSchema {
   @Prop({type: 'ID'})
   _id: string
 
-  @Prop({
-    optional: true
-  })
+  @Prop({optional: true})
   hash?: string
 
   @Prop({
     optional: true,
-    private: true
+    private: true,
   })
   externalUrl?: string
 
@@ -39,4 +79,10 @@ export class FileSchema {
 
   @Prop({optional: true})
   createdAt?: Date
+
+  @Prop({optional: true})
+  resizedData?: FileSchemaResizeData
+
+  @Prop({optional: true})
+  colorsData?: FileSchemaColorsData
 }

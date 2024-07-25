@@ -1,6 +1,6 @@
 import {paginatedResolver} from '@orion-js/paginated-mongodb'
 import {Resolver} from '@orion-js/resolvers'
-import escape from 'escape-string-regexp'
+import escapeString from 'escape-string-regexp'
 import File from '../File'
 import {Files} from '../Files'
 
@@ -8,8 +8,8 @@ const fileManagerFiles: Resolver = paginatedResolver({
   params: {
     filter: {
       type: String,
-      optional: true
-    }
+      optional: true,
+    },
   },
   returns: File,
   async getCursor({filter}, viewer) {
@@ -18,11 +18,11 @@ const fileManagerFiles: Resolver = paginatedResolver({
     query.createdBy = viewer.userId
 
     if (filter) {
-      query.name = {$regex: new RegExp(`^${escape(filter)}`)}
+      query.name = {$regex: new RegExp(`^${escapeString(filter)}`)}
     }
 
     return Files.find(query)
-  }
+  },
 })
 
 export default fileManagerFiles
