@@ -16,7 +16,7 @@ export default resolver({
     await Files.updateOne(file, {$set: {status: 'uploaded'}})
 
     // mientras el usuario sigue editando el formulario, se generan los resizes y colores
-    generateImageInfo(file)
+    await generateImageInfo(file)
 
     return file
   },
