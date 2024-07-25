@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "3.9.2",
+  "version": "3.9.3",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
