@@ -47,6 +47,7 @@ export default function (passedOptions) {
 
     onReady()
     isReady = true
+
   })
 
   return collection
