@@ -26,6 +26,6 @@ export default ({initItem, rawCollection, model, schema}) =>
     }
 
     const result = await rawCollection.findOneAndUpdate(selector, modifier, options)
-    if (!result || !result.value) return null
-    return initItem(result.value)
+    if (!result) return null
+    return initItem(result)
   }
