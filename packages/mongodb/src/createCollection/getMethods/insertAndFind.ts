@@ -7,7 +7,7 @@ import {wrapErrors} from './wrapErrors'
 export default <DocumentType extends ModelClassBase>(
   collection: Partial<Collection<DocumentType>>
 ) => {
-  const insertAndFind: InsertAndFind<DocumentType> = async (insertDoc, options) => {
+  const insertAndFind: InsertAndFind<DocumentType> = async (insertDoc, options = {}) => {
     await collection.connectionPromise
     let doc = insertDoc as any
     if (!doc || !isPlainObject(doc)) {
