@@ -7,7 +7,8 @@
     "test": "lerna run test",
     "publish-all": "lerna publish --dist-tag latest --force-publish=*",
     "release": "lerna publish --dist-tag latest",
-    "release-alpha": "lerna publish --dist-tag next"
+    "release-alpha": "lerna publish --dist-tag next",
+    "release-from-package": "lerna publish from-package --dist-tag latest"
   },
   "devDependencies": {
     "lerna": "^3.20.2"
