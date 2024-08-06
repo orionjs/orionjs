@@ -27,7 +27,7 @@ export default <DocumentType extends ModelClassBase>(
     }
 
     const result = await wrapErrors(() => {
-      return collection.rawCollection.updateOne(selector, modifier)
+      return collection.rawCollection.updateOne(selector, modifier, options.mongoOptions)
     })
 
     return result
