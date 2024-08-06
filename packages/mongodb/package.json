@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "3.9.0",
+  "version": "3.9.9",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [

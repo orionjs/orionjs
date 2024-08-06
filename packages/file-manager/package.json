@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "3.9.8",
+  "version": "3.9.9",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -14,8 +14,8 @@
   "dependencies": {
     "@orion-js/helpers": "^3.9.0",
     "@orion-js/models": "^3.9.0",
-    "@orion-js/mongodb": "^3.9.0",
-    "@orion-js/paginated-mongodb": "^3.9.0",
+    "@orion-js/mongodb": "^3.9.9",
+    "@orion-js/paginated-mongodb": "^3.9.9",
     "@orion-js/resolvers": "^3.9.0",
     "@orion-js/schema": "^3.9.0",
     "@orion-js/typed-model": "^3.9.0",
