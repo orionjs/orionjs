@@ -25,7 +25,7 @@ export default <DocumentType extends ModelClassBase>(
     }
 
     await wrapErrors(async () => {
-      await collection.rawCollection.insertOne(doc)
+      await collection.rawCollection.insertOne(doc, options.mongoOptions)
     })
 
     return doc._id

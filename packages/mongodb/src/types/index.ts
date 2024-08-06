@@ -131,7 +131,8 @@ export type UpdateAndFind<ModelClass extends ModelClassBase> = (
 
 export type UpdateItem<ModelClass extends ModelClassBase> = (
   item: ModelClass,
-  modifier: ModelToUpdateFilter<ModelClass>
+  modifier: ModelToUpdateFilter<ModelClass>,
+  options?: FindOneAndUpdateUpdateOptions
 ) => Promise<void>
 
 export type InsertOne<ModelClass extends ModelClassBase> = (
