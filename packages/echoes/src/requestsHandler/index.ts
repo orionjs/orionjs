@@ -9,6 +9,9 @@ export default (options: EchoesOptions) =>
     method: 'post',
     path: options.requests.handlerPath || '/echoes-services',
     bodyParser: 'json',
+    bodyParserOptions: {
+      limit: '10mb',
+    },
     async resolve(req) {
       try {
         const {body, signature} = req.body
