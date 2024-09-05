@@ -21,7 +21,7 @@ export async function generateImageInfo(file: FileSchema) {
       }
     }
 
-    if (!file.resizedData && options.getResizedImages) {
+    if (!file.resizedData?.extraLargeURL && options.getResizedImages) {
       try {
         file.resizedData = await options.getResizedImages(file)
         if (!isEmpty(file.resizedData)) {
