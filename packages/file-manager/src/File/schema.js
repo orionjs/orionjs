@@ -1,46 +1,50 @@
 export default {
   _id: {
-    type: 'ID'
+    type: 'ID',
   },
   hash: {
     type: String,
-    optional: true
+    optional: true,
   },
   externalUrl: {
     type: String,
     optional: true,
-    private: true
+    private: true,
   },
   key: {
     type: String,
-    optional: true
+    optional: true,
   },
   bucket: {
     type: String,
-    optional: true
+    optional: true,
   },
   name: {
     type: String,
-    optional: true
+    optional: true,
   },
   type: {
     type: String,
-    optional: true
+    optional: true,
   },
   size: {
     type: Number,
-    optional: true
+    optional: true,
   },
   status: {
     type: String,
-    optional: true
+    optional: true,
   },
   createdBy: {
     type: String,
-    optional: true
+    optional: true,
   },
   createdAt: {
     type: Date,
-    optional: true
-  }
+    optional: true,
+  },
+  metadata: {
+    type: 'blackbox',
+    optional: true,
+  },
 }
