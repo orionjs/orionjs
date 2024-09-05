@@ -3,16 +3,19 @@ import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
 @TypedSchema()
 export class FileSchemaResizeData {
   @Prop({optional: true})
-  thumbnailURL?: string // 100 max
+  thumbnailURL?: string // 100 height max
 
   @Prop({optional: true})
-  smallURL?: string // 300 max
+  smallURL?: string // 300 height max
 
   @Prop({optional: true})
-  mediumURL?: string // 800 max
+  mediumURL?: string // 800 height max
 
   @Prop({optional: true})
-  largeURL?: string // 1400 max
+  largeURL?: string // 1400 height max
+
+  @Prop({optional: true})
+  extraLargeURL?: string // 2400 height max
 }
 
 @TypedSchema()
