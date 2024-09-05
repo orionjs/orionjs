@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/app",
-  "version": "2.6.15",
+  "version": "2.6.16",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
