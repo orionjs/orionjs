@@ -1,13 +1,14 @@
 const { MongoClient } = require('mongodb')
 const getDbName = require('./getDbName')
 import { EventEmitter } from 'events'
-import config from '../config'
 import { nextTick } from 'process'
+import config from '../config'
+
 class OrionMongoDatabase {
   constructor(mongoURL) {
     this.mongoURL = mongoURL
-    this.connectionEvent = new EventEmitter()
-    this.connectionEvent.setMaxListeners(200)
+    this.connectionEvent = new EventEmitter({})
+    this.connectionEvent.setMaxListeners(Infinity)
     this.state = 'disconnected'
     this.connecting = true
     this.client = null
@@ -21,7 +22,6 @@ class OrionMongoDatabase {
   }
 
   config(mongoURL, mongoOptions) {
-    console.log('configuring', mongoURL)
     this.mongoURL = mongoURL
     this.mongoOptions = mongoOptions
     this.configured = true
@@ -41,6 +41,9 @@ class OrionMongoDatabase {
     this.connecting = false
     this.state = 'connected'
     this.connectionEvent.emit('connected', this)
+    const { logger } = config()
+    const censoredURL = this.mongoURL.replace(/\/\/.*:.*@/, '//') // remove user and password from URL
+    logger.info(`Connected to ${censoredURL}`)
     nextTick(() => {
       delete this.connectionEvent
       clearTimeout(this.timer)
