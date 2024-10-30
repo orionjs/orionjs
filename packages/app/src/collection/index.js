@@ -9,12 +9,12 @@ global.db = {}
 
 export default function (passedOptions) {
   const defaultOptions = {
-    model: new Model({name: 'defaultModelFor_' + passedOptions.name || 'nn'}),
+    model: new Model({ name: 'defaultModelFor_' + passedOptions.name || 'nn' }),
     passUpdateAndRemove: true,
     hooks: [],
     hasCustomConnection: !!passedOptions.connection,
     // dont make the request if its not using the default
-    connection: passedOptions.connection ? null : connect().then(database => ({database}))
+    connection: passedOptions.connection ? null : connect().then(database => ({ database }))
   }
 
   const options = {
@@ -31,7 +31,7 @@ export default function (passedOptions) {
   let onReady = () => resolvers.map(resolve => resolve(collection))
   collection.await = async () => (isReady ? null : new Promise(resolve => resolvers.push(resolve)))
 
-  options.connection.then(async ({database}) => {
+  options.connection.then(async ({ database }) => {
     checkOptions(options)
     global.db[options.name] = collection
 

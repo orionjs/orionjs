@@ -1,7 +1,9 @@
-import {resolver, generateId, Model} from '@orion-js/app'
-import AWS from 'aws-sdk'
-import {getAWSCredentials} from '../credentials'
+import { resolver, generateId, Model } from '@orion-js/app'
+import { S3Client } from "@aws-sdk/client-s3";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { getAWSCredentials } from '../credentials'
 import Files from '../Files'
+
 
 export default resolver({
   params: {
@@ -34,12 +36,15 @@ export default resolver({
   }),
   mutation: true,
   async resolve(params, viewer) {
-    const {accessKeyId, secretAccessKey, region, bucket, canUpload, basePath} = getAWSCredentials()
-    const s3 = new AWS.S3({
-      accessKeyId,
-      secretAccessKey,
-      region
-    })
+    const { accessKeyId, secretAccessKey, region, bucket, canUpload, basePath } = getAWSCredentials()
+
+    const s3 = new S3Client({
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey
+      }
+    });
 
     if (canUpload) {
       if (!(await canUpload(params, viewer))) return null
@@ -58,25 +63,17 @@ export default resolver({
       createdAt: new Date()
     })
 
-    const result = await new Promise((resolve, reject) => {
-      s3.createPresignedPost(
-        {
-          Bucket: bucket,
-          Conditions: [
-            ['content-length-range', params.size, params.size],
-            {'Content-Type': params.type},
-            {Key: key}
-          ],
-          Fields: {
-            key: key,
-            'Content-Type': params.type
-          }
-        },
-        function(error, data) {
-          if (error) reject(error)
-          else resolve(data)
-        }
-      )
+    const result = await createPresignedPost(s3, {
+      Bucket: bucket,
+      Conditions: [
+        ['content-length-range', params.size, params.size],
+        { 'Content-Type': params.type },
+        { Key: key }
+      ],
+      Fields: {
+        key: key,
+        'Content-Type': params.type
+      }
     })
 
     return {
