@@ -20,7 +20,7 @@ describe('Enum test', () => {
       returns: colorsEnum,
       async resolve(params: TestParams): Promise<enumType> {
         return params.color
-      }
+      },
     })
 
     const resolvers = {globalResolver}
@@ -51,7 +51,7 @@ describe('Enum test', () => {
       returns: Clone1,
       async resolve(params: TestParams): Promise<typeof Clone1.type> {
         return params
-      }
+      },
     })
 
     const Clone2 = cloneSchemaClass(TestParams, {name: 'TestParams3', pickFields: ['color']})
@@ -62,7 +62,7 @@ describe('Enum test', () => {
       returns: Clone3,
       async resolve(params: TestParams): Promise<typeof Clone3.type> {
         return params
-      }
+      },
     })
 
     const resolvers = {globalResolver, globalResolver2}

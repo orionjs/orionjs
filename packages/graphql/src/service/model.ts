@@ -4,17 +4,18 @@ import {
   ResolverOptions,
   ModelResolverResolve,
   modelResolver,
-  ModelResolver
+  ModelResolver as ModelResolverType,
 } from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
 import {getTargetMetadata} from './otherParams'
+import {GraphQLResolveInfo} from 'graphql'
 
 export interface ModelResolverPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: ModelResolverResolve
 }
 
 export function ModelResolver(options?: Omit<ResolverOptions<any>, 'resolve' | 'middlewares'>) {
-  return function (target: any, propertyKey: string, descriptor: ModelResolverPropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: ModelResolverPropertyDescriptor) => {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}
@@ -23,10 +24,10 @@ export function ModelResolver(options?: Omit<ResolverOptions<any>, 'resolve' | '
       returns: getTargetMetadata(target, propertyKey, 'returns'),
       middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
       ...options,
-      resolve: async (item, params, viewer) => {
+      resolve: async (item, params, viewer, info: GraphQLResolveInfo) => {
         const instance: any = getInstance(target.service)
-        return await instance[propertyKey](item, params, viewer)
-      }
+        return await instance[propertyKey](item, params, viewer, info)
+      },
     })
   }
 }
@@ -38,15 +39,15 @@ export interface ModelResolversOptions {
 
 export function ModelResolvers(
   typedSchema: any,
-  options: ModelResolversOptions = {}
+  options: ModelResolversOptions = {},
 ): ClassDecorator {
-  return function (target: any) {
+  return (target: any) => {
     Service()(target)
 
     target.prototype.modelName = options.modelName || typedSchema.name
 
     if (!target.prototype.modelName) {
-      throw new Error(`The specified model has no name or is not a model`)
+      throw new Error('The specified model has no name or is not a model')
     }
 
     target.prototype.typedSchema = typedSchema
@@ -59,7 +60,7 @@ export function ModelResolvers(
 
 export function getServiceModelResolvers(target: any): {
   [key: string]: {
-    [key: string]: ModelResolver<GlobalResolverResolve>
+    [key: string]: ModelResolverType<GlobalResolverResolve>
   }
 } {
   if (!target.prototype) {
@@ -67,6 +68,6 @@ export function getServiceModelResolvers(target: any): {
   }
 
   return {
-    [target.prototype.modelName]: target.prototype.resolvers || {}
+    [target.prototype.modelName]: target.prototype.resolvers || {},
   }
 }

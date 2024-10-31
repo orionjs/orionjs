@@ -4,11 +4,11 @@ import {ModelResolverPropertyDescriptor} from './model'
 
 function createRegisterResolverMetadata<TParam>(metadataKey: string, isArray = false) {
   return (metadata: TParam) => {
-    return function (
+    return (
       target: any,
       propertyKey: string,
-      descriptor: GlobalResolverPropertyDescriptor | ModelResolverPropertyDescriptor
-    ) {
+      descriptor: GlobalResolverPropertyDescriptor | ModelResolverPropertyDescriptor,
+    ) => {
       if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
       target[metadataKey] = target[metadataKey] || {}

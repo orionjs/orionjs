@@ -7,14 +7,14 @@ export default function ({resolver, getGraphQLType, options, model}) {
   return {
     type,
     args,
-    async resolve(item, params, context) {
+    async resolve(item, params, context, info) {
       try {
-        const result = await resolver.resolve(item, params, context)
+        const result = await resolver.resolve(item, params, context, info)
         return result
       } catch (error) {
         errorHandler(error, {context, resolver, options, model})
         throw error
       }
-    }
+    },
   }
 }

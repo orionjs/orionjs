@@ -4,7 +4,7 @@ import {OrionSubscription, OrionSubscriptionOptions} from '../types/subscription
 import {subscription} from '..'
 
 export function Subscriptions(): ClassDecorator {
-  return function (target: any) {
+  return (target: any) => {
     Service()(target)
     target.prototype.service = target
     target.prototype.serviceType = 'subscriptions'
@@ -12,10 +12,10 @@ export function Subscriptions(): ClassDecorator {
 }
 
 export function Subscription<T = any, ReturnType = any>(options: OrionSubscriptionOptions) {
-  return function (object: any, propertyName: string, index?: number) {
+  return (object: any, propertyName: string, index?: number) => {
     const sub: OrionSubscription<T, ReturnType> = subscription({
       name: propertyName,
-      ...options
+      ...options,
     })
 
     object.subscriptions = object.subscriptions || {}
@@ -25,15 +25,15 @@ export function Subscription<T = any, ReturnType = any>(options: OrionSubscripti
       object,
       propertyName,
       index,
-      value: containerInstance => {
+      value: _containerInstance => {
         if (!object.serviceType || object.serviceType !== 'subscriptions') {
           throw new Error(
-            'You must pass a class decorated with @Subscriptions if you want to use @Subscription'
+            'You must pass a class decorated with @Subscriptions if you want to use @Subscription',
           )
         }
 
         return sub
-      }
+      },
     })
   }
 }

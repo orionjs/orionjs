@@ -1,7 +1,6 @@
 import 'reflect-metadata'
 import {Inject, Service} from '@orion-js/services'
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {ModelResolver, Query, getServiceResolvers, Resolvers, Mutation} from './index'
+import {Query, getServiceResolvers, Resolvers, Mutation} from './index'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {
@@ -19,7 +18,7 @@ describe('Resolvers with service injection', () => {
 
       @Query({
         params: {name: {type: 'string'}},
-        returns: String
+        returns: String,
       })
       async sayHi(params) {
         return this.addAge(`My name is ${params.name} ${this.repo.getLastName()}`)

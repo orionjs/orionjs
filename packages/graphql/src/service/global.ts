@@ -2,9 +2,10 @@ import {getInstance, Service} from '@orion-js/services'
 import {GlobalResolverResolve, ResolverOptions, resolver, Resolver} from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
 import {getTargetMetadata} from './otherParams'
+import {GraphQLResolveInfo} from 'graphql'
 
 export function Resolvers(): ClassDecorator {
-  return function (target: any) {
+  return (target: any) => {
     Service()(target)
     target.prototype.service = target
   }
@@ -15,7 +16,7 @@ export interface GlobalResolverPropertyDescriptor extends Omit<PropertyDecorator
 }
 
 export function Query(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
-  return function (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) => {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}
@@ -25,16 +26,16 @@ export function Query(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation
       returns: getTargetMetadata(target, propertyKey, 'returns'),
       middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
       ...options,
-      resolve: async (params, viewer) => {
+      resolve: async (params, viewer, info: GraphQLResolveInfo) => {
         const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
-      }
+        return await instance[propertyKey](params, viewer, info)
+      },
     })
   }
 }
 
 export function Mutation(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
-  return function (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) => {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}
@@ -45,10 +46,10 @@ export function Mutation(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutat
       middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
       ...options,
       mutation: true,
-      resolve: async (params, viewer) => {
+      resolve: async (params, viewer, info: GraphQLResolveInfo) => {
         const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
-      }
+        return await instance[propertyKey](params, viewer, info)
+      },
     })
   }
 }

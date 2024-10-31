@@ -6,6 +6,7 @@ import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {cleanResolvers} from './cleanResolvers'
 import {createModel} from '@orion-js/models'
 import {UserError} from '@orion-js/helpers'
+import {GraphQLResolveInfo} from 'graphql'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {
@@ -17,20 +18,20 @@ describe('Test GraphQL Server', () => {
       helloWorld: resolver({
         params: {
           name: {
-            type: 'string'
-          }
+            type: 'string',
+          },
         },
         returns: 'string',
         async resolve({name}) {
           return `Hello ${name}`
-        }
-      })
+        },
+      }),
     }
 
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
   })
 
@@ -39,20 +40,20 @@ describe('Test GraphQL Server', () => {
       helloWorld: resolver({
         params: {
           name: {
-            type: 'string'
-          }
+            type: 'string',
+          },
         },
         returns: 'string',
         async resolve({name}) {
           return `Hello ${name}`
-        }
-      })
+        },
+      }),
     }
 
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
 
     const response = await request(app)
@@ -60,11 +61,11 @@ describe('Test GraphQL Server', () => {
       .send({
         operationName: 'testOperation',
         variables: {
-          name: 'Nico'
+          name: 'Nico',
         },
         query: `query testOperation($name: String) {
         helloWorld(name: $name)
-      }`
+      }`,
       })
 
     expect(response.body.data).toEqual({helloWorld: 'Hello Nico'})
@@ -75,20 +76,20 @@ describe('Test GraphQL Server', () => {
       helloWorld: resolver({
         params: {
           name: {
-            type: 'string'
-          }
+            type: 'string',
+          },
         },
         returns: 'string',
         async resolve({name}) {
           return `Hello ${name}`
-        }
-      })
+        },
+      }),
     }
 
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
 
     const response = await request(app)
@@ -96,16 +97,16 @@ describe('Test GraphQL Server', () => {
       .send({
         operationName: 'testOperation',
         variables: {
-          name: 'Nico'
+          name: 'Nico',
         },
         query: `query testOperation($name: String) {
         helloWorld_doesntExists(name: $name)
-      }`
+      }`,
       })
 
     expect(response.statusCode).toBe(400)
     expect(response.body.errors[0].message).toEqual(
-      'Cannot query field "helloWorld_doesntExists" on type "Query".'
+      'Cannot query field "helloWorld_doesntExists" on type "Query".',
     )
   })
 
@@ -117,20 +118,20 @@ describe('Test GraphQL Server', () => {
             type: 'string',
             validate: () => {
               return 'notUnique'
-            }
-          }
+            },
+          },
         },
         returns: 'string',
         async resolve({name}) {
           return `Hello ${name}`
-        }
-      })
+        },
+      }),
     }
 
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
 
     const response = await request(app)
@@ -138,11 +139,11 @@ describe('Test GraphQL Server', () => {
       .send({
         operationName: 'testOperation',
         variables: {
-          name: 'Nico'
+          name: 'Nico',
         },
         query: `query testOperation($name: String) {
           helloWorld(name: $name)
-      }`
+      }`,
       })
 
     expect(response.statusCode).toBe(200)
@@ -153,8 +154,8 @@ describe('Test GraphQL Server', () => {
           locations: [
             {
               line: 2,
-              column: 11
-            }
+              column: 11,
+            },
           ],
           path: ['helloWorld'],
           extensions: {
@@ -166,15 +167,15 @@ describe('Test GraphQL Server', () => {
               error: 'validationError',
               message: 'Validation Error',
               validationErrors: {
-                name: 'notUnique'
-              }
-            }
-          }
-        }
+                name: 'notUnique',
+              },
+            },
+          },
+        },
       ],
       data: {
-        helloWorld: null
-      }
+        helloWorld: null,
+      },
     })
   })
 
@@ -183,21 +184,21 @@ describe('Test GraphQL Server', () => {
       helloWorld: resolver({
         params: {
           name: {
-            type: 'string'
-          }
+            type: 'string',
+          },
         },
         returns: 'string',
         async resolve({name}) {
           throw new UserError('code', 'message')
           return `Hello ${name}`
-        }
-      })
+        },
+      }),
     }
 
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
 
     const response = await request(app)
@@ -205,11 +206,11 @@ describe('Test GraphQL Server', () => {
       .send({
         operationName: 'testOperation',
         variables: {
-          name: 'Nico'
+          name: 'Nico',
         },
         query: `query testOperation($name: String) {
           helloWorld(name: $name)
-      }`
+      }`,
       })
 
     expect(response.statusCode).toBe(200)
@@ -220,8 +221,8 @@ describe('Test GraphQL Server', () => {
           locations: [
             {
               line: 2,
-              column: 11
-            }
+              column: 11,
+            },
           ],
           path: ['helloWorld'],
           extensions: {
@@ -231,14 +232,14 @@ describe('Test GraphQL Server', () => {
             hash: '6f9b9af3cd',
             info: {
               error: 'code',
-              message: 'message'
-            }
-          }
-        }
+              message: 'message',
+            },
+          },
+        },
       ],
       data: {
-        helloWorld: null
-      }
+        helloWorld: null,
+      },
     })
   })
 
@@ -247,21 +248,21 @@ describe('Test GraphQL Server', () => {
       helloWorld: resolver({
         params: {
           name: {
-            type: 'string'
-          }
+            type: 'string',
+          },
         },
         returns: 'string',
         async resolve({name}) {
           throw new Error('message')
           return `Hello ${name}`
-        }
-      })
+        },
+      }),
     }
 
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
 
     const response = await request(app)
@@ -269,11 +270,11 @@ describe('Test GraphQL Server', () => {
       .send({
         operationName: 'testOperation',
         variables: {
-          name: 'Nico'
+          name: 'Nico',
         },
         query: `query testOperation($name: String) {
           helloWorld(name: $name)
-      }`
+      }`,
       })
 
     expect(response.statusCode).toBe(200)
@@ -286,21 +287,21 @@ describe('Test GraphQL Server', () => {
           locations: [
             {
               line: 2,
-              column: 11
-            }
+              column: 11,
+            },
           ],
           path: ['helloWorld'],
           extensions: {
             isOrionError: false,
             isValidationError: false,
             code: 'INTERNAL_SERVER_ERROR',
-            hash: hash
-          }
-        }
+            hash: hash,
+          },
+        },
       ],
       data: {
-        helloWorld: null
-      }
+        helloWorld: null,
+      },
     })
   })
 
@@ -324,57 +325,103 @@ describe('Test GraphQL Server', () => {
       if (userId !== '1') return null
       return {
         name: 'Nico',
-        age: 20
+        age: 20,
       }
     }
 
     const user = resolver({
       params: Params,
       returns: User,
-      resolve
+      resolve,
     })
 
     const model = createModel({
       name: 'Model',
       schema: {
-        user: {type: User}
-      }
+        user: {type: User},
+      },
     })
 
     const modelMutation = resolver({
       params: Params,
       returns: [model],
       mutation: true,
-      resolve
+      resolve,
     })
 
     const resolvers = {user, modelMutation}
     const app = express()
     await startGraphQL({
       resolvers,
-      app
+      app,
     })
 
     const response = await request(app)
       .post('/graphql')
       .send({
         variables: {
-          userId: '1'
+          userId: '1',
         },
         query: `query ($userId: String) {
         user(userId: $userId) {
           name
           age
         }
-      }`
+      }`,
       })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.data).toEqual({
       user: {
         name: 'Nico',
-        age: 20
-      }
+        age: 20,
+      },
     })
+  })
+
+  it('Should pass graphql request info in fourth param', async () => {
+    @TypedSchema()
+    class User {
+      @Prop()
+      name: string
+
+      @Prop()
+      age: number
+    }
+
+    let resolveInfo: GraphQLResolveInfo
+
+    const user = resolver({
+      params: {},
+      returns: User,
+      async resolve(_params, _viewer, info) {
+        resolveInfo = info
+        return {
+          name: 'Nico',
+          age: 20,
+        }
+      },
+    })
+
+    const resolvers = {user}
+    const app = express()
+    await startGraphQL({
+      resolvers,
+      app,
+    })
+
+    const response = await request(app)
+      .post('/graphql')
+      .send({
+        query: `query {
+        user {
+          name
+          age
+        }
+      }`,
+      })
+
+    expect(response.statusCode).toBe(200)
+    expect(resolveInfo.fieldName).toEqual('user')
   })
 })

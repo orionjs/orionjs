@@ -26,9 +26,9 @@ describe('Test get resolvers schema', () => {
         return {
           userId: params.userId,
           name: 'test',
-          age: 10
+          age: 10,
         }
-      }
+      },
     })
 
     const resolvers = {globalResolver}
@@ -41,7 +41,7 @@ describe('Test get resolvers schema', () => {
     expect(await schema.globalResolver.resolve(null, {userId: '1'})).toEqual({
       userId: '1',
       name: 'test',
-      age: 10
+      age: 10,
     })
   })
 })

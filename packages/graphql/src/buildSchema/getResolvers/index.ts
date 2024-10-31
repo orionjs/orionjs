@@ -11,7 +11,7 @@ export default async function (options: StartGraphQLOptions, mutation: boolean) 
     .map(key => {
       return {
         name: key,
-        resolver: resolvers[key]
+        resolver: resolvers[key],
       }
     })
     .filter(({resolver}) => !!resolver.mutation === !!mutation)
@@ -28,15 +28,15 @@ export default async function (options: StartGraphQLOptions, mutation: boolean) 
     fields[name] = {
       type,
       args,
-      async resolve(root, params, context) {
+      async resolve(root, params, context, info) {
         try {
-          const result = await resolver.resolve(params, context)
+          const result = await resolver.resolve(params, context, info)
           return result
         } catch (error) {
           errorHandler(error, {context, resolver, options, name})
           throw error
         }
-      }
+      },
     }
   }
 
