@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/resolvers",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,9 +17,9 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/cache": "^3.9.0",
-    "@orion-js/helpers": "^3.9.0",
-    "@orion-js/schema": "^3.9.0"
+    "@orion-js/cache": "^3.10.0",
+    "@orion-js/helpers": "^3.10.0",
+    "@orion-js/schema": "^3.10.0"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.1.0",
