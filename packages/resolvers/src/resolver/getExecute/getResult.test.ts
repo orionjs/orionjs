@@ -5,12 +5,15 @@ import getResult from './getResult'
 const cacheProvider = defaultCache
 
 it('should execute the function', async () => {
-  const resolve = async function ({num}: {num: number}) {
-    return num * 2
-  }
+  const resolve = async ({num}: {num: number}) => num * 2
 
   const params = {num: 321}
-  const result = await getResult({options: {resolve}, params, viewer: {}})
+  const result = await getResult({
+    options: {resolve},
+    params,
+    viewer: {},
+    info: undefined,
+  })
 
   expect(result).toBe(321 * 2)
 })
@@ -18,7 +21,7 @@ it('should execute the function', async () => {
 it('should use the cache if passed', async () => {
   let index = 1
 
-  const resolve = async function () {
+  const resolve = async () => {
     index++
     return index
   }
@@ -29,7 +32,7 @@ it('should use the cache if passed', async () => {
     resolve,
     cacheProvider,
     cache,
-    resolverId
+    resolverId,
   }
   const emptyCall = {options: resolver, params: {}, viewer: {}}
 
@@ -46,16 +49,14 @@ it('should use the cache if passed', async () => {
 })
 
 it('should use the custom cache Provider', async () => {
-  const resolve = async function () {
-    return 1
-  }
+  const resolve = async () => 1
 
   const provider = {
     async get() {
       return {value: 'fromcache'}
     },
     async set() {},
-    async invalidate() {}
+    async invalidate() {},
   }
 
   const cache = 10

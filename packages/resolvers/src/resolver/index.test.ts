@@ -6,7 +6,7 @@ it('should return a function with a resolver id', () => {
   const resolver = createResolver({
     params: {},
     returns: String,
-    async resolve() {}
+    async resolve() {},
   })
 
   expect(typeof resolver).toBe('object')
@@ -19,13 +19,13 @@ it('should execute the function', async () => {
   const resolver = createResolver({
     params: {
       value: {
-        type: Number
-      }
+        type: Number,
+      },
     },
     returns: Number,
     async resolve({value}: {value: number}) {
       return value * 2
-    }
+    },
   })
 
   const result = await resolver.execute({params: {value: 2}})
@@ -37,14 +37,14 @@ it('should get from cache', async () => {
   const resolver = createResolver({
     params: {
       value: {
-        type: Number
-      }
+        type: Number,
+      },
     },
     returns: Number,
     cache: 100,
     async resolve(params: {value: number}) {
       return index++
-    }
+    },
   })
 
   const result1 = await resolver.execute({params: {value: 1}}) // 1
@@ -73,21 +73,21 @@ it('should create typed resolvers', async () => {
   const resolver = createResolver({
     params: {
       value: {
-        type: Number
-      }
+        type: Number,
+      },
     },
     returns: Number,
     resolve: async (params: TestResolverParams) => {
       return params.value * 2
-    }
+    },
   })
 
   const result1 = await resolver.resolve({
-    value: 2
+    value: 2,
   })
 
   const result2 = await resolver.execute({
-    params: {value: 2}
+    params: {value: 2},
   })
 
   expect(result1).toBe(4)
@@ -97,9 +97,7 @@ it('should create typed resolvers', async () => {
 it('should create typed model resolvers', async () => {
   const resolver = createModelResolver({
     returns: Number,
-    resolve: async function (model: {value: number}, params: {times: number}) {
-      return model.value * params.times
-    }
+    resolve: async (model: {value: number}, params: {times: number}) => model.value * params.times,
   })
 
   await resolver.resolve({value: 1}, {times: 2})
@@ -107,7 +105,7 @@ it('should create typed model resolvers', async () => {
 
   await resolver.execute({
     parent: {value: 1},
-    params: {times: 2}
+    params: {times: 2},
   })
 })
 
@@ -118,13 +116,13 @@ it('should accept a model as params', async () => {
     getSchema(): Schema {
       return {
         value: {
-          type: 'string'
-        }
+          type: 'string',
+        },
       }
     },
     initItem(item: any) {
       return item
-    }
+    },
   }
 
   class TypedParams {
@@ -140,7 +138,7 @@ it('should accept a model as params', async () => {
     returns: Number,
     resolve: async function (item: any, params: TypedParams) {
       return params.value * 2
-    }
+    },
   })
 
   const inModel = resolver.modelResolve
@@ -153,13 +151,13 @@ it('should accept a model as returns', async () => {
     getSchema(): Schema {
       return {
         value: {
-          type: 'string'
-        }
+          type: 'string',
+        },
       }
     },
     initItem(item: any) {
       return item
-    }
+    },
   }
 
   class Returns {
@@ -174,7 +172,7 @@ it('should accept a model as returns', async () => {
     returns: Returns,
     resolve: async (): Promise<Returns> => {
       return {value: 2}
-    }
+    },
   })
 
   const result = await resolver.resolve()
@@ -185,7 +183,7 @@ it('should correctly clean params when no params are passed', async () => {
   const resolver = createResolver({
     resolve: async ({title}: {title: string}) => {
       return `${title}`
-    }
+    },
   })
 
   expect(await resolver.execute({params: {title: 'test'}})).toBe('test')
@@ -195,13 +193,13 @@ it('should allow calling resolver.resolve', async () => {
   const resolver = createResolver({
     resolve: async ({title}: {title: string}) => {
       return `${title}`
-    }
+    },
   })
 
   const modelResolver = createModelResolver({
     resolve: async ({title}: {title: string}) => {
       return `${title}`
-    }
+    },
   })
 
   expect(await resolver.resolve({title: 'test'})).toBe('test')
@@ -212,12 +210,47 @@ it('only allow compliant resolve function', async () => {
   const resolver = createResolver({
     resolve: async () => {
       return 'hello'
-    }
+    },
   })
 
   const modelResolver = createModelResolver({
     resolve: async () => {
       return 'hello'
-    }
+    },
   })
+})
+
+it('should allow to pass a fourth param with the info', async () => {
+  const resolver = createResolver({
+    resolve: async (_params: any, _viewer: any, info: {test: any}) => {
+      expect(info.test).toBe(1)
+      return 'hello'
+    },
+  })
+
+  const modelResolver = createModelResolver({
+    resolve: async (_parent: any, _params: any, _viewer: any, info: {test: any}) => {
+      expect(info.test).toBe(1)
+      return 'hello'
+    },
+  })
+
+  await resolver.execute({
+    params: {},
+    viewer: {},
+    info: {
+      test: 1,
+    },
+  })
+
+  await modelResolver.execute({
+    parent: {},
+    params: {},
+    viewer: {},
+    info: {
+      test: 1,
+    },
+  })
+
+  expect.assertions(2)
 })

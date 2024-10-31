@@ -10,11 +10,12 @@ export default function getExecute(options: ResolverOptions) {
     const executeOptions: ExecuteOptions = {
       params: await cleanAndValidate({
         params: options.params,
-        callParams: executeParams.params
+        callParams: executeParams.params,
       }),
       viewer: executeParams.viewer || {},
+      info: executeParams.info || {},
       parent: executeParams.parent,
-      options: options
+      options: options,
     }
 
     await checkPermissions(executeOptions, options)

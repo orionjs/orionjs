@@ -1,23 +1,29 @@
 import {OrionCache} from '@orion-js/cache'
 import {Blackbox} from '@orion-js/schema'
 
-export type GlobalResolverResolve = (params: any, viewer: any) => Promise<any>
-export type ModelResolverResolve = (item: any, params: any, viewer: any) => Promise<any>
+export type GlobalResolverResolve = (params: any, viewer: any, info?: any) => Promise<any>
+export type ModelResolverResolve = (item: any, params: any, viewer: any, info?: any) => Promise<any>
 
-export type GlobalCheckPermissions = (params: any, viewer: any) => Promise<string | void>
+export type GlobalCheckPermissions = (
+  params: any,
+  viewer: any,
+  info?: any,
+) => Promise<string | void>
 export type ModelCheckPermissions = (
   parent: any,
   params: any,
-  viewer: any
+  viewer: any,
+  info?: any,
 ) => Promise<string | void>
 
-export type GlobalGetCacheKey = (params: any, viewer: any) => Promise<any>
-export type ModelGetCacheKey = (parent: any, params: any, viewer: any) => Promise<any>
+export type GlobalGetCacheKey = (params: any, viewer: any, info: any) => Promise<any>
+export type ModelGetCacheKey = (parent: any, params: any, viewer: any, info: any) => Promise<any>
 
 export interface ExecuteOptions {
   params: Blackbox
   viewer: any
   parent?: any
+  info?: any
   options: ResolverOptions
 }
 
@@ -32,10 +38,11 @@ export interface ExecuteParams<Resolve = Function, IsModel = undefined> {
   params?: ResolverParams<Resolve, IsModel>
   viewer?: any
   parent?: IsModel extends undefined ? undefined : Parameters<Resolve>[0]
+  info?: any
 }
 
 export type Execute<Resolve = Function, IsModel = undefined> = (
-  executeOptions: ExecuteParams<Resolve, IsModel>
+  executeOptions: ExecuteParams<Resolve, IsModel>,
 ) => ReturnType<Resolve>
 
 export interface SharedResolverOptions {
@@ -67,11 +74,11 @@ export interface Resolver<Resolve = Function, IsModel = undefined> extends Share
 export type ModelResolver<Resolve = Function> = Resolver<Resolve, true>
 
 export type CreateResolver = <Resolve extends GlobalResolverResolve>(
-  options: ResolverOptions<Resolve>
+  options: ResolverOptions<Resolve>,
 ) => Resolver<Resolve>
 
 export type CreateModelResolver = <Resolve extends ModelResolverResolve>(
-  options: ResolverOptions<Resolve>
+  options: ResolverOptions<Resolve>,
 ) => ModelResolver<Resolve>
 
 export interface PermissionCheckerOptions {
@@ -79,11 +86,12 @@ export interface PermissionCheckerOptions {
   parent: any
   params: any
   viewer: any
+  info: any
 }
 
 export type PermissionChecker = (options: PermissionCheckerOptions) => Promise<string | void>
 
 export type ResolverMiddleware = (
   executeOptions: ExecuteOptions,
-  next: () => Promise<any>
+  next: () => Promise<any>,
 ) => Promise<any>

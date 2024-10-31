@@ -4,11 +4,11 @@ import {
   ExecuteOptions,
   GlobalCheckPermissions,
   ModelCheckPermissions,
-  ResolverOptions
+  ResolverOptions,
 } from '../types'
 
 export default async function (executeOptions: ExecuteOptions, options: ResolverOptions) {
-  const {parent, params, viewer} = executeOptions
+  const {parent, params, viewer, info} = executeOptions
 
   if (viewer.app) return
 
@@ -16,18 +16,18 @@ export default async function (executeOptions: ExecuteOptions, options: Resolver
     resolver: options,
     parent,
     params,
-    viewer
+    viewer,
+    info,
   })
 
   if (options.checkPermission) {
     const execute = async () => {
       if (parent) {
         const checker = options.checkPermission as ModelCheckPermissions
-        return checker(parent, params, viewer)
-      } else {
-        const checker = options.checkPermission as GlobalCheckPermissions
-        return checker(params, viewer)
+        return checker(parent, params, viewer, info)
       }
+      const checker = options.checkPermission as GlobalCheckPermissions
+      return checker(params, viewer, info)
     }
 
     const error = await execute()
