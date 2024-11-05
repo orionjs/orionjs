@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/cli",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "main": "index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -37,5 +37,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b6a9c4ad6b924ab3bf71b8dcd8bd7d7b9f274e4a"
+  "gitHead": "cb12e3b5929d63ea486c44853dd1c9040a91dfb9"
 }
