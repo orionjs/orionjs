@@ -16,9 +16,10 @@ class OrionMongoDatabase {
     this.configured = false
     this.timer = new setTimeout(() => {
       if (!this.configured) {
-        throw new Error(`Connection to ${this.mongoURL} is needed but was not configured, please call connectToDatabase`)
+        const { logger } = config()
+        logger.error(`Connection to ${this.mongoURL} is needed but was not configured, call connectToDatabase first`)
       }
-    }, 30000)
+    }, 30 * 1000) // Warns if a collection used this connection but is not configured after 30 seconds
   }
 
   config(mongoURL, mongoOptions) {
