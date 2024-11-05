@@ -1,44 +1,11 @@
-const {MongoClient} = require('mongodb')
-const getDbName = require('./getDbName')
+import { createNewConnection } from './connections'
 
-const connections = {}
+module.exports = async function connectToDatabase(mongoURL, mongoOptions) {
 
-const connect = async function (mongoURL, mongoOptions = {}) {
-  connections[mongoURL].connecting = true
-
-  const client = await MongoClient.connect(mongoURL, {...mongoOptions})
-
-  const dbName = getDbName(mongoURL)
-  connections[mongoURL].client = client
-  connections[mongoURL].database = client.db(dbName)
-  connections[mongoURL].connecting = false
-
-  for (const resolve of connections[mongoURL].resolvers) {
-    resolve(connections[mongoURL])
-  }
-
-  return connections[mongoURL]
-}
-
-module.exports = async function connectToDatabase(mongoURL) {
   if (!mongoURL) {
-    throw new Error('Mongo URL env is required')
+    throw new Error('mongoURL is required to connect to the database')
   }
 
-  connections[mongoURL] = connections[mongoURL] || {
-    connecting: false,
-    resolvers: [],
-    client: null,
-    database: null
-  }
+  return createNewConnection(mongoURL, mongoOptions)
 
-  if (connections[mongoURL].database) {
-    return connections[mongoURL]
-  }
-
-  if (!connections[mongoURL].connecting) {
-    return await connect(mongoURL)
-  }
-
-  return new Promise(resolve => connections[mongoURL].resolvers.push(resolve))
 }

@@ -1,14 +1,14 @@
 import lockConfig from '../lockConfig'
 import JobsCollection from '../JobsCollection'
-import {config} from '@orion-js/app'
+import { config } from '@orion-js/app'
 
 export default class Worker {
-  constructor({index}) {
+  constructor({ index }) {
     this.index = index
   }
 
   async close() {
-    const {logger} = config()
+    const { logger } = config()
     if (this.jobData) {
       const waitingJobData = this.jobData
       logger.info('Waiting for job to finish...', waitingJobData)
@@ -21,8 +21,8 @@ export default class Worker {
     return !this.jobData
   }
 
-  hearbeat({initTime, jobData}) {
-    const {logger} = config()
+  hearbeat({ initTime, jobData }) {
+    const { logger } = config()
     const now = new Date()
     const elapsedTime = Math.floor((now.getTime() - initTime.getTime()) / 1000)
     if (elapsedTime > lockConfig.lockTimeoutAlert * 60)
@@ -30,8 +30,8 @@ export default class Worker {
         `Job ${jobData.job} id:${jobData._id} is taking too long to complete: ${elapsedTime}s`
       )
     JobsCollection.updateOne(
-      {_id: jobData._id, lockedAt: {$ne: null}},
-      {$set: {lockedAt: now}}
+      { _id: jobData._id, lockedAt: { $ne: null } },
+      { $set: { lockedAt: now } }
     ).catch(error => {
       logger.error('Error on hearbeat ', error)
     })
@@ -46,7 +46,7 @@ export default class Worker {
     this.jobData = jobData
     const initTime = new Date()
     const intervalId = setInterval(
-      () => this.hearbeat({jobData, initTime}),
+      () => this.hearbeat({ jobData, initTime }),
       lockConfig.lockRenewInterval * 1000 * 60
     )
     await func()
