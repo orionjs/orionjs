@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/runtime": "^7.5.5",
-    "@orion-js/app": "^2.7.0",
+    "@orion-js/app": "^2.8.0",
     "babel-jest": "^22.4.3",
     "jest": "^22.4.3"
   },
@@ -32,5 +32,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a572bf8bfc8236b4c063f1988cd64660532b51ef"
+  "gitHead": "b6a9c4ad6b924ab3bf71b8dcd8bd7d7b9f274e4a"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/app",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.14.0",
-    "@orion-js/schema": "^2.7.0",
+    "@orion-js/schema": "^2.8.0",
     "colors": "^1.3.3",
     "dataloader": "^2.0.0",
     "dot-object": "^1.9.0",
@@ -35,5 +35,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a572bf8bfc8236b4c063f1988cd64660532b51ef"
+  "gitHead": "b6a9c4ad6b924ab3bf71b8dcd8bd7d7b9f274e4a"
 }
