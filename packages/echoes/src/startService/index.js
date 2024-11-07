@@ -4,33 +4,34 @@ import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
 
 export default async function startService(options) {
-  const kafka = new Kafka(options.client)
+  if (options.client) {
+    const kafka = new Kafka(options.client)
 
-  config.producer = kafka.producer(options.producer)
-  config.consumer = kafka.consumer(options.consumer)
+    config.producer = kafka.producer(options.producer)
+    config.consumer = kafka.consumer(options.consumer)
 
-  await config.producer.connect()
-  await config.consumer.connect()
+    await config.producer.connect()
+    await config.consumer.connect()
 
-  for (const topic in options.echoes) {
-    const echo = options.echoes[topic]
-    if (echo.type !== types.event) continue
+    for (const topic in options.echoes) {
+      const echo = options.echoes[topic]
+      if (echo.type !== types.event) continue
 
-    await config.consumer.subscribe({
-      topic,
-      fromBeginning: options.readTopicsFromBeginning || false
+      await config.consumer.subscribe({
+        topic,
+        fromBeginning: options.readTopicsFromBeginning || false,
+      })
+    }
+
+    config.consumer.run({
+      eachMessage: async params => {
+        const echo = options.echoes[params.topic]
+        if (!echo) return
+        if (echo.type !== types.event) return
+        await echo.onMessage(params)
+      },
     })
   }
-
-  config.consumer.run({
-    eachMessage: async params => {
-      const echo = options.echoes[params.topic]
-      if (!echo) return
-      if (echo.type !== types.event) return
-      await echo.onMessage(params)
-    }
-  })
-
   if (options.requests) {
     config.requests = options.requests
 
