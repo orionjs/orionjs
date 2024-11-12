@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "2.9.0",
+  "version": "2.9.2",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/runtime": "^7.5.5",
-    "@orion-js/app": "^2.9.0",
+    "@orion-js/app": "^2.9.2",
     "babel-jest": "^22.4.3",
     "jest": "^22.4.3"
   },
