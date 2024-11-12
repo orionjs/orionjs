@@ -37,7 +37,6 @@ export default resolver({
   mutation: true,
   async resolve(params, viewer) {
     const { accessKeyId, secretAccessKey, region, bucket, canUpload, basePath } = getAWSCredentials()
-
     const s3 = new S3Client({
       region,
       credentials: {
@@ -65,6 +64,7 @@ export default resolver({
 
     const result = await createPresignedPost(s3, {
       Bucket: bucket,
+      Key: key,
       Conditions: [
         ['content-length-range', params.size, params.size],
         { 'Content-Type': params.type },
