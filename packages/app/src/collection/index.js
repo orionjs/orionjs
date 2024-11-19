@@ -14,7 +14,7 @@ export default function (passedOptions) {
     hooks: [],
     hasCustomConnection: !!passedOptions.connection,
     // dont make the request if its not using the default
-    connection: passedOptions.connection ? null : connect().then(database => ({ database }))
+    connection: passedOptions.connection ? null : connect()
   }
 
   const options = {
@@ -31,17 +31,32 @@ export default function (passedOptions) {
   let onReady = () => resolvers.map(resolve => resolve(collection))
   collection.await = async () => (isReady ? null : new Promise(resolve => resolvers.push(resolve)))
 
-  options.connection.then(async ({ database }) => {
+  options.connection.then(async ({ database, encrypted }) => {
+    if (!database) {
+      console.log('No database connection', { database, options })
+    }
     checkOptions(options)
     global.db[options.name] = collection
 
-    const rawCollection = database.collection(options.name)
-    collection.rawCollection = rawCollection
+    collection.rawCollection = database.collection(options.name)
 
     const methods = getMethods(collection)
     for (const key of Object.keys(methods)) {
       collection[key] = methods[key]
     }
+
+    if (encrypted?.database) {
+      const encryptedCollection = {
+        ...options,
+      }
+      encryptedCollection.rawCollection = encrypted.database.collection(options.name)
+      const encryptedMethods = getMethods(encryptedCollection)
+      for (const key of Object.keys(encryptedMethods)) {
+        encryptedCollection[key] = encryptedMethods[key]
+      }
+      collection.encrypted = encryptedCollection
+    }
+
     await loadIndexes(collection)
     await checkIndexes(collection)
 

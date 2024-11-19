@@ -14,7 +14,11 @@ class OrionMongoDatabase {
     this.client = null
     this.database = null
     this.configured = false
-    this.timer = new setTimeout(() => {
+    this.encrypted = {
+      client: null,
+      database: null
+    }
+    this.timer = setTimeout(() => {
       if (!this.configured) {
         const { logger } = config()
         logger.error(`Connection to ${this.mongoURL} is needed but was not configured, call connectToDatabase first`)
@@ -34,16 +38,19 @@ class OrionMongoDatabase {
     } else if (this.state === 'connecting' || !this.configured) {
       return new Promise(resolve => this.connectionEvent.once('connected', resolve))
     }
+    const { logger } = config()
+    const censoredURL = this.mongoURL.replace(/\/\/.*:.*@/, '//') // remove user and password from URL
     this.state = 'connecting'
-    const client = await MongoClient.connect(this.mongoURL, { ...this.mongoOptions })
-    const dbName = getDbName(this.mongoURL)
-    this.client = client
-    this.database = client.db(dbName)
+    if (this.mongoOptions?.autoEncryption) {
+      this.encrypted.client = await MongoClient.connect(this.mongoURL, { ...this.mongoOptions })
+      this.encrypted.database = this.encrypted.client.db(getDbName(this.mongoURL))
+      logger.info(`An encrypted connection was created for ${censoredURL}`)
+    }
+    this.client = await MongoClient.connect(this.mongoURL, { ...this.mongoOptions, autoEncryption: null })
+    this.database = this.client.db(getDbName(this.mongoURL))
     this.connecting = false
     this.state = 'connected'
     this.connectionEvent.emit('connected', this)
-    const { logger } = config()
-    const censoredURL = this.mongoURL.replace(/\/\/.*:.*@/, '//') // remove user and password from URL
     logger.info(`Connected to ${censoredURL}`)
     nextTick(() => {
       delete this.connectionEvent
