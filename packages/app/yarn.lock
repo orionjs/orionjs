@@ -1528,10 +1528,10 @@
   dependencies:
     sparse-bitfield "^3.0.3"
 
-"@mongodb-js/saslprep@^1.1.5":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.1.8.tgz#d39744540be8800d17749990b0da95b4271840d1"
-  integrity sha512-qKwC/M/nNNaKUBMQ0nuzm47b7ZYWQHN3pcXq4IIcoSBc2hOIrflAxJduIvvqmhoz3gR2TacTAs8vlsCVPkiEdQ==
+"@mongodb-js/saslprep@^1.1.9":
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.1.9.tgz#e974bab8eca9faa88677d4ea4da8d09a52069004"
+  integrity sha512-tVkljjeEaAhCqTzajSdgbQ6gE6f3oneVwa3iXR6csiEwXXOFsiC6Uh9iAjAhXPtqa/XMDHWjjeNH/77m/Yq2dw==
   dependencies:
     sparse-bitfield "^3.0.3"
 
@@ -1552,10 +1552,10 @@
     readdirp "^2.2.1"
     upath "^1.1.1"
 
-"@orion-js/schema@^2.9.0":
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.9.0.tgz#9688eddafd57d81a104f9ae7df86ba83ccd64266"
-  integrity sha512-8Hp5H8QU8OxFm9uOAbdJJ5GnTTgspAutix1zoqTOVrN3B3DQdbjmtOA4uDWcRtaMgH8y05bfT8XYwPDTRwqFuQ==
+"@orion-js/schema@^2.10.0":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.10.0.tgz#c25fd0652ea152b5cec416eeab229c53e3660163"
+  integrity sha512-r6er+Zo51x5yd1q8lp+QCPSxHMCvFSvDbD3bZmL18nGkVEMXQFkQhZ+5w8MIBkA1i+9F8RshNpo1cAhywjInZg==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dot-object "^1.9.0"
@@ -2366,10 +2366,10 @@ bson@^4.7.2:
   dependencies:
     buffer "^5.6.0"
 
-bson@^6.7.0:
-  version "6.8.0"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-6.8.0.tgz#5063c41ba2437c2b8ff851b50d9e36cb7aaa7525"
-  integrity sha512-iOJg8pr7wq2tg/zSlCCHMi3hMm5JTOxLTagf3zxhcenHsFp+c6uOs6K7W5UE7A4QIJGtqh/ZovFNMP4mOPJynQ==
+bson@^6.10.0:
+  version "6.10.0"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-6.10.0.tgz#559c767cc8b605c3ab14e5896214c8f2abdd6a12"
+  integrity sha512-ROchNosXMJD2cbQGm84KoP7vOGPO6/bOAW0veMMbzhXLqoZptcaYRVLitwvuhwhjjpU1qP4YZRWLhgETdgqUQw==
 
 buffer-crc32@~0.2.3:
   version "0.2.13"
@@ -4416,13 +4416,13 @@ mongodb-memory-server@^8.15.1:
     mongodb-memory-server-core "8.15.1"
     tslib "^2.6.1"
 
-mongodb@6.8.0:
-  version "6.8.0"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-6.8.0.tgz#680450f113cdea6d2d9f7121fe57cd29111fd2ce"
-  integrity sha512-HGQ9NWDle5WvwMnrvUxsFYPd3JEbqD3RgABHBQRuoCEND0qzhsd0iH5ypHsf1eJ+sXmvmyKpP+FLOKY8Il7jMw==
+mongodb@6.11.0:
+  version "6.11.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-6.11.0.tgz#d09bc055e1e784849279dc41eb2cd1537a0488a0"
+  integrity sha512-yVbPw0qT268YKhG241vAMLaDQAPbRyTgo++odSgGc9kXnzOujQI60Iyj23B9sQQFPSvmNPvMZ3dsFz0aN55KgA==
   dependencies:
-    "@mongodb-js/saslprep" "^1.1.5"
-    bson "^6.7.0"
+    "@mongodb-js/saslprep" "^1.1.9"
+    bson "^6.10.0"
     mongodb-connection-string-url "^3.0.0"
 
 mongodb@^4.16.0:

@@ -41,6 +41,7 @@ class OrionMongoDatabase {
     const { logger } = config()
     const censoredURL = this.mongoURL.replace(/\/\/.*:.*@/, '//') // remove user and password from URL
     this.state = 'connecting'
+    logger.info(`Connecting to ${censoredURL}...`)
     if (this.mongoOptions?.autoEncryption) {
       this.encrypted.client = await MongoClient.connect(this.mongoURL, { ...this.mongoOptions })
       this.encrypted.database = this.encrypted.client.db(getDbName(this.mongoURL))
