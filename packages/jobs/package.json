@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/jobs",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
-    "@orion-js/app": "^2.10.0",
+    "@orion-js/app": "^2.10.1",
     "babel-jest": "^26.6.3",
     "jest": "^26.6.3",
     "mongodb-memory-server": "^8.15.1"
