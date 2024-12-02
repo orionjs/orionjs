@@ -8,31 +8,31 @@ import {Files} from '../Files'
 export default resolver({
   params: {
     name: {
-      type: String
+      type: String,
     },
     size: {
-      type: Number
+      type: Number,
     },
     type: {
-      type: String
-    }
+      type: String,
+    },
   },
   returns: createModel({
     name: 'UploadCredentials',
     schema: {
       fileId: {
-        type: 'ID'
+        type: 'ID',
       },
       url: {
-        type: String
+        type: String,
       },
       fields: {
-        type: 'blackbox'
+        type: 'blackbox',
       },
       key: {
-        type: String
-      }
-    }
+        type: String,
+      },
+    },
   }),
   mutation: true,
   async resolve(params, viewer) {
@@ -44,14 +44,14 @@ export default resolver({
       endpoint,
       s3ForcePathStyle,
       canUpload,
-      basePath
+      basePath,
     } = getAWSCredentials()
     const s3 = new AWS.S3({
       accessKeyId,
       secretAccessKey,
       region,
       endpoint,
-      s3ForcePathStyle
+      s3ForcePathStyle,
     })
 
     if (canUpload) {
@@ -68,7 +68,7 @@ export default resolver({
       size: params.size,
       status: 'uploading',
       createdBy: viewer.userId,
-      createdAt: new Date()
+      createdAt: new Date(),
     })
 
     const result = await new Promise<AWS.S3.PresignedPost>((resolve, reject) => {
@@ -78,24 +78,26 @@ export default resolver({
           Conditions: [
             ['content-length-range', params.size, params.size],
             {'Content-Type': params.type},
-            {Key: key}
+            {'Cache-Control': 'public, max-age=31536000, immutable'},
+            {Key: key},
           ],
           Fields: {
             key: key,
-            'Content-Type': params.type
-          }
+            'Content-Type': params.type,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+          },
         },
         function (error, data) {
           if (error) reject(error)
           else resolve(data)
-        }
+        },
       )
     })
 
     return {
       fileId,
       ...(result as object),
-      key
+      key,
     }
-  }
+  },
 })
