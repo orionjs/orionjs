@@ -13,7 +13,7 @@ export default function (job) {
     '1.0',
   );
   return async (params, jobData) => {
-    tracer.startActiveSpan(`job.${job.identifier}`, async (span) => {
+    await tracer.startActiveSpan(`job.${job.identifier}`, async (span) => {
       try {
         const startedAt = new Date()
         const result = {}
