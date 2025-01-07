@@ -16,7 +16,7 @@
     "@orion-js/schema": "^3.9.0",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
-    "kafkajs": "^1.15.0",
+    "kafkajs": "^2.2.4",
     "serialize-javascript": "^5.0.1"
   },
   "devDependencies": {

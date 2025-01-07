@@ -1,7 +1,9 @@
-import {Kafka} from 'kafkajs'
+import { Kafka } from 'kafkajs'
 import config from '../config'
 import requestsHandler from '../requestsHandler'
 import types from '../echo/types'
+
+const HEARTBEAT_INTERVAL_SECONDS = 3
 
 export default async function startService(options) {
   if (options.client) {
@@ -28,7 +30,21 @@ export default async function startService(options) {
         const echo = options.echoes[params.topic]
         if (!echo) return
         if (echo.type !== types.event) return
-        await echo.onMessage(params)
+        let intervalsCount = 0
+        const interval = setInterval(async () => {
+          await params.heartbeat().catch(error => {
+            console.warn('Echoes: Error sending heartbeat:', error)
+          })
+          intervalsCount++
+          if (intervalsCount % 10 === 0) {
+            console.warn(`Echoes: Event ${params.topic} is taking too long to process: ${intervalsCount * HEARTBEAT_INTERVAL_SECONDS}s`)
+          }
+        }, HEARTBEAT_INTERVAL_SECONDS * 1000)
+        await echo.onMessage(params).catch(error => {
+          clearInterval(interval)
+          throw error
+        })
+        clearInterval(interval)
       },
     })
   }
