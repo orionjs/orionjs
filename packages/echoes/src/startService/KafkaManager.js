@@ -11,7 +11,7 @@ class KafkaManager {
     this.kafka = new Kafka(options.client)
     this.options = options
     this.producer = this.kafka.producer(options.producer)
-    this.consumer = this.kafka.consumer({ groupId: options.consumer.groupId })
+    this.consumer = this.kafka.consumer(options.consumer)
     this.topics = Object.keys(options.echoes).filter(key => options.echoes[key].type === types.event)
   }
 
@@ -81,12 +81,13 @@ class KafkaManager {
     const echo = this.options.echoes[params.topic]
     if (!echo || echo.type !== types.event) {
       console.warn(`Echoes: Received a message for an unknown topic: ${params.topic}, ignoring it`)
+      return
     }
 
     let intervalsCount = 0
     const hInterval = setInterval(async () => {
       await params.heartbeat().catch(error => {
-        console.warn('Echoes: Error sending heartbeat:', error)
+        console.warn(`Echoes: Error sending heartbeat: ${error.message}`)
       })
       intervalsCount++
       if (intervalsCount * HEARTBEAT_INTERVAL_SECONDS % 30 === 0) {
@@ -112,8 +113,8 @@ class KafkaManager {
       throw error
     }
     const maxRetries = echo.attemptsBeforeDeadLetter || 0
-    const execededMaxRetries = retries >= maxRetries
-    const nextTopic = execededMaxRetries ? `DLQ-${topic}` : topic
+    const exceededMaxRetries = retries >= maxRetries
+    const nextTopic = exceededMaxRetries ? `DLQ-${topic}` : topic
     await this.producer.send({
       topic: nextTopic,
       messages: [{
@@ -124,7 +125,7 @@ class KafkaManager {
         }
       }]
     })
-    if (execededMaxRetries) {
+    if (exceededMaxRetries) {
       console.error(`Echoes: a message has reached the maximum number of retries, sending it to DLQ: ${nextTopic}`)
     } else {
       console.warn(`Echoes: a retryable message failed "${error.message}", re-sending it to topic: ${nextTopic}`)
