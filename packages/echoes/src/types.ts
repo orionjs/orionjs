@@ -10,6 +10,7 @@ import {
 export interface EchoConfig {
   type: 'event' | 'request'
   resolve(params: any, context?: any): Promise<any>
+  attemptsBeforeDeadLetter?: number
 }
 
 export interface EchoType extends EchoConfig {
@@ -99,6 +100,8 @@ export interface EchoesOptions {
    * Defaults to true. When true, allows a reconnecting service to read missed messages.
    */
   readTopicsFromBeginning?: boolean
+  partitionsConsumedConcurrently?: number
+  membersToPartitionsRatio?: number
 }
 
 export interface EchoesConfigHandler {

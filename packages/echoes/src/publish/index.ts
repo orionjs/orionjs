@@ -11,7 +11,7 @@ export default async function publish<TParams = any>(options: PublishOptions<TPa
   }
 
   const payload = {
-    params: options.params
+    params: options.params,
   }
 
   return await config.producer.send({
@@ -20,8 +20,8 @@ export default async function publish<TParams = any>(options: PublishOptions<TPa
     topic: options.topic,
     messages: [
       {
-        value: serialize(payload)
-      }
-    ]
+        value: serialize(payload),
+      },
+    ],
   })
 }
