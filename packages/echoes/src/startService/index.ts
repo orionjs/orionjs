@@ -17,8 +17,8 @@ export default async function startService(options: EchoesOptions) {
   if (options.client) {
     kafkaManager = new KafkaManager(options)
     await kafkaManager.start()
-    config.consumer = kafkaManager.consumer
     config.producer = kafkaManager.producer
+    config.consumer = kafkaManager.consumer
   }
 }
 
