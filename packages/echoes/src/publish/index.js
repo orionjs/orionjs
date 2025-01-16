@@ -7,7 +7,7 @@ import serialize from './serialize'
  * @param  {Object} params
  */
 export default async function (options) {
-  if (!config.kafkaManager) {
+  if (!config.producer) {
     throw new Error('You must initialize echoes configuration to use publish')
   }
 
@@ -15,7 +15,7 @@ export default async function (options) {
     params: options.params
   }
 
-  return await config.kafkaManager.producer.send({
+  return await config.producer.send({
     acks: options.acks,
     timeout: options.timeout,
     topic: options.topic,
