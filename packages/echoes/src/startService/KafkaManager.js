@@ -1,8 +1,10 @@
 import { Kafka } from 'kafkajs'
 import types from '../echo/types'
 
-const HEARTBEAT_INTERVAL_SECONDS = 5
+const HEARTBEAT_INTERVAL_SECONDS = 5 // This value must be less than the kafkajs session timeout
 const CHECK_JOIN_CONSUMER_INTERVAL_SECONDS = 30
+const DEFAULT_PARTITIONS_CONSUMED_CONCURRENTLY = 4 // How many partitions to consume concurrently, adjust this with the members to partitions ratio to avoid idle consumers.
+const DEFAULT_MEMBERS_TO_PARTITIONS_RATIO = 1 // How many members are in comparison to partitions, this is used to determine if the consumer group has room for more members. Numbers over 1 leads to idle consumers. Numbers under 1 needs partitionsConsumedConcurrently to be more than 1.
 
 class KafkaManager {
   constructor(options) {
@@ -19,13 +21,16 @@ class KafkaManager {
     const groupDescriptions = await admin.describeGroups([this.options.consumer.groupId])
     const group = groupDescriptions.groups[0]
     if (group.state === 'Empty') {
-      console.info(`Echoes: Consumer group ${this.options.consumer.groupId} is empty`)
+      console.info(`Echoes: Consumer group ${this.options.consumer.groupId} is empty, joining`)
       return true
     }
     const topicsMetadata = await admin.fetchTopicMetadata({ topics: this.topics })
     const totalPartitions = topicsMetadata.topics.reduce((acc, t) => acc + t.partitions.length, 0)
     console.info(`Echoes: Consumer group ${this.options.consumer.groupId} has ${group.members.length} members and ${totalPartitions} partitions`)
-    if (totalPartitions > group.members.length) {
+    const partitionsRatio = this.options.membersToPartitionsRatio || DEFAULT_MEMBERS_TO_PARTITIONS_RATIO
+    const partitionsThreshold = Math.ceil(totalPartitions * partitionsRatio)
+    if (partitionsThreshold > group.members.length) {
+      console.info(`Echoes: Consumer group ${this.options.consumer.groupId} has room for more members ${group.members.length}/${partitionsThreshold}, joining`)
       return true
     }
     await admin.disconnect()
@@ -35,7 +40,7 @@ class KafkaManager {
     await this.consumer.connect()
     await this.consumer.subscribe({ topics: this.topics })
     this.consumer.run({
-      partitionsConsumedConcurrently: this.options.partitionsConsumedConcurrently || 4,
+      partitionsConsumedConcurrently: this.options.partitionsConsumedConcurrently || DEFAULT_PARTITIONS_CONSUMED_CONCURRENTLY,
       eachMessage: (params) => this.handleMessage(params),
     })
   }
@@ -50,7 +55,6 @@ class KafkaManager {
   async start() {
     if (this.started) return
     await this.producer.connect()
-    console.info("PRODUCER CONNECTED")
     this.started = await this.conditionalStart()
     if (this.started) return
     console.info('Echoes: Delaying consumer group join, waiting for conditions to be met')
@@ -85,8 +89,8 @@ class KafkaManager {
         console.warn('Echoes: Error sending heartbeat:', error)
       })
       intervalsCount++
-      if (intervalsCount % 10 === 0) {
-        console.warn(`Echoes: Event ${params.topic} is taking too long to process: ${intervalsCount * HEARTBEAT_INTERVAL_SECONDS}s`)
+      if (intervalsCount * HEARTBEAT_INTERVAL_SECONDS % 30 === 0) {
+        console.warn(`Echoes: Event is taking too long to process:  ${params.topic} ${intervalsCount * HEARTBEAT_INTERVAL_SECONDS}s`)
       }
     }, HEARTBEAT_INTERVAL_SECONDS * 1000)
 
@@ -94,7 +98,7 @@ class KafkaManager {
       await echo.onMessage(params)
         .catch(error => this.handleRetries(echo, params, error))
     } catch (error) {
-      console.error('Echoes: error processing message:', { error, params })
+      console.error(`Echoes: error processing a message: ${params.topic} ${error.message}`)
       throw error
     } finally {
       clearInterval(hInterval)
