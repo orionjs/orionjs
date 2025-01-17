@@ -17,23 +17,31 @@ class KafkaManager {
 
   async checkJoinConsumerGroupConditions() {
     const admin = this.kafka.admin()
-    await admin.connect()
-    const groupDescriptions = await admin.describeGroups([this.options.consumer.groupId])
-    const group = groupDescriptions.groups[0]
-    if (group.state === 'Empty') {
-      console.info(`Echoes: Consumer group ${this.options.consumer.groupId} is empty, joining`)
+    try {
+      await admin.connect()
+      const groupDescriptions = await admin.describeGroups([this.options.consumer.groupId])
+      const group = groupDescriptions.groups[0]
+      if (group.state === 'Empty') {
+        console.info(`Echoes: Consumer group ${this.options.consumer.groupId} is empty, joining`)
+        return true
+      }
+      const topicsMetadata = await admin.fetchTopicMetadata({ topics: this.topics })
+      const totalPartitions = topicsMetadata.topics.reduce((acc, t) => acc + t.partitions.length, 0)
+      console.info(`Echoes: Consumer group ${this.options.consumer.groupId} has ${group.members.length} members and ${totalPartitions} partitions`)
+      const partitionsRatio = this.options.membersToPartitionsRatio || DEFAULT_MEMBERS_TO_PARTITIONS_RATIO
+      const partitionsThreshold = Math.ceil(totalPartitions * partitionsRatio)
+      if (partitionsThreshold > group.members.length) {
+        console.info(`Echoes: Consumer group ${this.options.consumer.groupId} has room for more members ${group.members.length}/${partitionsThreshold}, joining`)
+        return true
+      }
+    } catch (error) {
+      console.error(`Echoes: Error checking consumer group conditions, joining: ${error.message}`)
       return true
+    } finally {
+      await admin.disconnect().catch(error => {
+        console.error(`Echoes: Error disconnecting admin client: ${error.message}`)
+      })
     }
-    const topicsMetadata = await admin.fetchTopicMetadata({ topics: this.topics })
-    const totalPartitions = topicsMetadata.topics.reduce((acc, t) => acc + t.partitions.length, 0)
-    console.info(`Echoes: Consumer group ${this.options.consumer.groupId} has ${group.members.length} members and ${totalPartitions} partitions`)
-    const partitionsRatio = this.options.membersToPartitionsRatio || DEFAULT_MEMBERS_TO_PARTITIONS_RATIO
-    const partitionsThreshold = Math.ceil(totalPartitions * partitionsRatio)
-    if (partitionsThreshold > group.members.length) {
-      console.info(`Echoes: Consumer group ${this.options.consumer.groupId} has room for more members ${group.members.length}/${partitionsThreshold}, joining`)
-      return true
-    }
-    await admin.disconnect()
   }
 
   async joinConsumerGroup() {
