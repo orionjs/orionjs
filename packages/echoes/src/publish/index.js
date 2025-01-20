@@ -8,7 +8,7 @@ import serialize from './serialize'
  */
 export default async function (options) {
   if (!config.producer) {
-    throw new Error('You must initialize echoes configruation to use publish')
+    throw new Error('You must initialize echoes configuration to use publish')
   }
 
   const payload = {
