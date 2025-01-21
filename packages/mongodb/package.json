@@ -31,7 +31,7 @@
     "mongodb": "6.5.0"
   },
   "devDependencies": {
-    "@shelf/jest-mongodb": "^4.2.0",
+    "@shelf/jest-mongodb": "^4.3.2",
     "@types/dot-object": "^2.1.6",
     "@types/jest": "^29.5.12",
     "@types/lodash": "4.17.0",

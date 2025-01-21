@@ -10,6 +10,7 @@ import {
 export interface EchoConfig {
   type: 'event' | 'request'
   resolve(params: any, context?: any): Promise<any>
+  attemptsBeforeDeadLetter?: number
 }
 
 export interface EchoType extends EchoConfig {
@@ -99,6 +100,14 @@ export interface EchoesOptions {
    * Defaults to true. When true, allows a reconnecting service to read missed messages.
    */
   readTopicsFromBeginning?: boolean
+  /**
+   * Defaults to 4. How many partitions to consume concurrently, adjust this with the members to partitions ratio to avoid idle consumers.
+   */
+  partitionsConsumedConcurrently?: number
+  /**
+   * Defaults to 1. How many members are in comparison to partitions, this is used to determine if the consumer group has room for more members. Numbers over 1 leads to idle consumers. Numbers under 1 needs partitionsConsumedConcurrently to be more than 1.
+   */
+  membersToPartitionsRatio?: number
 }
 
 export interface EchoesConfigHandler {

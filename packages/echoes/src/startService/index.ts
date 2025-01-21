@@ -1,9 +1,10 @@
-import {EachMessagePayload, Kafka} from 'kafkajs'
 import config from '../config'
 import requestsHandler from '../requestsHandler'
-import types from '../echo/types'
 import {EchoesOptions} from '../types'
+import KafkaManager from './KafkaManager'
 import {registerRoute} from '@orion-js/http'
+
+let kafkaManager: KafkaManager = null
 
 export default async function startService(options: EchoesOptions) {
   config.echoes = options.echoes
@@ -14,31 +15,17 @@ export default async function startService(options: EchoesOptions) {
   }
 
   if (options.client) {
-    const kafka = new Kafka(options.client)
+    kafkaManager = new KafkaManager(options)
+    await kafkaManager.start()
+    config.producer = kafkaManager.producer
+    config.consumer = kafkaManager.consumer
+  }
+}
 
-    config.producer = kafka.producer(options.producer)
-    config.consumer = kafka.consumer(options.consumer)
-
-    await config.producer.connect()
-    await config.consumer.connect()
-
-    for (const topic in options.echoes) {
-      const echo = options.echoes[topic]
-      if (echo.type !== types.event) continue
-
-      await config.consumer.subscribe({
-        topic,
-        fromBeginning: options.readTopicsFromBeginning === false ? false : true
-      })
-    }
-
-    config.consumer.run({
-      eachMessage: async (payload: EachMessagePayload) => {
-        const echo = options.echoes[payload.topic]
-        if (!echo) return
-        if (echo.type !== types.event) return
-        await echo.onMessage(payload)
-      }
-    })
+export async function stopService() {
+  if (kafkaManager) {
+    console.info('Stoping echoes...')
+    await kafkaManager.stop()
+    console.info('Echoes stopped')
   }
 }
