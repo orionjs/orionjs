@@ -49,7 +49,7 @@ class KafkaManager {
       )
       const partitionsRatio =
         this.options.membersToPartitionsRatio || DEFAULT_MEMBERS_TO_PARTITIONS_RATIO
-      const partitionsThreshold = Math.ceil(totalPartitions / partitionsRatio)
+      const partitionsThreshold = Math.ceil(totalPartitions * partitionsRatio)
       if (partitionsThreshold > group.members.length) {
         console.info(
           `Echoes: Consumer group ${this.options.consumer.groupId} has room for more members ${group.members.length}/${partitionsThreshold}, joining`,
@@ -60,16 +60,19 @@ class KafkaManager {
       console.error(`Echoes: Error checking consumer group conditions, join: ${error.message}`)
       return true
     } finally {
-      await admin.disconnect()
+      await admin.disconnect().catch(error => {
+        console.error(`Echoes: Error disconnecting admin client: ${error.message}`)
+      })
     }
   }
 
   async joinConsumerGroup() {
     await this.consumer.connect()
     await this.consumer.subscribe({topics: this.topics})
-    this.consumer.run({
+    await this.consumer.run({
       partitionsConsumedConcurrently:
         this.options.partitionsConsumedConcurrently || DEFAULT_PARTITIONS_CONSUMED_CONCURRENTLY,
+      eachMessage: params => this.handleMessage(params),
     })
   }
 
@@ -123,6 +126,7 @@ class KafkaManager {
       await echo.onMessage(params).catch(error => this.handleRetries(echo, params, error))
     } catch (error) {
       console.error(`Echoes: error processing a message: ${params.topic} ${error.message}`)
+      throw error
     } finally {
       clearInterval(heartbeatInterval)
     }
