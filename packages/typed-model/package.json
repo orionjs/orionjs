@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.10.0",
+  "version": "3.11.1",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -21,7 +21,7 @@
     "@orion-js/models": "^3.10.0",
     "@orion-js/resolvers": "^3.10.0",
     "@orion-js/schema": "^3.10.0",
-    "@orion-js/services": "^3.10.0",
+    "@orion-js/services": "^3.11.1",
     "lodash": "^4.17.21",
     "reflect-metadata": "0.1.13"
   },
