@@ -1,8 +1,8 @@
 import includes from 'lodash/includes'
-import {PermissionsError} from '@orion-js/app'
+import { PermissionsError } from '@orion-js/app'
 
-export default options =>
-  function({roles, role}, viewer) {
+export default _options =>
+  ({ roles, role }, viewer) => {
     if (!roles) roles = []
 
     if (role) {
@@ -17,7 +17,12 @@ export default options =>
         }
       }
       if (!hasPermission) {
-        throw new PermissionsError('missingRoles', {roles})
+        /*
+          roles used to be displayed in the error message, but it was removed for security reasons.
+          The array is kept in the error object for backwards compatibility.
+          Detected as a low security issue by the ethical hack performed by grep for yape. (12-2024)
+        */
+        throw new PermissionsError('missingRoles', { roles: [] })
       }
     }
   }
