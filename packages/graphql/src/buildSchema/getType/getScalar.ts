@@ -13,7 +13,8 @@ const fieldMap = {
   number: GraphQLFloat,
   ID: GraphQLID,
   boolean: GraphQLBoolean,
-  blackbox: JSONScalar
+  blackbox: JSONScalar,
+  any: JSONScalar,
 }
 
 export default function (fieldType) {
