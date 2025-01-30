@@ -26,7 +26,7 @@ export default async function (options) {
     ? apolloOptions.persistedQueries.cache
     : new InMemoryLRUCache()
 
-  route('/graphql', async function (params) {
+  route('/graphql', async (params) => {
     const {request, response, viewer, getBodyJSON} = params
     const operationName = await getOperationName(params)
     const cacheKey = operationName ? `orion-cache-control-${operationName}` : null

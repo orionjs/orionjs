@@ -4,7 +4,7 @@ import config from '../config'
 
 let server = null
 
-export const startServer = function () {
+export const startServer = function startServer() {
   if (server) return server
   if (process.env.ORION_TEST) return // no running in tests, port is used always
   server = micro(handler)
@@ -16,7 +16,7 @@ export const startServer = function () {
     new Promise((resolve, reject) =>
       server.close(error => {
         if (error) return reject(error)
-        logger.info(`HTTP server closed`)
+        logger.info('HTTP server closed')
         resolve()
       })
     )
@@ -24,6 +24,6 @@ export const startServer = function () {
   return server
 }
 
-export const getServer = function () {
+export const getServer = function getServer() {
   return server
 }

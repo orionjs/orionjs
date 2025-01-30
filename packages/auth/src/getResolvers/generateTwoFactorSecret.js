@@ -1,4 +1,4 @@
-import {resolver, ConfigurationError, Model} from '@orion-js/app'
+import { resolver, ConfigurationError, Model } from '@orion-js/app'
 import speakeasy from 'speakeasy'
 import qr from 'qr-image'
 
@@ -14,19 +14,19 @@ const model = new Model({
   }
 })
 
-export default ({Users, Session, twoFactor}) =>
+export default ({ Users, Session, twoFactor }) =>
   resolver({
     requireUserId: true,
     returns: model,
     mutation: true,
-    resolve: async function(params, viewer) {
+    resolve: async function generateTwoFactorSecret(params, viewer) {
       const user = await Users.findOne(viewer.userId)
       if (await user.hasTwoFactor()) {
         throw new Error('User has two factor')
       }
 
       const email = await user.email()
-      const {base32} = speakeasy.generateSecret()
+      const { base32 } = speakeasy.generateSecret()
       await Users.update(viewer.userId, {
         $set: {
           'services.twoFactor.base32': base32,
@@ -34,7 +34,7 @@ export default ({Users, Session, twoFactor}) =>
         }
       })
 
-      const {issuer} = twoFactor
+      const { issuer } = twoFactor
 
       if (!issuer) {
         throw new ConfigurationError('Two factor issuer is required in configuration')
@@ -44,7 +44,7 @@ export default ({Users, Session, twoFactor}) =>
       const urlIssuer = encodeURIComponent(issuer)
       const url = `otpauth://totp/${encoded}?secret=${base32}&issuer=${urlIssuer}`
 
-      const qrCode = qr.imageSync(url, {type: 'svg'})
+      const qrCode = qr.imageSync(url, { type: 'svg' })
 
       return {
         base32,

@@ -3,7 +3,7 @@ import hash from './hash'
 import resolver from '../resolver'
 
 export default ({returns, modelName}) => {
-  const getTotalCount = async function (paginated) {
+  const getTotalCount = async function getTotalCount(paginated) {
     if (typeof paginated.count === 'undefined') {
       paginated.count = paginated.cursor.fastCount?.() ?? paginated.cursor.count?.() ?? 1
     }

@@ -4,7 +4,7 @@ import isString from 'lodash/isString'
 import fieldTypes from '../../fieldTypes'
 import has from 'lodash/has'
 
-export default function(type) {
+export default function (type) {
   if (isPlainObject(type)) {
     if (type._isFieldType) return 'custom'
     return 'plainObject'
@@ -16,7 +16,7 @@ export default function(type) {
   if (type === Boolean) return 'boolean'
 
   if (!isString(type)) {
-    throw new Error('Field type is invalid. Pass a string or a custom field type. Got ' + type)
+    throw new Error(`Field type is invalid. Pass a string or a custom field type. Got: ${type}`)
   }
 
   const exists = has(fieldTypes, type)

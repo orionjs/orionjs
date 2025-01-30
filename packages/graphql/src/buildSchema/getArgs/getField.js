@@ -2,18 +2,18 @@ import isPlainObject from 'lodash/isPlainObject'
 import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLInputObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
-import {Model} from '@orion-js/app'
 import getScalar from '../getType/getScalar'
+import isModel from '../isModel'
 
 const storedModelInput = {}
 
-const getModelInput = function (model, fields) {
+const getModelInput = function getField(model, fields) {
   if (storedModelInput[model.name]) {
     return storedModelInput[model.name]
   }
 
   storedModelInput[model.name] = new GraphQLInputObjectType({
-    name: model.name + 'Input',
+    name: `${model.name}Input`,
     fields
   })
 
@@ -22,13 +22,14 @@ const getModelInput = function (model, fields) {
 
 export default function getParams(type) {
   if (!type) {
-    throw new Error(`No type specified`)
+    throw new Error('No type specified')
   }
 
   if (isArray(type)) {
     const graphQLType = getParams(type[0])
     return new GraphQLList(graphQLType)
-  } else if (!type._isFieldType && (isPlainObject(type) || type instanceof Model)) {
+  } 
+   if (!type._isFieldType && (isPlainObject(type) || isModel(type) )) {
     const model = type.__isModel ? type : type.__model
     if (!model || !model.__isModel) throw new Error('Type if not a Model', type)
 
@@ -41,9 +42,9 @@ export default function getParams(type) {
     }
 
     return getModelInput(model, fields)
-  } else {
+  } 
     const schemaType = getFieldType(type)
     const graphQLType = getScalar(schemaType)
     return graphQLType
-  }
+  
 }
