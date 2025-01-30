@@ -4,7 +4,7 @@ import {SubscriptionServer} from 'subscriptions-transport-ws'
 import {PubSub} from 'graphql-subscriptions'
 import {setPubsub} from './pubsub'
 
-export default function ({schema}, options) {
+export default function startWebsocket ({schema}, options) {
   setPubsub(options.pubsub || new PubSub())
 
   const server = getServer()

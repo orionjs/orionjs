@@ -95,7 +95,7 @@ export default class Model {
     extendSchema = {},
     extendResolvers = {}
   }) {
-    const getSchema = function(_schema) {
+    const getSchema = function getSchema(_schema) {
       const schema = {}
 
       const keys = Object.keys(_schema)

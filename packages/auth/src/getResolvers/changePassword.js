@@ -1,9 +1,9 @@
-import {resolver} from '@orion-js/app'
+import { resolver } from '@orion-js/app'
 import checkPassword from '../helpers/checkPassword'
 import hashPassword from '../helpers/hashPassword'
 import hasPassword from '../helpers/hasPassword'
 
-export default ({Users, Session}) =>
+export default ({ Users, Session }) =>
   resolver({
     name: 'changePassword',
     requireUserId: true,
@@ -11,7 +11,7 @@ export default ({Users, Session}) =>
       oldPassword: {
         type: String,
         label: 'Old password',
-        async custom(oldPassword, info, viewer) {
+        async custom(oldPassword, _info, viewer) {
           const user = await Users.findOne(viewer.userId)
           if (!hasPassword(user)) {
             return 'noPassword'
@@ -25,7 +25,7 @@ export default ({Users, Session}) =>
         type: String,
         min: 8,
         label: 'New password',
-        async custom(newPassword, {doc}, viewer) {
+        async custom(newPassword, { doc }, _viewer) {
           if (newPassword === doc.oldPassword) {
             return 'samePassword'
           }
@@ -34,7 +34,7 @@ export default ({Users, Session}) =>
     },
     returns: Boolean,
     mutation: true,
-    resolve: async function({oldPassword, newPassword}, viewer) {
+    resolve: async function changePassword({ oldPassword, newPassword }, viewer) {
       await Users.update(viewer.userId, {
         $set: {
           'services.password': {

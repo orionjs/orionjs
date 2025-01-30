@@ -1,10 +1,10 @@
-import {resolver} from '@orion-js/app'
+import { resolver } from '@orion-js/app'
 import hashPassword from '../helpers/hashPassword'
 import createSession from '../helpers/createSession'
 import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
 
-export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationToken}) => {
-  let profile = Users.model.schema.profile || null
+export default ({ Session, Users, Sessions, onCreateUser, sendEmailVerificationToken }) => {
+  const profile = Users.model.schema.profile || null
   return resolver({
     name: 'createUser',
     params: {
@@ -13,7 +13,7 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
         label: 'Email',
         async custom(email) {
           email = email.toLowerCase()
-          const count = await Users.find({'emails.address': email}).count()
+          const count = await Users.find({ 'emails.address': email }).count()
           if (count) {
             return 'emailExists'
           }
@@ -25,11 +25,11 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
         label: 'Password',
         optional: true
       },
-      ...({profile} || {})
+      ...({ profile })
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, password, profile}, viewer) {
+    resolve: async function createUser({ email, password, profile }, viewer) {
       const newUser = {
         emails: [
           {
@@ -37,6 +37,11 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
             verified: false
           }
         ],
+        accountEmail: {
+          address: email.toLowerCase(),
+          enc_address: email.toLowerCase(),
+          verified: false
+        },
         services: {},
         profile: profile || {},
         createdAt: new Date()
@@ -48,9 +53,9 @@ export default ({Session, Users, Sessions, onCreateUser, sendEmailVerificationTo
           createdAt: new Date()
         }
       }
-
-      const userId = await Users.insert(newUser)
-      const user = await Users.findOne(userId)
+      const UsersCollection = Users.encrypted ? Users.encrypted : Users
+      const userId = await UsersCollection.insert(newUser)
+      const user = await UsersCollection.findOne(userId)
       if (onCreateUser) {
         await onCreateUser(user)
       }

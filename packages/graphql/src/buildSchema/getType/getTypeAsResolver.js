@@ -1,7 +1,7 @@
 import getArgs from '../getArgs'
 import errorHandler from '../../errorHandler'
 
-export default function ({resolver, getGraphQLType, options, model}) {
+export default function getTypeAsResolver ({resolver, getGraphQLType, options, model}) {
   const type = getGraphQLType(resolver.returns, options)
   const args = getArgs(resolver.params)
   return {
