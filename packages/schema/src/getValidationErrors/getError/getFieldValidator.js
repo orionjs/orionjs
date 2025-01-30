@@ -16,9 +16,7 @@ export default function (type) {
   if (type === Boolean) return 'boolean'
 
   if (!isString(type)) {
-    console.info("TYPE!")
-    console.info(type)
-    throw new Error('Field type is invalid. Pass a string or a custom field type. Got ' + type)
+    throw new Error(`Field type is invalid. Pass a string or a custom field type. Got: ${type}`)
   }
 
   const exists = has(fieldTypes, type)
