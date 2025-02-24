@@ -3,6 +3,7 @@ import {Command} from 'commander'
 import colors from 'colors/safe'
 import envInit from './init'
 import envAdd from './add'
+import envRead from './read'
 
 const program = new Command()
 
@@ -27,6 +28,14 @@ program
   .description('Adds a new environment to the encrypted env file')
   .option('--path <path>', 'Specify the env file name')
   .action(run(envAdd))
+
+program
+  .command('read')
+  .description('Prints the value of the env file in JSON or a specific variable in plain text')
+  .option('--path <path>', 'Specify the env file name')
+  .option('--key <key>', 'Prints the value of a specific variable in plain text')
+  .option('--secret <secret>', 'The password to decrypt the keys')
+  .action(run(envRead))
 
 program.parse(process.argv)
 
