@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "3.11.1",
+  "version": "3.11.4",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "^3.10.0",
+    "@orion-js/env": "^3.11.4",
     "@orion-js/helpers": "^3.10.0",
     "@orion-js/logger": "^3.11.1",
     "@orion-js/models": "^3.10.0",
