@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/schema",
-  "version": "3.10.0",
+  "version": "3.11.5",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
