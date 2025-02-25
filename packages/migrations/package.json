@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/migrations",
-  "version": "3.11.6",
+  "version": "3.11.7-alpha.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/dogs": "^3.11.6",
+    "@orion-js/dogs": "^3.11.7-alpha.0",
     "@orion-js/helpers": "^3.11.6",
     "@orion-js/mongodb": "^3.11.6",
     "@orion-js/services": "^3.11.6",
