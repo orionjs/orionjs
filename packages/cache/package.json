@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/cache",
-  "version": "3.11.6-alpha.0",
+  "version": "3.11.6",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -29,6 +29,6 @@
   },
   "gitHead": "2cd4a3112afb2dfa236dcdfc5f34ac1048f21148",
   "dependencies": {
-    "@orion-js/helpers": "^3.11.6-alpha.0"
+    "@orion-js/helpers": "^3.11.6"
   }
 }
