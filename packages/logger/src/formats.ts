@@ -1,8 +1,26 @@
 import {format, transports} from 'winston'
-import util from 'util'
+import util from 'node:util'
 import {isEmpty} from 'lodash'
+import opentelemetry, {Span} from '@opentelemetry/api'
 
 const {metadata, timestamp, json, colorize, combine, printf} = format
+
+const opentelemetryContext = format(info => {
+  const activeSpan: Span & {name?: string} = opentelemetry.trace.getActiveSpan()
+  if (activeSpan) {
+    const spanContex = activeSpan.spanContext()
+    if (activeSpan.name && !info.context) {
+      info.context = activeSpan.name
+    }
+    const fields = {
+      trace_id: spanContex.traceId,
+      span_id: spanContex.spanId,
+      trace_flags: `0${spanContex.traceFlags.toString(16)}`,
+    }
+    Object.assign(info, fields)
+  }
+  return info
+})
 
 const metaError = format(info => {
   if (info?.metadata?.value?.error instanceof Error) {
@@ -26,8 +44,8 @@ export const sentryFormat = format(info => {
     ...extra,
     tags: {
       path: path || '',
-      request_id: label
-    }
+      request_id: label,
+    },
   }
 })
 
@@ -43,6 +61,7 @@ function getMetadataText(metadata: any) {
 export const textConsoleFormat = combine(
   colorize(),
   metadata({fillExcept: ['fileName', 'level', 'message', 'stack']}),
+  opentelemetryContext(),
   metaError(),
   timestamp(),
   printf(info => {
@@ -53,24 +72,29 @@ export const textConsoleFormat = combine(
     const fileNameLabel = info.fileName ? `[${info.fileName}]` : ''
     const stack = info.stack ? `\n${info.stack}` : ''
     const value = getMetadataText(info.metadata)
+    const traceId = info.trace_id
+      ? `${String(info.trace_id).substring(0, 8)}@${String(info.span_id).substring(0, 8)}`
+      : ''
+    const context = `${info.context || ''} ${traceId}`.trim()
 
-    return `[${info.level}] [${timeLabel}] ${fileNameLabel} ${info.message} ${value} ${stack}`
-  })
+    return `[${info.level}] [${timeLabel}] [${context}] ${fileNameLabel} ${info.message} ${value} ${stack}`
+  }),
 )
 
 export const textConsoleTransport = new transports.Console({
   handleExceptions: true,
-  format: textConsoleFormat
+  format: textConsoleFormat,
 })
 
 export const jsonConsoleFormat = combine(
   metadata({fillExcept: ['fileName', 'level', 'message']}),
+  opentelemetryContext(),
   metaError(),
   timestamp(),
-  json()
+  json(),
 )
 
 export const jsonConsoleTransport = new transports.Console({
   handleExceptions: true,
-  format: jsonConsoleFormat
+  format: jsonConsoleFormat,
 })
