@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/logger",
-  "version": "3.11.5",
+  "version": "3.11.6-alpha.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -30,5 +30,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "890aeba5fb515c87db802502ff97bd7bb1314516"
+  "gitHead": "2cd4a3112afb2dfa236dcdfc5f34ac1048f21148"
 }

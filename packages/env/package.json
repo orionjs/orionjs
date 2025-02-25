@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/env",
-  "version": "3.11.5",
+  "version": "3.11.6-alpha.0",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -32,5 +32,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9021f320408e112fed1325638b74632a0ae54381"
+  "gitHead": "2cd4a3112afb2dfa236dcdfc5f34ac1048f21148"
 }
