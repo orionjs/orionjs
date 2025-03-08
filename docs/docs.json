@@ -42,13 +42,11 @@
         "pages": [
           "other-modules/cli",
           "other-modules/env",
-          "other-modules/cache",
           "other-modules/crypto",
           "other-modules/file-manager",
           "other-modules/helpers",
           "other-modules/logger",
-          "other-modules/migrations",
-          "other-modules/mailing"
+          "other-modules/migrations"
         ]
       }
     ],

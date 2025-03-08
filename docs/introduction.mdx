@@ -8,3 +8,26 @@ Orionjs is a NodeJS framework designed with simplicity in mind. It consists prim
 Orionjs was born with the vision of being a NodeJS framework that is focused on looking for simplicity when developing and being friendly for the developer.
 
 The framework is actively used at scale and maintained by [Justo](https://getjusto.com) in Chile.
+
+## Core Concepts
+
+Orionjs is built around several key concepts that work together to create a clean, maintainable architecture:
+
+### Controllers
+Controllers are the starting point of all code executions. Orionjs supports multiple types of controllers:
+- **HTTP controllers**: Handle HTTP requests
+- **GraphQL controllers**: Handle GraphQL requests (queries, mutations, subscriptions, and model resolvers)
+- **Jobs controllers**: Execute scheduled or queued jobs
+- **Echoes controllers**: Facilitate communication between services
+
+### Repositories
+Repositories serve as the data access layer. They are responsible for fetching data from databases or other external sources, keeping your data access logic separate from business logic.
+
+### Services
+Services contain the business logic of your application. Controllers invoke functions in services, which implement the core functionality of your application.
+
+### Schemas
+Schemas define your data models. They enable code reusability by providing a way to validate data, create database models, generate GraphQL schemas, and define TypeScript interfaces.
+
+### Components
+Components are the building blocks of your application. An app can have many components, each containing its own controllers, repositories, services, and schemas.
