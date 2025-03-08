@@ -52,7 +52,7 @@ function readSecrets(readFromSecret): {variables: Variables; secretKey: string} 
     }
   }
   return {variables, secretKey: secretKey}
-}
+} 
 
 export function getVariables(config: Config, secretKey?: string): Variables {
   const {cleanKeys, encryptedKeys, readFromSecret} = config
