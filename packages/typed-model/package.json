@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.11.1",
+  "version": "3.11.6",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,11 +17,11 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.10.0",
-    "@orion-js/models": "^3.10.0",
-    "@orion-js/resolvers": "^3.10.0",
-    "@orion-js/schema": "^3.10.0",
-    "@orion-js/services": "^3.11.1",
+    "@orion-js/helpers": "^3.11.6",
+    "@orion-js/models": "^3.11.6",
+    "@orion-js/resolvers": "^3.11.6",
+    "@orion-js/schema": "^3.11.6",
+    "@orion-js/services": "^3.11.6",
     "lodash": "^4.17.21",
     "reflect-metadata": "0.1.13"
   },
@@ -41,5 +41,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "890aeba5fb515c87db802502ff97bd7bb1314516"
+  "gitHead": "2cd4a3112afb2dfa236dcdfc5f34ac1048f21148"
 }

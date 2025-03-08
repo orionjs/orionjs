@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "3.11.4",
+  "version": "3.11.7-alpha.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,16 +17,17 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.10.0",
-    "@orion-js/mongodb": "^3.11.4",
-    "@orion-js/services": "^3.11.1",
-    "@orion-js/typed-model": "^3.11.1"
+    "@opentelemetry/api": "^1.9.0",
+    "@orion-js/helpers": "^3.11.6",
+    "@orion-js/mongodb": "^3.11.6",
+    "@orion-js/services": "^3.11.6",
+    "@orion-js/typed-model": "^3.11.6"
   },
   "peerDependencies": {
     "@orion-js/logger": "*"
   },
   "devDependencies": {
-    "@orion-js/logger": "^3.11.1",
+    "@orion-js/logger": "^3.11.6",
     "@shelf/jest-mongodb": "^4.3.2",
     "@types/jest": "^29.5.12",
     "@types/lodash": "4.14.176",
@@ -34,10 +35,10 @@
     "jest": "29.7.0",
     "reflect-metadata": "^0.1.13",
     "ts-jest": "29.1.2",
-    "typescript": "^4.4.4"
+    "typescript": "^5.4.5"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "1efe758e078a0a9745d2af15a8d7d62f9083f09b"
+  "gitHead": "2cd4a3112afb2dfa236dcdfc5f34ac1048f21148"
 }

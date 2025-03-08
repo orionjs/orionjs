@@ -6,14 +6,15 @@ import {PlainObject} from '../types/HistoryRecord'
 import {JobDefinition, JobsDefinition} from '../types/JobsDefinition'
 import {ExecutionContext, JobToRun} from '../types/Worker'
 import {getNextRunDate} from './getNextRunDate'
+import {trace, SpanStatusCode} from '@opentelemetry/api'
 
 @Service()
 export class Executor {
   @Inject()
-  private jobsRepo: JobsRepo
+  private readonly jobsRepo: JobsRepo
 
   @Inject()
-  private jobsHistoryRepo: JobsHistoryRepo
+  private readonly jobsHistoryRepo: JobsHistoryRepo
 
   getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {
     let staleTimeout = setTimeout(() => onStale(), jobToRun.lockTime)
@@ -29,8 +30,8 @@ export class Executor {
       },
       logger: logger.addMetadata({
         jobName: jobToRun.name,
-        jobId: jobToRun.jobId
-      })
+        jobId: jobToRun.jobId,
+      }),
     }
   }
 
@@ -39,7 +40,7 @@ export class Executor {
 
     if (jobToRun.type !== job.type) {
       logger.warn(
-        `Job record "${jobToRun.name}" is "${jobToRun.type}" but definition is "${job.type}"`
+        `Job record "${jobToRun.name}" is "${jobToRun.type}" but definition is "${job.type}"`,
       )
       return
     }
@@ -54,7 +55,7 @@ export class Executor {
           jobId: jobToRun.jobId,
           nextRunAt: getNextRunDate(job),
           addTries: false,
-          priority: job.priority
+          priority: job.priority,
         })
       }
     }
@@ -63,9 +64,8 @@ export class Executor {
       context.logger.error(`Error executing job "${jobToRun.name}"`, error)
       await scheduleRecurrent()
       return
-    } else {
-      context.logger.info(`Error executing job "${jobToRun.name}"`, error)
     }
+    context.logger.info(`Error executing job "${jobToRun.name}"`, error)
 
     const result = await job.onError(error, jobToRun.params, context)
 
@@ -79,7 +79,7 @@ export class Executor {
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(result),
         addTries: true,
-        priority: job.type === 'recurrent' ? job.priority : jobToRun.priority
+        priority: job.type === 'recurrent' ? job.priority : jobToRun.priority,
       })
     }
   }
@@ -113,7 +113,7 @@ export class Executor {
         status,
         errorMessage,
         params: jobToRun.params,
-        result
+        result,
       })
     }
   }
@@ -125,7 +125,7 @@ export class Executor {
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
         addTries: false,
-        priority: job.priority
+        priority: job.priority,
       })
     }
     if (job.type === 'event') {
@@ -138,58 +138,72 @@ export class Executor {
     const job = this.getJobDefinition(jobToRun, jobs)
     if (!job) return
 
-    const startedAt = new Date()
+    const tracer = trace.getTracer('orionjs.dogs', '1.0')
 
-    const onStale = async () => {
-      if (job.onStale) {
-        context.logger.info(`Job "${jobToRun.name}" is stale`)
-        job.onStale(jobToRun.params, context)
-      } else {
-        context.logger.error(`Job "${jobToRun.name}" is stale`)
+    await tracer.startActiveSpan(`job.${jobToRun.name}.${jobToRun.executionId}`, async span => {
+      try {
+        const startedAt = new Date()
+
+        const onStale = async () => {
+          if (job.onStale) {
+            context.logger.info(`Job "${jobToRun.name}" is stale`)
+            job.onStale(jobToRun.params, context)
+          } else {
+            context.logger.error(`Job "${jobToRun.name}" is stale`)
+          }
+
+          await this.jobsRepo.setJobRecordPriority(jobToRun.jobId, 0)
+
+          respawnWorker()
+
+          this.saveExecution({
+            startedAt,
+            status: 'stale',
+            result: null,
+            errorMessage: null,
+            job,
+            jobToRun,
+          })
+        }
+
+        const context = this.getContext(job, jobToRun, onStale)
+
+        try {
+          const result = await job.resolve(jobToRun.params, context)
+          context.clearStaleTimeout()
+
+          this.saveExecution({
+            startedAt,
+            status: 'success',
+            result: result || null,
+            errorMessage: null,
+            job,
+            jobToRun,
+          })
+
+          await this.afterExecutionSuccess(job, jobToRun, context)
+        } catch (error) {
+          context.clearStaleTimeout()
+          this.saveExecution({
+            startedAt,
+            status: 'error',
+            result: null,
+            errorMessage: error.message,
+            job,
+            jobToRun,
+          })
+
+          await this.onError(error, job, jobToRun, context)
+        }
+      } catch (error) {
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        })
+        throw error
+      } finally {
+        span.end()
       }
-
-      await this.jobsRepo.setJobRecordPriority(jobToRun.jobId, 0)
-
-      respawnWorker()
-
-      this.saveExecution({
-        startedAt,
-        status: 'stale',
-        result: null,
-        errorMessage: null,
-        job,
-        jobToRun
-      })
-    }
-
-    const context = this.getContext(job, jobToRun, onStale)
-
-    try {
-      const result = await job.resolve(jobToRun.params, context)
-      context.clearStaleTimeout()
-
-      this.saveExecution({
-        startedAt,
-        status: 'success',
-        result: result || null,
-        errorMessage: null,
-        job,
-        jobToRun
-      })
-
-      await this.afterExecutionSuccess(job, jobToRun, context)
-    } catch (error) {
-      context.clearStaleTimeout()
-      this.saveExecution({
-        startedAt,
-        status: 'error',
-        result: null,
-        errorMessage: error.message,
-        job,
-        jobToRun
-      })
-
-      await this.onError(error, job, jobToRun, context)
-    }
+    })
   }
 }
