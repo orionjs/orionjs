@@ -1,6 +1,0 @@
-{
-  "extends": "orionsoft",
-  "rules": {
-    "react/prop-types": false
-  }
-}
