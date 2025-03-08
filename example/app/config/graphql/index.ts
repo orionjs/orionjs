@@ -1,11 +1,12 @@
-import {env} from '@orion-js/env'
+import { env } from '@orion-js/env'
 import {
   ModelsResolversMap,
   resolversSchemas,
   startGraphQL as orionStartGraphQL,
 } from '@orion-js/graphql'
-import {GlobalResolversMap} from '@orion-js/models'
-import {isEmpty} from 'lodash'
+import { logger } from '@orion-js/logger'
+import { GlobalResolversMap } from '@orion-js/models'
+import { isEmpty } from 'lodash'
 
 export default function startGraphQL(
   resolvers: GlobalResolversMap,
@@ -21,4 +22,6 @@ export default function startGraphQL(
     modelResolvers,
     useGraphiql: env.env !== 'prod', // show graphiql only in dev
   })
+
+  logger.info('GraphQL started ✅')
 }
