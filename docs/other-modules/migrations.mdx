@@ -1,0 +1,146 @@
+---
+title: Migrations
+---
+
+# Migrations
+
+The migrations module in Orion.js provides a way to perform and track database migrations or any other system changes that need to be executed only once in a sequential manner.
+
+## Installation
+
+First, install the package:
+
+```bash
+npm install @orion-js/migrations
+# or
+yarn add @orion-js/migrations
+```
+
+## Basic Concepts
+
+Migrations in Orion.js:
+
+- Run sequentially in the order they are defined
+- Execute only once (tracked in the database)
+- Can optionally run within MongoDB transactions
+- Automatically run through a background job that checks for pending migrations
+
+## Configuration
+
+To set up migrations in your project, you need to:
+
+1. Create migration services
+2. Load them in your application
+
+### Setting Up Migrations
+
+Create a configuration file for migrations, typically at `app/config/migrations/index.ts`:
+
+```typescript
+import {loadMigrations} from '@orion-js/migrations'
+import {MigrationExample1} from './list/MigrationExample1'
+import {MigrationExample2} from './list/MigrationExample2'
+
+// Load migrations in the order they should execute
+loadMigrations([MigrationExample1, MigrationExample2])
+```
+
+### Creating Migration Files
+
+Migrations are defined as services using the `MigrationService` decorator. Each migration must have:
+
+- A unique name (typically including a version number)
+- A `runMigration` method containing the migration logic
+
+Example migration file (`app/config/migrations/list/MigrationExample1/index.ts`):
+
+```typescript
+import {ExecutionContext} from '@orion-js/dogs'
+import {logger} from '@orion-js/logger'
+import {MigrationService} from '@orion-js/migrations'
+
+@MigrationService({
+  name: 'MigrationExample1.v1',
+  useMongoTransactions: false
+})
+export class MigrationExample1 {
+  async runMigration(context: ExecutionContext) {
+    // Extend lock time if needed for long-running migrations
+    context.extendLockTime(1000 * 60 * 60) // one hour
+    
+    logger.info('Running migration example 1')
+    
+    // Implement your migration logic here
+    // For example:
+    // - Update database records
+    // - Create new collections
+    // - Transform data
+  }
+}
+```
+
+## Advanced Features
+
+### MongoDB Transactions
+
+For operations that need to be atomic, you can use MongoDB transactions:
+
+```typescript
+@MigrationService({
+  name: 'TransactionalMigration.v1',
+  useMongoTransactions: true
+})
+export class TransactionalMigration {
+  async runMigration(context: ExecutionContext) {
+    // All database operations will be in a transaction
+    // If any operation fails, all changes will be rolled back
+  }
+}
+```
+
+### Long-Running Migrations
+
+For migrations that take a long time to complete, extend the lock time to prevent the job from timing out:
+
+```typescript
+async runMigration(context: ExecutionContext) {
+  // Extend lock time to two hours
+  context.extendLockTime(1000 * 60 * 60 * 2)
+  
+  // Long-running operations...
+}
+```
+
+### Disabling Automatic Execution
+
+If you want to manually control when migrations run, you can disable the automatic job:
+
+```typescript
+loadMigrations([MigrationExample1, MigrationExample2], {
+  omitJob: true
+})
+```
+
+Then you can manually trigger migrations using the `MigrationsService`:
+
+```typescript
+import {getInstance} from '@orion-js/services'
+import {MigrationsService} from '@orion-js/migrations'
+import {createContext} from '@orion-js/dogs'
+
+// To run migrations manually
+const migrationService = getInstance(MigrationsService)
+const context = createContext()
+await migrationService.runMigrations(migrations, context)
+```
+
+## How It Works
+
+Migrations in Orion.js work using a background job that:
+
+1. Checks for pending migrations every 30 seconds
+2. Runs the next unexecuted migration
+3. Marks the migration as complete upon successful execution
+4. Continues until all migrations are executed
+
+Migrations are stored in the `orionjs.migrations` collection in MongoDB with their execution status.
