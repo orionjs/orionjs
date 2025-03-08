@@ -22,6 +22,9 @@
       {
         "group": "Essentials",
         "pages": [
+          "essentials/services",
+          "essentials/repositories",
+          "essentials/controllers",
           {
             "group": "Schemas",
             "pages": [
@@ -35,9 +38,6 @@
               "essentials/schema/mongodb"
             ]
           },
-          "essentials/services",
-          "essentials/repositories",
-          "essentials/controllers",
           {
             "group": "Mongodb",
             "pages": [
