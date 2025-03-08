@@ -1,0 +1,92 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Orionjs",
+  "colors": {
+    "primary": "#005bbc",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": "/logo/dark.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Basics",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "project-structure"
+            ]
+          },
+          {
+            "group": "Essentials",
+            "pages": [
+              "essentials/schema",
+              "essentials/services",
+              "essentials/controllers",
+              "essentials/repositories",
+              "essentials/mongodb"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Controllers",
+        "groups": [
+          {
+            "group": "Controllers",
+            "pages": [
+              "controllers/routes",
+              "controllers/graphql",
+              "controllers/jobs",
+              "controllers/echoes"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Other Modules",
+        "groups": [
+          {
+            "group": "Other Modules",
+            "pages": [
+              "other-modules/cli",
+              "other-modules/env",
+              "other-modules/cache",
+              "other-modules/crypto",
+              "other-modules/file-manager",
+              "other-modules/helpers",
+              "other-modules/logger",
+              "other-modules/migrations",
+              "other-modules/mailing"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Github",
+          "href": "https://github.com/orionjs/orionjs",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": []
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/orionjs"
+    }
+  }
+}
