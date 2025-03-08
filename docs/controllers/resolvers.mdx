@@ -1,0 +1,335 @@
+---
+title: 'Resolvers'
+description: 'Creating GraphQL API resolvers in Orionjs'
+---
+
+Orionjs provides a clean, decorator-based approach to define GraphQL resolvers. The `@Resolvers()` decorator along with `@Query()`, `@Mutation()`, and other decorators make it easy to create type-safe GraphQL APIs with minimal boilerplate.
+
+## Creating a Resolvers Controller
+
+A resolvers controller is a class decorated with `@Resolvers()` that contains methods decorated with `@Query()` or `@Mutation()` to define GraphQL operations:
+
+```typescript
+import { Mutation, Query, ResolverParams, ResolverReturns, Resolvers } from '@orion-js/graphql'
+import { Inject } from '@orion-js/services'
+import { Prop, TypedSchema } from '@orion-js/typed-model'
+import { ExampleSchema } from '../schemas/ExampleSchema'
+import { ExampleService } from '../services/ExampleService'
+
+@TypedSchema()
+export class ExampleParams {
+  @Prop()
+  exampleId: string
+}
+
+@Resolvers()
+export default class ExampleResolvers {
+  @Inject()
+  private exampleService: ExampleService
+
+  @Query()
+  @ResolverParams(ExampleParams)
+  @ResolverReturns(ExampleSchema)
+  async example(params: ExampleParams): Promise<ExampleSchema> {
+    return await this.exampleService.getAExample(params.exampleId)
+  }
+
+  @Query()
+  @ResolverReturns([ExampleSchema])
+  async examples(): Promise<ExampleSchema[]> {
+    return await this.exampleService.getExamples()
+  }
+
+  @Mutation()
+  @ResolverReturns(String)
+  async createExample(): Promise<string> {
+    await this.exampleService.makeExample()
+    return 'Created example'
+  }
+}
+```
+
+## Query Resolvers
+
+Use the `@Query()` decorator to define GraphQL query operations:
+
+```typescript
+@Query()
+@ResolverParams(UserParams)
+@ResolverReturns(UserSchema)
+async user(params: UserParams): Promise<UserSchema> {
+  return await this.userService.getUser(params.userId)
+}
+```
+
+### Query Decorator Options
+
+The `@Query()` decorator accepts the following options:
+
+```typescript
+@Query({
+  name: 'findUser', // Custom name for the GraphQL query (defaults to method name)
+  description: 'Find a user by ID' // Description for GraphQL schema documentation
+})
+```
+
+## Mutation Resolvers
+
+Use the `@Mutation()` decorator to define GraphQL mutation operations:
+
+```typescript
+@Mutation()
+@ResolverParams(CreateUserParams)
+@ResolverReturns(UserSchema)
+async createUser(params: CreateUserParams): Promise<UserSchema> {
+  return await this.userService.createUser(params)
+}
+```
+
+### Mutation Decorator Options
+
+The `@Mutation()` decorator accepts the same options as `@Query()`:
+
+```typescript
+@Mutation({
+  name: 'registerUser', // Custom name for the GraphQL mutation
+  description: 'Register a new user' // Description for GraphQL schema documentation
+})
+```
+
+## Defining Parameters
+
+Use the `@ResolverParams()` decorator to define the input parameters for your resolvers:
+
+```typescript
+@TypedSchema()
+export class UserParams {
+  @Prop({ required: true })
+  userId: string
+}
+
+@Query()
+@ResolverParams(UserParams)
+@ResolverReturns(UserSchema)
+async user(params: UserParams): Promise<UserSchema> {
+  return await this.userService.getUser(params.userId)
+}
+```
+
+### Nested Parameters
+
+You can create complex parameter structures:
+
+```typescript
+@TypedSchema()
+export class AddressInput {
+  @Prop({ required: true })
+  street: string
+
+  @Prop({ required: true })
+  city: string
+
+  @Prop({ required: true })
+  zipCode: string
+}
+
+@TypedSchema()
+export class CreateUserParams {
+  @Prop({ required: true })
+  name: string
+
+  @Prop({ required: true })
+  email: string
+
+  @Prop()
+  address: AddressInput
+}
+```
+
+## Defining Return Types
+
+Use the `@ResolverReturns()` decorator to define the return type of your resolvers:
+
+```typescript
+// Return a single item
+@ResolverReturns(UserSchema)
+async user(params): Promise<UserSchema> {
+  // ...
+}
+
+// Return an array of items
+@ResolverReturns([UserSchema])
+async users(): Promise<UserSchema[]> {
+  // ...
+}
+
+// Return primitive types
+@ResolverReturns(String)
+async getMessage(): Promise<string> {
+  // ...
+}
+
+@ResolverReturns(Boolean)
+async checkAvailability(): Promise<boolean> {
+  // ...
+}
+
+@ResolverReturns(Number)
+async countUsers(): Promise<number> {
+  // ...
+}
+```
+
+## Middleware
+
+You can add middleware to your resolvers using the `@UseMiddleware()` decorator:
+
+```typescript
+import { UseMiddleware } from '@orion-js/graphql'
+import { authMiddleware } from '../middleware/auth'
+
+@Query()
+@UseMiddleware(authMiddleware)
+@ResolverReturns(UserSchema)
+async me(params, viewer): Promise<UserSchema> {
+  // viewer.user is available because of authMiddleware
+  return viewer.user
+}
+```
+
+### Middleware Chaining
+
+You can apply multiple middlewares to a resolver:
+
+```typescript
+@Query()
+@UseMiddleware(authMiddleware)
+@UseMiddleware(logMiddleware)
+@UseMiddleware(rateLimit(100))
+async protectedResource() {
+  // ...
+}
+```
+
+## Model Resolvers
+
+For defining field resolvers on specific GraphQL types, see the [Model Resolvers](/controllers/modelResolvers) documentation.
+
+## Subscription Resolvers
+
+For real-time functionality, use the `@Subscriptions()` and `@Subscription()` decorators:
+
+```typescript
+import { Subscription, Subscriptions } from '@orion-js/graphql'
+import { Inject } from '@orion-js/services'
+import { UserService } from '../services/UserService'
+
+@Subscriptions()
+export default class UserSubscriptions {
+  @Inject()
+  private userService: UserService
+
+  @Subscription({
+    description: 'Triggers when a user is created',
+    filter: (payload, variables, context) => {
+      // Optional filter to determine who receives the subscription
+      return true
+    }
+  })
+  userCreated() {
+    return {
+      subscribe: () => this.userService.onUserCreated()
+    }
+  }
+}
+```
+
+## Error Handling
+
+Orionjs automatically handles errors in resolvers and formats them appropriately:
+
+```typescript
+@Query()
+async riskyOperation(): Promise<string> {
+  try {
+    const result = await this.someService.performOperation()
+    return result
+  } catch (error) {
+    // Custom error handling
+    throw new Error(`Operation failed: ${error.message}`)
+  }
+}
+```
+
+## Context and Viewer
+
+All resolver methods receive the viewer object as the second parameter, which contains the authenticated user and other context information:
+
+```typescript
+@Query()
+async userProfile(params, viewer): Promise<UserProfile> {
+  // Check if user is authenticated
+  if (!viewer.user) {
+    throw new Error('Unauthorized')
+  }
+  
+  return await this.userService.getProfile(viewer.user._id)
+}
+```
+
+## GraphQL Info
+
+You can access the GraphQL info object to optimize your queries:
+
+```typescript
+@Query()
+async complexData(params, viewer, info): Promise<ComplexData> {
+  // Use info to determine which fields were requested
+  const requestedFields = extractFieldsFromInfo(info)
+  
+  // Only fetch the data that was requested
+  return await this.dataService.getOptimizedData(requestedFields)
+}
+```
+
+## Starting GraphQL Server
+
+To start the GraphQL server:
+
+```typescript
+import { startGraphQL, startGraphiQL } from '@orion-js/graphql'
+import { app } from '@orion-js/http'
+
+// Start GraphQL server
+startGraphQL({
+  path: '/graphql'
+})
+
+// Optional: Start GraphiQL (GraphQL IDE)
+startGraphiQL({
+  path: '/graphiql',
+  graphqlUrl: '/graphql'
+})
+```
+
+## Best Practices
+
+1. **Organize by Domain**: Group related resolvers in the same controller class.
+
+2. **Leverage Dependency Injection**: Use `@Inject()` to access services.
+
+3. **Keep Resolvers Focused**: Each resolver method should handle one specific GraphQL operation.
+
+4. **Use Strong Typing**: Define parameter and return types using `@TypedSchema()` and decorators.
+
+5. **Validate Input**: The TypedSchema system automatically validates input.
+
+6. **Implement Authorization**: Use middleware for authentication and authorization.
+
+7. **Handle Errors Gracefully**: Catch and handle errors appropriately.
+
+8. **Optimize Queries**: Use the info parameter to optimize database queries.
+
+9. **Document Your API**: Add descriptions to your schemas and resolvers.
+
+10. **Test Your Resolvers**: Write unit tests for your resolver logic. 

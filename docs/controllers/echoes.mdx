@@ -1,6 +1,235 @@
 ---
 title: 'Echoes'
-description: 'Echoes are used to echo the messages'
+description: 'Event and request handlers for microservice communication in Orionjs'
 ---
 
+Echoes in Orionjs provide a structured way to implement event-driven architecture and handle inter-service communication. Using the `@Echoes()` and `@EchoRequest()` or `@EchoEvent()` decorators, you can easily create handlers for both synchronous requests and asynchronous events.
+
+## Creating Echo Controllers
+
+An echoes controller is a class decorated with `@Echoes()` that contains methods decorated with `@EchoRequest()` or `@EchoEvent()`:
+
+```typescript
+import { EchoRequest, Echoes } from '@orion-js/echoes'
+import { Inject } from '@orion-js/services'
+import { ExampleRepository } from '../repos/ExampleRepository'
+import { ExampleSchema } from '../schemas/ExampleSchema'
+
+@Echoes()
+export class GetDataEchoes {
+  @Inject()
+  private exampleRepository: ExampleRepository
+
+  @EchoRequest()
+  async getDataById(params: { exampleId: string }): Promise<ExampleSchema> {
+    return await this.exampleRepository.getExampleById(params.exampleId)
+  }
+}
+```
+
+## Echo Request Handlers
+
+Use the `@EchoRequest()` decorator to define methods that handle synchronous requests from other services:
+
+```typescript
+@EchoRequest()
+async getUserById(params: { userId: string }): Promise<UserSchema> {
+  return await this.userRepository.findById(params.userId)
+}
+```
+
+## Echo Event Handlers
+
+Use the `@EchoEvent()` decorator to define methods that process asynchronous events:
+
+```typescript
+@Echoes()
+export class UserEventsEchoes {
+  @Inject()
+  private emailService: EmailService
+
+  @EchoEvent()
+  async userRegistered(params: { user: UserSchema }): Promise<void> {
+    await this.emailService.sendWelcomeEmail(params.user.email)
+  }
+}
+```
+
+### Event Decorator Options
+
+The `@EchoEvent()` decorator accepts the same options as `@EchoRequest()`:
+
+```typescript
+@EchoEvent({
+  attemptsBeforeDeadLetter: 5,
+})
+```
+
+## Making Requests
+
+To make a request to another service:
+
+```typescript
+import { request } from '@orion-js/echoes'
+
+// In a service or resolver
+async function getUserDetails(userId: string): Promise<UserDetails> {
+  return await request({
+    service: 'users',           // Target service name
+    method: 'getUserById',      // Method name in the target service
+    params: { userId },         // Parameters to pass
+    timeout: 5000,              // Optional timeout in milliseconds
+    retries: 3                  // Optional number of retries
+  })
+}
+```
+
+## Publishing Events
+
+To publish an event for other services to consume:
+
+```typescript
+import { publish } from '@orion-js/echoes'
+
+// In a service after creating a user
+async function createUser(userData: UserInput): Promise<User> {
+  const user = await this.userRepository.create(userData)
+  
+  // Publish an event
+  await publish({
+    topic: 'userRegistered',    // Event topic
+    params: { user },           // Event payload
+    acks: 1,                    // Optional: number of acknowledgments
+    timeout: 3000               // Optional: timeout in milliseconds
+  })
+  
+  return user
+}
+```
+
+## Starting the Echoes Service
+
+To enable echoes in your application, you need to configure and start the echoes service:
+
+```typescript
+import { startService } from '@orion-js/echoes'
+import { app } from '@orion-js/http'
+
+// Start the echoes service
+await startService({
+  // Kafka client configuration (for events)
+  client: {
+    clientId: 'my-app',
+    brokers: ['kafka:9092']
+  },
+  
+  // Request configuration (for synchronous communication)
+  requests: {
+    key: 'shared-secret-key',      // Secret key for request signing
+    handlerPath: '/echoes-services', // Path for HTTP handlers
+    services: {
+      users: 'http://users-service:3000',
+      payments: 'http://payments-service:3000'
+    }
+  },
+  
+  // Advanced options
+  readTopicsFromBeginning: true,    // Read missed messages when reconnecting
+  partitionsConsumedConcurrently: 4 // Number of partitions to consume concurrently
+})
+```
+
+## Error Handling
+
+Echoes automatically handles errors in request and event handlers:
+
+```typescript
+@EchoRequest()
+async processPayment(params: PaymentParams): Promise<PaymentResult> {
+  try {
+    const result = await this.paymentService.processPayment(params)
+    return result
+  } catch (error) {
+    // Errors are automatically propagated back to the requester
+    // with proper error classification (UserError, ValidationError, etc.)
+    throw new Error(`Payment processing failed: ${error.message}`)
+  }
+}
+```
+
+### Custom Error Types
+
+Orionjs handles special error types appropriately:
+
+- **UserError**: For expected application errors
+- **ValidationError**: For data validation errors
+
+```typescript
+import { UserError } from '@orion-js/helpers'
+import { ValidationError } from '@orion-js/schema'
+
+@EchoRequest()
+async validateUser(params: { userId: string }): Promise<void> {
+  const user = await this.userRepository.findById(params.userId)
+  
+  if (!user) {
+    throw new UserError('USER_NOT_FOUND', 'User was not found')
+  }
+  
+  if (!user.isActive) {
+    throw new ValidationError({
+      status: 'User account is inactive'
+    })
+  }
+}
+```
+
+Those errors will be automatically propagated back to the requester.
+
+## Type Safety
+
+Using TypeScript, you can ensure type safety for your echo handlers:
+
+```typescript
+interface CreateOrderParams {
+  customerId: string
+  items: Array<{
+    productId: string
+    quantity: number
+  }>
+}
+
+interface OrderResult {
+  orderId: string
+  total: number
+  status: 'pending' | 'completed'
+}
+
+@EchoRequest()
+async createOrder(params: CreateOrderParams): Promise<OrderResult> {
+  // Implementation with full type safety
+}
+```
+
+## Best Practices
+
+1. **Organize by Domain**: Group related echo handlers in the same controller class.
+
+2. **Leverage Dependency Injection**: Use `@Inject()` to access repositories and services.
+
+3. **Keep Methods Focused**: Each echo handler should have a clear, single responsibility.
+
+4. **Use Strong Typing**: Define parameter and return types for clarity and safety.
+
+5. **Handle Errors Gracefully**: Catch and properly categorize errors.
+
+6. **Idempotent Handlers**: Design event handlers to be idempotent (safe to process the same event multiple times).
+
+7. **Timeout Configuration**: Set appropriate timeouts for requests based on expected execution time.
+
+8. **Security**: Use the shared key to secure inter-service communication.
+
+9. **Service Discovery**: Keep the service registry updated when adding new services.
+
+10. **Monitoring**: Implement proper logging and monitoring for echo handlers.
 

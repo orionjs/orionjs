@@ -1,0 +1,247 @@
+---
+title: 'Model Resolvers'
+description: 'Creating GraphQL field resolvers for specific types in Orionjs'
+---
+
+Model resolvers in Orionjs provide a way to define computed fields and relationships on your GraphQL types. Unlike regular resolvers which define root queries and mutations, model resolvers add fields to specific GraphQL types.
+
+## Creating Model Resolvers
+
+A model resolver controller is a class decorated with `@ModelResolvers()` that specifies the GraphQL type to extend, and contains methods decorated with `@ModelResolver()` to define fields on that type:
+
+```typescript
+import { ModelResolver, ModelResolvers, ResolverReturns } from '@orion-js/graphql'
+import { Inject } from '@orion-js/services'
+import { UserSchema } from '../schemas/UserSchema'
+import { PostSchema } from '../schemas/PostSchema'
+import { PostService } from '../services/PostService'
+
+@ModelResolvers(UserSchema)
+export default class UserResolvers {
+  @Inject()
+  private postService: PostService
+
+  @ModelResolver()
+  @ResolverReturns([PostSchema])
+  async posts(user: UserSchema): Promise<PostSchema[]> {
+    return await this.postService.getUserPosts(user._id)
+  }
+}
+```
+
+The `@ModelResolvers()` decorator takes the schema class that represents your GraphQL type. Each method decorated with `@ModelResolver()` adds a new field to that type.
+
+## Model Resolver Methods
+
+Model resolver methods receive the parent object as their first parameter, followed by any parameters, the viewer, and GraphQL info:
+
+```typescript
+@ModelResolver()
+@ResolverParams(PostFiltersParams)
+@ResolverReturns([PostSchema])
+async posts(user: UserSchema, params: PostFiltersParams, viewer, info): Promise<PostSchema[]> {
+  const { limit, sortBy } = params
+  return await this.postService.getUserPosts(user._id, { limit, sortBy })
+}
+```
+
+### Method Parameters
+
+1. **Parent Object**: The first parameter is always the parent object (the instance of the type you're adding the field to)
+2. **Params**: If you specify `@ResolverParams()`, this will be the parameters passed to the field
+3. **Viewer**: The viewer object (contains authentication context)
+4. **Info**: The GraphQL info object for query optimization
+
+## Model Resolver Options
+
+The `@ModelResolver()` decorator accepts options to customize the field:
+
+```typescript
+@ModelResolver({
+  name: 'allPosts',  // Override the field name (defaults to method name)
+  description: 'All posts created by this user',  // Field description in GraphQL schema
+})
+```
+
+### Available Options
+
+| Option | Type | Description |
+| ------ | ---- | ----------- |
+| `name` | `string` | Custom name for the GraphQL field (defaults to method name) |
+| `description` | `string` | Description for the field in GraphQL schema documentation |
+
+## Configuring Return Types
+
+Just like with regular resolvers, use the `@ResolverReturns()` decorator to specify the return type:
+
+```typescript
+// Return a single item
+@ResolverReturns(PostSchema)
+async latestPost(user): Promise<PostSchema> {
+  return await this.postService.getLatestUserPost(user._id)
+}
+
+// Return an array
+@ResolverReturns([PostSchema])
+async posts(user): Promise<PostSchema[]> {
+  return await this.postService.getUserPosts(user._id)
+}
+
+// Return scalar types
+@ResolverReturns(Number)
+async postCount(user): Promise<number> {
+  return await this.postService.countUserPosts(user._id)
+}
+```
+
+## Field Parameters
+
+You can define parameters for your model resolver fields using `@ResolverParams()`:
+
+```typescript
+@TypedSchema()
+export class PostFiltersParams {
+  @Prop()
+  limit: number
+  
+  @Prop()
+  offset: number
+  
+  @Prop()
+  sortBy: string
+}
+
+@ModelResolver()
+@ResolverParams(PostFiltersParams)
+@ResolverReturns([PostSchema])
+async posts(user, params): Promise<PostSchema[]> {
+  return await this.postService.getUserPosts(
+    user._id,
+    params.limit || 10,
+    params.offset || 0,
+    params.sortBy || 'createdAt'
+  )
+}
+```
+
+## Field Middleware
+
+You can apply middleware to model resolvers using `@UseMiddleware()`:
+
+```typescript
+@ModelResolver()
+@UseMiddleware(authMiddleware)
+@ResolverReturns([PrivatePostSchema])
+async privatePosts(user, params, viewer): Promise<PrivatePostSchema[]> {
+  // Only accessible if middleware passes
+  return await this.postService.getUserPrivatePosts(user._id)
+}
+```
+
+## Custom Model Names
+
+By default, the `@ModelResolvers()` decorator uses the class name of the provided schema. You can specify a custom name:
+
+```typescript
+@ModelResolvers(UserSchema, { modelName: 'CustomUser' })
+export default class UserResolvers {
+  // Fields will be added to the CustomUser type
+}
+```
+
+## Handling Relationships
+
+Model resolvers are ideal for handling relationships between your GraphQL types:
+
+### One-to-Many Relationships
+
+```typescript
+// On the User type
+@ModelResolver()
+@ResolverReturns([PostSchema])
+async posts(user): Promise<PostSchema[]> {
+  return await this.postService.getUserPosts(user._id)
+}
+
+// On the Post type
+@ModelResolvers(PostSchema)
+export default class PostResolvers {
+  @Inject()
+  private userService: UserService
+  
+  @ModelResolver()
+  @ResolverReturns(UserSchema)
+  async author(post): Promise<UserSchema> {
+    return await this.userService.getUser(post.authorId)
+  }
+}
+```
+
+### Many-to-Many Relationships
+
+```typescript
+@ModelResolvers(UserSchema)
+export class UserResolvers {
+  @Inject()
+  private groupService: GroupService
+  
+  @ModelResolver()
+  @ResolverReturns([GroupSchema])
+  async groups(user): Promise<GroupSchema[]> {
+    return await this.groupService.getUserGroups(user._id)
+  }
+}
+
+@ModelResolvers(GroupSchema)
+export class GroupResolvers {
+  @Inject()
+  private userService: UserService
+  
+  @ModelResolver()
+  @ResolverReturns([UserSchema])
+  async members(group): Promise<UserSchema[]> {
+    return await this.userService.getGroupMembers(group._id)
+  }
+}
+```
+
+## DataLoader for Performance
+
+For optimal performance, use DataLoader with your model resolvers to batch and cache database queries:
+
+```typescript
+@ModelResolvers(PostSchema)
+export default class PostResolvers {
+  @Inject()
+  private userService: UserService
+  
+  @ModelResolver()
+  @ResolverReturns(UserSchema)
+  async author(post): Promise<UserSchema> {
+    // Using DataLoader, this will batch requests for multiple posts with the same author
+    return await this.userService.loadUserById(post.authorId)
+  }
+}
+```
+
+## Best Practices
+
+1. **Use for Computed Fields**: Add fields that aren't directly stored in your database.
+
+2. **Handle Relationships**: Define one-to-many and many-to-many relationships.
+
+3. **Optimize with DataLoader**: Use DataLoader to batch and cache similar requests.
+
+4. **Keep it Simple**: Each resolver should have a single responsibility.
+
+5. **Apply Authorization**: Use middleware to protect access to sensitive fields.
+
+6. **Separate by Type**: Create separate controller classes for each GraphQL type.
+
+7. **Avoid Circular Dependencies**: Be careful with bidirectional relationships to avoid circular dependencies.
+
+8. **Consider Field Complexity**: For computationally expensive fields, consider using query complexity analysis.
+
+9. **Document Your Fields**: Add descriptions to help API consumers understand your schema.
+
+10. **Keep Consistent Naming**: Follow a consistent naming convention for related fields.
