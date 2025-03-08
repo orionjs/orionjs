@@ -1,0 +1,82 @@
+---
+title: 'Introduction'
+description: 'A layer on top of the MongoDB driver to make it easier to use it with Orionjs'
+---
+
+The MongoDB package in Orionjs provides a powerful abstraction layer over the native MongoDB driver, optimized for TypeScript and seamlessly integrated with Orionjs's repository pattern.
+
+## Overview
+
+Working directly with the MongoDB driver can be verbose and lacks type safety. The Orionjs MongoDB package addresses these challenges by providing:
+
+- Type-safe MongoDB operations
+- Seamless integration with Orionjs schemas
+- Automatic validation before database operations
+
+## Integration with Repositories
+
+MongoDB collections are typically used within repository classes, following Orionjs's architecture:
+
+```typescript
+import {Repository, MongoCollection, Collection} from '@orion-js/mongodb'
+import {UserSchema} from '../schemas/UserSchema'
+
+@Repository()
+export class UserRepository {
+  @MongoCollection({
+    name: 'users',
+    model: UserSchema,
+    indexes: [
+      {
+        keys: {
+          email: 1,
+        },
+      },
+    ],
+  })
+  private users: Collection<UserSchema>
+
+  async findById(id: string): Promise<UserSchema> {
+    return await this.users.findOne({_id: id})
+  }
+
+  async create(userData): Promise<string> {
+    return await this.users.insertOne(userData)
+  }
+}
+```
+
+## Key Features
+
+### Type Safety
+
+Collections are strongly typed based on your schema definitions:
+
+```typescript
+// TypeScript knows that user has the shape defined in UserSchema
+const user = await userRepository.findById('123')
+console.log(user.name) // Type-safe access
+```
+
+### Automatic Validation
+
+Documents are automatically validated against your schema before being inserted or updated:
+
+```typescript
+// This will throw a validation error if the data doesn't match the schema
+await userRepository.create({
+  name: 'John Doe',
+  email: 'john@example.com'
+})
+```
+
+## Next Steps
+
+In the following sections, we'll explore how to:
+
+- [Create and configure collections](./collections)
+- [Perform operations](./operations)
+- [Data loader](./dataloader)
+- [Use transactions](./transactions)
+- [Configure MongoDB connections](./connections)
+- [Use indexes](./indexes)

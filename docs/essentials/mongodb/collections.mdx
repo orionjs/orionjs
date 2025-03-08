@@ -1,0 +1,174 @@
+---
+title: 'Collections'
+description: 'Creating and configuring MongoDB collections in Orionjs'
+---
+
+# MongoDB Collections
+
+Collections in Orionjs provide a type-safe interface to MongoDB collections with automatic schema validation and helpful query methods.
+
+## Creating Collections
+
+There are two main ways to create collections in Orionjs:
+
+### Using the Repository Pattern (Recommended)
+
+The recommended approach is to use the `@Repository` and `@MongoCollection` decorators:
+
+```typescript
+import {Repository, MongoCollection, Collection} from '@orion-js/mongodb'
+import {UserSchema} from '../schemas/UserSchema'
+
+@Repository()
+export class UserRepository {
+  @MongoCollection({
+    name: 'users',
+    model: UserSchema,
+    // Other options...
+  })
+  private users: Collection<UserSchema>
+  
+  // Repository methods...
+}
+```
+
+### Using createCollection Directly
+
+You can also create collections directly:
+
+```typescript
+import {createCollection} from '@orion-js/mongodb'
+import {UserSchema} from '../schemas/UserSchema'
+
+const Users = createCollection({
+  name: 'users',
+  model: UserSchema,
+  // Other options...
+})
+```
+
+## Configuration Options
+
+The `MongoCollection` decorator and `createCollection` function accept the following options:
+
+```typescript
+{
+  // Required options
+  name: string,             // Collection name in MongoDB
+  model: TypedSchema,       // Schema for validation and typing
+
+  // Optional options
+  connectionName: string,   // Connection name (default: 'main')
+  idGeneration: 'mongo' | 'random' | 'uuid', // ID generation method (default: 'mongo')
+  idPrefix: string,         // Prefix for generated IDs
+  indexes: Index[],         // Array of indexes to create
+} 
+```
+
+## ID Generation
+
+Orionjs offers several options for generating document IDs:
+
+```typescript
+@MongoCollection({
+  name: 'users',
+  model: UserSchema,
+  idGeneration: 'uuid' // Generate UUIDs for _id
+})
+```
+
+### Basic ID Generation Options
+
+- `'mongo'` (default): MongoDB ObjectId strings (time-based)
+- `'random'`: Random string IDs
+- `'uuid'`: UUID v4 strings
+
+### Prefixed IDs
+
+You can add a prefix to generated IDs, which is useful for distinguishing different document types:
+
+```typescript
+@MongoCollection({
+  name: 'users',
+  model: UserSchema,
+  idPrefix: 'user_'  // All IDs will start with "user_"
+})
+```
+
+When using `idPrefix`, the `idGeneration` method will default to `random` if not specified.
+
+### Type-Safe IDs with TypeScript
+
+For TypeScript users, Orionjs provides powerful ways to create type-safe IDs:
+
+#### String Template IDs
+
+```typescript
+// Define ID type with a specific prefix
+type UserId = `user-${string}`
+
+@TypedSchema()
+class UserSchema {
+  @Prop()
+  _id: UserId
+  
+  @Prop()
+  name: string
+}
+
+// Create collection with matching prefix
+const Users = createCollection<UserSchema>({
+  name: 'users',
+  schema: UserSchema,
+  idPrefix: 'user-'  // Must match the prefix in the type
+})
+```
+
+## Indexes
+
+Define indexes to optimize queries:
+
+```typescript
+@MongoCollection({
+  name: 'users',
+  model: UserSchema,
+  indexes: [
+    {
+      keys: { email: 1 },
+      options: { unique: true }
+    },
+    {
+      keys: { createdAt: -1 }
+    }
+  ]
+})
+```
+
+## Collection Types
+
+When using TypeScript, you can access collection typing:
+
+```typescript
+// Fully typed collection
+private users: Collection<UserSchema>
+
+// Access document type
+type UserDocument = ModelToDocumentType<UserSchema>
+```
+
+## Getting a Collection Instance
+
+If you need to access a collection outside a repository:
+
+```typescript
+import {getInstance} from '@orion-js/services'
+import {UserRepository} from './UserRepository'
+
+// Get the repository
+const userRepo = getInstance(UserRepository)
+
+// Use repository methods
+const user = await userRepo.findById('123')
+```
+
+Collections provide a solid foundation for working with MongoDB in Orionjs, with built-in type safety and schema validation to make your database operations more reliable. 

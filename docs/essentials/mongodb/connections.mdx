@@ -1,0 +1,19 @@
+---
+title: 'Connections'
+description: 'Configuring MongoDB connections in Orionjs'
+---
+
+# MongoDB Connections
+
+Orionjs provides a flexible system for configuring and managing MongoDB connections. This allows you to connect to multiple MongoDB instances or databases as needed.
+
+## Default Connection
+
+By default, Orionjs will look for a MongoDB connection string in the `MONGO_URL` or `env.mongo_url` environment variable. This is the simplest way to get started:
+
+```typescript
+// In your environment configuration
+MONGO_URL=mongodb://localhost:27017/my-database
+```
+
+You don't need any additional code to use the default connection - all collections will use it automatically unless specified otherwise.

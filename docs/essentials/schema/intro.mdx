@@ -1,0 +1,98 @@
+---
+title: 'Introduction'
+description: 'Schema is used to define the schema for the controller'
+---
+
+The schema package in Orionjs provides a powerful type-safe way to define data structures in your application. Schemas serve two main purposes:
+
+1. **Define data structures**: Schemas describe the structure, types, and validation rules for your data models.
+2. **Automatic integration**: Schemas automatically integrate with GraphQL for API generation and MongoDB for document validation.
+
+## TypedSchema
+
+The modern approach to define schemas in Orionjs uses TypeScript decorators through the `@TypedSchema` decorator. This provides a class-based, type-safe way to define your data structures.
+
+### Basic Usage
+
+```typescript
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class UserSchema {
+  @Prop()
+  _id: string
+
+  @Prop({label: 'Full Name'})
+  name: string
+
+  @Prop({optional: true})
+  email?: string
+
+  @Prop()
+  createdAt: Date
+}
+```
+
+The `@TypedSchema()` decorator transforms a TypeScript class into an Orionjs schema. Each property decorated with `@Prop()` becomes a field in your schema, with the type inferred from TypeScript.
+
+## Integration with GraphQL
+
+Schemas defined with `@TypedSchema` are automatically converted to GraphQL types when used in your API, saving you from writing redundant type definitions.
+
+```typescript
+import {Query, Resolvers} from '@orion-js/graphql'
+import {UserSchema} from '../schemas/UserSchema'
+
+@Resolvers()
+export class UserResolvers {
+  @Query({returns: UserSchema})
+  async getUser(userId: string) {
+    // Your implementation here
+    return user // Returns object that matches UserSchema
+  }
+}
+```
+
+When the above resolver is registered, Orionjs automatically:
+- Creates a GraphQL type for `UserSchema`
+- Sets up the appropriate field types based on your schema definition
+- Handles type conversions between your application and GraphQL
+
+## Integration with MongoDB
+
+When using schemas with MongoDB collections, Orionjs automatically validates documents before insertion or updates:
+
+```typescript
+import {createCollection} from '@orion-js/mongodb'
+import {UserSchema} from '../schemas/UserSchema'
+
+const Users = createCollection({
+  name: 'users',
+  schema: UserSchema
+})
+
+// Document will be automatically validated against UserSchema before insertion
+await Users.insertOne({
+  name: 'John Doe',
+  email: 'john@example.com',
+  createdAt: new Date()
+})
+```
+
+The validation ensures:
+- All required fields are present
+- Types match those defined in the schema
+- Any custom validation rules are satisfied
+
+## Next Steps
+
+Explore more about schemas:
+
+- [Schema Types](./types) - Learn about all available data types for schema fields
+- [Property Options](./properties) - Learn about all available options for schema properties
+- [Schema Validation](./validation) - Understand how validation works and how to create custom validators
+- [Advanced Schema Usage](./advanced) - Discover nested schemas, arrays, and schema inheritance
+- [Schema Serialization](./serialization) - Learn how schemas are serialized for client-side validation
+- [GraphQL Integration](./graphql) - Understand how schemas integrate with GraphQL
+
+

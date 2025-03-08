@@ -1,0 +1,135 @@
+---
+title: 'GraphQL Integration'
+description: 'How schemas integrate with GraphQL in Orionjs'
+---
+
+One of the key benefits of Orionjs schemas is their seamless integration with GraphQL. This integration happens transparently, without requiring additional configuration or type definitions.
+
+## Schema-to-GraphQL Type Conversion
+
+When a schema is used in a GraphQL context, Orionjs automatically generates the appropriate GraphQL types:
+
+```typescript
+// Your schema definition
+@TypedSchema()
+export class UserSchema {
+  @Prop()
+  _id: string
+
+  @Prop({description: 'The user\'s full name'})
+  name: string
+}
+
+// Behind the scenes, Orionjs generates equivalent GraphQL types:
+// type UserSchema {
+//   _id: String!
+//   name: String! @description(value: "The user's full name")
+// }
+```
+
+## GraphQL-Specific Schema Options
+
+You can control how schemas are represented in GraphQL using specific options:
+
+```typescript
+@TypedSchema({
+  graphql: {
+    name: 'User',               // Custom GraphQL type name
+    description: 'A user record' // GraphQL type description
+  }
+})
+export class UserSchema {
+  @Prop({
+    private: true              // Exclude this field from GraphQL
+  })
+  password: string
+
+  @Prop({
+    graphql: {
+      name: 'fullName',        // Custom field name in GraphQL
+      description: 'Complete name of the user'
+    }
+  })
+  name: string
+}
+```
+
+## Skipping fields
+
+The `private` option is particularly useful for GraphQL as it allows you to exclude sensitive fields from your API:
+
+```typescript
+@TypedSchema()
+export class UserSchema {
+  @Prop()
+  email: string
+
+  @Prop({private: true})  // This field won't appear in GraphQL schema
+  hashedPassword: string
+}
+```
+
+## Enum Representation
+
+Enums are automatically exposed as GraphQL enum types, ensuring type safety across your API:
+
+```typescript
+export const OrderStatusEnum = createEnum('OrderStatusEnum', [
+  'pending',
+  'completed',
+  'cancelled'
+] as const)
+
+// Generates GraphQL enum:
+// enum OrderStatusEnum {
+//   pending
+//   completed
+//   cancelled
+// }
+```
+
+## Internal Type Mapping
+
+Orionjs handles the mapping between schema types and GraphQL types through an internal `__graphQLType` property, allowing for precise control over the generated GraphQL schema:
+
+| Schema Type | GraphQL Type | Internal Representation |
+|------------|--------------|-------------------------|
+| `string`   | `String`     | `__graphQLType: 'String'` |
+| `number`   | `Float`      | `__graphQLType: 'Float'` |
+| `integer`  | `Int`        | `__graphQLType: 'Int'` |
+| `boolean`  | `Boolean`    | `__graphQLType: 'Boolean'` |
+| `Date`     | `Date`       | Custom scalar type |
+| TypedSchema | Object type | Nested object definition |
+
+## Advanced: Custom GraphQL Types
+
+For advanced use cases, you can create custom GraphQL types by implementing a `toGraphQLType` method:
+
+```typescript
+import {GraphQLScalarType} from 'graphql'
+
+@TypedSchema()
+class ContactSchema {
+  @Prop({
+    name: 'Email',
+    type: String,
+    toGraphQLType() {
+      return new GraphQLScalarType({
+        name: 'Email',
+        description: 'Email address format',
+        serialize: value => value,
+        parseValue: value => {
+          // Custom email validation logic
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            throw new Error('Invalid email format')
+          }
+          return value
+        }
+      })
+    }
+  })
+  email: string
+}
+```
+
+This integration allows you to define your data structure once and automatically generate a type-safe GraphQL API that respects all your validation rules and type definitions. 

@@ -22,11 +22,34 @@
       {
         "group": "Essentials",
         "pages": [
-          "essentials/schema",
+          {
+            "group": "Schemas",
+            "pages": [
+              "essentials/schema/intro",
+              "essentials/schema/properties",
+              "essentials/schema/validation",
+              "essentials/schema/advanced",
+              "essentials/schema/serialization",
+              "essentials/schema/types",
+              "essentials/schema/graphql",
+              "essentials/schema/mongodb"
+            ]
+          },
           "essentials/services",
-          "essentials/controllers",
           "essentials/repositories",
-          "essentials/mongodb"
+          "essentials/controllers",
+          {
+            "group": "Mongodb",
+            "pages": [
+              "essentials/mongodb/intro",
+              "essentials/mongodb/collections",
+              "essentials/mongodb/operations",
+              "essentials/mongodb/dataloader",
+              "essentials/mongodb/indexes",
+              "essentials/mongodb/transactions",
+              "essentials/mongodb/connections"
+            ]
+          }
         ]
       },
       {

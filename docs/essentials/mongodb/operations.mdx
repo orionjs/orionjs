@@ -1,0 +1,154 @@
+---
+title: 'Operations'
+description: 'Performing MongoDB operations in Orionjs'
+---
+
+# MongoDB Operations
+
+Orionjs provides type-safe wrappers around MongoDB operations with automatic schema validation.
+
+## Basic CRUD Operations
+
+### Finding Documents
+
+```typescript
+// Find a single document
+const user = await this.users.findOne({_id: userId})
+
+// Find multiple documents
+const activeUsers = await this.users.find({status: 'active'})
+  .sort({createdAt: -1})
+  .limit(10)
+  .toArray()
+```
+
+### Inserting Documents
+
+```typescript
+// Insert a single document (returns the generated ID)
+const userId = await this.users.insertOne({
+  name: 'John Doe',
+  email: 'john@example.com'
+})
+
+// Insert and return the document
+const user = await this.users.insertAndFind({
+  name: 'Jane Doe',
+  email: 'jane@example.com'
+})
+
+// Insert multiple documents (returns array of IDs)
+const userIds = await this.users.insertMany([
+  {name: 'User 1', email: 'user1@example.com'},
+  {name: 'User 2', email: 'user2@example.com'}
+])
+```
+
+### Updating Documents
+
+```typescript
+// Update a document
+const result = await this.users.updateOne(
+  {_id: userId},
+  {$set: {lastLogin: new Date()}}
+)
+
+// Update and return the updated document
+const updatedUser = await this.users.updateAndFind(
+  {_id: userId},
+  {$set: {status: 'active'}}
+)
+
+// Find one document and update it (same as updateAndFind)
+const user = await this.users.findOneAndUpdate(
+  {_id: userId},
+  {$set: {status: 'active'}}
+)
+
+// Update multiple documents
+const result = await this.users.updateMany(
+  {status: 'pending'},
+  {$set: {reminded: true}}
+)
+
+// Update a specific field in a document by path
+await this.users.updateItem(
+  userDocument, // pass the actual document object
+  'addresses.0.isPrimary', // field path to update
+  true // new value
+)
+
+// Upsert (insert if not exists)
+const result = await this.users.upsert(
+  {email: 'user@example.com'},
+  {
+    $set: {lastSeen: new Date()},
+    $setOnInsert: {createdAt: new Date()}
+  }
+)
+```
+
+### Deleting Documents
+
+```typescript
+// Delete a document
+const result = await this.users.deleteOne({_id: userId})
+
+// Delete multiple documents
+const result = await this.users.deleteMany({
+  lastLogin: {$lt: new Date('2022-01-01')}
+})
+```
+
+## Advanced Operations
+
+### Counting Documents
+
+```typescript
+// Count with filter
+const activeCount = await this.users.countDocuments({status: 'active'})
+
+// Fast estimation for large collections
+const totalCount = await this.users.estimatedDocumentCount()
+```
+
+### Aggregation
+
+```typescript
+// Run an aggregation pipeline
+const stats = await this.users.aggregate([
+  {$match: {status: 'active'}},
+  {$group: {_id: '$role', count: {$sum: 1}}}
+]).toArray()
+```
+
+### DataLoader Support
+
+Orionjs MongoDB collections include built-in DataLoader functionality for optimizing database access patterns.
+
+```typescript
+// Load a document by ID
+const user = await this.users.loadById(userId)
+```
+
+For more detailed information about using DataLoader functionality, including solving the N+1 query problem and performance considerations, see the [dedicated DataLoader documentation](/essentials/mongodb/dataloader).
+
+### Watch for Changes
+
+```typescript
+// Watch for changes to a collection
+const changeStream = this.users.watch()
+changeStream.on('change', change => {
+  console.log('Document changed:', change)
+})
+```
+
+### Raw Collection Access
+
+```typescript
+// Access the raw MongoDB collection for operations
+// not directly exposed by Orionjs
+const rawCollection = this.users.rawCollection
+```
+
+All operations automatically validate documents against your schema before executing. 

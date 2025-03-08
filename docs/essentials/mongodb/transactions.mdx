@@ -1,0 +1,178 @@
+---
+title: 'Transactions'
+description: 'Using MongoDB transactions in Orionjs'
+---
+
+# MongoDB Transactions
+
+Transactions in MongoDB allow you to execute multiple operations as a single atomic unit, which either all succeed or all fail.
+
+## How Transactions Work in Orionjs
+
+Orionjs does not provide a specific wrapper for MongoDB transactions. Instead, you can use the native MongoDB transaction API from the underlying MongoDB driver. This approach gives you full control over transaction management while still benefiting from Orionjs's type safety and validation.
+
+## Using Transactions with Orionjs
+
+To use transactions in Orionjs:
+
+1. Access the MongoDB client from your collection
+2. Start a session and a transaction
+3. Pass the session to your collection operations
+4. Commit or abort the transaction as needed
+
+```typescript
+import {Repository, MongoCollection} from '@orion-js/mongodb'
+
+@Repository()
+export class AccountRepository {
+  @MongoCollection({
+    name: 'accounts',
+    model: AccountSchema
+  })
+  private accounts
+
+  @MongoCollection({
+    name: 'transactions',
+    model: TransactionSchema
+  })
+  private transactions
+
+  async transferFunds(fromId: string, toId: string, amount: number) {
+    // Get the MongoDB client from the collection
+    const client = this.accounts.client.client;
+    
+    // Start a session
+    const session = client.startSession();
+    
+    try {
+      // Start a transaction
+      session.startTransaction();
+      
+      // Deduct from source account
+      const sourceUpdateResult = await this.accounts.updateOne(
+        {_id: fromId, balance: {$gte: amount}},
+        {$inc: {balance: -amount}},
+        {mongoOptions: {session}} // Pass the session to the operation
+      );
+      
+      if (sourceUpdateResult.modifiedCount === 0) {
+        // Abort the transaction if no document was updated
+        await session.abortTransaction();
+        throw new Error('Insufficient funds');
+      }
+      
+      // Add to destination account
+      await this.accounts.updateOne(
+        {_id: toId},
+        {$inc: {balance: amount}},
+        {mongoOptions: {session}} // Pass the session to the operation
+      );
+      
+      // Record the transaction
+      await this.transactions.insertOne(
+        {
+          fromId,
+          toId,
+          amount,
+          date: new Date()
+        }, 
+        {mongoOptions: {session}} // Pass the session to the operation
+      );
+      
+      // Commit the transaction
+      await session.commitTransaction();
+      return true;
+    } catch (error) {
+      // Abort the transaction on error
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      // End the session
+      await session.endSession();
+    }
+  }
+  
+  // Alternative implementation using withTransaction
+  async transferFundsWithTransaction(fromId: string, toId: string, amount: number) {
+    const client = this.accounts.client.client;
+    const session = client.startSession();
+    
+    try {
+      // Use the withTransaction helper from the MongoDB driver
+      return await session.withTransaction(async () => {
+        // Deduct from source account
+        const sourceUpdateResult = await this.accounts.updateOne(
+          {_id: fromId, balance: {$gte: amount}},
+          {$inc: {balance: -amount}},
+          {mongoOptions: {session}}
+        );
+        
+        if (sourceUpdateResult.modifiedCount === 0) {
+          throw new Error('Insufficient funds');
+        }
+        
+        // Add to destination account
+        await this.accounts.updateOne(
+          {_id: toId},
+          {$inc: {balance: amount}},
+          {mongoOptions: {session}}
+        );
+        
+        // Record the transaction
+        await this.transactions.insertOne(
+          {
+            fromId,
+            toId,
+            amount,
+            date: new Date()
+          }, 
+          {mongoOptions: {session}}
+        );
+        
+        return true;
+      });
+    } finally {
+      await session.endSession();
+    }
+  }
+}
+```
+
+## Important Notes About Sessions
+
+When using sessions with Orionjs collection methods:
+
+1. Pass the session in the `mongoOptions` object:
+   ```typescript
+   await collection.updateOne(
+     filter,
+     update,
+     {mongoOptions: {session}}
+   );
+   ```
+
+2. All DataLoader methods bypass the session, so avoid using them within transactions.
+
+3. You must explicitly commit or abort the transaction, and end the session.
+
+## Prerequisites
+
+- MongoDB 4.0+ for replica set deployments
+- MongoDB 4.2+ for sharded cluster deployments
+- Your MongoDB connection must be to a replica set or sharded cluster (not a standalone server)
+
+## Best Practices
+
+1. **Keep Transactions Short**: Long-running transactions can lead to performance issues
+
+2. **Handle Errors**: Always handle errors to ensure transactions are properly aborted when needed
+
+3. **Consider Read Concerns**: For critical operations, use appropriate read and write concerns
+
+4. **Check Modification Results**: Always check the results of update operations to verify they modified the expected documents
+
+5. **Avoid Unnecessary Work**: Only include operations that need atomicity in your transactions
+
+6. **Watch for Transaction Errors**: Be prepared to handle transaction-specific errors like session timeout
+
+Transactions provide a powerful way to ensure data consistency across multiple MongoDB operations while using Orionjs. 

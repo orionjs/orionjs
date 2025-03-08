@@ -1,0 +1,162 @@
+---
+title: 'DataLoader'
+description: 'Using DataLoader with MongoDB collections in Orionjs'
+---
+
+# DataLoader in Orionjs MongoDB
+
+## What is DataLoader?
+
+DataLoader is a utility built into Orionjs MongoDB collections that helps solve the N+1 query problem and optimize database access patterns. It provides:
+
+- **Batching**: Combines multiple individual requests into a single database query
+- **Caching**: Avoids duplicate queries by caching results for the duration of a request
+- **Consistent API**: Simple methods for various loading patterns
+
+## When to Use DataLoader
+
+DataLoader is particularly useful in these scenarios:
+
+1. **GraphQL Resolvers**: Where many child resolvers may request the same data
+2. **Nested API Endpoints**: When processing lists of related data
+3. **Heavy Read Operations**: For optimizing repeated reads on the same dataset
+
+## Available DataLoader Methods
+
+Orionjs MongoDB collections include four main DataLoader methods:
+
+### loadById
+
+Loads a single document by its ID with DataLoader caching and batching.
+
+```typescript
+// Load a document by ID
+const user = await this.users.loadById(userId)
+
+// Multiple loadById calls for the same ID will use cached results
+const sameUser = await this.users.loadById(userId)
+```
+
+### loadOne
+
+Loads a single document by any field with DataLoader caching and batching.
+
+```typescript
+// Load a document by a specific field
+const user = await this.users.loadOne({
+  key: 'email',  // Field to query by
+  value: 'user@example.com',  // Value to match
+  match: {isActive: true},  // Optional additional query filter
+  sort: {createdAt: -1},  // Optional sorting
+  project: {name: 1, email: 1},  // Optional projection
+  timeout: 10,  // Optional batch timeout in ms (default: 5)
+  debug: false  // Optional debug logging
+})
+```
+
+### loadMany
+
+Loads multiple documents by field values with DataLoader batching.
+
+```typescript
+// Load documents by IDs
+const users = await this.users.loadMany({
+  key: '_id',
+  values: [userId1, userId2, userId3]
+})
+
+// Load documents by any field
+const adminUsers = await this.users.loadMany({
+  key: 'role',
+  values: ['admin', 'superadmin'],
+  match: {isActive: true},
+  sort: {lastName: 1}
+})
+```
+
+### loadData
+
+The most flexible DataLoader method that powers the other methods.
+
+```typescript
+// Load with a single value
+const activeUsers = await this.users.loadData({
+  key: 'status',
+  value: 'active'
+})
+
+// Load with multiple values
+const users = await this.users.loadData({
+  key: 'country',
+  values: ['US', 'CA', 'UK'],
+  match: {createdAt: {$gt: new Date('2023-01-01')}},
+  sort: {createdAt: -1},
+  project: {name: 1, email: 1, country: 1},
+  timeout: 10,
+  debug: true
+})
+```
+
+## How DataLoader Works
+
+Behind the scenes, Orionjs uses the Facebook DataLoader library to implement efficient data loading:
+
+1. When you call a DataLoader method, it registers your request in a batch
+2. After a short timeout (default: 5ms), all batched requests are combined into a single MongoDB query
+3. Results are distributed to the appropriate requesters
+4. Results are cached in memory for the duration of the current execution context
+
+## Best Practices
+
+- **Use `loadById` for ID-based queries**: It's optimized for the common case of loading by ID
+- **Batch related queries**: Group related data loading operations close together in your code
+- **Use appropriate timeouts**: Adjust the timeout parameter based on your application's needs
+- **Add projections**: Use the `project` parameter to request only the fields you need
+- **Be careful with mutations**: After updating a document, the cached version may be stale
+
+## Example: Solving N+1 Query Problem
+
+```typescript
+// Without DataLoader (N+1 problem)
+async function getPostsWithAuthors(postIds) {
+  const posts = await Posts.find({_id: {$in: postIds}}).toArray()
+  
+  // This causes N separate database queries, one for each post
+  for (const post of posts) {
+    post.author = await Users.findOne({_id: post.authorId})
+  }
+  
+  return posts
+}
+
+// With DataLoader (optimized)
+async function getPostsWithAuthors(postIds) {
+  const posts = await Posts.find({_id: {$in: postIds}}).toArray()
+  
+  // This batches all author lookups into a single query
+  const authorIds = posts.map(post => post.authorId)
+  const authors = await Users.loadMany({
+    key: '_id',
+    values: authorIds
+  })
+  
+  // Map authors to posts
+  const authorMap = {}
+  authors.forEach(author => {
+    authorMap[author._id] = author
+  })
+  
+  posts.forEach(post => {
+    post.author = authorMap[post.authorId]
+  })
+  
+  return posts
+}
+```
+
+## Performance Considerations
+
+- DataLoader adds a small overhead for the batching timeout
+- For single queries that won't be repeated, use regular MongoDB operations
+- The caching benefits are most pronounced in request-scoped operations
+- DataLoader's cache is cleared between requests, preventing stale data

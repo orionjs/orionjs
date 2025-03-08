@@ -1,0 +1,137 @@
+---
+title: 'Indexes'
+description: 'Working with MongoDB indexes in Orionjs'
+---
+
+# MongoDB Indexes
+
+Indexes are a crucial part of database performance optimization. Orionjs provides a clean, declarative way to define and manage MongoDB indexes.
+
+## Defining Indexes
+
+Indexes are defined as part of the collection configuration:
+
+```typescript
+import {Repository, MongoCollection} from '@orion-js/mongodb'
+import {UserSchema} from '../schemas/UserSchema'
+
+@Repository()
+export class UserRepository {
+  @MongoCollection({
+    name: 'users',
+    model: UserSchema,
+    indexes: [
+      {
+        keys: {email: 1},
+        options: {unique: true}
+      },
+      {
+        keys: {createdAt: -1}
+      },
+      {
+        keys: {firstName: 1, lastName: 1}
+      }
+    ]
+  })
+  private users
+  
+  // Repository methods...
+}
+```
+
+## Index Types
+
+### Single Field Index
+
+```typescript
+{
+  keys: {fieldName: 1}  // 1 for ascending, -1 for descending
+}
+```
+
+### Compound Index
+
+```typescript
+{
+  keys: {
+    firstName: 1,
+    lastName: 1
+  }
+}
+```
+
+### Unique Index
+
+```typescript
+{
+  keys: {email: 1},
+  options: {unique: true}
+}
+```
+
+### TTL Index (Time-To-Live)
+
+```typescript
+{
+  keys: {createdAt: 1},
+  options: {
+    expireAfterSeconds: 86400  // Documents will be deleted after 24 hours
+  }
+}
+```
+
+### Text Index
+
+```typescript
+{
+  keys: {description: 'text', title: 'text'},
+  options: {
+    weights: {
+      title: 10,      // Title fields are more important
+      description: 5  // Description fields are less important
+    },
+    name: 'TextIndex' // Custom name for the index
+  }
+}
+```
+
+### Geospatial Index
+
+```typescript
+{
+  keys: {location: '2dsphere'}
+}
+```
+
+## Index Options
+
+The `options` object can include the following properties:
+
+```typescript
+{
+  unique: boolean,        // Whether the index should be unique
+  sparse: boolean,        // Only index documents that have the indexed field
+  expireAfterSeconds: number, // Time to live for indexed documents
+  name: string,           // Custom name for the index
+  background: boolean,    // Create the index in the background
+  partialFilterExpression: object, // Filter expression for partial indexes
+  collation: object,      // Language-specific collation rules
+  // ... other MongoDB index options
+}
+```
+
+## Partial Indexes
+
+Partial indexes only index documents that meet a specified filter expression:
+
+```typescript
+{
+  keys: {email: 1},
+  options: {
+    unique: true,
+    partialFilterExpression: {
+      status: 'active'  // Only index active users' emails
+    }
+  }
+}
+```

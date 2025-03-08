@@ -1,0 +1,190 @@
+---
+title: 'Schema Validation'
+description: 'How schema validation works in Orionjs'
+---
+
+Schema validation is a core feature of Orionjs that ensures data conforms to the structure and rules defined in your schemas. This is particularly important for ensuring data integrity in your application.
+
+## Automatic Validation
+
+When using a schema with MongoDB collections or GraphQL resolvers, validation happens automatically:
+
+- **MongoDB**: Documents are validated before being inserted or updated
+- **GraphQL**: Input data is validated before being processed by your resolvers
+
+This automatic validation ensures that your data always adheres to your schema rules.
+
+## Manual Validation
+
+You can also manually validate any object against a schema using the `validate` function:
+
+```typescript
+import {validate} from '@orion-js/schema'
+import {UserSchema} from './schemas/UserSchema'
+
+try {
+  await validate(UserSchema, {
+    name: 'John Doe',
+    email: 'john@example.com'
+  })
+  // Validation passed
+} catch (error) {
+  // error is a ValidationError
+  console.error(error.message)
+  console.error(error.details) // Contains detailed information about validation failures
+}
+```
+
+The `validate` function will:
+1. Check that all required fields are present
+2. Verify types match the schema definition
+3. Apply any validation rules defined in the schema
+4. Throw a `ValidationError` if validation fails
+
+## ValidationError
+
+When validation fails, a `ValidationError` is thrown with:
+
+```typescript
+{
+  message: 'Validation Error', // Human-readable error message
+  details: [
+    {
+      message: 'is required', // Human-readable field error message
+      path: 'email' // Path to the field that failed validation
+    }
+  ]
+}
+```
+
+For nested fields, the path will include the full path to the field:
+
+```typescript
+{
+  details: [
+    {
+      message: 'must be at least 5 characters',
+      path: 'address.street'
+    }
+  ]
+}
+```
+
+## Custom Validation
+
+You can create custom validation rules using the `validate` option in the `@Prop()` decorator:
+
+```typescript
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class ProductSchema {
+  @Prop({
+    validate: (value) => {
+      if (value < 0) {
+        return 'price-must-be-positive'
+      }
+      if (value > 1000000) {
+        return 'price-too-high'
+      }
+    }
+  })
+  price: number
+  
+  @Prop({
+    validate: async (value) => {
+      // You can also perform async validation
+      const exists = await checkIfSlugExists(value)
+      if (exists) {
+        return 'slug-already-exists'
+      }
+    }
+  })
+  slug: string
+}
+```
+
+The validate function:
+- Receives the field value as its first parameter
+- Should return an error message string if validation fails
+- Should return nothing (undefined) if validation passes
+- Can be async (returns a Promise)
+
+## Advanced Validation
+
+For more complex validation that depends on multiple fields, you can use the options object:
+
+```typescript
+@Prop({
+  validate: (value, {doc}) => {
+    if (doc.type === 'subscription' && !value) {
+      return 'required-for-subscription'
+    }
+  }
+})
+renewalDate: Date
+```
+
+The options object provides:
+- `doc`: The full document being validated
+- `schema`: The current schema being validated against
+
+## Cleaning Data
+
+Before validation, Orionjs "cleans" the data by:
+1. Removing fields not defined in the schema
+2. Applying any `clean` functions defined on fields
+3. Setting default values for missing fields
+
+You can manually clean data using the `clean` function:
+
+```typescript
+import {clean} from '@orion-js/schema'
+import {UserSchema} from './schemas/UserSchema'
+
+const cleanedData = await clean(UserSchema, {
+  name: 'John Doe ',  // Note the trailing space
+  email: 'JOHN@EXAMPLE.COM',
+  extraField: 'This will be removed'
+})
+
+// Result:
+// {
+//   name: 'John Doe',  // If a clean function trims the string
+//   email: 'john@example.com',  // If a clean function lowercases the email
+// }
+```
+
+## Validation in GraphQL Resolvers
+
+When using schemas with GraphQL resolvers, validation happens automatically for parameters:
+
+```typescript
+import {Mutation, Resolvers} from '@orion-js/graphql'
+import {TypedSchema, Prop} from '@orion-js/typed-model'
+
+@TypedSchema()
+class CreateUserParams {
+  @Prop({min: 2})
+  name: string
+  
+  @Prop()
+  email: string
+}
+
+@Resolvers()
+class UserResolvers {
+  @Mutation({
+    params: CreateUserParams,
+    returns: Boolean
+  })
+  async createUser(params: CreateUserParams) {
+    // Params are already validated
+    // If validation failed, GraphQL would return an error
+    // ...implementation
+    return true
+  }
+}
+```
+
+This ensures that your API is always receiving valid data before it reaches your business logic. 

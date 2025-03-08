@@ -1,0 +1,238 @@
+---
+title: 'Advanced Schema Usage'
+description: 'Advanced patterns and techniques for schema usage'
+---
+
+This guide covers advanced techniques for working with schemas in Orionjs, including inheritance, composition, and integration with TypeScript.
+
+## Schema Inheritance
+
+You can use TypeScript inheritance to extend schemas:
+
+```typescript
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class BaseSchema {
+  @Prop()
+  _id: string
+
+  @Prop()
+  createdAt: Date
+
+  @Prop({optional: true})
+  updatedAt?: Date
+}
+
+@TypedSchema()
+export class ProductSchema extends BaseSchema {
+  @Prop()
+  name: string
+
+  @Prop()
+  price: number
+}
+```
+
+This creates a `ProductSchema` that includes all fields from `BaseSchema` plus its own fields.
+
+## Schema Composition
+
+For more flexible schema composition, you can use nested schemas:
+
+```typescript
+import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class AddressSchema {
+  @Prop()
+  street: string
+
+  @Prop()
+  city: string
+
+  @Prop()
+  zipCode: string
+}
+
+@TypedSchema()
+export class CustomerSchema {
+  @Prop()
+  name: string
+
+  @Prop()
+  email: string
+
+  @Prop({type: getModelForClass(AddressSchema)})
+  billingAddress: AddressSchema
+
+  @Prop({type: getModelForClass(AddressSchema), optional: true})
+  shippingAddress?: AddressSchema
+}
+```
+
+## Schema Cloning
+
+Sometimes you need to create a variation of an existing schema. The `cloneSchemaClass` utility allows you to create a derivative schema:
+
+```typescript
+import {Prop, TypedSchema, cloneSchemaClass} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class UserSchema {
+  @Prop()
+  _id: string
+
+  @Prop()
+  name: string
+
+  @Prop()
+  email: string
+
+  @Prop({private: true})
+  password: string
+}
+
+// Create a public version without the password field
+const PublicUser = cloneSchemaClass(UserSchema, {
+  name: 'PublicUser',
+  pickFields: ['_id', 'name', 'email'] as const
+})
+type PublicUser = typeof PublicUser.type
+```
+
+## Working with Arrays of Schemas
+
+For collections of nested schemas, use array notation with `getModelForClass`:
+
+```typescript
+import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class OrderItemSchema {
+  @Prop()
+  productId: string
+
+  @Prop()
+  quantity: number
+
+  @Prop()
+  unitPrice: number
+}
+
+@TypedSchema()
+export class OrderSchema {
+  @Prop()
+  _id: string
+
+  @Prop()
+  customerId: string
+
+  @Prop({
+    type: [getModelForClass(OrderItemSchema)],
+    min: 1 // Order must have at least one item
+  })
+  items: OrderItemSchema[]
+}
+```
+
+## Dynamic Schemas
+
+In some cases, you might need to create schemas dynamically:
+
+```typescript
+import {createSchema} from '@orion-js/schema'
+
+const createDynamicSchema = (fields) => {
+  const schemaDefinition = {
+    _id: {
+      type: 'ID'
+    }
+  }
+  
+  for (const field of fields) {
+    schemaDefinition[field.name] = {
+      type: field.type,
+      optional: field.isOptional
+    }
+  }
+  
+  return createSchema(schemaDefinition)
+}
+```
+
+## Schema Type Utilities
+
+Orionjs provides utilities to extract TypeScript types from schemas:
+
+```typescript
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class UserSchema {
+  @Prop()
+  _id: string
+
+  @Prop()
+  name: string
+}
+
+// Extract the type from the schema
+type User = typeof UserSchema.type
+
+// This is equivalent to:
+type UserManual = {
+  _id: string
+  name: string
+}
+
+// You can use this in functions for type safety
+function processUser(user: User) {
+  console.log(user.name)
+}
+```
+
+## Schema Integration with GraphQL Resolvers
+
+Schemas are seamlessly integrated with GraphQL resolvers, allowing for strong typing throughout your API:
+
+```typescript
+import {Query, Resolvers} from '@orion-js/graphql'
+import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {UserSchema} from './schemas/UserSchema'
+
+@TypedSchema()
+export class SearchParams {
+  @Prop({optional: true})
+  query?: string
+
+  @Prop({defaultValue: 1})
+  page: number
+
+  @Prop({defaultValue: 20})
+  limit: number
+}
+
+@TypedSchema()
+export class SearchResult {
+  @Prop({type: [getModelForClass(UserSchema)]})
+  items: UserSchema[]
+
+  @Prop()
+  totalCount: number
+
+  @Prop()
+  hasMore: boolean
+}
+
+@Resolvers()
+export class UserResolvers {
+  @Query({
+    params: SearchParams,
+    returns: SearchResult
+  })
+  async searchUsers(params: SearchParams): Promise<SearchResult> {
+    // Implementation here
+  }
+}
+```

@@ -3,3 +3,59 @@ title: 'Controllers'
 description: 'Controllers are used to define the controllers for the application'
 ---
 
+# Controllers
+
+Controllers in Orionjs are the entry points for all code execution in your application. They act as the interface between external systems and your application's business logic, implemented in services.
+
+## What Are Controllers?
+
+Controllers handle incoming requests from different sources, process them, and then delegate the business logic to services. They:
+
+- Accept input from various sources (HTTP, GraphQL, scheduled jobs, etc.)
+- Validate and transform the input as needed
+- Call the appropriate services to execute business logic
+- Return responses in the appropriate format
+
+## Types of Controllers
+
+Orionjs supports several types of controllers, each serving a specific purpose:
+
+### HTTP Controllers
+
+Handle HTTP requests through REST endpoints. They define routes, methods, authentication, and validation for web API endpoints.
+
+### GraphQL Controllers
+
+Manage GraphQL operations through resolvers. There are three subtypes:
+- **Query Resolvers**: Handle data fetching operations
+- **Mutation Resolvers**: Handle data modification operations
+- **Model Resolvers**: Define how GraphQL types resolve their fields
+
+### Job Controllers
+
+Execute scheduled or on-demand background tasks. These can be:
+- **Scheduled Jobs**: Run at specific times or intervals
+- **Event-Triggered Jobs**: Run in response to specific events
+
+### Echo Controllers
+
+Handle event-based communication between different parts of your application or between different services in a microservices architecture.
+
+## Controller Organization
+
+Controllers are organized within component directories:
+
+```
+exampleComponent/
+├── controllers/
+│   ├── echoes/     # Echo controllers
+│   ├── http/       # HTTP controllers
+│   ├── jobs/       # Job controllers
+│   ├── resolvers/  # GraphQL query/mutation resolvers
+│   └── modelResolvers/ # GraphQL model resolvers
+```
+
+This organization helps maintain a clean separation of concerns and keeps related functionality grouped together.
+
+Controllers are designed to be thin layers that focus on handling requests and delegating to services, where the actual business logic resides. This separation makes your code more maintainable and testable.
+

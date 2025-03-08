@@ -1,0 +1,81 @@
+---
+title: 'Schema Serialization'
+description: 'How schemas are serialized for client-side validation'
+---
+
+Schema serialization allows you to share schemas between server and client, ensuring consistent validation across your application.
+
+## Basic Usage
+
+```typescript
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {serializeSchema} from '@orion-js/schema'
+
+@TypedSchema()
+class UserSchema {
+  @Prop({min: 2, max: 50})
+  name: string
+}
+
+// Convert schema to JSON-compatible format
+const serializedSchema = await serializeSchema(UserSchema)
+```
+
+## Client-Side Validation
+
+The main use case is enabling consistent validation on both server and client:
+
+```typescript
+// Server: Expose schema for client use
+app.get('/api/schemas/user', async (req, res) => {
+  const schema = await serializeSchema(UserSchema)
+  res.json(schema)
+})
+
+// Client: Use the schema for validation
+import {validate, clean} from '@orion-js/schema'
+
+const schema = await fetch('/api/schemas/user').then(r => r.json())
+
+try {
+  await validate(schema, formData)
+  const cleanData = await clean(schema, formData)
+  await submitToServer(cleanData)
+} catch (error) {
+  displayValidationErrors(error.details)
+}
+```
+
+## Nested Schemas
+
+Serialization properly handles complex types:
+
+```typescript
+@TypedSchema()
+class AddressSchema {
+  @Prop()
+  street: string
+}
+
+@TypedSchema()
+class UserSchema {
+  @Prop({type: getModelForClass(AddressSchema)})
+  address: AddressSchema
+  
+  @Prop({type: [getModelForClass(ItemSchema)], min: 1})
+  items: ItemSchema[]
+}
+```
+
+## Key Benefits
+
+1. **Consistent validation rules** across server and client
+2. **DRY principle** - define schema once, use everywhere
+3. **Type safety** throughout your application
+4. **Better UX** - validate forms before submission
+
+## Performance Tips
+
+- Cache serialized schemas to avoid redundant processing
+- Only serialize fields needed for client validation
+- Consider security implications of exposing validation rules 
