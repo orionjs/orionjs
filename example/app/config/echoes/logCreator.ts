@@ -5,7 +5,7 @@ const LEVELS = {
   ERROR: 1,
   WARN: 2,
   INFO: 4,
-  DEBUG: 5
+  DEBUG: 5,
 }
 
 const getLogger = (level: number) => {

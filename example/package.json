@@ -19,6 +19,7 @@
     "@orion-js/helpers": "3.11.6",
     "@orion-js/http": "^3.2.53",
     "@orion-js/logger": "^3.2.40",
+    "@orion-js/migrations": "^3.11.7-alpha.0",
     "@orion-js/models": "^3.2.53",
     "@orion-js/mongodb": "^3.2.55",
     "@orion-js/paginated-mongodb": "^3.3.1",

@@ -9,10 +9,10 @@ export class ExampleRepository {
     indexes: [
       {
         keys: {
-          name: 1
-        }
-      }
-    ]
+          name: 1,
+        },
+      },
+    ],
   })
   private exampleCollection: Collection<ExampleSchema>
 

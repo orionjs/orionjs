@@ -1,8 +1,8 @@
 import home from './home'
 import healthCheck from './healthCheck'
-import { startServer, registerRoutes, RoutesMap } from '@orion-js/http'
-import { logger } from '@orion-js/logger'
-import { env } from '@orion-js/env'
+import {startServer, registerRoutes, RoutesMap} from '@orion-js/http'
+import {logger} from '@orion-js/logger'
+import {env} from '@orion-js/env'
 
 export default function startHttp(routes: RoutesMap) {
   registerRoutes({

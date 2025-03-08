@@ -840,6 +840,17 @@
     tweetnacl "1.0.3"
     tweetnacl-util "0.15.1"
 
+"@orion-js/dogs@^3.11.7-alpha.0":
+  version "3.11.7-alpha.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.7-alpha.0.tgz#530a5b4c38b78fc9d3be2f7c418ddb763fcf1832"
+  integrity sha512-p/KzLCaSuzGP7/Cb6pfmfcCbtA39YWrMrGxGOk4bj0LICC/k8F2WxTbowNYoMrzZceMPOSVNs6fTxzXMrfBeeA==
+  dependencies:
+    "@opentelemetry/api" "^1.9.0"
+    "@orion-js/helpers" "^3.11.6"
+    "@orion-js/mongodb" "^3.11.6"
+    "@orion-js/services" "^3.11.6"
+    "@orion-js/typed-model" "^3.11.6"
+
 "@orion-js/dogs@^3.2.55":
   version "3.11.6"
   resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.6.tgz#8352669fefe1352fc64984118a74fdbac74376f4"
@@ -932,6 +943,17 @@
     object-hash "^2.2.0"
     text-hex "^1.0.0"
     winston "^3.6.0"
+
+"@orion-js/migrations@^3.11.7-alpha.0":
+  version "3.11.7-alpha.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/migrations/-/migrations-3.11.7-alpha.0.tgz#620d65aff0a9e5fe82d82d2b36318ff673d0d7eb"
+  integrity sha512-4sBgxKHHlt8JmZk93Znj2Yh2yu3f9oM5k7fmwfC/aNQZD2RRNKCyaqPIPl4jwLTW0DAhlnhYKwZBvvwL4j/ZdA==
+  dependencies:
+    "@orion-js/dogs" "^3.11.7-alpha.0"
+    "@orion-js/helpers" "^3.11.6"
+    "@orion-js/mongodb" "^3.11.6"
+    "@orion-js/services" "^3.11.6"
+    "@orion-js/typed-model" "^3.11.6"
 
 "@orion-js/models@^3.11.6", "@orion-js/models@^3.2.53":
   version "3.11.6"

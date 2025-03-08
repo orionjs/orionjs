@@ -4,6 +4,7 @@ import startGraphQL from './graphql'
 import startHttp from './http'
 import startJobs from './jobs'
 import {Component, mergeComponents} from '@orion-js/components'
+import './migrations'
 
 export async function startApp(components: Component[]) {
   const controllers = mergeComponents(components)

@@ -7,7 +7,7 @@
     "light": "#07C983",
     "dark": "#15803D"
   },
-  "favicon": "/logo/dark.svg",
+  "favicon": "/logo/light.svg",
   "navigation": {
     "groups": [
       {
@@ -15,7 +15,8 @@
         "pages": [
           "introduction",
           "quickstart",
-          "project-structure"
+          "project-structure",
+          "deploying"
         ]
       },
       {

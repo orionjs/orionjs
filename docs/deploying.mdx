@@ -1,0 +1,34 @@
+---
+title: 'Deploying'
+description: 'How to deploy your Orionjs application'
+---
+
+Orionjs compiles to a standard Node.js project, allowing you to deploy it to any server that can run Node.js.
+
+## Deployment Steps
+
+The deployment process for an Orionjs application follows a standard Node.js deployment workflow:
+
+1. **Install dependencies**
+   ```bash
+   yarn install
+   ```
+
+2. **Build the project**
+   ```bash
+   yarn orion build
+   ```
+   This will compile the project to a standard Node.js application and place the output in the `build` folder.
+
+3. **Start the server**
+   ```bash
+   node build/index.js
+   ```
+   This will start the Node.js server using the entry point at `build/index.js`.
+
+## Environment Variables
+
+Remember that you must set the environment variables needed to load the `.env` file before starting the server:
+
+- `ORION_ENV_SECRET_KEY`: The secret key used to decrypt your environment variables
+- `ORION_ENV_FILE_PATH`: Path to your encrypted environment file

@@ -5,7 +5,7 @@ export default route({
   method: 'get',
   async resolve() {
     return {
-      body: 'Hello world'
+      body: 'Hello world',
     }
-  }
+  },
 })
