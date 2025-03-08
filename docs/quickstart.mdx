@@ -1,5 +1,96 @@
 ---
 title: 'Quickstart'
-description: 'Quickstart is used to create a new Orionjs project'
+description: 'Get started quickly with Orionjs by using our example project'
 ---
+
+# Getting Started with Orionjs
+
+This guide will help you set up a new Orionjs project quickly by using our example repository.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) (v16 or later)
+- [Yarn](https://yarnpkg.com/) or npm package manager
+- Basic knowledge of TypeScript and Node.js
+
+## Clone the Example Project
+
+The easiest way to get started with Orionjs is to clone or download our example project:
+
+```bash
+# Clone the repository
+git clone https://github.com/orionjs/orionjs.git
+
+# Navigate to the example directory
+cd orionjs/example
+
+# Install dependencies
+yarn install
+# or if you're using npm
+# npm install
+```
+
+## Project Structure
+
+The example project follows the standard Orionjs structure:
+
+```
+example/
+├── app/              # Main application code
+│   ├── components/   # Application components
+│   ├── config/       # Application configuration
+│   └── index.ts      # Application entry point
+├── .env.local.yml    # Environment variables
+├── package.json      # Project dependencies
+├── start.sh          # Start script for local development
+└── tsconfig.json     # TypeScript configuration
+```
+
+For a more detailed explanation of the project structure, check out our [Project Structure](/project-structure) guide.
+
+## Running the Application
+
+You can start the application in development mode using:
+
+```bash
+# Using the provided start script
+./start.sh
+
+# Or manually
+export ORION_ENV_SECRET_KEY=pk+uJ3wTEZxuDWKF6zdeypUzQQNkKE3i+bnfHe6g+RU=
+export ORION_ENV_FILE_PATH=.env.local.yml
+export PORT=3010
+yarn dev
+```
+
+The application will start, and you can access it at `http://localhost:3010`.
+
+## Key Features of the Example
+
+The example project demonstrates several key features of Orionjs:
+
+- Component-based architecture
+- HTTP controllers for REST endpoints
+- GraphQL resolvers and models
+- Background jobs
+- Event-driven programming with Echoes
+- Configuration management
+
+## Next Steps
+
+After exploring the example project, you might want to:
+
+1. Create your own components following the same structure
+2. Modify existing controllers to suit your needs
+3. Add new resolvers for your GraphQL API
+4. Set up your own database connection
+
+Check out our other documentation sections to learn more about specific aspects of Orionjs:
+
+- [Controllers](/controllers/overview)
+- [Models and Schemas](/essentials/schemas)
+- [Services](/essentials/services)
+- [GraphQL](/essentials/graphql)
+
+Happy coding with Orionjs!
 

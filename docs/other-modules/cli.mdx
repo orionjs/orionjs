@@ -3,4 +3,99 @@ title: 'CLI'
 description: 'CLI is used to create a new Orionjs project'
 ---
 
+# Orionjs CLI
+
+The Orionjs CLI is a command-line tool that helps you develop and build Orionjs applications.
+
+## Installation
+
+The CLI is part of the `@orion-js/core` package. You can install it globally:
+
+```bash
+npm install -g @orion-js/core
+```
+
+Or using yarn:
+
+```bash
+yarn global add @orion-js/core
+```
+
+## Available Commands
+
+Orionjs CLI provides essential commands to help you with your development workflow.
+
+### orion start
+
+Runs your Orionjs application in development mode with hot reloading.
+
+```bash
+orion start [options]
+```
+
+**Options:**
+
+- `--shell`: Opens a shell in Chrome developer tools
+- `--clean`: Build the typescript project from scratch
+
+**Example:**
+
+```bash
+orion start --clean
+```
+
+This command will:
+1. Compile your TypeScript code
+2. Watch for changes in your files
+3. Automatically restart the server when changes are detected
+
+### orion build
+
+Compiles an Orionjs app and exports it to a simple Node.js application for production deployment.
+
+```bash
+orion build [options]
+```
+
+**Options:**
+
+- `-o, --output [output]`: Output directory (defaults to './build')
+
+**Example:**
+
+```bash
+orion build --output ./dist
+```
+
+This command will:
+1. Clean the output directory
+2. Compile your application
+3. Create a production-ready build in the specified output directory
+
+## Environment Variables Integration
+
+Orionjs CLI automatically integrates with `@orion-js/env`. To use encrypted environment variables, set these two variables:
+
+```
+ORION_ENV_FILE_PATH=./config/env.yml
+ORION_ENV_SECRET_KEY=your-decryption-password
+```
+
+See the [Env documentation](/other-modules/env) for details.
+
+## Requirements
+
+- Node.js >=14.0.0
+- TypeScript
+
+## Environment Variables
+
+The Orionjs CLI automatically loads environment variables from a `.env` file in your project root, making it easy to configure your application for different environments.
+
+## Troubleshooting
+
+If you encounter any errors while using the CLI, they will be displayed with helpful error messages. Most common issues are related to missing parameters or incorrect project setup.
+
+For more information and advanced usage, please refer to the [Orionjs documentation](https://orionjs.com/docs).
+
 

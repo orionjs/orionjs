@@ -1,5 +1,147 @@
 ---
 title: 'Crypto'
-description: 'Crypto is used to encrypt and decrypt the data'
+description: 'Cryptography utilities presented in a simple way'
 ---
+
+The Orionjs Crypto package provides utility functions for symmetric and asymmetric encryption, decryption, signing, and hashing. It's built on top of Node.js's `crypto` library and `bcryptjs` to provide a simple and secure API for cryptographic operations.
+
+## Installation
+
+```bash
+npm install @orion-js/crypto
+# or
+yarn add @orion-js/crypto
+```
+
+## Features
+
+- **Symmetric Encryption**: Encrypt and decrypt data using a shared secret key
+- **Asymmetric Encryption**: Encrypt and decrypt data using public/private key pairs
+- **Signing**: Sign and verify data to ensure integrity and authenticity
+- **Hashing**: Create secure hashes for data storage
+- **Password Hashing**: Securely hash passwords with salt for user authentication
+
+## Symmetric Encryption
+
+Symmetric encryption uses the same key for both encryption and decryption. This is useful when you need to securely store sensitive data.
+
+```tsx
+import {symmetric} from '@orion-js/crypto'
+
+// Generate a secure password
+const password = symmetric.generatePassword()
+
+// Encrypt data
+const encrypted = symmetric.encrypt('hello world', password)
+
+// Decrypt data
+const decrypted = symmetric.decrypt(encrypted, password)
+console.log(decrypted) // 'hello world'
+```
+
+## Asymmetric Encryption
+
+Asymmetric encryption uses a pair of keys: a public key for encryption and a private key for decryption. This is useful for secure communication between parties.
+
+```tsx
+import {asymmetric} from '@orion-js/crypto'
+
+// Generate a key pair
+const {encryptKey, decryptKey} = asymmetric.generateKeys()
+
+// Encrypt data with the public key
+const encrypted = asymmetric.encrypt(encryptKey, 'hello world')
+
+// Decrypt data with the private key
+const decrypted = asymmetric.decrypt(decryptKey, encrypted)
+console.log(decrypted) // 'hello world'
+```
+
+## Signing
+
+Signing allows you to verify the integrity and authenticity of data by creating a signature that can be verified later.
+
+```tsx
+import {sign} from '@orion-js/crypto'
+
+const secret = 'my_secret_key'
+const payload = 'hello world'
+
+// Sign the payload
+const checksum = sign.sign(payload, secret)
+
+// Verify the signature
+const isValid = sign.verify(payload, checksum, secret)
+console.log(isValid) // true
+```
+
+## Hashing
+
+Hashing transforms data into a fixed-size string of characters, which is typically a hexadecimal number. This is useful for storing data in a way that cannot be reversed.
+
+```tsx
+import {hash} from '@orion-js/crypto'
+
+const text = 'hello world'
+
+// Create a hash
+const hashed = hash.hash(text)
+
+// Compare text with a hash
+const isSame = hash.compare(text, hashed)
+console.log(isSame) // true
+```
+
+## Password Hashing with Salt
+
+Password hashing with salt adds an extra layer of security for storing user passwords by adding random data to each password before hashing.
+
+```tsx
+import {hashWithSalt} from '@orion-js/crypto'
+
+const password = 'secure_password'
+
+// Hash a password with salt
+const hashed = hashWithSalt.hash(password)
+
+// Compare a password with a hashed value
+const isSame = hashWithSalt.compare(password, hashed)
+console.log(isSame) // true
+```
+
+## Best Practices
+
+- **Key Management**: Securely store encryption keys and never hardcode them in your application
+- **Password Storage**: Always use `hashWithSalt` for storing user passwords
+- **Sensitive Data**: Use encryption for storing sensitive data like personal information or API keys
+- **Data Integrity**: Use signing to ensure data hasn't been tampered with
+
+## API Reference
+
+### Symmetric Encryption
+
+- `symmetric.generatePassword()`: Generates a secure random password
+- `symmetric.encrypt(text: string, password: string)`: Encrypts text using a password
+- `symmetric.decrypt(encryptedText: string, password: string)`: Decrypts text using a password
+
+### Asymmetric Encryption
+
+- `asymmetric.generateKeys()`: Generates a key pair (`encryptKey` and `decryptKey`)
+- `asymmetric.encrypt(encryptKey: string, text: string)`: Encrypts text using a public key
+- `asymmetric.decrypt(decryptKey: string, encryptedText: string)`: Decrypts text using a private key
+
+### Signing
+
+- `sign.sign(payload: string, secret: string)`: Signs a payload with a secret
+- `sign.verify(payload: string, checksum: string, secret: string)`: Verifies a signed payload
+
+### Hashing
+
+- `hash.hash(text: string)`: Creates a hash from text
+- `hash.compare(text: string, hashed: string)`: Compares text with a hash
+
+### Password Hashing with Salt
+
+- `hashWithSalt.hash(password: string)`: Creates a hash from a password with salt
+- `hashWithSalt.compare(password: string, hashed: string)`: Compares a password with a hashed value
 

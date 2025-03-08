@@ -3,3 +3,98 @@ title: 'Project Structure'
 description: 'Project Structure is used to define the project structure for the application'
 ---
 
+An Orionjs application follows a modular, component-based architecture that promotes clean organization and separation of concerns. Below is the typical structure of an Orionjs project based on our example application.
+
+## Root Directory
+
+```
+/
+├── app/              # Main application code
+├── node_modules/     # Project dependencies
+├── .env.local.yml    # Environment variables for local development
+├── .gitignore        # Git ignore file
+├── biome.json        # Biome configuration (for linting/formatting)
+├── package.json      # Project dependencies and scripts
+├── tsconfig.json     # TypeScript configuration
+└── yarn.lock         # Yarn dependency lock file
+```
+
+## App Directory
+
+The `app` directory contains all the application code:
+
+```
+app/
+├── config/           # Application configuration
+├── components/       # Application components (in our example: exampleComponent)
+├── env.d.ts          # Environment type definitions
+└── index.ts          # Application entry point
+```
+
+## Component Structure
+
+Each component follows a consistent structure:
+
+```
+exampleComponent/
+├── controllers/      # Controllers for different aspects of the component
+│   ├── echoes/       # Event listeners
+│   ├── http/         # HTTP routes
+│   ├── jobs/         # Background jobs
+│   ├── modelResolvers/ # GraphQL model resolvers
+│   └── resolvers/    # GraphQL resolvers
+├── repos/            # Data repositories
+├── schemas/          # Data schemas/models
+├── services/         # Business logic services
+└── index.ts          # Component definition and exports
+```
+
+## Configuration Structure
+
+The `config` directory contains application-wide configuration:
+
+```
+config/
+├── echoes/           # Event system configuration
+├── graphql/          # GraphQL server configuration
+├── health/           # Health check endpoints
+├── http/             # HTTP server configuration
+├── jobs/             # Background job configuration
+├── options/          # Application options/settings
+└── index.ts          # Configuration entry point
+```
+
+## Application Bootstrap
+
+The application is bootstrapped in `app/index.ts`, where components are registered:
+
+```typescript
+import {startApp} from './config'
+import exampleComponent from './exampleComponent'
+
+startApp([exampleComponent])
+```
+
+## Component Definition
+
+Components are defined using the `component` function:
+
+```typescript
+import {component} from '@orion-js/components'
+import echoes from './controllers/echoes'
+import routes from './controllers/http'
+import jobs from './controllers/jobs'
+import modelResolvers from './controllers/modelResolvers'
+import resolvers from './controllers/resolvers'
+
+export default component({
+  echoes,
+  routes,
+  jobs,
+  modelResolvers,
+  resolvers,
+})
+```
+
+This modular approach allows you to organize your application by domains or features, making it easier to maintain and extend your codebase.
+

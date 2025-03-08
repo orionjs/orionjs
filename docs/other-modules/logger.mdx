@@ -1,6 +1,157 @@
 ---
 title: 'Logger'
-description: 'Logger is used to log the messages'
+description: 'A powerful, flexible logging utility for Orion.js applications'
 ---
+
+# Logger
+
+The Orion.js Logger is a powerful, flexible logging utility built on top of [Winston](https://github.com/winstonjs/winston). It provides structured logging capabilities with customizable formats, transports, and context tracking.
+
+## Installation
+
+```bash
+npm install @orion-js/logger
+# or
+yarn add @orion-js/logger
+```
+
+## Basic Usage
+
+```typescript
+import {logger} from '@orion-js/logger'
+
+// Basic logging with different levels
+logger.debug('Debug message', {customData: 'value'})
+logger.info('Info message', {userId: 123})
+logger.warn('Warning message', {attemptCount: 3})
+logger.error('Error occurred', new Error('Something went wrong'))
+
+// Add metadata to all subsequent logs from this logger instance
+const userLogger = logger.addMetadata({userId: 'user-123'})
+userLogger.info('User action', {action: 'login'})
+
+// Add context based on the current module
+const contextLogger = logger.addContext(module)
+contextLogger.info('Operation completed', {result: 'success'})
+```
+
+## Features
+
+### Log Levels
+
+The logger supports the standard npm log levels:
+- `error`: For error conditions
+- `warn`: For warning conditions
+- `info`: For informational messages
+- `debug`: For debugging information
+
+### Automatic Contextual Information
+
+Each log message automatically includes:
+- Timestamp
+- Log level
+- File name where the log was triggered (automatically detected)
+- OpenTelemetry trace and span IDs (when available)
+
+### Formatting
+
+The logger supports two main output formats:
+
+1. **Text Format** (for development):
+   - Colorized output
+   - Human-readable formatting
+   - Activated when `ORION_DEV=1` environment variable is set
+
+2. **JSON Format** (for production):
+   - Structured JSON logs
+   - Ideal for log aggregation and analysis
+   - Default in production environments
+
+### Error Handling
+
+The logger has special handling for errors:
+- When an Error object is passed as the value, the stack trace is properly captured
+- Error messages are preserved for easy debugging
+
+### OpenTelemetry Integration
+
+The logger automatically detects and includes OpenTelemetry trace and span IDs when available, enabling correlation between logs and traces.
+
+## Advanced Configuration
+
+### Setting Log Level
+
+```typescript
+import {setLogLevel} from '@orion-js/logger'
+
+// Set the minimum log level to display
+setLogLevel('info') // Will show info, warn, and error logs, but not debug
+```
+
+### Adding Custom Transports
+
+```typescript
+import {addTransport} from '@orion-js/logger'
+import {transports} from 'winston'
+
+// Add a file transport
+const fileTransport = new transports.File({
+  filename: 'application.log',
+  level: 'info'
+})
+
+addTransport(fileTransport)
+```
+
+### Complete Logger Configuration
+
+```typescript
+import {configureLogger} from '@orion-js/logger'
+import {format, transports} from 'winston'
+
+configureLogger({
+  level: 'debug',
+  format: format.combine(
+    format.timestamp(),
+    format.json()
+  ),
+  transports: [
+    new transports.Console(),
+    new transports.File({filename: 'combined.log'})
+  ]
+})
+```
+
+## Best Practices
+
+1. **Add Context**: Use `logger.addContext(module)` at the top of your files to automatically include file information.
+
+2. **Structured Data**: Pass structured objects instead of concatenating strings:
+   ```typescript
+   // Good
+   logger.info('User created', {userId: '123', email: 'user@example.com'})
+   
+   // Avoid
+   logger.info(`User created: userId=123, email=user@example.com`)
+   ```
+
+3. **Error Handling**: Pass error objects directly instead of just their messages:
+   ```typescript
+   try {
+     // some operation
+   } catch (error) {
+     // Good - preserves stack trace
+     logger.error('Operation failed', error)
+     
+     // Avoid - loses stack trace
+     logger.error('Operation failed', {message: error.message})
+   }
+   ```
+
+4. **Log Appropriate Levels**: Use the right log level for each message:
+   - `debug`: Detailed information useful during development
+   - `info`: Normal application behavior, milestones
+   - `warn`: Unexpected but handled issues
+   - `error`: Errors that prevent proper operation
 
 

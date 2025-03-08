@@ -1,6 +1,204 @@
 ---
 title: 'Helpers'
-description: 'Helpers are used to help the application'
+description: 'Utility functions and error classes to simplify common tasks'
 ---
+
+# OrionJS Helpers
+
+The `@orion-js/helpers` package provides a collection of utility functions and error classes to simplify common tasks in OrionJS applications.
+
+## Installation
+
+```bash
+npm install @orion-js/helpers
+# or 
+yarn add @orion-js/helpers
+```
+
+## Utility Functions
+
+### Sleep
+
+Creates a Promise-based timeout for delaying execution.
+
+```typescript
+import { sleep } from '@orion-js/helpers'
+
+// Wait for 1 second
+await sleep(1000)
+```
+
+### Retries
+
+Execute a function with automatic retries on failure.
+
+```typescript
+import { executeWithRetries } from '@orion-js/helpers'
+
+// Execute a function with 3 retries and 200ms timeout between attempts
+const result = await executeWithRetries(async () => {
+  // Your async function that might fail
+  return await fetchData()
+}, 3, 200)
+```
+
+### Generate ID
+
+Creates random IDs with configurable length and character set.
+
+```typescript
+import { generateId } from '@orion-js/helpers'
+
+// Default 17-character ID using alphanumeric characters
+const id = generateId()
+
+// Custom length ID
+const shortId = generateId(8)
+
+// Custom character set
+const numericId = generateId(10, '0123456789')
+```
+
+### Generate UUID
+
+Creates a standard UUID.
+
+```typescript
+import { generateUUID } from '@orion-js/helpers'
+
+const uuid = generateUUID()
+```
+
+### Hash Object
+
+Creates a deterministic hash of an object.
+
+```typescript
+import { hashObject } from '@orion-js/helpers'
+
+const hash = hashObject({ key: 'value' })
+```
+
+### Create Map
+
+Creates a map from an array of objects using a key.
+
+```typescript
+import { createMap } from '@orion-js/helpers'
+
+const users = [
+  { id: 1, name: 'John' },
+  { id: 2, name: 'Jane' }
+]
+
+// Creates: { 1: { id: 1, name: 'John' }, 2: { id: 2, name: 'Jane' } }
+const userMap = createMap(users, 'id')
+```
+
+### Create Map Array
+
+Creates a map of arrays from an array of objects using a key.
+
+```typescript
+import { createMapArray } from '@orion-js/helpers'
+
+const posts = [
+  { userId: 1, text: 'Post 1' },
+  { userId: 1, text: 'Post 2' },
+  { userId: 2, text: 'Post 3' }
+]
+
+// Creates: { 1: [{ userId: 1, text: 'Post 1' }, { userId: 1, text: 'Post 2' }], 2: [{ userId: 2, text: 'Post 3' }] }
+const postsByUser = createMapArray(posts, 'userId')
+```
+
+### Compose Middlewares
+
+Composes multiple middleware functions into a single middleware function, similar to Koa's middleware composition.
+
+```typescript
+import { composeMiddlewares } from '@orion-js/helpers'
+
+const middleware1 = async (ctx, next) => {
+  // Do something before
+  await next()
+  // Do something after
+}
+
+const middleware2 = async (ctx, next) => {
+  // Another middleware
+  await next()
+}
+
+const composedMiddleware = composeMiddlewares([middleware1, middleware2])
+
+// Use the composed middleware
+await composedMiddleware(context)
+```
+
+## Error Classes
+
+### OrionError
+
+Base error class for all Orion errors.
+
+```typescript
+import { OrionError } from '@orion-js/helpers'
+
+throw new OrionError('Something went wrong')
+```
+
+### UserError
+
+Error meant to be displayed to users.
+
+```typescript
+import { UserError } from '@orion-js/helpers'
+
+// Basic usage
+throw new UserError('Invalid input')
+
+// With error code
+throw new UserError('invalid_input', 'Please provide a valid email')
+
+// With extra data
+throw new UserError('invalid_input', 'Please provide a valid email', { field: 'email' })
+```
+
+### PermissionsError
+
+Error thrown when a user doesn't have the required permissions.
+
+```typescript
+import { PermissionsError } from '@orion-js/helpers'
+
+throw new PermissionsError('You do not have permission to delete this item')
+```
+
+## Error Handling
+
+All error classes provide helpful methods to access error information:
+
+```typescript
+try {
+  // ...
+} catch (error) {
+  if (error.isOrionError) {
+    // Get standardized error information
+    const info = error.getInfo()
+    console.log(info.error) // Error code
+    console.log(info.message) // Error message
+    console.log(info.extra) // Extra data
+    
+    if (error.isUserError) {
+      // Can be shown to the user
+    }
+    
+    if (error.isPermissionsError) {
+      // Handle permissions issues
+    }
+  }
+}
+```
 
 
