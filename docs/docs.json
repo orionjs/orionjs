@@ -16,7 +16,8 @@
           "introduction",
           "quickstart",
           "project-structure",
-          "deploying"
+          "deploying",
+          "cursor"
         ]
       },
       {

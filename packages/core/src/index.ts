@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import 'reflect-metadata'
-import {Command} from 'commander'
+import { Command } from 'commander'
 import start from './start'
 import build from './build'
 import create from './create'
@@ -27,6 +27,8 @@ program
   .description('Run the Orionjs app')
   .option('--shell', 'Opens a shell in Chrome developer tools')
   .option('--clean', 'Build the typescript project from scratch')
+  .option('--omit-cursor-rule', 'Omit the creation of the Orionjs Cursor rule')
+  .option('--omit-mcp-server', 'Omit the creation of the Orionjs MCP server')
   .action(run(start))
 
 program.command('test').allowUnknownOption().description('Deprecated command').action(run(test))

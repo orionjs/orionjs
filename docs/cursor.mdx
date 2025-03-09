@@ -1,0 +1,89 @@
+# Cursor Integration
+
+> Learn how to connect Orionjs documentation to Cursor for enhanced developer experience with AI-assisted coding
+
+## What is Model Context Protocol (MCP)?
+
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that allows you to provide custom tools to agentic LLMs in Cursor. By connecting Orionjs documentation to Cursor via MCP, you can get AI-assisted coding that's aware of Orionjs's API, patterns, and best practices.
+
+## Setting Up Orionjs MCP
+
+Orionjs provides an MCP server that makes it easy to connect the documentation and type information to Cursor. Follow these steps to set it up:
+
+### 1. Add the Orionjs MCP Server
+
+Run the following command in your terminal:
+
+```bash
+npx mcp add orionjs
+```
+
+You should see output similar to:
+
+```
+Created /Users/<your-username>/.mcp/orionjs folder with MCP server.
+You can now run `npm --prefix ~/.mcp/orionjs start` to start your MCP server
+```
+
+### 2. Start the MCP Server
+
+After adding the Orionjs MCP server, start it by running:
+
+```bash
+npm --prefix ~/.mcp/orionjs start
+```
+
+The server should start with output similar to:
+
+```
+> orionjs-mcp@1.0.0 start
+> node src/index.js
+
+Initializing MCP Server...
+MCP Server running on stdio
+```
+
+Keep this terminal window open as long as you want to use the Orionjs MCP integration.
+
+### 3. Configure Cursor to Connect to Orionjs MCP
+
+1. Open Cursor
+2. Go to **Cursor Settings** > **Features** > **MCP**
+3. Click on the **+ Add New MCP Server** button
+4. Fill out the form:
+   - **Name**: Orionjs
+   - **Type**: stdio
+   - **Command**: `npm --prefix ~/.mcp/orionjs start`
+5. Click **Add Server**
+
+<img src="/images/cursor-mcp-orionjs.png" alt="Adding Orionjs MCP to Cursor" />
+
+### 4. Verify the Connection
+
+After adding the server, it should appear in the list of MCP servers. You may need to click the refresh button in the top right corner of the MCP server entry to populate the tool list.
+
+## Using Orionjs Tools in Cursor
+
+When working with Orionjs projects in Cursor, the Agent will automatically use the Orionjs MCP tools when relevant. The integration provides:
+
+- **Documentation Lookup**: Get detailed information about Orionjs APIs and components directly in Cursor
+- **Code Generation**: Generate code snippets that follow Orionjs best practices
+- **Type-Safe Suggestions**: Receive suggestions that respect Orionjs's type system
+- **Project Structure Assistance**: Get guidance on organizing your Orionjs projects
+
+To use these features, simply tell the Agent what you're trying to accomplish with Orionjs, and it will use the appropriate tools to assist you.
+
+## Project-Specific Configuration
+
+For a specific Orionjs project, you can add a configuration file at `.cursor/mcp.json` to automatically set up the Orionjs MCP server:
+
+```json
+{
+  "mcpServers": {
+    "orionjs": {
+      "command": "npm",
+      "args": ["--prefix", "~/.mcp/orionjs", "start"]
+    }
+  }
+}
+```
