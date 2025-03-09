@@ -109,7 +109,7 @@ app/
 ├── componentName/    # Main component
 │   ├── controllers/  # Controllers for different interfaces
 │   │   ├── echoes/   # Event listeners
-│   │   ├── http/     # HTTP routes
+│   │   ├── routes/     # HTTP routes
 │   │   ├── jobs/     # Background jobs
 │   │   ├── modelResolvers/ # GraphQL model resolvers
 │   │   └── resolvers/ # GraphQL resolvers

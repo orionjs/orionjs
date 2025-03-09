@@ -809,15 +809,15 @@
   dependencies:
     "@orion-js/helpers" "^3.11.8"
 
-"@orion-js/components@^3.11.8":
-  version "3.11.8"
-  resolved "https://registry.yarnpkg.com/@orion-js/components/-/components-3.11.8.tgz#7fedba77a44bbd6e966ab296a9767915b8c9b34e"
-  integrity sha512-+gTmCAUBPm3huVM1V+v9GhPhiAamAEu3lh9E3zfPJGljvaDv9kH2fO5UlH6ZbhrtPJRTd2oyxVRcGl981euNGQ==
+"@orion-js/components@^3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@orion-js/components/-/components-3.11.9.tgz#410ca358e8a77dd4cd03fe7590ce1db7540c6279"
+  integrity sha512-jrhWe/tHboczk8t6qwUNM3IqYFsdy791xnGdoh0FFdNo0o0dKyhNLepgCGQeOmj35ydHHx1c1TS1ZILVtFo1fw==
 
-"@orion-js/core@3.11.8":
-  version "3.11.8"
-  resolved "https://registry.yarnpkg.com/@orion-js/core/-/core-3.11.8.tgz#33ca96232b1f2ce537f08da618bc1cc623026062"
-  integrity sha512-o6GbPE6c8lCA1uR3/6MyUZxy2sY2MBfDlL+MDQmIX3+lWnlSvfscbNokwjO2hsZMIlQKXA5dgS9Jahx1A4pvAw==
+"@orion-js/core@3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@orion-js/core/-/core-3.11.9.tgz#932cd5a7ea3f7f20b610191a7dba542d50747c45"
+  integrity sha512-Tq5jMnpfZDWEZHo7F/cY9Sc+Y18yvquQuCtA3O6wrA2DxBl/hvORYa84PkLuxReKIZzf/NAHGUY0jgLNz9mZRA==
   dependencies:
     "@orion-js/env" "^3.11.8"
     chokidar "3.5.3"
@@ -844,6 +844,17 @@
   version "3.11.8"
   resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.8.tgz#339b9506891d9d36bb8fd57e9517a96b006fad24"
   integrity sha512-FkBF8DTW0FdH+1qjoitM4S+gas4FjvbBdjBw+RfHdhtX+1ZP3pqyCMOR8Kz7Rtw3NMuFlApbwZIf0tCGMBLSTw==
+  dependencies:
+    "@opentelemetry/api" "^1.9.0"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/mongodb" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
+    "@orion-js/typed-model" "^3.11.8"
+
+"@orion-js/dogs@^3.11.9":
+  version "3.11.9"
+  resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.9.tgz#f6fa844a9078eee813ad33e131769abac9b5e108"
+  integrity sha512-0gkRB0Z45MJJIcKUMe1c7WjvZdvln23FwfEJmFDsA9C+mUZm91UvznK9y8hrVd3MAlfCNQ9wka6+0qdS8wHpMg==
   dependencies:
     "@opentelemetry/api" "^1.9.0"
     "@orion-js/helpers" "^3.11.8"

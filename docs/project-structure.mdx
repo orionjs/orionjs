@@ -27,7 +27,7 @@ The `app` directory contains all the application code:
 app/
 ├── config/           # Application configuration
 ├── components/       # Application components (in our example: exampleComponent)
-├── env.d.ts          # Environment type definitions
+├── env.d.ts          # Environment file created by @orion-js/env
 └── index.ts          # Application entry point
 ```
 
@@ -39,14 +39,14 @@ Each component follows a consistent structure:
 exampleComponent/
 ├── controllers/      # Controllers for different aspects of the component
 │   ├── echoes/       # Event listeners
-│   ├── http/         # HTTP routes
+│   ├── routes/         # HTTP routes
 │   ├── jobs/         # Background jobs
 │   ├── modelResolvers/ # GraphQL model resolvers
 │   └── resolvers/    # GraphQL resolvers
 ├── repos/            # Data repositories
 ├── schemas/          # Data schemas/models
 ├── services/         # Business logic services
-└── index.ts          # Component definition and exports
+└── index.ts          # Component definition with the controllers, repos, schemas and services
 ```
 
 ## Configuration Structure
@@ -82,7 +82,7 @@ Components are defined using the `component` function:
 ```typescript
 import {component} from '@orion-js/components'
 import echoes from './controllers/echoes'
-import routes from './controllers/http'
+import routes from './controllers/routes'
 import jobs from './controllers/jobs'
 import modelResolvers from './controllers/modelResolvers'
 import resolvers from './controllers/resolvers'
