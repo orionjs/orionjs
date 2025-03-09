@@ -19,7 +19,7 @@
     "@orion-js/helpers": "3.11.8",
     "@orion-js/http": "^3.11.8",
     "@orion-js/logger": "^3.11.8",
-    "@orion-js/migrations": "^3.11.8",
+    "@orion-js/migrations": "^3.11.9",
     "@orion-js/models": "^3.11.8",
     "@orion-js/mongodb": "^3.11.8",
     "@orion-js/paginated-mongodb": "^3.11.8",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@orion-js/core": "3.11.9",
+    "@orion-js/core": "3.11.10",
     "@types/jest": "^29.2.3",
     "@types/lodash": "^4.14.190",
     "@types/node": "^22.13.10",

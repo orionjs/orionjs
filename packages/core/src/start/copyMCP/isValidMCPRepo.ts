@@ -15,7 +15,7 @@ export async function isValidMCPRepository(directoryPath: string): Promise<boole
 
     // Check for some key files/directories that should exist in the repository
     // This helps verify it's a valid repository and not just an empty or corrupted directory
-    const expectedFiles = ['README.md', 'docs', 'package.json']
+    const expectedFiles = ['settings.js', 'package.json']
 
     for (const file of expectedFiles) {
       try {
@@ -34,7 +34,7 @@ export async function isValidMCPRepository(directoryPath: string): Promise<boole
       // If the version in the file doesn't match the current version,
       // consider the repository outdated
       if (versionContent.trim() !== MCP_VERSION) {
-        console.log(colors.yellow(`MCP version mismatch: installed=${versionContent.trim()}, required=${MCP_VERSION}`))
+        console.log(colors.yellow(`=> ✨ MCP version mismatch: installed=${versionContent.trim()}, required=${MCP_VERSION}`))
         return false
       }
     } catch {

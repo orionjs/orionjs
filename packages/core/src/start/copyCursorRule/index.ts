@@ -40,10 +40,10 @@ export async function copyCursorRule() {
     // Write the content to the target file
     await fs.writeFile(targetFile, content, 'utf8')
 
-    console.log(colors.bold(`Updated .cursor/rules/orionjs.mdc to the latest version`))
+    console.log(colors.bold(`=> ✨ Updated cursor rules to the latest versions`))
 
   } catch (error) {
-    console.error('Error copying cursor rule:', error)
+    console.error('=> ✨ Error copying cursor rules:', error)
     throw error
   }
 }
