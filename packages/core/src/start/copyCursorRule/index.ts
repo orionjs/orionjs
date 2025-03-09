@@ -35,7 +35,7 @@ const downloadFile = (url: string): Promise<string> => {
 }
 
 export async function copyCursorRule() {
-  const baseUrl = `https://raw.githubusercontent.com/orionjs/orionjs/refs/heads/master/docs/mdc`
+  const baseUrl = `https://raw.githubusercontent.com/orionjs/orionjs/refs/heads/master/mdc`
 
   try {
     // Create target directory if it doesn't exist
