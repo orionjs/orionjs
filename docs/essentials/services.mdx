@@ -68,10 +68,11 @@ export class TokenService {
 
 ## Testing
 
-Services are designed to be easily testable with mocks:
+Services are designed to be easily testable with Vitest:
 
 ```typescript
 // In your test
+import { describe, it, expect } from 'vitest'
 import {mockService} from '@orion-js/services'
 import {UserService} from './UserService'
 import {AuthService} from './AuthService'
