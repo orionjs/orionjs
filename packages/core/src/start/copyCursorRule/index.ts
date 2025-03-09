@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs/promises'
 import https from 'https'
+import colors from 'colors/safe'
 
 export async function copyCursorRule() {
   const sourceUrl = 'https://raw.githubusercontent.com/orionjs/orionjs/refs/heads/master/.cursor/rules/orionjs.mdc'
@@ -39,7 +40,8 @@ export async function copyCursorRule() {
     // Write the content to the target file
     await fs.writeFile(targetFile, content, 'utf8')
 
-    console.log(`Successfully copied cursor rule to ${targetFile}`)
+    console.log(colors.bold(`Updated .cursor/rules/orionjs.mdc to the latest version`))
+
   } catch (error) {
     console.error('Error copying cursor rule:', error)
     throw error

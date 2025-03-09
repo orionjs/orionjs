@@ -802,24 +802,24 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.0.tgz#d03eba68273dc0f7509e2a3d5cba21eae10379fe"
   integrity sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==
 
-"@orion-js/cache@^3.11.6", "@orion-js/cache@^3.2.48":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.11.6.tgz#f2a1b57c054ac7de4c5b8b76f416fcef96bd9cdb"
-  integrity sha512-yHF1Z6owjGx3stgI08m1w9QeWY2LVWNq/7uklRIHfBS1NXcfxVqwiqhG0cQl0b4S68WN0cC2hTKCXCdmxUhEiw==
+"@orion-js/cache@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/cache/-/cache-3.11.8.tgz#c69a11ff53583f284bb6477832b1a1ea1bca123e"
+  integrity sha512-yMuFXYS+z4IgDuvb5iZCEYqzAbe/hpENdMBlNDWLZIzy6bo+6Nm83cfVuMbXQpz1WkeUtW8NB9reA1ftrQx76w==
   dependencies:
-    "@orion-js/helpers" "^3.11.6"
+    "@orion-js/helpers" "^3.11.8"
 
-"@orion-js/components@^3.2.55":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/components/-/components-3.11.6.tgz#e0ebfe1a2e6043d51239d3637b9887b0688a5dd4"
-  integrity sha512-WC0QDU8TH+QKgGQK3Fxq+hOSH+M7pTVHdfwOSOU8SkTVdKTLgiz475Xg2mjDzCYtyydTPOYvnqiH5nqPb8wsRg==
+"@orion-js/components@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/components/-/components-3.11.8.tgz#7fedba77a44bbd6e966ab296a9767915b8c9b34e"
+  integrity sha512-+gTmCAUBPm3huVM1V+v9GhPhiAamAEu3lh9E3zfPJGljvaDv9kH2fO5UlH6ZbhrtPJRTd2oyxVRcGl981euNGQ==
 
-"@orion-js/core@3.11.6":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/core/-/core-3.11.6.tgz#109c8b94b9ef92117d4a12512b6796ff6af12d3b"
-  integrity sha512-qNZciRNJ3C03dYf/R6UKQRqyJiLZf4hcG0Il1pm5/8MrgmU9Qy/AJYXWuLnTdiG5Huts/tn0JHwfkmA7by8MZg==
+"@orion-js/core@3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/core/-/core-3.11.8.tgz#33ca96232b1f2ce537f08da618bc1cc623026062"
+  integrity sha512-o6GbPE6c8lCA1uR3/6MyUZxy2sY2MBfDlL+MDQmIX3+lWnlSvfscbNokwjO2hsZMIlQKXA5dgS9Jahx1A4pvAw==
   dependencies:
-    "@orion-js/env" "^3.11.6"
+    "@orion-js/env" "^3.11.8"
     chokidar "3.5.3"
     colors "^1.4.0"
     commander "^9.4.1"
@@ -830,57 +830,47 @@
     reflect-metadata "^0.1.13"
     yaml "^2.2.1"
 
-"@orion-js/crypto@3.11.6":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/crypto/-/crypto-3.11.6.tgz#f4e1c419574030f8e4b8a416b10ae3f9bb091c61"
-  integrity sha512-d3jwyWXJE8Kf4o/OjWm0o/YRURYjlPXn2Ha6SFCwxz6yxRKFr8Y+KpU8BYAfaT6RIe81NLVUG4Ogk61I/7KMJQ==
+"@orion-js/crypto@3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/crypto/-/crypto-3.11.8.tgz#e32fad12f5c6e5fee06333b7f0b0d23fb4de57de"
+  integrity sha512-8In2JZaTFVqfvEHGsATASIqSmdbWU89G4rMjsnyFr+ckw4TmF17KSjDborodIZesAP3qwEdnmEDOOrVSCiSgog==
   dependencies:
-    "@orion-js/services" "^3.11.6"
+    "@orion-js/services" "^3.11.8"
     bcryptjs "^2.4.3"
     tweetnacl "1.0.3"
     tweetnacl-util "0.15.1"
 
-"@orion-js/dogs@^3.11.7-alpha.0":
-  version "3.11.7-alpha.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.7-alpha.0.tgz#530a5b4c38b78fc9d3be2f7c418ddb763fcf1832"
-  integrity sha512-p/KzLCaSuzGP7/Cb6pfmfcCbtA39YWrMrGxGOk4bj0LICC/k8F2WxTbowNYoMrzZceMPOSVNs6fTxzXMrfBeeA==
+"@orion-js/dogs@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.8.tgz#339b9506891d9d36bb8fd57e9517a96b006fad24"
+  integrity sha512-FkBF8DTW0FdH+1qjoitM4S+gas4FjvbBdjBw+RfHdhtX+1ZP3pqyCMOR8Kz7Rtw3NMuFlApbwZIf0tCGMBLSTw==
   dependencies:
     "@opentelemetry/api" "^1.9.0"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/mongodb" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
-    "@orion-js/typed-model" "^3.11.6"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/mongodb" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
+    "@orion-js/typed-model" "^3.11.8"
 
-"@orion-js/dogs@^3.2.55":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/dogs/-/dogs-3.11.6.tgz#8352669fefe1352fc64984118a74fdbac74376f4"
-  integrity sha512-fKMeF5J3nBR9fz+R6okbybsyl2aypdQ/DnZhj5+A0B1njBfq05Z3MOCFMQWo6ilDTBZQ25Gh2u3VV5t24tp9VA==
+"@orion-js/echoes@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/echoes/-/echoes-3.11.8.tgz#ac51f356a30d04f10033385956b3dda1ebd056f5"
+  integrity sha512-+jcQ96OusfxXSryoJYjxKIpPUfvAs4mJdbCMx+owuwurrm8+xFJKJDVj6j9Lf+FtWLEHpGfxI9Uhq5ed/8llCA==
   dependencies:
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/mongodb" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
-    "@orion-js/typed-model" "^3.11.6"
-
-"@orion-js/echoes@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/echoes/-/echoes-3.11.6.tgz#2be23cb67e1c2fbdcf20a21767a41cfd93e41e7b"
-  integrity sha512-3mZh4xoeutZKiKMEexulgz5onpdbMSUSV+OZ9tHi2Esre03Nd/kXikMtTOOCp9+LAYmhjhWL+OSoGBjA+YWkAA==
-  dependencies:
-    "@orion-js/env" "^3.11.6"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/http" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
+    "@orion-js/env" "^3.11.8"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/http" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
     axios "^0.24.0"
     jssha "^3.2.0"
     kafkajs "^2.2.4"
     lodash "^4.17.21"
     serialize-javascript "^6.0.0"
 
-"@orion-js/env@^3.11.6", "@orion-js/env@^3.2.40":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/env/-/env-3.11.6.tgz#847729c38eea931a1b0c7d28d07dbb5ac606ada6"
-  integrity sha512-XNv35DKmHCDOcrS1ekIrX/Xw7F0/MDA1ajjp6WxKGklbbTUdMgxnHBUxmJ8+V1EhUz4BCXdiiPZ2oPJm0ULt/g==
+"@orion-js/env@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/env/-/env-3.11.8.tgz#d8f361c87734de94a31bf9e27d231fbd98da5421"
+  integrity sha512-RbOPQrlXJ9Vk2DCobH5LNqjiVfZF4mrekjv5tUSrxdXvxk6idHVATXi26tx3YCZCRntocsxyZN+MvDyyIrxGWA==
   dependencies:
     colors "^1.4.0"
     commander "^9.1.0"
@@ -889,21 +879,21 @@
     tweetnacl-util "0.15.1"
     yaml "^2.0.0"
 
-"@orion-js/graphql@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/graphql/-/graphql-3.11.6.tgz#a9c5ffdb99a9140c29233c06c56d53c73a67eb42"
-  integrity sha512-lYXNexPcn7GzKqSQiLO065w2BLQl9usxSmfau2nO/nWSdiAZRPYjopkiz/6xZpwEoJ5c7Mkbij7ZG+hmusDfSQ==
+"@orion-js/graphql@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/graphql/-/graphql-3.11.8.tgz#a2a1bb78a53796f5f907365414ad1a36355de25b"
+  integrity sha512-kp6gvGTWMGrbunLOIaIxivhP7kbTK1Q3Gvzfwo6r52GZzc4v1/Tt7pgpEKNu8kyxfiF89wGh+sWqKx/Q1e1Mqg==
   dependencies:
     "@apollo/server" "^4.3.0"
     "@graphql-tools/schema" "^9.0.12"
-    "@orion-js/env" "^3.11.6"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/http" "^3.11.6"
-    "@orion-js/models" "^3.11.6"
-    "@orion-js/resolvers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
-    "@orion-js/typed-model" "^3.11.6"
+    "@orion-js/env" "^3.11.8"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/http" "^3.11.8"
+    "@orion-js/models" "^3.11.8"
+    "@orion-js/resolvers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
+    "@orion-js/typed-model" "^3.11.8"
     graphql-iso-date "^3.6.1"
     graphql-subscriptions "2.0.0"
     graphql-ws "^5.11.2"
@@ -911,31 +901,31 @@
     subscriptions-transport-ws "^0.11.0"
     ws "^8.11.0"
 
-"@orion-js/helpers@3.11.6", "@orion-js/helpers@^3.11.6":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.11.6.tgz#5fe0e47395b1ffa1e6302fbbf3d6f36140f199dc"
-  integrity sha512-hTT4EyHYapw7RuHuCk1jbfSA7Hl42SpvLn21W53zy9njmtYnrtfqJcWY3A0+iuPwZIj+8v3eg6imuCMYoFXyvA==
+"@orion-js/helpers@3.11.8", "@orion-js/helpers@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/helpers/-/helpers-3.11.8.tgz#c3d1da3ece9e806d3cd9122bbbadf5605925422f"
+  integrity sha512-dbTu+VlIxs2ZVH62+TT1fZOKlrzencaf8XjGUrLPqA6Y5TeUppebvvrVjUyRQZz2IBKfruAhnDau67GZIVHsjQ==
   dependencies:
     object-hash "^2.2.0"
 
-"@orion-js/http@^3.11.6", "@orion-js/http@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/http/-/http-3.11.6.tgz#6eeb24334252956517912012b427c8a12d7357c8"
-  integrity sha512-+RnEYv+qUOywSF94abwBw5KyhQnYKmjRuanMtJn7qDWT273WSWvb9wJTdnGWsY0qH1iirIrbx+kYuQOzWTs/8A==
+"@orion-js/http@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/http/-/http-3.11.8.tgz#02d0c55e077702fc56a6e31276f2e00a3b3ecd53"
+  integrity sha512-9EBvfimewdB8aNJYKcetLBHeerz7SEPv7yC4YqoQVWiVF78mIpR7Cr5FgQstNVegcI5ncMvT7FtmdNnPN5eWDw==
   dependencies:
-    "@orion-js/env" "^3.11.6"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/resolvers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
+    "@orion-js/env" "^3.11.8"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/resolvers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
     body-parser "1.19.0"
     express "4.17.1"
     reflect-metadata "^0.1.13"
 
-"@orion-js/logger@^3.11.6", "@orion-js/logger@^3.2.40":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/logger/-/logger-3.11.6.tgz#b57c4cac499f307609a221b07313a31dae2a10c5"
-  integrity sha512-s1x78SQGkPrlIvw1zSxfRneVZgLqH47iVIXqcqfTbuuI5Io7dGIMlwbWLht1Xq3MoTiVszMLnoRtphZNxTttJg==
+"@orion-js/logger@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/logger/-/logger-3.11.8.tgz#68e31b4b970d060b196df9857de586f074e68e1d"
+  integrity sha512-y817RsCNEQpArUrzm40QlOcNoE6rXEGlRaVrgw07Pm/Ds9Xlv03a/md98UeYtrQgT0zHEyTMbX5U/VYjSYQl8A==
   dependencies:
     "@opentelemetry/api" "^1.9.0"
     color "^4.2.3"
@@ -944,92 +934,92 @@
     text-hex "^1.0.0"
     winston "^3.6.0"
 
-"@orion-js/migrations@^3.11.7-alpha.0":
-  version "3.11.7-alpha.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/migrations/-/migrations-3.11.7-alpha.0.tgz#620d65aff0a9e5fe82d82d2b36318ff673d0d7eb"
-  integrity sha512-4sBgxKHHlt8JmZk93Znj2Yh2yu3f9oM5k7fmwfC/aNQZD2RRNKCyaqPIPl4jwLTW0DAhlnhYKwZBvvwL4j/ZdA==
+"@orion-js/migrations@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/migrations/-/migrations-3.11.8.tgz#412cd62c74fe56d94975cc7c63b6c2c4de814dff"
+  integrity sha512-dyvyJ9dP2VjJFPeMy5uKuhc1P+8ToAEV+Uiw/tRruTj5KEsugbfkpmQFUdb9+qf1pB6N4iR0tDHdxgbDB4BbEA==
   dependencies:
-    "@orion-js/dogs" "^3.11.7-alpha.0"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/mongodb" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
-    "@orion-js/typed-model" "^3.11.6"
+    "@orion-js/dogs" "^3.11.8"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/mongodb" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
+    "@orion-js/typed-model" "^3.11.8"
 
-"@orion-js/models@^3.11.6", "@orion-js/models@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.11.6.tgz#bc9ae16f3a5cded79773d98d1d6a1673c9852e7e"
-  integrity sha512-eo9W9KaYQ29rpCNVVLPT5647XRUK6kQNQNH2ZOWB9ea09kfB2BSSamxrnNFoWdvVbjtFAi/ZtJnkbAFxIq3sFA==
+"@orion-js/models@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/models/-/models-3.11.8.tgz#8e9c9c41c1e1822df088283b72d682f60075297e"
+  integrity sha512-VaROedL2U4BjaZxcT/5qWZKbh8vnF8GOJrb5GhRaxZxGVTsmXERMHVsyBmLgz+EvKN+/oeCv26tLVbrp/57H2w==
   dependencies:
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/resolvers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/resolvers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
 
-"@orion-js/mongodb@^3.11.6", "@orion-js/mongodb@^3.2.55":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/mongodb/-/mongodb-3.11.6.tgz#db518ddbd8530df2a4f67dee7bc61df7aee3e0d3"
-  integrity sha512-v61xvmMTCXUg2T0iK+Ky1TayLXXKtLfoslOyZ4QW0gnZW2q/O3ruJ8193qgY7Uu/2hgwNREJBPhI9TSQrAKzOA==
+"@orion-js/mongodb@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/mongodb/-/mongodb-3.11.8.tgz#c8e0d093fa0c272fea29602b146ee3634f65972b"
+  integrity sha512-3zvnTywUVxz6nqvANJl0wKPntx+WLsfuxnA+1EDrPqh94Savnqvr8aH9V/FkjvLjrbjp13repV2AwgBEuoC9VA==
   dependencies:
-    "@orion-js/env" "^3.11.6"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/logger" "^3.11.6"
-    "@orion-js/models" "^3.11.6"
-    "@orion-js/resolvers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
-    "@orion-js/typed-model" "^3.11.6"
+    "@orion-js/env" "^3.11.8"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/logger" "^3.11.8"
+    "@orion-js/models" "^3.11.8"
+    "@orion-js/resolvers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
+    "@orion-js/typed-model" "^3.11.8"
     bson "^6.6.0"
     dataloader "2.2.2"
     dot-object "2.1.4"
     mongodb "6.5.0"
 
-"@orion-js/paginated-mongodb@^3.3.1":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/paginated-mongodb/-/paginated-mongodb-3.11.6.tgz#4d91c138105bc9e95f8382616d1b2d274bed4288"
-  integrity sha512-Od3KxEsC26lxJsSONglKOBUR2GGgFdh4mFZox7QX6VKX8eADu2tB8ya86/Yi0NLm1PJpQMurcEQvu7gFUTct9Q==
+"@orion-js/paginated-mongodb@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/paginated-mongodb/-/paginated-mongodb-3.11.8.tgz#22fbeda60bd17884961491e4e2696a3e2f95d368"
+  integrity sha512-X0nuX59CPj1oTSyUvK2pRmw1mbGGk3Dh2LmNsqUkHUVxN5nqLqcMyH8qw7yzWbaPL8AXwIzCpPt5ne3UZsmVNQ==
   dependencies:
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/models" "^3.11.6"
-    "@orion-js/mongodb" "^3.11.6"
-    "@orion-js/resolvers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
-    "@orion-js/typed-model" "^3.11.6"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/models" "^3.11.8"
+    "@orion-js/mongodb" "^3.11.8"
+    "@orion-js/resolvers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
+    "@orion-js/typed-model" "^3.11.8"
 
-"@orion-js/resolvers@^3.11.6", "@orion-js/resolvers@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.11.6.tgz#f576add0f4fe8207d3234f43c989eb9b2da786df"
-  integrity sha512-GRVopVziwXWPTsXvUa9BtpwmTyYjKkAPUXSoA4nMxmVUlsqEZ6nidPGW1WF6INI8dzQaGIoxs0oGh+8Tw2aVFw==
+"@orion-js/resolvers@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/resolvers/-/resolvers-3.11.8.tgz#ed674f434a4d3074121dfaf9fe61ff483aca0ebe"
+  integrity sha512-uURFDE3RmRGxRz7froYqJdpBHuZc/fCFlKFhaI6iSUQvEF+h4tS31huURk2OyS/yD/7diX63pagHt0Xa8U9wNA==
   dependencies:
-    "@orion-js/cache" "^3.11.6"
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
+    "@orion-js/cache" "^3.11.8"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
 
-"@orion-js/schema@^3.11.6", "@orion-js/schema@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.11.6.tgz#b7274a67d069430c65d8ce7534f20871e01546c6"
-  integrity sha512-pMrTq7mUV5sjakwOTtnoJHjR4KIzMjUXgvtLqWWQMOaLhGWXWxeujjxHuwDgoHhkJBGobkRHP9ftkjRJ3eWajw==
+"@orion-js/schema@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-3.11.8.tgz#b142b80c028f29b16720a788c5fb84f50e402660"
+  integrity sha512-MSwSGqGSaE4jjOpH90VmNwGNFIivjCkf21ta6fYBkuVAIUCi9a59rPKq3WFP7U2YjKLNqBUdRYakq8FPZQ8/Cw==
   dependencies:
     dot-object "^2.1.4"
     lodash "^4.17.10"
 
-"@orion-js/services@^3.11.6", "@orion-js/services@^3.2.48":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.11.6.tgz#3b617f73a5c389f2750f051beb0d3df2371a48ec"
-  integrity sha512-g0JdU5YpL54DkggMr7xgWncwEM7n5inb+I1WiHO7FqL4LzPSx+xil6d2H49h15C3c8rTwzHDalKGEi3YMzJDXA==
+"@orion-js/services@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/services/-/services-3.11.8.tgz#4534294410a3413c2f8c3ce182248e175ed21508"
+  integrity sha512-9iOoNobbvB1AlM15WwuXGjfLR7g9bGx1bbpcMN9SEHcCdVvpq2g0cFgqCbn7q5sgCE/1W6AdNR9OX4zFGWYNrQ==
   dependencies:
-    "@orion-js/helpers" "^3.11.6"
+    "@orion-js/helpers" "^3.11.8"
     typedi "^0.10.0"
 
-"@orion-js/typed-model@^3.11.6", "@orion-js/typed-model@^3.2.53":
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/@orion-js/typed-model/-/typed-model-3.11.6.tgz#5c70dbe18caecef466daf5a88470bb7c76c8cb5b"
-  integrity sha512-T9f69I8ONK1vUIWTE+xcYHj8kutZEpkV7ULNwYrKgRifdKWYBu8FXDkctVKUODTmL7na29k1BSZ/7oN3SlJF8g==
+"@orion-js/typed-model@^3.11.8":
+  version "3.11.8"
+  resolved "https://registry.yarnpkg.com/@orion-js/typed-model/-/typed-model-3.11.8.tgz#05aa5c4f271faf14c230a28fd127acabdd3cf4c7"
+  integrity sha512-/gv1/xNmKgVwr+lRqdbSaxH0Cr7PklvWbhgwJlh/p/ufkL37N15f09JCDWnjFm1kCnIKCvWNl3DNhVIqRUFWBA==
   dependencies:
-    "@orion-js/helpers" "^3.11.6"
-    "@orion-js/models" "^3.11.6"
-    "@orion-js/resolvers" "^3.11.6"
-    "@orion-js/schema" "^3.11.6"
-    "@orion-js/services" "^3.11.6"
+    "@orion-js/helpers" "^3.11.8"
+    "@orion-js/models" "^3.11.8"
+    "@orion-js/resolvers" "^3.11.8"
+    "@orion-js/schema" "^3.11.8"
+    "@orion-js/services" "^3.11.8"
     lodash "^4.17.21"
     reflect-metadata "0.1.13"
 

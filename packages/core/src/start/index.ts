@@ -7,7 +7,7 @@ export default async function (options: RunnerOptions) {
   console.log(colors.bold('\nOrionjs App ' + colors.green(colors.bold('V3\n'))))
 
   if (!options.omitCursorRule) {
-    await copyCursorRule()
+    copyCursorRule().catch(console.error)
   }
 
   if (!options.omitMcpServer) {
