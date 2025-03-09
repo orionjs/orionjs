@@ -24,7 +24,8 @@ Resolvers in Orionjs define GraphQL API endpoints using a clean, decorator-based
 - Always define proper types for parameters and return values using:
   - `@ResolverParams()` for input parameters
   - `@ResolverReturns()` for return types
-- Provide descriptive names and descriptions for GraphQL schema documentation
+- Provide descriptive names and descriptions for GraphQL schema documentation.
+- Prefer using `cloneSchemaClass` when creating a sub-schema of an existing entity for mutations.
 
 ## Query vs Mutation
 - Use `@Query()` for operations that fetch data without side effects
