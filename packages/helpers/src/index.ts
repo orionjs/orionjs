@@ -20,7 +20,7 @@ export * from './retries'
 export * from './generateUUID'
 export * from './normalize'
 export * from './searchTokens'
-
+export * from './shortenMongoId'
 export {
   // Utility functions
   createMap,

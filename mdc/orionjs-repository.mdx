@@ -22,8 +22,9 @@ Repositories in Orionjs handle data access operations, separating data access lo
 - Avoid business logic in repositories (use services instead)
 - Add proper typing for all parameters and return values.
 - Put the repository in `app/exampleComponent/repos/{EntityNameInPlural}Repo/index.ts`
-- Always use idPrefix in the collection definition.
+- Always use `idPrefix` in the collection definition.
 - Put the exported `@TypedSchema` in a file beside the repository `index.ts`.
+- In `getSearchTokens` pass all text like fields to texts array and the category-like fields to the second argument.
 
 ## Example
 
@@ -35,7 +36,10 @@ It's always a good idea to create at list all the methods that are in this examp
 import {Collection, MongoCollection, MongoFilter, Repository} from '@orion-js/mongodb'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {Card, CardId} from '../schemas/Card'
-import {ListQueryParams} from './ListQueryParams'
+import {CardsListQueryParams} from './ListQueryParams'
+import {isEqual} from 'lodash'
+import {logger} from '@orion-js/logger'
+import {getSearchTokens, shortenMongoId} from '@orion-js/helpers'
 
 @Repository()
 export class CardsRepo {
@@ -43,11 +47,27 @@ export class CardsRepo {
     name: 'cards',
     schema: Card,
     idPrefix: 'crd-',
-    indexes: [],
+    indexes: [
+      {
+        keys: {
+          searchTokens: 1,
+        }
+      }
+    ],
   })
   private collection: Collection<Card>
 
+  private getSearchTokens(doc: Card) {
+    const texts = [shortenMongoId(doc._id, doc.name)]
+    return getSearchTokens(texts, {
+      status: doc.status,
+    })
+  }
+
   async createCard(doc: Omit<Card, '_id'>) {
+    const id = `crd-${generateUUID()}` as CardId
+    doc._id = id
+    doc.searchTokens = this.getSearchTokens(doc as Card)
     return await this.collection.insertAndFind(doc)
   }
 
@@ -55,8 +75,24 @@ export class CardsRepo {
     return await this.collection.findOne(docId)
   }
 
+  private ensureSearchTokensAreUpdated(card: Card) {
+    const searchTokens = this.getSearchTokens(card)
+
+    if (!isEqual(card.searchTokens, searchTokens)) {
+      this.collection
+        .updateOne(card._id, {
+          $set: {searchTokens},
+        })
+        .catch(error => {
+          logger.error('Error updating search tokens', {error, docId, searchTokens})
+        })
+    }
+  }
+
   async updateCard(docId: CardId, doc: Partial<Card>) {
-    return await this.collection.updateAndFind(docId, {$set: doc})
+    const result = await this.collection.updateAndFind(docId, {$set: doc})
+    this.ensureSearchTokensAreUpdated(result)
+    return result
   }
 
   async deleteCard(docId: CardId) {
@@ -65,6 +101,21 @@ export class CardsRepo {
 
   private async getCardsListQuery(params: CardsListQueryParams) {
     const queries: MongoFilter<Card>[] = []
+
+    const searchTokensParams: Record<string, string> = {}
+
+    if (params.status) {
+      searchTokensParams.status = params.status
+    }
+
+    const searchTokens = getSearchQueryForTokens({
+      filter: params.filter,
+      ...searchTokensParams,
+    })
+
+    if (searchTokens.$all.length) {
+      queries.push({searchTokens})
+    }
 
     return {
       $and: queries,
@@ -87,6 +138,9 @@ export class CardsRepo {
 export class CardsListQueryParams {
   @Prop({optional: true})
   filter?: string
+
+  @Prop({optional: true})
+  status?: string
 }
 ```
 

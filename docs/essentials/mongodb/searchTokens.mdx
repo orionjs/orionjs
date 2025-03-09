@@ -1,0 +1,277 @@
+---
+title: 'Search Tokens'
+description: 'How to implement and use search tokens for efficient text search in MongoDB'
+---
+
+Search tokens are a powerful mechanism in Orionjs that enable efficient and flexible text search capabilities in MongoDB without the overhead of full-text search. They work by preprocessing text fields into normalized tokens that can be indexed and queried efficiently.
+
+## Why Use Search Tokens?
+
+- **Simplicity**: No need to create complex regex queries or text indexes
+- **Performance**: Significantly faster than regex or text queries
+- **Flexibility**: Combine text search with category filtering
+- **Normalized Search**: Case-insensitive and accent-insensitive matching
+- **Prefix Matching**: Find results that start with search terms
+
+## Implementation
+
+### 1. Add Search Tokens Field to Your Schema
+
+First, add a `searchTokens` field to your schema:
+
+```typescript
+@TypedSchema()
+export class User {
+  @Prop()
+  _id: UserId
+
+  @Prop()
+  firstName: string
+
+  @Prop()
+  lastName: string
+
+  @Prop()
+  email: string
+
+  @Prop()
+  role: string
+
+  @Prop({type: [String]})
+  searchTokens: string[]
+}
+```
+
+### 2. Create an Index on Search Tokens
+
+Add an index on the `searchTokens` field in your repository:
+
+```typescript
+@MongoCollection<User>({
+  name: 'users',
+  schema: User,
+  idPrefix: 'usr-',
+  indexes: [
+    {
+      keys: {
+        searchTokens: 1,
+      }
+    }
+  ],
+})
+private collection: Collection<User>
+```
+
+### 3. Implement a Method to Generate Search Tokens
+
+Add a method to generate search tokens from relevant fields:
+
+```typescript
+private getSearchTokens(doc: User) {
+  // Text fields to tokenize
+  const texts = [
+    doc.firstName,
+    doc.lastName,
+    doc.email,
+    shortenMongoId(doc._id) // Include ID in searchable fields
+  ]
+  
+  // Category fields (for filtering)
+  return getSearchTokens(texts, {
+    role: doc.role
+  })
+}
+```
+
+### 4. Update Search Tokens When Creating or Updating Documents
+
+```typescript
+async createUser(doc: Omit<User, '_id'>) {
+  const id = `usr-${generateUUID()}` as UserId
+  doc._id = id
+  doc.searchTokens = this.getSearchTokens(doc as User)
+  return await this.collection.insertAndFind(doc)
+}
+
+async updateUser(userId: UserId, doc: Partial<User>) {
+  const result = await this.collection.updateAndFind(userId, {$set: doc})
+  this.ensureSearchTokensAreUpdated(result)
+  return result
+}
+
+private ensureSearchTokensAreUpdated(user: User) {
+  const searchTokens = this.getSearchTokens(user)
+
+  if (!isEqual(user.searchTokens, searchTokens)) {
+    this.collection
+      .updateOne(user._id, {
+        $set: {searchTokens},
+      })
+      .catch(error => {
+        logger.error('Error updating search tokens', {error, userId: user._id, searchTokens})
+      })
+  }
+}
+```
+
+### 5. Query Using Search Tokens
+
+```typescript
+private async getUsersListQuery(params: UsersListQueryParams) {
+  const queries: MongoFilter<User>[] = []
+
+  const searchTokensParams: Record<string, string> = {}
+
+  if (params.role) {
+    searchTokensParams.role = params.role
+  }
+
+  const searchTokens = getSearchQueryForTokens({
+    filter: params.filter,
+    ...searchTokensParams,
+  })
+
+  if (searchTokens.$all.length) {
+    queries.push({searchTokens})
+  }
+
+  return {
+    $and: queries,
+  }
+}
+
+async getUsersListCursor(params: UsersListQueryParams) {
+  const query = await this.getUsersListQuery(params)
+  return this.collection.find(query)
+}
+```
+
+## How Search Tokens Work
+
+1. **Text Tokenization**: Text fields are split into tokens, converted to lowercase, and normalized
+2. **Prefix Generation**: Additional tokens are created for prefixes to enable prefix searching
+3. **Category Markers**: Category fields are converted to tokens with prefixes to enable category filtering
+4. **Query Building**: The `getSearchQueryForTokens` function converts search terms into MongoDB queries
+
+## Best Practices
+
+- **Include Important Text Fields**: Add all searchable text fields to the tokens
+- **Short MongoDB IDs**: Use `shortenMongoId` to include readable portions of IDs
+- **Category Fields**: Include fields used for filtering in the second argument of `getSearchTokens`
+- **Ensure Tokens are Updated**: Always update search tokens when document fields change
+- **Checking Token Equality**: Use a deep comparison like `isEqual` to avoid unnecessary updates
+- **Error Handling**: Implement proper error handling for token updates
+- **Background Updates**: Update tokens in the background to avoid blocking user operations
+
+## Complete Example
+
+```typescript
+import {Collection, MongoCollection, MongoFilter, Repository} from '@orion-js/mongodb'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {User, UserId} from '../schemas/User'
+import {UsersListQueryParams} from './ListQueryParams'
+import {isEqual} from 'lodash'
+import {logger} from '@orion-js/logger'
+import {getSearchTokens, getSearchQueryForTokens, shortenMongoId} from '@orion-js/helpers'
+
+@Repository()
+export class UsersRepo {
+  @MongoCollection<User>({
+    name: 'users',
+    schema: User,
+    idPrefix: 'usr-',
+    indexes: [
+      {
+        keys: {
+          searchTokens: 1,
+        }
+      }
+    ],
+  })
+  private collection: Collection<User>
+
+  private getSearchTokens(doc: User) {
+    const texts = [
+      doc.firstName,
+      doc.lastName,
+      doc.email,
+      shortenMongoId(doc._id)
+    ]
+    return getSearchTokens(texts, {
+      role: doc.role,
+      status: doc.status
+    })
+  }
+
+  async createUser(doc: Omit<User, '_id'>) {
+    const id = `usr-${generateUUID()}` as UserId
+    doc._id = id
+    doc.searchTokens = this.getSearchTokens(doc as User)
+    return await this.collection.insertAndFind(doc)
+  }
+
+  async updateUser(userId: UserId, doc: Partial<User>) {
+    const result = await this.collection.updateAndFind(userId, {$set: doc})
+    this.ensureSearchTokensAreUpdated(result)
+    return result
+  }
+
+  private ensureSearchTokensAreUpdated(user: User) {
+    const searchTokens = this.getSearchTokens(user)
+
+    if (!isEqual(user.searchTokens, searchTokens)) {
+      this.collection
+        .updateOne(user._id, {
+          $set: {searchTokens},
+        })
+        .catch(error => {
+          logger.error('Error updating search tokens', {error, userId: user._id, searchTokens})
+        })
+    }
+  }
+
+  private async getUsersListQuery(params: UsersListQueryParams) {
+    const queries: MongoFilter<User>[] = []
+
+    const searchTokensParams: Record<string, string> = {}
+
+    if (params.role) {
+      searchTokensParams.role = params.role
+    }
+
+    if (params.status) {
+      searchTokensParams.status = params.status
+    }
+
+    const searchTokens = getSearchQueryForTokens({
+      filter: params.filter,
+      ...searchTokensParams,
+    })
+
+    if (searchTokens.$all.length) {
+      queries.push({searchTokens})
+    }
+
+    return {
+      $and: queries,
+    }
+  }
+
+  async getUsersListCursor(params: UsersListQueryParams) {
+    const query = await this.getUsersListQuery(params)
+    return this.collection.find(query)
+  }
+}
+```
+
+## Performance Considerations
+
+- Keep the number of tokens reasonable (< 100 per document)
+- Consider sharding for very large collections
+- For extremely complex search needs, consider using a dedicated search engine
+
+## Related Resources
+
+- [MongoDB Indexes](/essentials/mongodb/indexes)
+- [MongoDB Operations](/essentials/mongodb/operations)
+- [MongoDB Collections](/essentials/mongodb/collections)

@@ -48,7 +48,8 @@
               "essentials/mongodb/dataloader",
               "essentials/mongodb/indexes",
               "essentials/mongodb/transactions",
-              "essentials/mongodb/connections"
+              "essentials/mongodb/connections",
+              "essentials/mongodb/searchTokens"
             ]
           }
         ]
