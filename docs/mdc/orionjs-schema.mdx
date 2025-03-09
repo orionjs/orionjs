@@ -1,0 +1,184 @@
+---
+description: How to create and use schemas effectively in Orionjs
+globs: *.ts
+alwaysApply: false
+---
+# How to create good Schemas in Orionjs
+
+## Schema Overview
+
+Schemas in Orionjs define the structure, validation rules, and behavior of your data models. They provide type safety and automatic integration with MongoDB and GraphQL.
+
+## Structure
+- Use `@TypedSchema()` decorator from `@orion-js/typed-model`
+- Define properties with `@Prop()` decorator 
+- Follow clear naming conventions: `{EntityName}Schema`
+- Keep schemas focused on a single entity or concept
+
+## Best Practices
+- Define proper types for all properties
+- Use appropriate validation rules (min, max, etc.)
+- Make fields optional with the `optional: true` option or `?` in TypeScript
+- Use descriptive labels for better UI generation
+- Organize related schemas in a dedicated directory
+- Put schemas in `app/exampleComponent/schemas/{EntityName}/index.ts`
+- Use inheritance for common fields across schemas
+- Prefer `createEnum` for enum types
+- Avoid big entities, if needed split them into smaller ones and use composition.
+- `_id` should only be used for entities that are stored in the database.
+- `_id` should always be typed as `{EntityName}Id`
+- `{EntityName}Id` should be `export type {EntityName}Id = `{prefix}-${string}. Prefix should be a 4 letter code to identity the entity type.
+- Schema validation errors should be camelCase.
+
+## Example
+
+Here's a complete example of a `Product` schema with various property types and configurations:
+
+```typescript
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {createEnum} from '@orion-js/schema'
+
+// Create a type-safe enum for product status
+export const ProductStatusEnum = createEnum('ProductStatusEnum', [
+  'draft',
+  'active',
+  'discontinued'
+] as const)
+
+// Create a nested schema for product variants
+@TypedSchema()
+export class ProductVariantSchema {
+  @Prop({label: 'Variant Name', min: 2})
+  name: string
+
+  @Prop({min: 0})
+  price: number
+
+  @Prop({optional: true})
+  sku?: string
+}
+
+// Prefix type for strongly typed IDs
+export type ProductId = `prd-${string}`
+
+@TypedSchema()
+export class ProductSchema {
+  @Prop()
+  _id: ProductId
+
+  @Prop({
+    label: 'Product Name',
+    min: 3,
+    max: 100
+  })
+  name: string
+
+  @Prop({
+    label: 'Product Description',
+    optional: true
+  })
+  description?: string
+
+  @Prop({
+    type: ProductStatusEnum,
+    defaultValue: 'draft'
+  })
+  status: typeof ProductStatusEnum.type
+
+  @Prop({
+    type: [String],
+    optional: true
+  })
+  tags?: string[]
+
+  @Prop({
+    type: [getModelForClass(ProductVariantSchema)],
+    optional: true
+  })
+  variants?: ProductVariantSchema[]
+
+  @Prop({
+    validate: (value) => {
+      if (value < 0) return 'priceMustBePositive'
+    }
+  })
+  price: number
+
+  @Prop({
+    defaultValue: () => new Date()
+  })
+  createdAt: Date
+
+  @Prop({
+    optional: true
+  })
+  updatedAt?: Date
+}
+```
+
+## Common Schema Types
+
+Orionjs supports the following common types:
+
+```typescript
+@TypedSchema()
+export class TypeExamplesSchema {
+  @Prop()
+  stringField: string         // Text values
+
+
+  @Prop()
+  numberField: number         // Numeric values (integers or floats)
+
+  @Prop({type: 'integer'})    // Force whole numbers only
+  integerField: number
+
+  @Prop()
+  booleanField: boolean       // true/false values
+
+  @Prop()
+  dateField: Date             // Date and time values
+
+  @Prop({type: 'email'})      // Email with automatic validation
+  emailField: string
+
+  @Prop({type: 'blackbox'})   // Any object without specific schema
+  dynamicField: Blackbox
+
+  @Prop({type: [String]}) // string array should have a type
+  stringArrayField: string[]
+}
+```
+
+## Property Options
+
+Properties can be configured with the following options:
+
+```typescript
+@Prop({
+  // Core options
+  label: 'Human-readable label',          // For UI and error messages
+  description: 'Field description',       // For documentation
+  optional: true,                         // Make field optional (default: false)
+  private: true,                          // Hide from GraphQL API
+
+  // Validation options
+  min: 0,                                 // Min value/length
+  max: 100,                               // Max value/length
+  allowedValues: ['small', 'medium'],     // Restrict to allowed values
+  
+  // Default and transformation
+  defaultValue: 'draft',                  // Static default
+  defaultValue: () => new Date(),         // Dynamic default
+  clean: (value) => value.trim(),         // Transform before validation
+  
+  // Custom validation
+  validate: (value) => {
+    if (someCondition) return 'error-code'
+  }
+})
+```
+
+## More information
+
+Ask Orionjs documentation search MCP to get detailed information about schemas and APIs of the framework.

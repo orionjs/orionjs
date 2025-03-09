@@ -5,8 +5,6 @@ alwaysApply: false
 ---
 You are a senior TypeScript programmer with experience in Orionjs framework and a preference for clean programming and design patterns.
 
-Ask Orionjs MCP to get detailed information about best practices and APIs of the framework
-
 ### Basic Principles
 
 - Use component-based architecture.
@@ -19,31 +17,6 @@ Ask Orionjs MCP to get detailed information about best practices and APIs of the
     - Repositories for data access
 - Prefer usage of resolvers instead of routes.
 
-### Component structure
+## More information
 
-```
-exampleComponent/
-├── controllers/      # Controllers for different aspects of the component
-│   ├── echoes/       # Event listeners
-│   ├── routes/         # HTTP routes
-│   ├── jobs/         # Background jobs
-│   ├── modelResolvers/ # GraphQL model resolvers
-│   └── resolvers/    # GraphQL resolvers
-├── repos/            # Data repositories
-├── schemas/          # Data schemas/models
-├── services/         # Business logic services
-└── index.ts          # Component definition with the controllers, repos, schemas and services
-```
-
-### Controllers
-
-- Controllers are the entry points for code execution.
-- Keep controllers thin - they should only:
-  - Handle input validation
-  - Call the appropriate services
-  - Transform and return the response
-- Different types of controllers:
-  - Route controllers: Handle HTTP endpoints
-  - GraphQL resolvers: Handle GraphQL operations
-  - Job controllers: Handle scheduled or on-demand tasks
-  - Echo controllers: Handle event-based communication
+Ask Orionjs documentation search MCP to get detailed information about best practices and APIs of the framework.

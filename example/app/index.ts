@@ -1,4 +1,4 @@
-import {startApp} from './config'
+import { startApp } from './config'
 import exampleComponent from './exampleComponent'
 
 startApp([exampleComponent])

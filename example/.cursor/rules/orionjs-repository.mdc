@@ -87,25 +87,6 @@ export class CardsListQueryParams {
 }
 ```
 
-For this example, this could be the schema. Note the `_id` property is defined as a `CardId` type.
-
-```typescript 
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-
-export type CardId = `crd-${string}`
-
-@TypedSchema()
-export class Card {
-  @Prop()
-  _id: CardId
-
-  @Prop()
-  name: string
-
-  // ... other properties
-}
-```
-
 ## Integration with Services
 
 Services should inject repositories for data access:

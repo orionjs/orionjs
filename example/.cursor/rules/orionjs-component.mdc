@@ -1,0 +1,65 @@
+---
+description: How to create new components using Orionjs
+globs: *.ts
+alwaysApply: false
+---
+
+## Creating a new component
+
+```
+exampleComponent/
+├── controllers/      # Controllers for different aspects of the component
+│   ├── echoes/       # Event listeners
+│   ├── routes/         # HTTP routes
+│   ├── jobs/         # Background jobs
+│   ├── modelResolvers/ # GraphQL model resolvers
+│   └── resolvers/    # GraphQL resolvers
+├── repos/            # Data repositories
+├── schemas/          # Data schemas/models
+├── services/         # Business logic services
+└── index.ts          # Component definition with the controllers, repos, schemas and services
+```
+
+Each component controller type folder has an index.ts (for example controllers/resolvers/index.ts) that exports default an array (which will be filled with the Classes) like this:
+
+```ts
+export default []
+```
+
+The component definition index.ts is always like this:
+
+```ts
+import {component} from '@orion-js/components'
+import resolvers from './controllers/resolvers'
+import routes from './controllers/routes'
+import jobs from './controllers/jobs'
+import echoes from './controllers/echoes'
+import modelResolvers from './controllers/modelResolvers'
+
+export default component({
+  resolvers,
+  routes,
+  jobs,
+  echoes,
+  modelResolvers,
+})
+```
+
+### Controllers
+
+- Controllers are the entry points for code execution.
+- Keep controllers thin - they should only:
+  - Handle input validation
+  - Call the appropriate services
+  - Transform and return the response
+- Different types of controllers:
+  - Route controllers: Handle HTTP endpoints
+  - GraphQL resolvers: Handle GraphQL operations
+  - Job controllers: Handle scheduled or on-demand tasks
+  - Echo controllers: Handle event-based communication
+- GraphQL resolvers are the prefered over routes for exposing method to the client
+
+## More information
+
+Ask Orionjs documentation search MCP to get detailed information about best practices and APIs of the framework.
+
