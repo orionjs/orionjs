@@ -1,0 +1,110 @@
+---
+description: How to create a good Orionjs Repository
+globs: *.ts
+alwaysApply: false
+---
+# How to create a good Repository
+
+## Repository Pattern
+
+Repositories in Orionjs handle data access operations, separating data access logic from business logic. They should focus exclusively on database interactions.
+
+## Structure
+- Use `@Repository()` decorator from `@orion-js/mongodb`
+- Each repository should manage a single entity type
+- Follow clear naming conventions: `{EntityNameInPlural}Repo`
+- Methods should be atomic and focused on CRUD operations
+
+## Best Practices
+- Keep methods simple and focused on a single responsibility
+- Return plain objects or domain models, not database-specific structures
+- Use descriptive method names: `findById`, `findByEmail`, `create{EntityName}`, `update{EntityName}`, `delete{EntityName}`.
+- Avoid business logic in repositories (use services instead)
+- Add proper typing for all parameters and return values.
+- Put the repository in `app/exampleComponent/repos/{EntityNameInPlural}Repo/index.ts`
+- Always use idPrefix in the collection definition.
+
+## Example
+
+In this example we have a `Card` entity and a `CardsRepo` repository.
+
+It's always a good idea to create at list all the methods that are in this example, but you can add more methods if you need to.
+
+```typescript
+import {Collection, MongoCollection, MongoFilter, Repository} from '@orion-js/mongodb'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {Card, CardId} from '../schemas/Card'
+
+@Repository()
+export class CardsRepo {
+  @MongoCollection<Card>({
+    name: 'cards',
+    schema: Card,
+    idPrefix: 'crd-',
+    indexes: [],
+  })
+  private collection: Collection<Card>
+
+  async createCard(doc: Omit<Card, '_id'>) {
+    return await this.collection.insertAndFind(doc)
+  }
+
+  async getCardById(docId: CardId) {
+    return await this.collection.findOne(docId)
+  }
+
+  async updateCard(docId: CardId, doc: Partial<Card>) {
+    return await this.collection.updateAndFind(docId, {$set: doc})
+  }
+
+  async deleteCard(docId: CardId) {
+    await this.collection.updateOne(docId, {$set: {deletedAt: new Date()}})
+  }
+
+  private async getCardsListQuery(params: CardsListQueryParams) {
+    const queries: MongoFilter<Card>[] = []
+
+    return {
+      $and: queries,
+    }
+  }
+
+  async getCardsListCursor(params: CardsListQueryParams) {
+    const query = await this.getCardsListQuery(params)
+    return this.collection.find(query)
+  }
+
+  async getCardsListCount(params: CardsListQueryParams) {
+    const query = await this.getCardsListQuery(params)
+    return this.collection.countDocuments(query)
+  }
+}
+
+@TypedSchema()
+export class CardsListQueryParams {
+  @Prop({optional: true})
+  filter?: string
+}
+```
+
+## Integration with Services
+
+Services should inject repositories for data access:
+
+```typescript
+@Service()
+export class UserService {
+  @Inject()
+  private userRepository: UserRepository
+  
+  async getUserDetails(userId: string) {
+    const user = await this.userRepository.findById(userId)
+    // Process user data with business logic
+    return processedUserData
+  }
+}
+```
+
+## More information
+
+Ask Orionjs documentation search MCP to get detailed information about best practices and APIs of the framework.

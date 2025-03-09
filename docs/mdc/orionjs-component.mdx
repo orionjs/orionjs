@@ -1,25 +1,10 @@
 ---
-description: Writing serverside code using the Orionjs Framework best practices
+description: How to create new components using Orionjs
 globs: *.ts
 alwaysApply: false
 ---
-You are a senior TypeScript programmer with experience in Orionjs framework and a preference for clean programming and design patterns.
 
-Ask Orionjs MCP to get detailed information about best practices and APIs of the framework
-
-### Basic Principles
-
-- Use component-based architecture.
-- Encapsulate functionality in components.
-  - One component per main domain.
-  - Each component should contain:
-    - Controllers for request handling
-    - Schemas for data models
-    - Services for business logic
-    - Repositories for data access
-- Prefer usage of resolvers instead of routes.
-
-### Component structure
+## Creating a new component
 
 ```
 exampleComponent/
@@ -35,6 +20,31 @@ exampleComponent/
 └── index.ts          # Component definition with the controllers, repos, schemas and services
 ```
 
+Each component controller type folder has an index.ts (for example controllers/resolvers/index.ts) that exports default an array (which will be filled with the Classes) like this:
+
+```ts
+export default []
+```
+
+The component definition index.ts is always like this:
+
+```ts
+import {component} from '@orion-js/components'
+import resolvers from './controllers/resolvers'
+import routes from './controllers/routes'
+import jobs from './controllers/jobs'
+import echoes from './controllers/echoes'
+import modelResolvers from './controllers/modelResolvers'
+
+export default component({
+  resolvers,
+  routes,
+  jobs,
+  echoes,
+  modelResolvers,
+})
+```
+
 ### Controllers
 
 - Controllers are the entry points for code execution.
@@ -47,3 +57,9 @@ exampleComponent/
   - GraphQL resolvers: Handle GraphQL operations
   - Job controllers: Handle scheduled or on-demand tasks
   - Echo controllers: Handle event-based communication
+- GraphQL resolvers are the prefered over routes for exposing method to the client
+
+## More information
+
+Ask Orionjs documentation search MCP to get detailed information about best practices and APIs of the framework.
+

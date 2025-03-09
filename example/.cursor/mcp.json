@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "Orionjs documentation search": {
+      "command": "node",
+      "args": [
+        "/Users/nicolaslopezj/Code/Projects/orionjs/example/.orion/mcp/src/index.js"
+      ]
+    }
+  }
+}

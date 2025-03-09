@@ -45,9 +45,14 @@ export async function copyMCP() {
 
     console.log(colors.bold(`=> ✨ Successfully downloaded MCP documentation v${MCP_VERSION} to .orion/mcp`))
 
+    // Install dependencies in the MCP directory
+    console.log(colors.bold(`=> ✨ Installing MCP dependencies...`))
+    await execute(`cd ${targetDir} && npm install`)
+    console.log(colors.bold(`=> ✨ Successfully installed MCP dependencies`))
+
     const mcpServerConfig = {
       "mcpServers": {
-        "orionjs": {
+        "Orionjs documentation search": {
           "command": "node",
           "args": [
             path.join(targetDir, 'src', 'index.js')

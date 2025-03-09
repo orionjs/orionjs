@@ -3,6 +3,12 @@ import fs from 'fs/promises'
 import https from 'https'
 import colors from 'colors/safe'
 
+const rules = [
+  'orionjs.mdx',
+  'orionjs-component.mdx',
+  'orionjs-repository.mdx',
+]
+
 export async function copyCursorRule() {
   const sourceUrl = 'https://raw.githubusercontent.com/orionjs/orionjs/refs/heads/master/.cursor/rules/orionjs.mdc'
   const targetDir = path.join(process.cwd(), '.cursor', 'rules')
