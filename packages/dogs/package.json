@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "3.11.9",
+  "version": "3.11.15",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@orion-js/helpers": "^3.11.8",
-    "@orion-js/mongodb": "^3.11.8",
-    "@orion-js/services": "^3.11.8",
-    "@orion-js/typed-model": "^3.11.8"
+    "@orion-js/helpers": "^3.11.15",
+    "@orion-js/mongodb": "^3.11.15",
+    "@orion-js/services": "^3.11.15",
+    "@orion-js/typed-model": "^3.11.15"
   },
   "peerDependencies": {
     "@orion-js/logger": "*"

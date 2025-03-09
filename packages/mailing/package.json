@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mailing",
-  "version": "3.11.8",
+  "version": "3.11.15",
   "main": "lib/index.js",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@orion-js/env": "^3.11.8",
-    "@orion-js/resolvers": "^3.11.8",
+    "@orion-js/resolvers": "^3.11.15",
     "@orion-js/schema": "^3.11.8",
     "lodash": "^4.17.21",
     "luxon": "^2.1.1",
