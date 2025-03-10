@@ -2,20 +2,21 @@
   "license": "MIT",
   "name": "orionjs",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "test": "sh test.sh",
-    "build": "bun run --filter=* build",
+    "build": "pnpm --filter=* build",
     "publish-alpha": "sh publish.sh --tag next"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@changesets/cli": "^2.28.1",
     "@types/node": "^22.13.10",
-    "bun-plugin-isolated-decl": "^0.1.9",
     "oxc-transform": "^0.56.5",
     "typescript": "^5.8.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome"
+    ]
   }
 }

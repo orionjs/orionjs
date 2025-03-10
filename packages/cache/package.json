@@ -27,7 +27,7 @@
   },
   "gitHead": "9fd28b6f6b348cebc9f0dc207805647969277372",
   "dependencies": {
-    "@orion-js/helpers": "^4.0.0-next.1"
+    "@orion-js/helpers": "workspace:*"
   },
   "type": "module",
   "module": "./dist/index.js",

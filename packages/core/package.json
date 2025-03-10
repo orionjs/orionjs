@@ -20,7 +20,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "4.0.0-next.1",
+    "@orion-js/env": "workspace:*",
     "chokidar": "3.5.3",
     "colors": "^1.4.0",
     "commander": "^9.4.1",

@@ -18,7 +18,7 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
-    "@orion-js/helpers": "4.0.0-next.1",
+    "@orion-js/helpers": "workspace:*",
     "typedi": "^0.10.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import {generateKeys} from '../crypto'
 import {getDts} from './getDts'
-import {mock, describe, beforeEach, it, expect} from 'bun:test'
+import {vi, describe, beforeEach, it, expect} from 'vitest'
 import {getVariables} from './getVariables'
 
 describe('Environment', () => {
@@ -94,7 +94,7 @@ describe('Environment', () => {
   })
 
   it('should log an error when the secret is not a valid JSON, and related secrets undefined', () => {
-    console.warn = mock()
+    console.warn = vi.fn()
     const secretKey = 'QShwQT1+d5wk/F6FVpT5VmZFXm50aFRt9/LaDbwSEGo='
     const secretValue = 'this_is_secret'
     const data = {
