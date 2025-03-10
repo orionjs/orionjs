@@ -1,4 +1,4 @@
-import {Request, Route, RouteResponse, Routes} from '@orion-js/http'
+import {type Request, Route, type RouteResponse, Routes} from '@orion-js/http'
 import {Inject} from '@orion-js/services'
 import {ExampleService} from 'app/exampleComponent/services/ExampleService'
 

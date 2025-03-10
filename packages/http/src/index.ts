@@ -24,5 +24,7 @@ export {
   bodyParser
 }
 
+export {Request, Response} from 'express'
+
 export * from './types'
 export * from './service'

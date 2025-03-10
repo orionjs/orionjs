@@ -4,7 +4,7 @@ import {getFileName} from './helpers/getFileName'
 import {OrionLogger} from './types'
 
 const transports: winston.transport[] = [
-  process.env.ORION_DEV || process.env.JEST_WORKER_ID ? textConsoleTransport : jsonConsoleTransport
+  (process.env.NODE_ENV !== 'production' || process.env.ORION_DEV || process.env.JEST_WORKER_ID) ? textConsoleTransport : jsonConsoleTransport
 ]
 
 export const winstonLogger = winstonCreateLogger({
