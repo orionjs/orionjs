@@ -1,5 +1,6 @@
 import {MongoClient} from 'mongodb'
-import {OrionMongoClient, connections} from './connections'
+import {connections} from './connections'
+import type {OrionMongoClient} from './connections'
 import getDBName from './getDBName'
 import {getMongoURLFromEnv} from './getMongoURLFromEnv'
 import {logger} from '@orion-js/logger'
@@ -27,7 +28,7 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
   if (connections[name]) return connections[name]
 
   const client = new MongoClient(uri, {
-    retryReads: true
+    retryReads: true,
   })
 
   const connectionPromise = connect(client)
@@ -42,7 +43,7 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
     connectionPromise,
     dbName,
     db,
-    connectionName: name
+    connectionName: name,
   }
 
   connections[name] = mongoClient

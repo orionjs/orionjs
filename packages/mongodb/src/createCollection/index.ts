@@ -1,5 +1,5 @@
 import initItem from './initItem'
-import {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
+import type {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
 import {
   countDocuments,
   deleteMany,
@@ -15,20 +15,18 @@ import {
   updateMany,
   updateOne,
   upsert,
-  insertAndFind
+  insertAndFind,
 } from './getMethods'
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
-import {Model} from '@orion-js/models'
 import {loadIndexes} from './createIndexes'
-import {cloneDeep} from 'lodash'
 import {getMongoConnection} from '..'
 import {getSchemaAndModel} from './getSchemaAndModel'
 
 export const createIndexesPromises = []
 
 const createCollection: CreateCollection = <DocumentType extends ModelClassBase>(
-  options: CreateCollectionOptions<DocumentType>
+  options: CreateCollectionOptions<DocumentType>,
 ) => {
   const connectionName = options.connectionName || 'main'
 
@@ -53,7 +51,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
     connectionPromise: orionConnection.connectionPromise,
     rawCollection,
     generateId: getIdGenerator(options),
-    getSchema: () => schema
+    getSchema: () => schema,
   }
 
   // helpers

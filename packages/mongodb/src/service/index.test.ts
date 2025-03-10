@@ -2,7 +2,7 @@ import {getInstance, Service} from '@orion-js/services'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {WithoutId} from 'mongodb'
 import {MongoCollection, Repository} from '.'
-import {Collection} from '../types'
+import type {Collection} from '../types'
 
 describe('Collection as IOC', () => {
   it('should create the collection and set the methods', async () => {
@@ -10,7 +10,7 @@ describe('Collection as IOC', () => {
 
     @TypedSchema()
     class User {
-      @Prop()
+      @Prop({type: 'string'})
       _id: UserId
 
       @Prop()
@@ -23,7 +23,7 @@ describe('Collection as IOC', () => {
         name: 'users',
         schema: User,
         idGeneration: 'random',
-        idPrefix: 'user_'
+        idPrefix: 'user_',
       })
       users: Collection<User>
 
@@ -56,7 +56,7 @@ describe('Collection as IOC', () => {
       const instance = getInstance(UserErrorRepo)
     } catch (error) {
       expect(error.message).toBe(
-        'You must pass a class decorated with @Repository if you want to use @MongoCollection'
+        'You must pass a class decorated with @Repository if you want to use @MongoCollection',
       )
     }
   })

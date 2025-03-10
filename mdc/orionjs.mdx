@@ -29,38 +29,22 @@ ipmlementation afterwards so we don't have duplicate logic.
 - Avoid having files over 200-300 lines of code. Refactor at that point.
 - Mocking data is only needed for tests, never mock data for dev or prod
 
-### Functions
+### Coding workflow preferences
 
-- In this context, what is understood as a function will also apply to a method.
-- Write short functions with a single purpose. Less than 20 instructions.
-- Name functions with a verb and something else.
-  - If it returns a boolean, use isX or hasX, canX, etc.
-  - If it doesn't return anything, use executeX or saveX, etc.
-- Avoid nesting blocks by:
-  - Early checks and returns.
-  - Extraction to utility functions.
-- Use higher-order functions (map, filter, reduce, etc.) to avoid function nesting.
-  - Use arrow functions for simple functions (less than 3 instructions).
-  - Use named functions for non-simple functions.
-- Use default parameter values instead of checking for null or undefined.
-- Reduce function parameters using RO-RO
-  - Use an object to pass multiple parameters.
-  - Use an object to return results.
-  - Declare necessary types for input arguments and output.
-- Use a single level of abstraction.
+- Focus on the areas of code relevant to the task
+- Prefer yarn vs npm
+- Do not touch code that is unrelated to the task
+- Avoid making major changes to the patterns and architecture of how a
+feature works, after it has shown to work well, unless explicitly
+structed
+- Always think about what other methods and areas of code might be
+affected by code changes
 
-### Exceptions
-
-- Use exceptions to handle errors you don't expect.
-- If you catch an exception, it should be to:
-  - Fix an expected problem.
-  - Add context.
-  - Otherwise, use a global handler.
 
 ### Testing
 
-- Use the standard Vitest framework for testing.
-  - Vitest offers better performance, ESM support, and TypeScript integration.
+- Use the standard Jest framework for testing.
+  - Jest offers better performance, ESM support, and TypeScript integration.
   - Compatible with Jest's API, making migration straightforward.
 - Follow the Arrange-Act-Assert convention for tests.
 - Name test variables clearly.
@@ -97,11 +81,6 @@ ipmlementation afterwards so we don't have duplicate logic.
   - Prefer throwing `ValidationError` when validation of data fails.
   - Prefer throwing `UserError` when the error is not a system error.
 
-### Testing
-
-- Use the standard Vitest framework for testing.
-- Write tests for each service.
- 
 ## More information
 
 Ask Orionjs documentation search MCP to get detailed information about services and APIs of the framework.

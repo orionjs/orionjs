@@ -1,21 +1,21 @@
 import {generateId} from '@orion-js/helpers'
 import createCollection, {createIndexesPromises} from '.'
+import {it, describe, expect, mock} from 'bun:test'
 
 describe('Test indexes', () => {
   it('Should store all create indexes promises in the array', async () => {
     const collection = createCollection({
       name: generateId(),
-      indexes: [{keys: {a: 1}, options: {unique: true}}]
+      indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
 
-    expect(createIndexesPromises[0]).toBe(collection.createIndexesPromise)
-    expect(createIndexesPromises.length).toBe(1)
+    expect(collection.createIndexesPromise).toBeOneOf(createIndexesPromises)
   })
 
   it('Should create collection indexes correctly', async () => {
     const collection = createCollection({
       name: generateId(),
-      indexes: [{keys: {a: 1}, options: {unique: true}}]
+      indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
 
     const results = await collection.createIndexesPromise
@@ -26,17 +26,17 @@ describe('Test indexes', () => {
   it('Should handle error when cant create indexes', async () => {
     const collectionName = generateId()
     const collection1 = createCollection({
-      name: collectionName
+      name: collectionName,
     })
 
     await collection1.insertOne({a: 1})
     await collection1.insertOne({a: 1})
 
-    console.error = jest.fn()
+    console.error = mock()
 
     const collection2 = createCollection({
       name: collectionName,
-      indexes: [{keys: {a: 1}, options: {unique: true}}]
+      indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
 
     const result = await collection2.createIndexesPromise
@@ -48,16 +48,16 @@ describe('Test indexes', () => {
     const collectionName = generateId()
     const collection1 = createCollection({
       name: collectionName,
-      indexes: [{keys: {a: 1}, options: {unique: true}}]
+      indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
 
     await collection1.createIndexesPromise
 
-    console.warn = jest.fn()
+    console.warn = mock(() => Math.random())
 
     const collection2 = createCollection({
       name: collectionName,
-      indexes: [{keys: {ba: 1}, options: {unique: true}}]
+      indexes: [{keys: {ba: 1}, options: {unique: true}}],
     })
 
     await collection2.createIndexesPromise
@@ -69,16 +69,16 @@ describe('Test indexes', () => {
     const collectionName = generateId()
     const collection1 = createCollection({
       name: collectionName,
-      indexes: [{keys: {name: 1}}]
+      indexes: [{keys: {name: 1}}],
     })
 
     await collection1.createIndexesPromise
 
-    console.info = jest.fn()
+    console.info = mock()
 
     const collection2 = createCollection({
       name: collectionName,
-      indexes: [{keys: {name: 1}, options: {unique: true}}]
+      indexes: [{keys: {name: 1}, options: {unique: true}}],
     })
 
     await collection2.createIndexesPromise

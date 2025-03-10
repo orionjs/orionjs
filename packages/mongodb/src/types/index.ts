@@ -63,16 +63,16 @@ export namespace DataLoader {
   }
 
   export type LoadData<ModelClass extends ModelClassBase> = (
-    options: LoadDataOptions<ModelClass>
+    options: LoadDataOptions<ModelClass>,
   ) => Promise<Array<ModelClass>>
   export type LoadOne<ModelClass extends ModelClassBase> = (
-    options: LoadOneOptions<ModelClass>
+    options: LoadOneOptions<ModelClass>,
   ) => Promise<ModelClass>
   export type LoadMany<ModelClass extends ModelClassBase> = (
-    options: LoadDataOptions<ModelClass>
+    options: LoadDataOptions<ModelClass>,
   ) => Promise<Array<ModelClass>>
   export type LoadById<ModelClass extends ModelClassBase> = (
-    id: ModelClass['_id']
+    id: ModelClass['_id'],
   ) => Promise<ModelClass>
 }
 
@@ -109,73 +109,73 @@ export type InitItem<ModelClass extends ModelClassBase> = (doc: any) => ModelCla
 
 export type FindOne<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.FindOptions
+  options?: MongoDB.FindOptions,
 ) => Promise<ModelClass>
 
 export type Find<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.FindOptions
+  options?: MongoDB.FindOptions,
 ) => FindCursor<ModelClass>
 
 export type FindOneAndUpdate<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions
+  options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<ModelClass>
 
 export type UpdateAndFind<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions
+  options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<ModelClass>
 
 export type UpdateItem<ModelClass extends ModelClassBase> = (
   item: ModelClass,
   modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions
+  options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<void>
 
 export type InsertOne<ModelClass extends ModelClassBase> = (
   doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
-  options?: InsertOptions
+  options?: InsertOptions,
 ) => Promise<ModelClass['_id']>
 
 export type InsertMany<ModelClass extends ModelClassBase> = (
   doc: Array<ModelToDocumentTypeWithIdOptional<ModelClass>>,
-  options?: InsertOptions
+  options?: InsertOptions,
 ) => Promise<Array<ModelClass['_id']>>
 
 export type InsertAndFind<ModelClass extends ModelClassBase> = (
   doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
-  options?: InsertOptions
+  options?: InsertOptions,
 ) => Promise<ModelClass>
 
 export type DeleteMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.DeleteOptions
+  options?: MongoDB.DeleteOptions,
 ) => Promise<MongoDB.DeleteResult>
 
 export type DeleteOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.DeleteOptions
+  options?: MongoDB.DeleteOptions,
 ) => Promise<MongoDB.DeleteResult>
 
 export type UpdateOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
-  options?: UpdateOptions
+  options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult>
 
 export type UpdateMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
-  options?: UpdateOptions
+  options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult | MongoDB.Document>
 
 export type Upsert<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
   modifier: ModelToUpdateFilter<ModelClass>,
-  options?: UpdateOptions
+  options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult>
 
 export interface CreateCollectionOptions<ModelClass extends ModelClassBase = ModelClassBase> {
@@ -212,16 +212,16 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
 }
 
 export type EstimatedDocumentCount<ModelClass extends ModelClassBase> = (
-  options?: MongoDB.EstimatedDocumentCountOptions
+  options?: MongoDB.EstimatedDocumentCountOptions,
 ) => Promise<number>
 
 export type CountDocuments<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.CountDocumentsOptions
+  options?: MongoDB.CountDocumentsOptions,
 ) => Promise<number>
 
 export type CreateCollection = <ModelClass extends ModelClassBase = any>(
-  options: CreateCollectionOptions<ModelClass>
+  options: CreateCollectionOptions<ModelClass>,
 ) => Collection<ModelClass>
 
 export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> {
@@ -268,11 +268,11 @@ export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> 
 
   aggregate: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
-    options?: MongoDB.AggregateOptions
+    options?: MongoDB.AggregateOptions,
   ) => MongoDB.AggregationCursor<T>
   watch: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
-    options?: MongoDB.ChangeStreamOptions
+    options?: MongoDB.ChangeStreamOptions,
   ) => MongoDB.ChangeStream<T>
 
   loadData: DataLoader.LoadData<ModelClass>

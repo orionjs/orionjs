@@ -61,31 +61,3 @@ export class UserService {
   }
 }
 ```
-
-## Testing
-
-Repositories can be mocked in the same way as services:
-
-```typescript
-import { describe, it, expect } from 'vitest'
-import {mockService} from '@orion-js/services'
-import {UserRepository} from './UserRepository'
-import {UserService} from './UserService'
-
-describe('UserService', () => {
-  it('should create valid users', async () => {
-    // Mock the repository
-    mockService(UserRepository, {
-      create: async (data) => ({
-        id: '123',
-        ...data
-      })
-    })
-
-    const userService = new UserService()
-    const result = await userService.validateAndCreateUser({ name: 'John' })
-    
-    expect(result.id).toBe('123')
-  })
-})
-```

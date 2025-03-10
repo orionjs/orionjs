@@ -20,13 +20,13 @@ describe('Jobs (dogs) with service injections', () => {
     expect(jobs).toMatchObject({
       job1: {
         type: 'event',
-        resolve: expect.any(Function)
+        resolve: expect.any(Function),
       },
       job2: {
         type: 'recurrent',
         runEvery: 1000,
-        resolve: expect.any(Function)
-      }
+        resolve: expect.any(Function),
+      },
     })
   })
 })

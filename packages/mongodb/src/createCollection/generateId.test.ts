@@ -10,7 +10,7 @@ it('generates a usable mongo objectId as string', async () => {
   const now = new Date()
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
 
   const objectId = ObjectId.createFromHexString(userId)
@@ -27,7 +27,7 @@ it('generates a ids with uuidv4', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop()
+    @Prop({type: 'string'})
     _id: DocId
 
     @Prop()
@@ -37,11 +37,11 @@ it('generates a ids with uuidv4', async () => {
   const Tests = createCollection<Schema>({
     name: generateId(),
     schema: Schema,
-    idPrefix: 'prefix-'
+    idPrefix: 'prefix-',
   })
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
 
   expect(userId).toMatch(/^prefix\-/)
@@ -52,7 +52,7 @@ it('generates a ids with a prefix', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop()
+    @Prop({type: 'string'})
     _id: DocId
 
     @Prop()
@@ -63,11 +63,11 @@ it('generates a ids with a prefix', async () => {
     name: generateId(),
     schema: Schema,
     idGeneration: 'random',
-    idPrefix: 'pref_'
+    idPrefix: 'pref_',
   })
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
 
   const item = await Tests.findOne(userId)
@@ -82,7 +82,7 @@ it('generates a ids with a distinct type', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop()
+    @Prop({type: 'string'})
     _id: DocId
 
     @Prop()
@@ -91,11 +91,11 @@ it('generates a ids with a distinct type', async () => {
 
   const Tests = createCollection<Schema>({
     name: generateId(),
-    schema: Schema
+    schema: Schema,
   })
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
   await Tests.findOne(userId)
 

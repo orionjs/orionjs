@@ -1,9 +1,9 @@
 import {getInstance, Service} from '@orion-js/services'
 import {defineJob} from '../defineJob'
-import {EventJobDefinition, JobDefinition, RecurrentJobDefinition} from '../types'
+import type {EventJobDefinition, JobDefinition, RecurrentJobDefinition} from '../types'
 
 export function Jobs(): ClassDecorator {
-  return function (target: any) {
+  return (target: any) => {
     Service()(target)
     target.prototype.service = target
   }
@@ -14,7 +14,7 @@ export interface JobsPropertyDescriptor extends Omit<PropertyDecorator, 'value'>
 }
 
 export function RecurrentJob(options: Omit<RecurrentJobDefinition, 'resolve' | 'type'>) {
-  return function (target: any, propertyKey: string, descriptor: JobsPropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: JobsPropertyDescriptor) => {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.echoes = target.echoes || {}
@@ -24,13 +24,13 @@ export function RecurrentJob(options: Omit<RecurrentJobDefinition, 'resolve' | '
       resolve: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)
-      }
+      },
     })
   }
 }
 
 export function EventJob(options: Omit<EventJobDefinition, 'resolve' | 'type'> = {}) {
-  return function (target: any, propertyKey: string, descriptor: JobsPropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: JobsPropertyDescriptor) => {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.echoes = target.echoes || {}
@@ -40,7 +40,7 @@ export function EventJob(options: Omit<EventJobDefinition, 'resolve' | 'type'> =
       resolve: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)
-      }
+      },
     })
   }
 }

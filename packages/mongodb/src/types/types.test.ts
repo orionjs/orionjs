@@ -8,14 +8,14 @@ it('uses correctly typescript for collections', async () => {
     returns: String,
     async resolve(user: User) {
       return `${user.firstName} ${user.lastName}`
-    }
+    },
   })
 
   type UserId = `userId-${string}`
 
   @TypedSchema()
   class User {
-    @Prop()
+    @Prop({type: String})
     _id: UserId
 
     /**
@@ -41,7 +41,7 @@ it('uses correctly typescript for collections', async () => {
 
   const userId = await Users.insertOne({
     firstName: 'Nico',
-    lastName: 'López'
+    lastName: 'López',
   })
 
   const user1 = await Users.findOne({_id: userId})

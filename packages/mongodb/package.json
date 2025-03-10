@@ -1,20 +1,25 @@
 {
   "name": "@orion-js/mongodb",
   "version": "3.11.15",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
   "files": [
-    "/lib"
+    "dist"
   ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "test": "bun test",
+    "build": "bun run build.ts",
+    "dev": "bun --watch src/index.ts",
+    "clean": "rm -rf ./dist"
   },
   "dependencies": {
     "@orion-js/env": "^3.11.8",
@@ -25,19 +30,17 @@
     "@orion-js/schema": "^3.11.8",
     "@orion-js/services": "^3.11.15",
     "@orion-js/typed-model": "^3.11.15",
-    "bson": "^6.6.0",
+    "bson": "^6.10.3",
     "dataloader": "2.2.2",
     "dot-object": "2.1.4",
     "mongodb": "6.5.0"
   },
   "devDependencies": {
-    "@shelf/jest-mongodb": "^4.3.2",
+    "@types/bun": "^1.2.4",
     "@types/dot-object": "^2.1.6",
-    "@types/jest": "^29.5.12",
-    "@types/lodash": "4.17.0",
-    "jest": "29.7.0",
-    "ts-jest": "29.1.2",
-    "typescript": "^5.4.5"
+    "bun-plugin-dts": "^0.3.0",
+    "mongodb-memory-server": "^10.1.4",
+    "typescript": "^5.8.2"
   },
   "publishConfig": {
     "access": "public"
