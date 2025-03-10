@@ -1,5 +1,20 @@
 # @orion-js/dogs
 
+## 4.0.0-next.3
+
+### Major Changes
+
+- republish
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/typed-model@4.0.0-next.3
+  - @orion-js/services@4.0.0-next.3
+  - @orion-js/helpers@4.0.0-next.3
+  - @orion-js/mongodb@4.0.0-next.3
+  - @orion-js/logger@4.0.0-next.3
+
 ## 4.0.0-next.2
 
 ### Major Changes

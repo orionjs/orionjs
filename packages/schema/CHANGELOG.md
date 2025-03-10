@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.0-next.3
+
+### Major Changes
+
+- republish
+
 ## 4.0.0-next.2
 
 ### Major Changes

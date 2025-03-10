@@ -1,5 +1,18 @@
 # @orion-js/resolvers
 
+## 4.0.0-next.3
+
+### Major Changes
+
+- republish
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/helpers@4.0.0-next.3
+  - @orion-js/schema@4.0.0-next.3
+  - @orion-js/cache@4.0.0-next.3
+
 ## 4.0.0-next.2
 
 ### Major Changes

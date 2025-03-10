@@ -1,5 +1,16 @@
 # @orion-js/core
 
+## 4.0.0-next.3
+
+### Major Changes
+
+- republish
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/env@4.0.0-next.3
+
 ## 4.0.0-next.2
 
 ### Major Changes
