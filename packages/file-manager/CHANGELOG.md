@@ -1,5 +1,24 @@
 # @orion-js/file-manager
 
+## 4.0.0-next.2
+
+### Major Changes
+
+- Update to pnpm
+- Update pnpm
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @orion-js/paginated-mongodb@4.0.0-next.2
+  - @orion-js/typed-model@4.0.0-next.2
+  - @orion-js/resolvers@4.0.0-next.2
+  - @orion-js/helpers@4.0.0-next.2
+  - @orion-js/mongodb@4.0.0-next.2
+  - @orion-js/models@4.0.0-next.2
+  - @orion-js/schema@4.0.0-next.2
+
 ## 4.0.0-next.1
 
 ### Major Changes

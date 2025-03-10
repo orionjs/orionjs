@@ -1,5 +1,20 @@
 # @orion-js/mailing
 
+## 4.0.0-next.2
+
+### Major Changes
+
+- Update to pnpm
+- Update pnpm
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @orion-js/resolvers@4.0.0-next.2
+  - @orion-js/schema@4.0.0-next.2
+  - @orion-js/env@4.0.0-next.2
+
 ## 4.0.0-next.1
 
 ### Major Changes

@@ -1,5 +1,24 @@
 # @orion-js/components
 
+## 4.0.0-next.2
+
+### Major Changes
+
+- Update to pnpm
+- Update pnpm
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @orion-js/services@4.0.0-next.2
+  - @orion-js/graphql@4.0.0-next.2
+  - @orion-js/helpers@4.0.0-next.2
+  - @orion-js/echoes@4.0.0-next.2
+  - @orion-js/models@4.0.0-next.2
+  - @orion-js/dogs@4.0.0-next.2
+  - @orion-js/http@4.0.0-next.2
+
 ## 4.0.0-next.1
 
 ### Major Changes
