@@ -7,13 +7,13 @@ import createMapArray from './createMapArray'
 // Import all error-related exports from the Errors module
 import {
   OrionError,
-  OrionErrorInformation,
   PermissionsError,
   UserError,
   isOrionError,
   isUserError,
   isPermissionsError
 } from './Errors'
+import type {OrionErrorInformation} from './Errors'
 
 export * from './composeMiddlewares'
 export * from './retries'
@@ -33,10 +33,11 @@ export {
   OrionError,
   PermissionsError,
   UserError,
-  OrionErrorInformation,
 
   // Error type guards
   isOrionError,
   isUserError,
   isPermissionsError
 }
+
+export type {OrionErrorInformation}

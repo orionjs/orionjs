@@ -1,11 +1,11 @@
 # 
 
 ```
-bun changeset
+pnpm changeset
 ```
 
 ```
-bun changeset version
+pnpm changeset version
 ```
 
 ```
@@ -14,5 +14,5 @@ git commit -m "chore: update changelog"
 ```
 
 ```
-bun changeset publish
+pnpm changeset publish
 ```
