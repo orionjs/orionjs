@@ -9,9 +9,10 @@ bun changeset version
 ```
 
 ```
-bun changeset publish
+git add .
+git commit -m "chore: update changelog"
 ```
 
 ```
-bun changeset tag
+bun changeset publish
 ```
