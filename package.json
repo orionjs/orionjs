@@ -2,7 +2,6 @@
   "license": "MIT",
   "name": "orionjs",
   "private": true,
-  "packageManager": "bun@1.1.21",
   "workspaces": [
     "packages/*"
   ],
@@ -13,6 +12,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.28.1",
     "@types/node": "^22.13.10",
     "bun-plugin-isolated-decl": "^0.1.9",
     "oxc-transform": "^0.56.5",

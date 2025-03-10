@@ -18,13 +18,13 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
-    "@orion-js/helpers": "^4.0.0-alpha.2",
-    "@orion-js/models": "^4.0.0-alpha.2",
-    "@orion-js/mongodb": "^4.0.0-alpha.2",
-    "@orion-js/resolvers": "^4.0.0-alpha.2",
-    "@orion-js/schema": "^4.0.0-alpha.2",
-    "@orion-js/services": "^4.0.0-alpha.2",
-    "@orion-js/typed-model": "^4.0.0-alpha.2"
+    "@orion-js/helpers": "3.12.0",
+    "@orion-js/models": "3.12.0",
+    "@orion-js/mongodb": "3.12.0",
+    "@orion-js/resolvers": "3.12.0",
+    "@orion-js/schema": "3.12.0",
+    "@orion-js/services": "3.12.0",
+    "@orion-js/typed-model": "3.12.0"
   },
   "devDependencies": {
     "@types/lodash": "4.14.176",
