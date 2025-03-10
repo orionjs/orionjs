@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/resolvers",
-  "version": "3.11.15",
+  "version": "4.0.0-alpha.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,8 +17,8 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/cache": "^3.11.15",
-    "@orion-js/helpers": "^3.11.15",
+    "@orion-js/cache": "^4.0.0-alpha.0",
+    "@orion-js/helpers": "^4.0.0-alpha.0",
     "@orion-js/schema": "^3.11.8"
   },
   "devDependencies": {

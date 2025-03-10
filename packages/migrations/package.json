@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/migrations",
-  "version": "3.11.15",
+  "version": "4.0.0-alpha.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,11 +17,11 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/dogs": "^3.11.15",
-    "@orion-js/helpers": "^3.11.15",
-    "@orion-js/mongodb": "^3.11.15",
-    "@orion-js/services": "^3.11.15",
-    "@orion-js/typed-model": "^3.11.15"
+    "@orion-js/dogs": "^4.0.0-alpha.0",
+    "@orion-js/helpers": "^4.0.0-alpha.0",
+    "@orion-js/mongodb": "^4.0.0-alpha.0",
+    "@orion-js/services": "^4.0.0-alpha.0",
+    "@orion-js/typed-model": "^4.0.0-alpha.0"
   },
   "peerDependencies": {
     "@orion-js/logger": "*"
