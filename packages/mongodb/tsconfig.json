@@ -21,7 +21,6 @@
     
     // Best practices
     "strict": false,
-    "noFallthroughCasesInSwitch": true,
-    "types": ["bun-types"]
+    "noFallthroughCasesInSwitch": true
   }
 }
