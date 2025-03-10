@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import createCollection, {createIndexesPromises} from '.'
-import {it, describe, expect, mock} from 'bun:test'
+import {it, describe, expect, mock} from 'vitest'
 
 describe('Test indexes', () => {
   it('Should store all create indexes promises in the array', async () => {

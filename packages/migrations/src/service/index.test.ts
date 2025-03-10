@@ -1,7 +1,6 @@
-import 'reflect-metadata'
 import {ExecutionContext} from '@orion-js/dogs'
 import {getMigrationsFromServices, MigrationService} from '.'
-import {describe, it, expect} from 'bun:test'
+import {describe, it, expect} from 'vitest'
 
 describe('Migration as IOC', () => {
   it('should create a migration service', async () => {

@@ -1,6 +1,6 @@
 import {createIndexesPromises, getMongoConnection} from '..'
 import {connections} from '../connect/connections'
-import {beforeAll, afterAll} from 'bun:test'
+import {beforeAll, afterAll} from 'vitest'
 import {MongoMemoryServer} from 'mongodb-memory-server'
 
 // Declare mongod at module scope so it can be accessed by both beforeAll and afterAll

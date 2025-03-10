@@ -3,7 +3,7 @@ import {Files} from '../Files'
 import File from '.'
 import {createModel} from '@orion-js/models'
 import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {describe, it, expect} from 'bun:test'
+import {describe, it, expect} from 'vitest'
 
 describe('File model', () => {
   it('should correctly clean on a simple file input', async () => {

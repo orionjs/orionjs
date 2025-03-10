@@ -3,7 +3,7 @@ import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {WithoutId} from 'mongodb'
 import {MongoCollection, Repository} from '.'
 import type {Collection} from '../types'
-import {describe, it, expect} from 'bun:test'
+import {describe, it, expect} from 'vitest'
 
 describe('Collection as IOC', () => {
   it('should create the collection and set the methods', async () => {

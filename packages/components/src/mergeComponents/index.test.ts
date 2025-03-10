@@ -1,7 +1,7 @@
 import {Route, Routes} from '@orion-js/http'
 import {mergeComponentControllers} from '.'
 import {component} from '../components'
-import {describe, it, expect} from 'bun:test'
+import {describe, it, expect} from 'vitest'
 
 describe('Merge components', () => {
   it('should return merged components', () => {

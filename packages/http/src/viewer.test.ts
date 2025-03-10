@@ -3,7 +3,7 @@ import {getApp} from './start'
 import route from './routes/route'
 import registerRoute from './routes/registerRoute'
 import request from 'supertest'
-import {describe, test, expect} from 'bun:test'
+import {describe, test, expect} from 'vitest'
 
 describe('Test viewer', () => {
   test('It should pass the correct viewer', async () => {

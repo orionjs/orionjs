@@ -4,7 +4,7 @@ import {getApp} from '../start'
 import request from 'supertest'
 import registerRoutes from '../routes/registerRoutes'
 import type {Request} from '../types'
-import {describe, it, expect} from 'bun:test'
+import {describe, it, expect} from 'vitest'
 
 describe('Routes with service injections', () => {
   it('Should define a routes map using services', async () => {

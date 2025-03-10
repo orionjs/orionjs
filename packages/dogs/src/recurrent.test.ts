@@ -2,7 +2,7 @@ import 'reflect-metadata'
 import {sleep} from '@orion-js/helpers'
 import {defineJob, startWorkers} from '.'
 import {setLogLevel} from '@orion-js/logger'
-import {describe, it, expect} from 'bun:test'
+import {describe, it, expect} from 'vitest'
 
 setLogLevel('error')
 
