@@ -15,7 +15,7 @@ function setupTelemetry({
 }) {
   const metricReader = metrics?.disable
     ? undefined
-    : new PrometheusExporter({port: metrics?.port || 9465})
+    : new PrometheusExporter({port: metrics?.port || 9464})
   const sdk = new NodeSDK({
     instrumentations: [
       getNodeAutoInstrumentations({
