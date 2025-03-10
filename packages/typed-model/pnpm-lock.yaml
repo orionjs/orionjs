@@ -8,28 +8,31 @@ importers:
 
   .:
     dependencies:
+      '@orion-js/helpers':
+        specifier: workspace:*
+        version: link:../helpers
+      '@orion-js/models':
+        specifier: workspace:*
+        version: link:../models
+      '@orion-js/resolvers':
+        specifier: workspace:*
+        version: link:../resolvers
+      '@orion-js/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@orion-js/services':
         specifier: workspace:*
         version: link:../services
-      bcryptjs:
-        specifier: ^2.4.3
-        version: 2.4.3
-      tweetnacl:
-        specifier: 1.0.3
-        version: 1.0.3
-      tweetnacl-util:
-        specifier: 0.15.1
-        version: 0.15.1
-    devDependencies:
-      '@types/bcryptjs':
-        specifier: ^2.4.2
-        version: 2.4.6
-      '@types/node':
-        specifier: ^18.0.0
-        version: 18.19.80
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       reflect-metadata:
         specifier: 0.1.13
         version: 0.1.13
+    devDependencies:
+      '@types/node':
+        specifier: ^18.0.0
+        version: 18.19.80
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)
@@ -458,9 +461,6 @@ packages:
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
-  '@types/bcryptjs@2.4.6':
-    resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
-
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
@@ -519,9 +519,6 @@ packages:
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
-
-  bcryptjs@2.4.3:
-    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
 
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
@@ -682,6 +679,9 @@ packages:
 
   lodash.sortby@4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
+
+  lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
 
   loupe@2.3.7:
     resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
@@ -934,12 +934,6 @@ packages:
         optional: true
       typescript:
         optional: true
-
-  tweetnacl-util@0.15.1:
-    resolution: {integrity: sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==}
-
-  tweetnacl@1.0.3:
-    resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
   type-detect@4.1.0:
     resolution: {integrity: sha512-Acylog8/luQ8L7il+geoSxhEkazvkslg7PSNKOX59mbB9cOveP5aq9h74Y7YU8yDpJwetzQQrfIwtf4Wp4LKcw==}
@@ -1283,8 +1277,6 @@ snapshots:
 
   '@sinclair/typebox@0.27.8': {}
 
-  '@types/bcryptjs@2.4.6': {}
-
   '@types/estree@1.0.6': {}
 
   '@types/node@18.19.80':
@@ -1343,8 +1335,6 @@ snapshots:
   assertion-error@1.1.0: {}
 
   balanced-match@1.0.2: {}
-
-  bcryptjs@2.4.3: {}
 
   brace-expansion@2.0.1:
     dependencies:
@@ -1534,6 +1524,8 @@ snapshots:
       pkg-types: 1.3.1
 
   lodash.sortby@4.7.0: {}
+
+  lodash@4.17.21: {}
 
   loupe@2.3.7:
     dependencies:
@@ -1779,10 +1771,6 @@ snapshots:
       - supports-color
       - tsx
       - yaml
-
-  tweetnacl-util@0.15.1: {}
-
-  tweetnacl@1.0.3: {}
 
   type-detect@4.1.0: {}
 

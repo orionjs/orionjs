@@ -9,18 +9,19 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "bun test",
-    "prepare": "bun run build",
+    "test": "vitest run",
+    "prepare": "pnpm build",
     "clean": "rm -rf ./dist",
-    "build": "bun run build.ts",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive",
-    "dev": "bun --watch src/index.ts"
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
   },
   "devDependencies": {
     "@types/lodash": "4.14.176",
     "typescript": "^5.4.5",
-    "@types/bun": "^1.2.4"
+    "@types/node": "^18.0.0",
+    "tsup": "^8.0.1",
+    "vitest": "^1.1.0"
   },
   "publishConfig": {
     "access": "public"

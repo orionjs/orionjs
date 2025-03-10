@@ -8,28 +8,31 @@ importers:
 
   .:
     dependencies:
-      '@orion-js/services':
+      '@orion-js/env':
         specifier: workspace:*
-        version: link:../services
-      bcryptjs:
-        specifier: ^2.4.3
-        version: 2.4.3
-      tweetnacl:
-        specifier: 1.0.3
-        version: 1.0.3
-      tweetnacl-util:
-        specifier: 0.15.1
-        version: 0.15.1
+        version: link:../env
+      '@orion-js/resolvers':
+        specifier: workspace:*
+        version: link:../resolvers
+      '@orion-js/schema':
+        specifier: workspace:*
+        version: link:../schema
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+      luxon:
+        specifier: ^2.1.1
+        version: 2.5.2
+      nodemailer:
+        specifier: ^6.7.1
+        version: 6.10.0
     devDependencies:
-      '@types/bcryptjs':
-        specifier: ^2.4.2
-        version: 2.4.6
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: 0.1.13
-        version: 0.1.13
+      '@types/nodemailer':
+        specifier: ^6.4.4
+        version: 6.4.17
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)
@@ -458,14 +461,14 @@ packages:
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
-  '@types/bcryptjs@2.4.6':
-    resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
-
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
   '@types/node@18.19.80':
     resolution: {integrity: sha512-kEWeMwMeIvxYkeg1gTc01awpwLbfMRZXdIhwRcakd/KlK53jmRC26LqcbIt7fnAQTu5GzlnWmzA3H6+l1u6xxQ==}
+
+  '@types/nodemailer@6.4.17':
+    resolution: {integrity: sha512-I9CCaIp6DTldEg7vyUTZi8+9Vo0hi1/T8gv3C89yk1rSAAzoKQ8H8ki/jBYJSFoH/BisgLP8tkZMlQ91CIquww==}
 
   '@vitest/expect@1.6.1':
     resolution: {integrity: sha512-jXL+9+ZNIJKruofqXuuTClf44eSpcHlgj3CiuNihUF3Ioujtmc0zIa3UJOW5RjDK1YLBJZnWBlPuqhYycLioog==}
@@ -519,9 +522,6 @@ packages:
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
-
-  bcryptjs@2.4.3:
-    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
 
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
@@ -683,11 +683,18 @@ packages:
   lodash.sortby@4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
 
+  lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+
   loupe@2.3.7:
     resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
+
+  luxon@2.5.2:
+    resolution: {integrity: sha512-Yg7/RDp4nedqmLgyH0LwgGRvMEKVzKbUdkBYyCosbHgJ+kaOUx0qzSiSatVc3DFygnirTPYnMM2P5dg2uH1WvA==}
+    engines: {node: '>=12'}
 
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
@@ -720,6 +727,10 @@ packages:
     resolution: {integrity: sha512-SppoicMGpZvbF1l3z4x7No3OlIjP7QJvC9XR7AhZr1kL133KHnKPztkKDc+Ir4aJ/1VhTySrtKhrsycmrMQfvg==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  nodemailer@6.10.0:
+    resolution: {integrity: sha512-SQ3wZCExjeSatLE/HBaXS5vqUOQk6GtBdIIKxiFdmm01mOQZX/POJkO3SUX1wDiYcwUOJwT23scFSC9fY2H8IA==}
+    engines: {node: '>=6.0.0'}
 
   npm-run-path@5.3.0:
     resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
@@ -811,9 +822,6 @@ packages:
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
-
-  reflect-metadata@0.1.13:
-    resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
 
   resolve-from@5.0.0:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
@@ -934,12 +942,6 @@ packages:
         optional: true
       typescript:
         optional: true
-
-  tweetnacl-util@0.15.1:
-    resolution: {integrity: sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==}
-
-  tweetnacl@1.0.3:
-    resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
   type-detect@4.1.0:
     resolution: {integrity: sha512-Acylog8/luQ8L7il+geoSxhEkazvkslg7PSNKOX59mbB9cOveP5aq9h74Y7YU8yDpJwetzQQrfIwtf4Wp4LKcw==}
@@ -1283,13 +1285,15 @@ snapshots:
 
   '@sinclair/typebox@0.27.8': {}
 
-  '@types/bcryptjs@2.4.6': {}
-
   '@types/estree@1.0.6': {}
 
   '@types/node@18.19.80':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/nodemailer@6.4.17':
+    dependencies:
+      '@types/node': 18.19.80
 
   '@vitest/expect@1.6.1':
     dependencies:
@@ -1343,8 +1347,6 @@ snapshots:
   assertion-error@1.1.0: {}
 
   balanced-match@1.0.2: {}
-
-  bcryptjs@2.4.3: {}
 
   brace-expansion@2.0.1:
     dependencies:
@@ -1535,11 +1537,15 @@ snapshots:
 
   lodash.sortby@4.7.0: {}
 
+  lodash@4.17.21: {}
+
   loupe@2.3.7:
     dependencies:
       get-func-name: 2.0.2
 
   lru-cache@10.4.3: {}
+
+  luxon@2.5.2: {}
 
   magic-string@0.30.17:
     dependencies:
@@ -1571,6 +1577,8 @@ snapshots:
       thenify-all: 1.6.0
 
   nanoid@3.3.9: {}
+
+  nodemailer@6.10.0: {}
 
   npm-run-path@5.3.0:
     dependencies:
@@ -1638,8 +1646,6 @@ snapshots:
   react-is@18.3.1: {}
 
   readdirp@4.1.2: {}
-
-  reflect-metadata@0.1.13: {}
 
   resolve-from@5.0.0: {}
 
@@ -1779,10 +1785,6 @@ snapshots:
       - supports-color
       - tsx
       - yaml
-
-  tweetnacl-util@0.15.1: {}
-
-  tweetnacl@1.0.3: {}
 
   type-detect@4.1.0: {}
 
