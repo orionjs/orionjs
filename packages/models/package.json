@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/models",
-  "version": "4.0.0-alpha.0",
+  "version": "4.0.1-alpha.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,15 +17,15 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/helpers": "^4.0.0-alpha.0",
-    "@orion-js/resolvers": "^4.0.0-alpha.0",
-    "@orion-js/schema": "^3.11.8"
+    "@orion-js/helpers": "^4.0.1-alpha.0",
+    "@orion-js/resolvers": "^4.0.1-alpha.0",
+    "@orion-js/schema": "^4.0.1-alpha.0"
   },
   "peerDependencies": {
     "@orion-js/cache": "^3.0.0-alpha.10"
   },
   "devDependencies": {
-    "@orion-js/cache": "^4.0.0-alpha.0",
+    "@orion-js/cache": "^4.0.1-alpha.0",
     "@shelf/jest-mongodb": "^2.1.0",
     "@types/jest": "^27.0.2",
     "@types/lodash": "4.14.176",
@@ -36,5 +36,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9d85ab24776533db109843c277324e42c65ddedd"
+  "gitHead": "9fd28b6f6b348cebc9f0dc207805647969277372"
 }
