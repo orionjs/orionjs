@@ -224,7 +224,7 @@ export type CreateCollection = <ModelClass extends ModelClassBase = any>(
   options: CreateCollectionOptions<ModelClass>,
 ) => Collection<ModelClass>
 
-export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> {
+export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
   connectionName?: string
   schema?: Schema

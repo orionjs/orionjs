@@ -3,7 +3,8 @@ import {getServiceRoutes, Route, Routes} from '.'
 import {getApp} from '../start'
 import request from 'supertest'
 import registerRoutes from '../routes/registerRoutes'
-import {Request} from '../types'
+import type {Request} from '../types'
+import {describe, it, expect} from 'bun:test'
 
 describe('Routes with service injections', () => {
   it('Should define a routes map using services', async () => {
@@ -23,7 +24,7 @@ describe('Routes with service injections', () => {
       async route(req: Request) {
         return {
           statusCode: 200,
-          body: {
+          body: { 
             message: this.serviceExample.sayHi(req.body.name)
           }
         }

@@ -1,4 +1,4 @@
-import Container, {Constructable} from 'typedi'
+import {Constructable, Container} from 'typedi'
 
 export {Service, Inject, Container} from 'typedi'
 

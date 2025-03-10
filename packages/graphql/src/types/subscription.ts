@@ -1,6 +1,6 @@
 import {ResolverOptions} from '@orion-js/resolvers'
 
-export interface OrionSubscription<TParams = any, ReturnType = any> {
+export class OrionSubscription<TParams = any, ReturnType = any> {
   name: string
   params: object
   subscribe: (callParams: object, viewer: object) => {}

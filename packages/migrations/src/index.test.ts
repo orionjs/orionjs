@@ -1,11 +1,12 @@
-import {Inject, getInstance} from '@orion-js/services'
+import 'reflect-metadata'
 import {loadMigrations} from './loadMigrations'
 import {MigrationService} from './service'
 import {MigrationsService} from './MigrationsService'
-import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
-import {generateId} from '../../helpers/lib'
 import {MigrationsRepo} from './Repo'
 import {ExecutionContext} from '@orion-js/dogs'
+import {describe, it, expect} from 'bun:test'
+import {generateId} from '@orion-js/helpers'
+import {getInstance} from '@orion-js/services'
 
 describe('Migrations end to end', () => {
   it('should create a migration service', async () => {

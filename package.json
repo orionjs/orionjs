@@ -6,7 +6,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "bun run --filter=* build"
+    "test": "sh test.sh",
+    "build": "bun run --filter=* build",
+    "publish-alpha": "sh publish.sh --tag next"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

@@ -1,5 +1,6 @@
 import {createCache, defaultStore} from './index'
 import {sleep} from '@orion-js/helpers'
+import {it, expect} from 'bun:test'
 
 const cache = createCache(defaultStore)
 

@@ -1,5 +1,5 @@
 import {Inject, Service} from '@orion-js/services'
-import {keys} from 'lodash'
+import type {MigrationsRepo as MigrationsRepoType} from './Repo'
 import {MigrationsRepo} from './Repo'
 import {logger} from '@orion-js/logger'
 import {MigrationExecutable} from './service'
@@ -7,8 +7,8 @@ import {ExecutionContext} from '@orion-js/dogs'
 
 @Service()
 export class MigrationsService {
-  @Inject()
-  private migrationsRepo: MigrationsRepo
+  @Inject(() => MigrationsRepo)
+  private migrationsRepo: MigrationsRepoType
 
   async getNextMigration(migrationsList: MigrationExecutable[]) {
     const completedNames = await this.migrationsRepo.getCompletedMigrationNames()

@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import {getInstance} from '../../typedi'
 import {AuthService} from './AuthService'
+import {describe, it, expect} from 'bun:test'
 
 describe('Example AuthService', () => {
   it('should create the instance and run all the methods using circular dependencies', () => {

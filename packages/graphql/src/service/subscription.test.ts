@@ -3,6 +3,7 @@ import {Subscriptions, Subscription, getServiceSubscriptions} from './index'
 import {OrionSubscription} from '../types'
 import {getInstance} from '@orion-js/services'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {describe, it, expect} from 'bun:test'
 
 describe('Subscriptions classes', () => {
   it('should get the subscriptions using services', async () => {

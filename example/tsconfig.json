@@ -1,21 +1,22 @@
 {
   "compilerOptions": {
-    "strict": false,
-    "strictPropertyInitialization": false,
-    "outDir": "./.orion/build/app",
-    "rootDir": "./app",
-    "module": "commonjs",
-    "target": "es2020",
-    "moduleResolution": "node",
-    "lib": [
-      "es2020"
-    ],
-    "declaration": true,
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "nodenext",
+
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+
+    // required for typed models
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "baseUrl": "./"
+    
+    "strict": false,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": "./",
   }
 }

@@ -1,6 +1,7 @@
 import {Route, Routes} from '@orion-js/http'
 import {mergeComponentControllers} from '.'
 import {component} from '../components'
+import {describe, it, expect} from 'bun:test'
 
 describe('Merge components', () => {
   it('should return merged components', () => {
@@ -41,7 +42,7 @@ describe('Merge components', () => {
         test2: aRoute,
         test3: aRoute,
         test4: aRoute
-      }
+      } as any
     })
   })
 })

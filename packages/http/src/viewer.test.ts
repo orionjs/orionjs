@@ -3,6 +3,7 @@ import {getApp} from './start'
 import route from './routes/route'
 import registerRoute from './routes/registerRoute'
 import request from 'supertest'
+import {describe, test, expect} from 'bun:test'
 
 describe('Test viewer', () => {
   test('It should pass the correct viewer', async () => {
@@ -51,5 +52,7 @@ describe('Test viewer', () => {
     // expect reponse code to be 401
     expect(response.status).toBe(401)
     expect(response.body).toEqual({error: 'AuthError', message: 'invalid headers'})
+
+    setGetViewer(() => null)
   })
 })

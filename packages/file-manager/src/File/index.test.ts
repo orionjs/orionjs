@@ -1,12 +1,13 @@
-import File from '.'
+import {FileSchema} from './schema'
 import {Files} from '../Files'
+import File from '.'
 import {createModel} from '@orion-js/models'
 import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {FileSchema} from './schema'
+import {describe, it, expect} from 'bun:test'
 
 describe('File model', () => {
   it('should correctly clean on a simple file input', async () => {
-    await Files.insertOne({
+    await Files.rawCollection.insertOne({
       _id: '1',
       externalUrl: 'https://example.com/file.jpg'
     })
@@ -42,7 +43,7 @@ describe('File model', () => {
   })
 
   it('should correctly clean the file input on a complex schema', async () => {
-    await Files.insertOne({
+    await Files.rawCollection.insertOne({
       _id: '2',
       externalUrl: 'https://example.com/file.jpg'
     })

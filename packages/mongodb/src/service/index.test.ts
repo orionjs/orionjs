@@ -3,6 +3,7 @@ import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {WithoutId} from 'mongodb'
 import {MongoCollection, Repository} from '.'
 import type {Collection} from '../types'
+import {describe, it, expect} from 'bun:test'
 
 describe('Collection as IOC', () => {
   it('should create the collection and set the methods', async () => {
@@ -59,5 +60,28 @@ describe('Collection as IOC', () => {
         'You must pass a class decorated with @Repository if you want to use @MongoCollection',
       )
     }
+  })
+
+
+  it('should work with the same example that is failing in migrations',  () => {
+    @Repository()
+    class MigrationsRepo {
+      @MongoCollection({
+        name: 'orionjs.migrations',
+        idPrefix: 'scnmg-',
+        indexes: []
+      })
+      collection: Collection<any>
+
+      async getCompletedMigrationNames() {
+        const migrations = await this.collection.find().toArray()
+        return migrations.map(m => m.name)
+      }
+
+      async saveCompletedMigration(name: string) {
+        await this.collection.insertOne({name, completedAt: new Date()})
+      }
+    }
+
   })
 })

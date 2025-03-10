@@ -4,7 +4,7 @@ export type MigrationId = `scnmg-${string}`
 
 @TypedSchema()
 export class MigrationSchema {
-  @Prop()
+  @Prop({type: 'string'})
   _id: MigrationId
 
   @Prop()

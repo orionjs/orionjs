@@ -16,7 +16,8 @@ export function MongoCollection<ModelClass extends ModelClassBase = ModelClassBa
             'You must pass a class decorated with @Repository if you want to use @MongoCollection'
           )
         }
-
+    
+        
         return createCollection(options)
       }
     })

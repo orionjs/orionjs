@@ -30,7 +30,6 @@
   "devDependencies": {
     "@orion-js/logger": "^4.0.0-alpha.2",
     "@types/lodash": "4.14.195",
-    "@types/node": "20.4.2",
     "reflect-metadata": "^0.1.13",
     "typescript": "^5.4.5",
     "@types/bun": "^1.2.4"

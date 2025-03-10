@@ -4,38 +4,38 @@
     "": {
       "name": "app",
       "dependencies": {
-        "@orion-js/cache": "^3.11.8",
-        "@orion-js/components": "^3.11.9",
-        "@orion-js/crypto": "3.11.8",
-        "@orion-js/dogs": "^3.11.9",
-        "@orion-js/echoes": "^3.11.8",
-        "@orion-js/env": "^3.11.8",
-        "@orion-js/graphql": "^3.11.8",
-        "@orion-js/helpers": "3.11.8",
-        "@orion-js/http": "^3.11.8",
-        "@orion-js/logger": "^3.11.8",
-        "@orion-js/migrations": "^3.11.9",
-        "@orion-js/models": "^3.11.8",
-        "@orion-js/mongodb": "^3.11.8",
-        "@orion-js/paginated-mongodb": "^3.11.8",
-        "@orion-js/resolvers": "^3.11.8",
-        "@orion-js/schema": "^3.11.8",
-        "@orion-js/services": "^3.11.8",
-        "@orion-js/typed-model": "^3.11.8",
-        "graphql": "^16.6.0",
+        "@orion-js/cache": "4.0.0-alpha.2",
+        "@orion-js/components": "4.0.0-alpha.2",
+        "@orion-js/crypto": "4.0.0-alpha.2",
+        "@orion-js/dogs": "4.0.0-alpha.2",
+        "@orion-js/echoes": "4.0.0-alpha.2",
+        "@orion-js/env": "4.0.0-alpha.2",
+        "@orion-js/graphql": "4.0.0-alpha.2",
+        "@orion-js/helpers": "4.0.0-alpha.2",
+        "@orion-js/http": "4.0.0-alpha.2",
+        "@orion-js/logger": "4.0.0-alpha.2",
+        "@orion-js/migrations": "4.0.0-alpha.2",
+        "@orion-js/models": "4.0.0-alpha.2",
+        "@orion-js/mongodb": "4.0.0-alpha.2",
+        "@orion-js/paginated-mongodb": "4.0.0-alpha.2",
+        "@orion-js/resolvers": "4.0.0-alpha.2",
+        "@orion-js/schema": "4.0.0-alpha.2",
+        "@orion-js/services": "4.0.0-alpha.2",
+        "@orion-js/typed-model": "4.0.0-alpha.2",
+        "graphql": "^16.10.0",
         "lodash": "4.17.21",
       },
       "devDependencies": {
         "@biomejs/biome": "^1.9.4",
-        "@orion-js/core": "3.11.10",
-        "@types/bun": "latest",
-        "@types/jest": "^29.2.3",
-        "@types/lodash": "^4.14.190",
+        "@orion-js/core": "3.11.14",
+        "@types/bun": "^1.2.4",
+        "@types/jest": "^29.5.14",
+        "@types/lodash": "^4.17.16",
         "@types/node": "^22.13.10",
         "@typescript-eslint/eslint-plugin": "^8.26.0",
         "@typescript-eslint/parser": "^8.26.0",
-        "jest": "^29.3.1",
-        "ts-jest": "^29.0.3",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.2.6",
         "typescript": "^5.8.2",
       },
     },
@@ -253,43 +253,43 @@
 
     "@opentelemetry/api": ["@opentelemetry/api@1.9.0", "", {}, "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="],
 
-    "@orion-js/cache": ["@orion-js/cache@3.11.15", "", { "dependencies": { "@orion-js/helpers": "^3.11.15" } }, "sha512-YykUeu5D1erFnbmPD7ViyzL53iEfYrZFrzH5HFYHUjeets6vCBXxRi4BsCNOdwroMqRg6KhlWxARJhsrf5dVHA=="],
+    "@orion-js/cache": ["@orion-js/cache@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/helpers": "^4.0.0-alpha.2" } }, "sha512-QGLjYskNpo9Miz0NFQNSothCtnUn4cHCfcjUopAHGWH1F/MunD6GVzWqvYfOW+tRtjW2gK+l+DMgWDRufutBeg=="],
 
-    "@orion-js/components": ["@orion-js/components@3.11.15", "", { "peerDependencies": { "@orion-js/dogs": "^3.2.33", "@orion-js/echoes": "^3.2.33", "@orion-js/graphql": "^3.2.33", "@orion-js/helpers": "^3.2.21", "@orion-js/http": "^3.2.33", "@orion-js/models": "^3.2.33", "@orion-js/services": "^3.2.21" } }, "sha512-MO4FBYFc67XyDCoAgab/B2Xe4J2SSuVZc9PFgqfNMO+HrKZLWl5gCkPDjOOCkPrH8ny51wV7QOhN1SZ/vVZpwg=="],
+    "@orion-js/components": ["@orion-js/components@4.0.0-alpha.2", "", { "peerDependencies": { "@orion-js/dogs": "^3.2.33", "@orion-js/echoes": "^3.2.33", "@orion-js/graphql": "^3.2.33", "@orion-js/helpers": "^3.2.21", "@orion-js/http": "^3.2.33", "@orion-js/models": "^3.2.33", "@orion-js/services": "^3.2.21" } }, "sha512-v/bQnhf5poCyzAMjiiSVC6ClGP/4ROY4j7A1+qjOvqm8bxWdouWky02EZbGxlBS4DO2xVXUkduhjpjWuXde3DQ=="],
 
-    "@orion-js/core": ["@orion-js/core@3.11.10", "", { "dependencies": { "@orion-js/env": "^3.11.8", "chokidar": "3.5.3", "colors": "^1.4.0", "commander": "^9.4.1", "comment-json": "^4.2.3", "dotenv": "^16.0.3", "lodash": "^4.17.21", "prompts": "^2.4.2", "reflect-metadata": "^0.1.13", "yaml": "^2.2.1" }, "peerDependencies": { "typescript": "*" }, "bin": { "orion": "lib/index.js" } }, "sha512-B1tAtpHaCT+TKHhlAnE5UzKN8OirxA3cGNmjlUITDkZOrnQfQhBosMq4/pIOejj8fL2/AUhz8vtm9QYws6vHkQ=="],
+    "@orion-js/core": ["@orion-js/core@3.11.14", "", { "dependencies": { "@orion-js/env": "^3.11.8", "chokidar": "3.5.3", "colors": "^1.4.0", "commander": "^9.4.1", "comment-json": "^4.2.3", "dotenv": "^16.0.3", "lodash": "^4.17.21", "prompts": "^2.4.2", "reflect-metadata": "^0.1.13", "yaml": "^2.2.1" }, "peerDependencies": { "typescript": "*" }, "bin": { "orion": "lib/index.js" } }, "sha512-GQMPV/FUaHyqZU7YV5unYWClq2HIupYtzTT7LYrkcfW6TGFi+CAFqnAG/ytw6kk62f3cRMBS/x3XB6PHFFgKgg=="],
 
-    "@orion-js/crypto": ["@orion-js/crypto@3.11.8", "", { "dependencies": { "@orion-js/services": "^3.11.8", "bcryptjs": "^2.4.3", "tweetnacl": "1.0.3", "tweetnacl-util": "0.15.1" } }, "sha512-8In2JZaTFVqfvEHGsATASIqSmdbWU89G4rMjsnyFr+ckw4TmF17KSjDborodIZesAP3qwEdnmEDOOrVSCiSgog=="],
+    "@orion-js/crypto": ["@orion-js/crypto@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/services": "^4.0.0-alpha.2", "bcryptjs": "^2.4.3", "tweetnacl": "1.0.3", "tweetnacl-util": "0.15.1" } }, "sha512-se+rl7EvdeHqeywH6Sec4Z1mSd+W2Elq7L+bIFvrgBwoIOKQR83MT8rX9UOosCLyTKaSoW0+CXASNNGlPRx8mg=="],
 
-    "@orion-js/dogs": ["@orion-js/dogs@3.11.15", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "@orion-js/helpers": "^3.11.15", "@orion-js/mongodb": "^3.11.15", "@orion-js/services": "^3.11.15", "@orion-js/typed-model": "^3.11.15" }, "peerDependencies": { "@orion-js/logger": "*" } }, "sha512-JO6m9RqpECf7JTmLFXvweCOgKjOGfou57oGXxp9hpA/MvZVLdRt6RBUCimvs5ekPxhzXBfhKhUxJnZsncfYB8Q=="],
+    "@orion-js/dogs": ["@orion-js/dogs@4.0.0-alpha.2", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/mongodb": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "@orion-js/typed-model": "^4.0.0-alpha.2" }, "peerDependencies": { "@orion-js/logger": "*" } }, "sha512-0O/WEFrdiPSNX7k6kLsopjsUNR8vY70TPcffI4RGgSbfugS+CmMj1bIWSTcdmUwNgvEPxnrQvAUrKbVwDrEv1A=="],
 
-    "@orion-js/echoes": ["@orion-js/echoes@3.11.15", "", { "dependencies": { "@orion-js/env": "^3.11.8", "@orion-js/helpers": "^3.11.15", "@orion-js/http": "^3.11.15", "@orion-js/schema": "^3.11.8", "@orion-js/services": "^3.11.15", "axios": "^0.24.0", "jssha": "^3.2.0", "kafkajs": "^2.2.4", "lodash": "^4.17.21", "serialize-javascript": "^6.0.0" } }, "sha512-1WWUmgoAhQGZffo76+QJPpvSUQtyVYyoi8kZkeJFHPTeYYiqwyGnBzWHuB68e/Y1tie2FAgm5vxxRZETArSYkg=="],
+    "@orion-js/echoes": ["@orion-js/echoes@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/env": "^4.0.0-alpha.2", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/http": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "axios": "^0.24.0", "jssha": "^3.2.0", "kafkajs": "^2.2.4", "lodash": "^4.17.21", "serialize-javascript": "^6.0.0" } }, "sha512-+mGVFpxu8El6KBwD5iQCb9K5Bi12L9x0EMLEaYEz4lQzI3VrqQeT4HQ1d+awLosbURKe5bRdz1i7HKDp2wqcQA=="],
 
-    "@orion-js/env": ["@orion-js/env@3.11.8", "", { "dependencies": { "colors": "^1.4.0", "commander": "^9.1.0", "prompts": "^2.4.2", "tweetnacl": "^1.0.3", "tweetnacl-util": "0.15.1", "yaml": "^2.0.0" }, "bin": { "orion-env": "lib/cli/index.js" } }, "sha512-RbOPQrlXJ9Vk2DCobH5LNqjiVfZF4mrekjv5tUSrxdXvxk6idHVATXi26tx3YCZCRntocsxyZN+MvDyyIrxGWA=="],
+    "@orion-js/env": ["@orion-js/env@4.0.0-alpha.2", "", { "dependencies": { "colors": "^1.4.0", "commander": "^9.5.0", "prompts": "^2.4.2", "tweetnacl": "^1.0.3", "tweetnacl-util": "0.15.1", "yaml": "^2.7.0" }, "bin": { "orion-env": "lib/cli/index.js" } }, "sha512-5D954qtojD8sm+Dr1fjX3EzwIp3BL4oNbq16RbMVeYR88l1ySCPF34BAg6Zx0j3BiK9eNP3XWerKnSjnKbZrdA=="],
 
-    "@orion-js/graphql": ["@orion-js/graphql@3.11.15", "", { "dependencies": { "@apollo/server": "^4.3.0", "@graphql-tools/schema": "^9.0.12", "@orion-js/env": "^3.11.8", "@orion-js/helpers": "^3.11.15", "@orion-js/http": "^3.11.15", "@orion-js/models": "^3.11.15", "@orion-js/resolvers": "^3.11.15", "@orion-js/schema": "^3.11.8", "@orion-js/services": "^3.11.15", "@orion-js/typed-model": "^3.11.15", "graphql-iso-date": "^3.6.1", "graphql-subscriptions": "2.0.0", "graphql-ws": "^5.11.2", "lodash": "^4.17.21", "subscriptions-transport-ws": "^0.11.0", "ws": "^8.11.0" }, "peerDependencies": { "graphql": "^16.0.1" } }, "sha512-H4eYIrq3TpsheR+YAstoznw/NKej8oZqaGatBd8M9PdNC8mLYlum7XRCyNSZZO8YM00XpQTQLX+xbINQ2Zo9vw=="],
+    "@orion-js/graphql": ["@orion-js/graphql@4.0.0-alpha.2", "", { "dependencies": { "@apollo/server": "^4.3.0", "@graphql-tools/schema": "^9.0.12", "@orion-js/env": "^4.0.0-alpha.2", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/http": "^4.0.0-alpha.2", "@orion-js/models": "^4.0.0-alpha.2", "@orion-js/resolvers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "@orion-js/typed-model": "^4.0.0-alpha.2", "graphql-iso-date": "^3.6.1", "graphql-subscriptions": "2.0.0", "graphql-ws": "^5.11.2", "lodash": "^4.17.21", "subscriptions-transport-ws": "^0.11.0", "ws": "^8.11.0" }, "peerDependencies": { "graphql": "^16.0.1" } }, "sha512-3V9dkwz06RiqAbJDdxlJ2xkdA7bey+3r1F3b6FhojoQ6oXRt3HvpzhjkcMhzp2nO+D+rjMEIQ1P7yNy8L1HGPQ=="],
 
-    "@orion-js/helpers": ["@orion-js/helpers@3.11.8", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-dbTu+VlIxs2ZVH62+TT1fZOKlrzencaf8XjGUrLPqA6Y5TeUppebvvrVjUyRQZz2IBKfruAhnDau67GZIVHsjQ=="],
+    "@orion-js/helpers": ["@orion-js/helpers@4.0.0-alpha.2", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-V3mfcy5KHzlQVIVcFtbz7WSYxN7xd9qsTGsxrC7gQR00zdfZ+EPA0Jz/IlF33rbiq3MlrsFOgrBu3/l6WSxZmw=="],
 
-    "@orion-js/http": ["@orion-js/http@3.11.15", "", { "dependencies": { "@orion-js/env": "^3.11.8", "@orion-js/helpers": "^3.11.15", "@orion-js/resolvers": "^3.11.15", "@orion-js/schema": "^3.11.8", "@orion-js/services": "^3.11.15", "body-parser": "1.19.0", "express": "4.17.1", "reflect-metadata": "^0.1.13" } }, "sha512-afKvSXW6caKDk6r48zhmhjsJ/5Agwru1hr1S9ceN0k+Kh+SvsxMXramx0vdvlrW7qHWwszGGEf+tNAaOlXLJzQ=="],
+    "@orion-js/http": ["@orion-js/http@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/env": "^4.0.0-alpha.2", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/resolvers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "body-parser": "1.19.0", "express": "4.17.1", "reflect-metadata": "^0.1.13" } }, "sha512-uH2ZFgwzWYOH+dvcMI17XAgcznAHjQkQBAgxpR+BoEMd6cWormzZSUg00VkWAa6D1cJFf4gq1g8c0nNl8X0KPA=="],
 
-    "@orion-js/logger": ["@orion-js/logger@3.11.8", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "color": "^4.2.3", "lodash": "^4.17.21", "object-hash": "^2.2.0", "text-hex": "^1.0.0", "winston": "^3.6.0" } }, "sha512-y817RsCNEQpArUrzm40QlOcNoE6rXEGlRaVrgw07Pm/Ds9Xlv03a/md98UeYtrQgT0zHEyTMbX5U/VYjSYQl8A=="],
+    "@orion-js/logger": ["@orion-js/logger@4.0.0-alpha.2", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "color": "^4.2.3", "lodash": "^4.17.21", "object-hash": "^2.2.0", "text-hex": "^1.0.0", "winston": "^3.6.0" } }, "sha512-D4oKWlR3IK+f58ADZDACgOgv6yTAHbVzKDQTGE33hvX9Ih4mlT1KJxPOxgH3jmesbQit3kONQngSfLvN6yRyLg=="],
 
-    "@orion-js/migrations": ["@orion-js/migrations@3.11.15", "", { "dependencies": { "@orion-js/dogs": "^3.11.15", "@orion-js/helpers": "^3.11.15", "@orion-js/mongodb": "^3.11.15", "@orion-js/services": "^3.11.15", "@orion-js/typed-model": "^3.11.15" }, "peerDependencies": { "@orion-js/logger": "*" } }, "sha512-P/+Hays5kCeMa8pKqP77pTPZ4eLaBqR6+olCMUPSpx6wZzUYL/+CbAinwhlcT0w3Wxfr5i734Gz9PGKA67vHcg=="],
+    "@orion-js/migrations": ["@orion-js/migrations@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/dogs": "^4.0.0-alpha.2", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/mongodb": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "@orion-js/typed-model": "^4.0.0-alpha.2" }, "peerDependencies": { "@orion-js/logger": "*" } }, "sha512-61xYktttT3fyBFkj0ofhOe0LnSIb++jTU80xd9BUeIyQn+tvl9IgKEQwXHOF1HZKALj5Pv12EOyyZ3GJEaCkmw=="],
 
-    "@orion-js/models": ["@orion-js/models@3.11.15", "", { "dependencies": { "@orion-js/helpers": "^3.11.15", "@orion-js/resolvers": "^3.11.15", "@orion-js/schema": "^3.11.8" }, "peerDependencies": { "@orion-js/cache": "^3.0.0-alpha.10" } }, "sha512-7U/yazTCLrJFB+LJ5m2J3yddqjQWPY7Okb2omWi9xj4UYecFrvqBQX3K1i1lzwA+XkKN/EZ1G6fHLo/Rmw7WUw=="],
+    "@orion-js/models": ["@orion-js/models@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/resolvers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2" }, "peerDependencies": { "@orion-js/cache": "^3.0.0-alpha.10" } }, "sha512-IVXuT0enNdZ4yi7hSF0Ji0MlIODedTi+wJIt+591KduWWXt4ox79GR08CUiCyRyRMhIE6L+qhfF+MTn52SWkAQ=="],
 
-    "@orion-js/mongodb": ["@orion-js/mongodb@3.11.15", "", { "dependencies": { "@orion-js/env": "^3.11.8", "@orion-js/helpers": "^3.11.15", "@orion-js/logger": "^3.11.8", "@orion-js/models": "^3.11.15", "@orion-js/resolvers": "^3.11.15", "@orion-js/schema": "^3.11.8", "@orion-js/services": "^3.11.15", "@orion-js/typed-model": "^3.11.15", "bson": "^6.6.0", "dataloader": "2.2.2", "dot-object": "2.1.4", "mongodb": "6.5.0" } }, "sha512-G8GYw6X6rp0SR9Zl5BONrLWWc1vfg8JVupsYobIE8htVL1oonWOcCwGbhho7m9TFlc2DAW1yjwLz9os9zqToFg=="],
+    "@orion-js/mongodb": ["@orion-js/mongodb@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/env": "^4.0.0-alpha.2", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/logger": "^4.0.0-alpha.2", "@orion-js/models": "^4.0.0-alpha.2", "@orion-js/resolvers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "@orion-js/typed-model": "^4.0.0-alpha.2", "bson": "^6.10.3", "dataloader": "2.2.2", "dot-object": "2.1.4", "mongodb": "6.5.0" } }, "sha512-O6diAb7hBUpxNEiLQXvZUiBmLDL0EolGrJsqSrq126BU9105Y+GPsodnEFjcDTZe+XnC6NAXWY7hsBn6Osafpw=="],
 
-    "@orion-js/paginated-mongodb": ["@orion-js/paginated-mongodb@3.11.15", "", { "dependencies": { "@orion-js/helpers": "^3.11.15", "@orion-js/models": "^3.11.15", "@orion-js/mongodb": "^3.11.15", "@orion-js/resolvers": "^3.11.15", "@orion-js/schema": "^3.11.8", "@orion-js/services": "^3.11.15", "@orion-js/typed-model": "^3.11.15" } }, "sha512-eY6stn1MIp345WONpkW9rwVVMH+ljzH3KdbzKyOMtuJ+a+PLrQbzYtFpFqoVp3Xe99X5O4uxT38iJXj+FVqwBw=="],
+    "@orion-js/paginated-mongodb": ["@orion-js/paginated-mongodb@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/models": "^4.0.0-alpha.2", "@orion-js/mongodb": "^4.0.0-alpha.2", "@orion-js/resolvers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "@orion-js/typed-model": "^4.0.0-alpha.2" } }, "sha512-VPNPBwhPJbqfpim6McZM37hFY1lj/VxjqRQCkcmCkYdFiLD8FvIYuWfPfBj0bTAxwxuxiHNqV/oKRa9HmCZxAg=="],
 
-    "@orion-js/resolvers": ["@orion-js/resolvers@3.11.15", "", { "dependencies": { "@orion-js/cache": "^3.11.15", "@orion-js/helpers": "^3.11.15", "@orion-js/schema": "^3.11.8" } }, "sha512-lHDFrdrT58k6R95g4/72KT6i0Rg7pMROZFC/HgH0qkeQigU8sAgRkCAqICurvnMC78LQG1SSp43QG/vcEksIMA=="],
+    "@orion-js/resolvers": ["@orion-js/resolvers@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/cache": "^4.0.0-alpha.2", "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2" } }, "sha512-l54XRQIo6fy9RwK4YuFdkAsCZKaQm0oG3ZF3qteAd9JJ/J8efD42YnywSbNAI0Xp2al5OK7NtVf4hPsh6HDNVg=="],
 
-    "@orion-js/schema": ["@orion-js/schema@3.11.8", "", { "dependencies": { "dot-object": "^2.1.4", "lodash": "^4.17.10" } }, "sha512-MSwSGqGSaE4jjOpH90VmNwGNFIivjCkf21ta6fYBkuVAIUCi9a59rPKq3WFP7U2YjKLNqBUdRYakq8FPZQ8/Cw=="],
+    "@orion-js/schema": ["@orion-js/schema@4.0.0-alpha.2", "", { "dependencies": { "dot-object": "^2.1.4", "lodash": "^4.17.10" } }, "sha512-YdcuvDaP+iN3Kndwb3TN9hy+ohFGrUnVftBiq3PhPwoZ5q670ZJmiGZhOJUMgg6+cR+aQ1Svp+8fO7tqaS875g=="],
 
-    "@orion-js/services": ["@orion-js/services@3.11.15", "", { "dependencies": { "@orion-js/helpers": "^3.11.15", "typedi": "^0.10.0" } }, "sha512-8dtPl6QJ/5TkfsP37xQXvWE6MLn5PcdjP3ZIMVy7ZQtBDzF/w38ZFR16dBcPZqHRA5A0cxtHgPRCXE5kUt3HJg=="],
+    "@orion-js/services": ["@orion-js/services@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/helpers": "^4.0.0-alpha.2", "typedi": "^0.10.0" } }, "sha512-Vs36AVYVIR2ZByHjLsbd7Yv+qObR8O0paBYqY2Ou8QUyXoJ6fQ8If5QxG2Glk5a6CxtTMTzf1Wa3+UsC3E3XQw=="],
 
-    "@orion-js/typed-model": ["@orion-js/typed-model@3.11.15", "", { "dependencies": { "@orion-js/helpers": "^3.11.15", "@orion-js/models": "^3.11.15", "@orion-js/resolvers": "^3.11.15", "@orion-js/schema": "^3.11.8", "@orion-js/services": "^3.11.15", "lodash": "^4.17.21", "reflect-metadata": "0.1.13" } }, "sha512-1iXdxe6M1Vyofx01dhx/92/tp9pxerb4joo30zu/5ZgXXoVch5t6Bf2hZ5+cWLsQuZOQDssx7zVwBtu/dfOm6w=="],
+    "@orion-js/typed-model": ["@orion-js/typed-model@4.0.0-alpha.2", "", { "dependencies": { "@orion-js/helpers": "^4.0.0-alpha.2", "@orion-js/models": "^4.0.0-alpha.2", "@orion-js/resolvers": "^4.0.0-alpha.2", "@orion-js/schema": "^4.0.0-alpha.2", "@orion-js/services": "^4.0.0-alpha.2", "lodash": "^4.17.21", "reflect-metadata": "0.1.13" } }, "sha512-NleSqgm2G0DY9NjAJRZ0ZqLT9Xk4U3LbPH28afz++Lxsd0OCzIb6KfxUUPBrnVP4tjG+Fw0VVK1nayJ9AGTlcg=="],
 
     "@protobufjs/aspromise": ["@protobufjs/aspromise@1.1.2", "", {}, "sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ=="],
 
@@ -1195,31 +1195,9 @@
 
     "@istanbuljs/load-nyc-config/js-yaml": ["js-yaml@3.14.1", "", { "dependencies": { "argparse": "^1.0.7", "esprima": "^4.0.0" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g=="],
 
-    "@orion-js/cache/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/dogs/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/echoes/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/graphql/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/http/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/migrations/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/models/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/mongodb/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/paginated-mongodb/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/resolvers/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
+    "@orion-js/core/@orion-js/env": ["@orion-js/env@3.11.8", "", { "dependencies": { "colors": "^1.4.0", "commander": "^9.1.0", "prompts": "^2.4.2", "tweetnacl": "^1.0.3", "tweetnacl-util": "0.15.1", "yaml": "^2.0.0" }, "bin": { "orion-env": "lib/cli/index.js" } }, "sha512-RbOPQrlXJ9Vk2DCobH5LNqjiVfZF4mrekjv5tUSrxdXvxk6idHVATXi26tx3YCZCRntocsxyZN+MvDyyIrxGWA=="],
 
     "@orion-js/schema/dot-object": ["dot-object@2.1.5", "", { "dependencies": { "commander": "^6.1.0", "glob": "^7.1.6" }, "bin": { "dot-object": "bin/dot-object" } }, "sha512-xHF8EP4XH/Ba9fvAF2LDd5O3IITVolerVV6xvkxoM8zlGEiCUrggpAnHyOoKJKCrhvPcGATFAUwIujj7bRG5UA=="],
-
-    "@orion-js/services/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
-
-    "@orion-js/typed-model/@orion-js/helpers": ["@orion-js/helpers@3.11.15", "", { "dependencies": { "object-hash": "^2.2.0" } }, "sha512-bcdLgTOfK/INuW1s18192nlTxCfP4G44iLsXVfLFD7xch+fj2a5Hcvria2y9ZijLlNYO7MRAwMj0jlzwGwkIJA=="],
 
     "@orion-js/typed-model/reflect-metadata": ["reflect-metadata@0.1.13", "", {}, "sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg=="],
 

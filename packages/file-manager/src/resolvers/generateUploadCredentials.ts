@@ -1,5 +1,5 @@
 import {resolver} from '@orion-js/resolvers'
-import {generateId} from '@orion-js/helpers'
+import {generateId, generateUUID} from '@orion-js/helpers'
 import {createModel} from '@orion-js/models'
 import AWS from 'aws-sdk'
 import {getAWSCredentials} from '../credentials'
@@ -60,7 +60,8 @@ export default resolver({
 
     const key = `${basePath}/${generateId()}-${params.name}`
 
-    const fileId = await Files.insertOne({
+    const fileId = await Files.rawCollection.insertOne({
+      _id: `ofl-${generateUUID()}`,
       key,
       bucket,
       name: params.name,
