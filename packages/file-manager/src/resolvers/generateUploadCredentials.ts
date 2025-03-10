@@ -4,8 +4,9 @@ import {createModel} from '@orion-js/models'
 import AWS from 'aws-sdk'
 import {getAWSCredentials} from '../credentials'
 import {Files} from '../Files'
+import type {Resolver} from '@orion-js/resolvers'
 
-export default resolver({
+export const generateUploadCredentials: Resolver<any, any> = resolver({
   params: {
     name: {
       type: String,
