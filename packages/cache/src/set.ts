@@ -1,7 +1,7 @@
 import {CacheStore, SetCacheOptions} from './CacheStoreType'
 
 const defaultOptions = {
-  ttl: 10000 // ten seconds
+  ttl: 10000
 }
 
 export default function (store: CacheStore) {
