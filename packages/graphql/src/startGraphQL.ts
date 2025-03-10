@@ -39,9 +39,8 @@ export default async function (options: StartGraphQLOptions) {
       method: 'all',
       path: '/graphql',
       bodyParser: 'json',
-      async resolve(req, res, viewer) {
-        // @ts-expect-error
-        req._viewer = viewer
+      async resolve(req: Request, res, viewer) {
+        (req as any)._viewer = viewer
         return middleware(req, res, req.next)
       }
     })

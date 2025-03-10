@@ -1,20 +1,25 @@
 {
   "name": "@orion-js/dogs",
   "version": "4.0.0-alpha.2",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
   "files": [
-    "/lib"
+    "dist"
   ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "test": "bun test",
+    "build": "bun run build.ts",
+    "dev": "bun --watch src/index.ts",
+    "clean": "rm -rf ./dist"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
@@ -27,18 +32,14 @@
     "@orion-js/logger": "*"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.4",
     "@orion-js/logger": "^4.0.0-alpha.2",
-    "@shelf/jest-mongodb": "^4.3.2",
-    "@types/jest": "^29.5.12",
     "@types/lodash": "4.14.176",
-    "@types/node": "16.11.7",
-    "jest": "29.7.0",
     "reflect-metadata": "^0.1.13",
-    "ts-jest": "29.1.2",
     "typescript": "^5.4.5"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9fd28b6f6b348cebc9f0dc207805647969277372"
+  "gitHead": "2d14bc085d49a33b2a5566bec1caf60c7d0f897e"
 }

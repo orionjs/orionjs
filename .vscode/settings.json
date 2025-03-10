@@ -13,7 +13,7 @@
   "eslint.lintTask.enable": true,
   "cSpell.words": ["dataloader", "Joaquín", "Upsert", "upserted"],
   "search.exclude": {
-    "packages/*/lib/**": true
+    "packages/*/lib/**": true,
   },
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.includePackageJsonAutoImports": "on",

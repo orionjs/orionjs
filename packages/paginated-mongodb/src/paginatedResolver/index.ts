@@ -2,7 +2,7 @@ import {resolver} from '@orion-js/resolvers'
 import getModel from './getModel'
 import getParams from './params'
 import setOptions from './setOptions'
-import {getArgs} from '@orion-js/resolvers/lib/resolver/getArgs'
+import {getResolverArgs} from '@orion-js/resolvers'
 
 export interface PaginatedCursor {
   count?: () => Promise<number> | number
@@ -58,7 +58,7 @@ export default function paginatedResolver({
     params: getParams({params, allowedSorts, defaultSortBy, defaultSortType}),
     returns: getModel({modelName, returns}),
     async resolve(...args) {
-      const {params, viewer} = getArgs(...args)
+      const {params, viewer} = getResolverArgs(...args)
       const {cursor, getCount} = await getCursorResult(...args)
 
       /* counting the total number of elements of this cursor, so we make sure

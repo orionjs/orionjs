@@ -17,6 +17,6 @@ export default async function(schema, key, value, passedOptions = {}, ...args) {
     }
   }
 
-  const result = await clean({clean: keySchema}, {clean: value}, options, ...args)
+  const result = await clean({clean: keySchema as any}, {clean: value}, options, ...args)
   return result.clean
 }

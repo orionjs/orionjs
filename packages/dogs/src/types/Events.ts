@@ -1,8 +1,8 @@
-import {PlainObject} from './HistoryRecord'
+import { Blackbox } from '@orion-js/schema'
 
 export interface ScheduleJobOptionsBase {
   name: string
-  params?: PlainObject
+  params?: Blackbox
   priority?: number
   uniqueIdentifier?: string
 }
@@ -22,7 +22,7 @@ export type ScheduleJobOptions =
 
 export interface ScheduleJobRecordOptions {
   name: string
-  params: PlainObject
+  params: Blackbox
   nextRunAt: Date
   priority: number
   uniqueIdentifier?: string

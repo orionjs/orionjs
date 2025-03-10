@@ -5,7 +5,7 @@ import {CreateResolver} from './types'
 import {defaultCache} from '@orion-js/cache'
 import {CreateModelResolver} from '..'
 import cleanReturns from './cleanReturns'
-import {getArgs} from './getArgs'
+import {getResolverArgs} from './getArgs'
 
 function createResolver(options: any) {
   options.params = cleanParams(options.params)
@@ -26,7 +26,7 @@ function createResolver(options: any) {
   const execute = getExecute(options)
 
   const resolve = async (...args: any[]) => {
-    const params: any = getArgs(...args)
+    const params: any = getResolverArgs(...args)
     return await execute(params)
   }
 

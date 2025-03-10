@@ -1,8 +1,7 @@
-import {Prop, TypedModel} from '@orion-js/typed-model'
+import type { Blackbox } from '@orion-js/schema'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 
-export type PlainObject = {[name: string]: any}
-
-@TypedModel()
+@TypedSchema()
 export class HistoryRecord {
   @Prop()
   _id: string
@@ -47,8 +46,8 @@ export class HistoryRecord {
   errorMessage?: string
 
   @Prop({type: 'blackbox', optional: true})
-  params?: PlainObject
+  params?: Blackbox
 
   @Prop({type: 'blackbox', optional: true})
-  result?: PlainObject
+  result?: Blackbox
 }

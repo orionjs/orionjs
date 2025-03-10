@@ -1,4 +1,5 @@
-import {PlainObject} from './HistoryRecord'
+
+import { Blackbox } from '@orion-js/schema'
 import {ExecutionContext} from './Worker'
 
 export interface JobRetryResultBase {
@@ -13,21 +14,21 @@ export interface BaseJobDefinition {
   /**
    * The function to execute when the job is executed.
    */
-  resolve: (params: PlainObject, context: ExecutionContext) => Promise<PlainObject | void>
+  resolve: (params: Blackbox, context: ExecutionContext) => Promise<Blackbox | void>
 
   /**
    * Called if the job fails.
    */
   onError?: (
     error: Error,
-    params: PlainObject,
+    params: Blackbox,
     context: ExecutionContext
   ) => Promise<JobRetryResult>
 
   /**
    * Called if the job locktime is expired. The job will be executed again.
    */
-  onStale?: (params: PlainObject, context: ExecutionContext) => Promise<void>
+  onStale?: (params: Blackbox, context: ExecutionContext) => Promise<void>
 
   /**
    * Save the executions of the job time in milliseconds. Default is 1 week. Set to 0 to disable.

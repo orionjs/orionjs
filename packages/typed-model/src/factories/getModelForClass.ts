@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
-import {FieldType} from '@orion-js/schema/lib/fieldType'
+import {FieldType} from '@orion-js/schema'
 import {PropOptions} from '..'
 import {MetadataStorage} from '../storage/metadataStorage'
 import {Constructor} from '../utils/interfaces'

@@ -54,7 +54,6 @@
         "noMisleadingInstantiator": "error",
         "noUnsafeDeclarationMerging": "error",
         "noArrayIndexKey": "off",
-        "noConsoleLog": "error"
       },
       "a11y": {
         "useAltText": "warn",

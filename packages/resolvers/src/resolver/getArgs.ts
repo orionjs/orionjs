@@ -1,4 +1,4 @@
-export const getArgs = function getArgs(...args: any[]) {
+export function getResolverArgs(...args: any[]) {
   if (args.length === 4) {
     return {
       parent: args[0],

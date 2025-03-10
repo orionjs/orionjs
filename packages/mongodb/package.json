@@ -38,7 +38,6 @@
   "devDependencies": {
     "@types/bun": "^1.2.4",
     "@types/dot-object": "^2.1.6",
-    "bun-plugin-dts": "^0.3.0",
     "mongodb-memory-server": "^10.1.4",
     "typescript": "^5.8.2"
   },

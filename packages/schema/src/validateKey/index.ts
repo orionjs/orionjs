@@ -30,7 +30,7 @@ export default async function (
   }
 
   const result = await getValidationErrors(
-    {validate: keySchema},
+    {validate: keySchema as any},
     {validate: value},
     options,
     ...args

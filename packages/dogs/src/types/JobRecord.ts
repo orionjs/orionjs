@@ -1,5 +1,4 @@
 import {Prop, TypedModel} from '@orion-js/typed-model'
-import {PlainObject} from './HistoryRecord'
 
 @TypedModel()
 export class JobRecord {
@@ -31,5 +30,5 @@ export class JobRecord {
   tries?: number
 
   @Prop({type: 'blackbox', optional: true})
-  params?: PlainObject
+  params?: any
 }

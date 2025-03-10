@@ -1,20 +1,25 @@
 {
   "name": "@orion-js/typed-model",
   "version": "4.0.0-alpha.2",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
   "files": [
-    "/lib"
+    "dist"
   ],
   "author": "dmerrill6",
   "license": "MIT",
   "scripts": {
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive",
-    "test": "jest --config jest.config.js"
+    "test": "bun test",
+    "build": "bun run build.ts",
+    "dev": "bun --watch src/index.ts",
+    "clean": "rm -rf ./dist"
   },
   "dependencies": {
     "@orion-js/helpers": "^4.0.0-alpha.2",
@@ -26,17 +31,15 @@
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.4",
     "@types/eslint": "^7.29.0",
-    "@types/jest": "27.0.2",
     "@types/node": "16.11.7",
     "@typescript-eslint/eslint-plugin": "5.3.1",
     "@typescript-eslint/parser": "5.3.1",
     "eslint": "8.2.0",
     "eslint-plugin-import": "2.25.3",
-    "jest": "27.3.1",
     "kafkajs": "^1.16.0",
-    "ts-jest": "27.0.7",
-    "typescript": "^4.4.4"
+    "typescript": "^5.4.5"
   },
   "publishConfig": {
     "access": "public"

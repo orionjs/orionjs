@@ -1,16 +1,17 @@
 {
   "name": "@orion-js/telemetry",
   "version": "4.0.0-alpha.2",
-  "main": "lib/index.js",
+  "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "ORION_DEV=1 jest",
+    "test": "bun test",
     "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
+    "clean": "rm -rf ./dist",
+    "build": "bun run build.ts",
     "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "upgrade-interactive": "yarn upgrade-interactive",
+    "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
     "@opentelemetry/auto-instrumentations-node": "^0.56.1",
@@ -19,13 +20,22 @@
     "@opentelemetry/sdk-node": "^0.57.2"
   },
   "devDependencies": {
-    "@types/jest": "^27.0.2",
-    "jest": "27.3.1",
-    "ts-jest": "27.0.7",
-    "typescript": "^4.4.4"
+    "typescript": "^5.4.5",
+    "@types/bun": "^1.2.4"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9d85ab24776533db109843c277324e42c65ddedd"
+  "gitHead": "9d85ab24776533db109843c277324e42c65ddedd",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ]
 }

@@ -1,13 +1,13 @@
 import {OrionLogger} from '@orion-js/logger'
-import {PlainObject} from './HistoryRecord'
 import {JobDefinition} from './JobsDefinition'
+import { Blackbox } from '@orion-js/schema'
 
 export interface JobToRun {
   jobId: string
   executionId: string
   name: string
   type: 'event' | 'recurrent'
-  params: PlainObject
+  params: Blackbox
   tries: number
   lockTime: number
   priority: number

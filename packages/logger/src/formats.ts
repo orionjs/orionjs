@@ -22,7 +22,7 @@ const opentelemetryContext = format(info => {
   return info
 })
 
-const metaError = format(info => {
+const metaError = format((info: any) => {
   if (info?.metadata?.value?.error instanceof Error) {
     info.stack = info?.metadata?.value?.error.stack
     info.errorMessage = info?.metadata?.value?.error.message
@@ -64,7 +64,7 @@ export const textConsoleFormat = combine(
   opentelemetryContext(),
   metaError(),
   timestamp(),
-  printf(info => {
+  printf((info: any) => {
     // console.log(info)
 
     const date = new Date(info.timestamp)

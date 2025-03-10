@@ -1,4 +1,5 @@
-import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
+import {MongoCollection, Repository} from '@orion-js/mongodb'
+import type { Collection } from '@orion-js/mongodb'
 import {MigrationSchema} from './Schema'
 
 @Repository()

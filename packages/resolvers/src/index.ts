@@ -5,5 +5,6 @@ import checkPermissions from './resolver/getExecute/checkPermissions'
 import {addPermissionChecker} from './resolver/permisionsCheckers'
 import cleanParams from './resolver/cleanParams'
 import cleanReturns from './resolver/cleanReturns'
+export * from './resolver/getArgs'
 
 export {resolver, modelResolver, checkPermissions, addPermissionChecker, cleanParams, cleanReturns}

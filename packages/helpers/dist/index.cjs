@@ -40,7 +40,7 @@ var __export = (target, all) => {
     });
 };
 
-// node_modules/object-hash/index.js
+// ../../node_modules/object-hash/index.js
 var require_object_hash = __commonJS((exports2, module2) => {
   var crypto = require("crypto");
   exports2 = module2.exports = objectHash;
@@ -417,16 +417,27 @@ var require_object_hash = __commonJS((exports2, module2) => {
   }
 });
 
-// ../../node_modules/uuid/lib/rng.js
-var require_rng = __commonJS((exports2, module2) => {
-  var crypto2 = require("crypto");
-  module2.exports = function nodeRNG() {
-    return crypto2.randomBytes(16);
-  };
+// ../../node_modules/uuid/dist/rng.js
+var require_rng = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = rng;
+  var _crypto = _interopRequireDefault(require("crypto"));
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
+  function rng() {
+    return _crypto.default.randomBytes(16);
+  }
 });
 
-// ../../node_modules/uuid/lib/bytesToUuid.js
-var require_bytesToUuid = __commonJS((exports2, module2) => {
+// ../../node_modules/uuid/dist/bytesToUuid.js
+var require_bytesToUuid = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
   var byteToHex = [];
   for (i = 0;i < 256; ++i) {
     byteToHex[i] = (i + 256).toString(16).substr(1);
@@ -435,15 +446,23 @@ var require_bytesToUuid = __commonJS((exports2, module2) => {
   function bytesToUuid(buf, offset) {
     var i2 = offset || 0;
     var bth = byteToHex;
-    return bth[buf[i2++]] + bth[buf[i2++]] + bth[buf[i2++]] + bth[buf[i2++]] + "-" + bth[buf[i2++]] + bth[buf[i2++]] + "-" + bth[buf[i2++]] + bth[buf[i2++]] + "-" + bth[buf[i2++]] + bth[buf[i2++]] + "-" + bth[buf[i2++]] + bth[buf[i2++]] + bth[buf[i2++]] + bth[buf[i2++]] + bth[buf[i2++]] + bth[buf[i2++]];
+    return [bth[buf[i2++]], bth[buf[i2++]], bth[buf[i2++]], bth[buf[i2++]], "-", bth[buf[i2++]], bth[buf[i2++]], "-", bth[buf[i2++]], bth[buf[i2++]], "-", bth[buf[i2++]], bth[buf[i2++]], "-", bth[buf[i2++]], bth[buf[i2++]], bth[buf[i2++]], bth[buf[i2++]], bth[buf[i2++]], bth[buf[i2++]]].join("");
   }
-  module2.exports = bytesToUuid;
+  var _default = bytesToUuid;
+  exports2.default = _default;
 });
 
-// ../../node_modules/uuid/v1.js
-var require_v1 = __commonJS((exports2, module2) => {
-  var rng = require_rng();
-  var bytesToUuid = require_bytesToUuid();
+// ../../node_modules/uuid/dist/v1.js
+var require_v1 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
+  var _rng = _interopRequireDefault(require_rng());
+  var _bytesToUuid = _interopRequireDefault(require_bytesToUuid());
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
   var _nodeId;
   var _clockseq;
   var _lastMSecs = 0;
@@ -455,16 +474,9 @@ var require_v1 = __commonJS((exports2, module2) => {
     var node = options.node || _nodeId;
     var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
     if (node == null || clockseq == null) {
-      var seedBytes = rng();
+      var seedBytes = options.random || (options.rng || _rng.default)();
       if (node == null) {
-        node = _nodeId = [
-          seedBytes[0] | 1,
-          seedBytes[1],
-          seedBytes[2],
-          seedBytes[3],
-          seedBytes[4],
-          seedBytes[5]
-        ];
+        node = _nodeId = [seedBytes[0] | 1, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
       }
       if (clockseq == null) {
         clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 16383;
@@ -501,15 +513,122 @@ var require_v1 = __commonJS((exports2, module2) => {
     for (var n = 0;n < 6; ++n) {
       b[i + n] = node[n];
     }
-    return buf ? buf : bytesToUuid(b);
+    return buf ? buf : (0, _bytesToUuid.default)(b);
   }
-  module2.exports = v1;
+  var _default = v1;
+  exports2.default = _default;
 });
 
-// ../../node_modules/uuid/v4.js
-var require_v4 = __commonJS((exports2, module2) => {
-  var rng = require_rng();
-  var bytesToUuid = require_bytesToUuid();
+// ../../node_modules/uuid/dist/v35.js
+var require_v35 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = _default;
+  exports2.URL = exports2.DNS = undefined;
+  var _bytesToUuid = _interopRequireDefault(require_bytesToUuid());
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
+  function uuidToBytes(uuid) {
+    var bytes = [];
+    uuid.replace(/[a-fA-F0-9]{2}/g, function(hex) {
+      bytes.push(parseInt(hex, 16));
+    });
+    return bytes;
+  }
+  function stringToBytes(str) {
+    str = unescape(encodeURIComponent(str));
+    var bytes = new Array(str.length);
+    for (var i = 0;i < str.length; i++) {
+      bytes[i] = str.charCodeAt(i);
+    }
+    return bytes;
+  }
+  var DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+  exports2.DNS = DNS;
+  var URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
+  exports2.URL = URL;
+  function _default(name, version, hashfunc) {
+    var generateUUID = function(value, namespace, buf, offset) {
+      var off = buf && offset || 0;
+      if (typeof value == "string")
+        value = stringToBytes(value);
+      if (typeof namespace == "string")
+        namespace = uuidToBytes(namespace);
+      if (!Array.isArray(value))
+        throw TypeError("value must be an array of bytes");
+      if (!Array.isArray(namespace) || namespace.length !== 16)
+        throw TypeError("namespace must be uuid string or an Array of 16 byte values");
+      var bytes = hashfunc(namespace.concat(value));
+      bytes[6] = bytes[6] & 15 | version;
+      bytes[8] = bytes[8] & 63 | 128;
+      if (buf) {
+        for (var idx = 0;idx < 16; ++idx) {
+          buf[off + idx] = bytes[idx];
+        }
+      }
+      return buf || (0, _bytesToUuid.default)(bytes);
+    };
+    try {
+      generateUUID.name = name;
+    } catch (err) {
+    }
+    generateUUID.DNS = DNS;
+    generateUUID.URL = URL;
+    return generateUUID;
+  }
+});
+
+// ../../node_modules/uuid/dist/md5.js
+var require_md5 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
+  var _crypto = _interopRequireDefault(require("crypto"));
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
+  function md5(bytes) {
+    if (Array.isArray(bytes)) {
+      bytes = Buffer.from(bytes);
+    } else if (typeof bytes === "string") {
+      bytes = Buffer.from(bytes, "utf8");
+    }
+    return _crypto.default.createHash("md5").update(bytes).digest();
+  }
+  var _default = md5;
+  exports2.default = _default;
+});
+
+// ../../node_modules/uuid/dist/v3.js
+var require_v3 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
+  var _v = _interopRequireDefault(require_v35());
+  var _md = _interopRequireDefault(require_md5());
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
+  var v3 = (0, _v.default)("v3", 48, _md.default);
+  var _default = v3;
+  exports2.default = _default;
+});
+
+// ../../node_modules/uuid/dist/v4.js
+var require_v4 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
+  var _rng = _interopRequireDefault(require_rng());
+  var _bytesToUuid = _interopRequireDefault(require_bytesToUuid());
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
   function v4(options, buf, offset) {
     var i = buf && offset || 0;
     if (typeof options == "string") {
@@ -517,7 +636,7 @@ var require_v4 = __commonJS((exports2, module2) => {
       options = null;
     }
     options = options || {};
-    var rnds = options.random || (options.rng || rng)();
+    var rnds = options.random || (options.rng || _rng.default)();
     rnds[6] = rnds[6] & 15 | 64;
     rnds[8] = rnds[8] & 63 | 128;
     if (buf) {
@@ -525,19 +644,86 @@ var require_v4 = __commonJS((exports2, module2) => {
         buf[i + ii] = rnds[ii];
       }
     }
-    return buf || bytesToUuid(rnds);
+    return buf || (0, _bytesToUuid.default)(rnds);
   }
-  module2.exports = v4;
+  var _default = v4;
+  exports2.default = _default;
 });
 
-// ../../node_modules/uuid/index.js
-var require_uuid = __commonJS((exports2, module2) => {
-  var v1 = require_v1();
-  var v4 = require_v4();
-  var uuid = v4;
-  uuid.v1 = v1;
-  uuid.v4 = v4;
-  module2.exports = uuid;
+// ../../node_modules/uuid/dist/sha1.js
+var require_sha1 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
+  var _crypto = _interopRequireDefault(require("crypto"));
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
+  function sha1(bytes) {
+    if (Array.isArray(bytes)) {
+      bytes = Buffer.from(bytes);
+    } else if (typeof bytes === "string") {
+      bytes = Buffer.from(bytes, "utf8");
+    }
+    return _crypto.default.createHash("sha1").update(bytes).digest();
+  }
+  var _default = sha1;
+  exports2.default = _default;
+});
+
+// ../../node_modules/uuid/dist/v5.js
+var require_v5 = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  exports2.default = undefined;
+  var _v = _interopRequireDefault(require_v35());
+  var _sha = _interopRequireDefault(require_sha1());
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
+  var v5 = (0, _v.default)("v5", 80, _sha.default);
+  var _default = v5;
+  exports2.default = _default;
+});
+
+// ../../node_modules/uuid/dist/index.js
+var require_dist = __commonJS((exports2) => {
+  Object.defineProperty(exports2, "__esModule", {
+    value: true
+  });
+  Object.defineProperty(exports2, "v1", {
+    enumerable: true,
+    get: function() {
+      return _v.default;
+    }
+  });
+  Object.defineProperty(exports2, "v3", {
+    enumerable: true,
+    get: function() {
+      return _v2.default;
+    }
+  });
+  Object.defineProperty(exports2, "v4", {
+    enumerable: true,
+    get: function() {
+      return _v3.default;
+    }
+  });
+  Object.defineProperty(exports2, "v5", {
+    enumerable: true,
+    get: function() {
+      return _v4.default;
+    }
+  });
+  var _v = _interopRequireDefault(require_v1());
+  var _v2 = _interopRequireDefault(require_v3());
+  var _v3 = _interopRequireDefault(require_v4());
+  var _v4 = _interopRequireDefault(require_v5());
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+  }
 });
 
 // src/index.ts
@@ -750,10 +936,16 @@ function executeWithRetries(fn, retries, timeout) {
     retry(retries);
   });
 }
+// ../../node_modules/uuid/wrapper.mjs
+var import_dist = __toESM(require_dist());
+var v1 = import_dist.default.v1;
+var v3 = import_dist.default.v3;
+var v4 = import_dist.default.v4;
+var v5 = import_dist.default.v5;
+
 // src/generateUUID.ts
-var import_uuid = __toESM(require_uuid());
 function generateUUID() {
-  return import_uuid.v4();
+  return v4();
 }
 function generateUUIDWithPrefix(prefix) {
   return `${prefix}-${generateUUID()}`;

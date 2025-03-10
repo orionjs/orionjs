@@ -1,4 +1,5 @@
 import {generateKeys, encrypt, decrypt} from '.'
+import {describe, it, expect} from 'bun:test'
 
 describe('Asymetric encryption lib', () => {
   it('should generate public and private keys', async () => {

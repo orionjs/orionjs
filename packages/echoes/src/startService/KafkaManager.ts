@@ -17,7 +17,7 @@ class KafkaManager {
   consumer: Consumer
   topics: string[]
   started: boolean
-  interval: NodeJS.Timeout
+  interval: NodeJS.Timer
 
   constructor(options: EchoesOptions) {
     this.kafka = new Kafka(options.client)
