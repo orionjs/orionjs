@@ -1,28 +1,37 @@
 {
   "name": "@orion-js/helpers",
   "version": "4.0.0-alpha.1",
-  "main": "lib/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "test": "bun test",
+    "build": "bun run build.ts",
+    "dev": "bun --watch src/index.ts",
+    "clean": "rm -rf ./dist"
   },
   "dependencies": {
     "object-hash": "^2.2.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.4",
     "@types/node": "^20.9.0",
+    "bun-plugin-dts": "^0.3.0",
     "typescript": "^4.4.4",
     "vitest": "^0.34.6"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9fd28b6f6b348cebc9f0dc207805647969277372"
+  "gitHead": "a485b1fe6a1840ee6cb58fd69d6de62585f1ed10"
 }

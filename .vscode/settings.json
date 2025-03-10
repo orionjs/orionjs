@@ -17,9 +17,6 @@
   },
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.includePackageJsonAutoImports": "on",
-  "files.exclude": {
-    "packages/*/lib/**": true
-  },
   "autoimport.filesToScan": "**/src/**/*.{ts,tsx}",
   "autoimport.useSemiColon": false
 }

@@ -1,5 +1,5 @@
 import PermissionsError from './PermissionsError'
-import { OrionError } from './OrionError'
+import {OrionError} from './OrionError'
 
 describe('PermissionsError', () => {
   it('should extend OrionError', () => {
@@ -26,7 +26,7 @@ describe('PermissionsError', () => {
 
   it('should support custom message in extra', () => {
     const error = new PermissionsError('delete_document', {
-      message: 'You need admin rights to delete this document'
+      message: 'You need admin rights to delete this document',
     })
     expect(error.message).toBe('You need admin rights to delete this document')
   })
@@ -34,7 +34,7 @@ describe('PermissionsError', () => {
   it('should store extra data', () => {
     const extraData = {
       documentId: '123',
-      requiredRole: 'admin'
+      requiredRole: 'admin',
     }
     const error = new PermissionsError('read_document', extraData)
 
@@ -42,7 +42,7 @@ describe('PermissionsError', () => {
   })
 
   it('should have a getInfo method that returns the correct structure', () => {
-    const extraData = { documentId: '123', requiredRole: 'admin' }
+    const extraData = {documentId: '123', requiredRole: 'admin'}
     const error = new PermissionsError('read_document', extraData)
 
     const info = error.getInfo()
@@ -50,7 +50,7 @@ describe('PermissionsError', () => {
       ...extraData,
       error: 'PermissionsError',
       message: 'Client is not allowed to perform this action [read_document]',
-      type: 'read_document'
+      type: 'read_document',
     })
   })
 
@@ -65,4 +65,4 @@ describe('PermissionsError', () => {
     expect(error.stack).toBeDefined()
     expect(error.stack.includes('PermissionsError.test.ts')).toBe(true)
   })
-}) 
+})
