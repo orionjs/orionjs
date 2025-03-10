@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/migrations",
-  "version": "4.0.0-next.0",
+  "version": "4.0.0-next.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -18,12 +18,12 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
-    "@orion-js/dogs": "^4.0.0-next.0",
-    "@orion-js/helpers": "^4.0.0-next.0",
-    "@orion-js/mongodb": "^4.0.0-next.0",
-    "@orion-js/services": "^4.0.0-next.0",
-    "@orion-js/typed-model": "^4.0.0-next.0",
-    "@orion-js/logger": "^4.0.0-next.0"
+    "@orion-js/dogs": "^4.0.0-next.1",
+    "@orion-js/helpers": "^4.0.0-next.1",
+    "@orion-js/mongodb": "^4.0.0-next.1",
+    "@orion-js/services": "^4.0.0-next.1",
+    "@orion-js/typed-model": "^4.0.0-next.1",
+    "@orion-js/logger": "^4.0.0-next.1"
   },
   "devDependencies": {
     "@types/lodash": "4.14.195",

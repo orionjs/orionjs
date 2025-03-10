@@ -22,9 +22,11 @@
     "@orion-js/schema": "3.12.0",
     "@orion-js/services": "3.12.0",
     "@orion-js/telemetry": "3.12.0",
-    "@orion-js/typed-model": "3.12.0"
+    "@orion-js/typed-model": "3.12.0",
+    "@orion-js/core": "4.0.0-next.0"
   },
   "changesets": [
-    "fresh-dolls-appear"
+    "fresh-dolls-appear",
+    "smooth-dragons-bet"
   ]
 }

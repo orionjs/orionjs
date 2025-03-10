@@ -1,5 +1,11 @@
 # @orion-js/helpers
 
+## 4.0.0-next.1
+
+### Major Changes
+
+- Update orionjs core
+
 ## 4.0.0-next.0
 
 ### Major Changes

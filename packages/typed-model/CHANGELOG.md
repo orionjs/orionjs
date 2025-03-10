@@ -1,5 +1,20 @@
 # @orion-js/typed-model
 
+## 4.0.0-next.1
+
+### Major Changes
+
+- Update orionjs core
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/resolvers@4.0.0-next.1
+  - @orion-js/services@4.0.0-next.1
+  - @orion-js/helpers@4.0.0-next.1
+  - @orion-js/models@4.0.0-next.1
+  - @orion-js/schema@4.0.0-next.1
+
 ## 4.0.0-next.0
 
 ### Major Changes

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/crypto",
-  "version": "4.0.0-next.0",
+  "version": "4.0.0-next.1",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
-    "@orion-js/services": "4.0.0-next.0",
+    "@orion-js/services": "4.0.0-next.1",
     "bcryptjs": "^2.4.3",
     "tweetnacl": "1.0.3",
     "tweetnacl-util": "0.15.1"

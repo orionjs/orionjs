@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/core",
-  "version": "4.0.0-next.0",
+  "version": "4.0.0-next.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -20,7 +20,7 @@
     "upgrade-interactive": "yarn upgrade-interactive"
   },
   "dependencies": {
-    "@orion-js/env": "4.0.0-next.0",
+    "@orion-js/env": "4.0.0-next.1",
     "chokidar": "3.5.3",
     "colors": "^1.4.0",
     "commander": "^9.4.1",

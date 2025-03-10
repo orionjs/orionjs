@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/paginated-mongodb",
-  "version": "4.0.0-next.0",
+  "version": "4.0.0-next.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -18,13 +18,13 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
-    "@orion-js/helpers": "4.0.0-next.0",
-    "@orion-js/models": "4.0.0-next.0",
-    "@orion-js/mongodb": "4.0.0-next.0",
-    "@orion-js/resolvers": "4.0.0-next.0",
-    "@orion-js/schema": "4.0.0-next.0",
-    "@orion-js/services": "4.0.0-next.0",
-    "@orion-js/typed-model": "4.0.0-next.0"
+    "@orion-js/helpers": "4.0.0-next.1",
+    "@orion-js/models": "4.0.0-next.1",
+    "@orion-js/mongodb": "4.0.0-next.1",
+    "@orion-js/resolvers": "4.0.0-next.1",
+    "@orion-js/schema": "4.0.0-next.1",
+    "@orion-js/services": "4.0.0-next.1",
+    "@orion-js/typed-model": "4.0.0-next.1"
   },
   "devDependencies": {
     "@types/lodash": "4.14.176",
