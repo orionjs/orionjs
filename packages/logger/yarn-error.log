@@ -35,7 +35,7 @@ npm manifest:
     "license": "MIT",
     "scripts": {
       "build": "rm -rf ./lib && babel ./src --out-dir ./lib",
-      "prepare": "yarn run build",
+      "prepare": "bun run build",
       "watch": "rm -rf ./lib && babel ./src --watch --out-dir ./lib",
       "test": "jest src",
       "test:watch": "jest src --coverage --watch"

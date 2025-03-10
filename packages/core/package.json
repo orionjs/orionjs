@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "exit 0",
-    "prepare": "yarn run build",
+    "prepare": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "bun run build.ts",
     "watch": "tsc -w",

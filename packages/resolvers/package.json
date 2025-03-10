@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "test": "bun test",
-    "prepare": "yarn run build",
+    "prepare": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "bun run build.ts",
     "watch": "tsc -w",
