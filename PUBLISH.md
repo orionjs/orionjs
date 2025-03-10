@@ -1,5 +1,7 @@
 # 
 
+https://pnpm.io/using-changesets
+
 ```
 pnpm changeset
 ```
