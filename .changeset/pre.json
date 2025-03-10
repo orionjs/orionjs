@@ -24,5 +24,7 @@
     "@orion-js/telemetry": "3.12.0",
     "@orion-js/typed-model": "3.12.0"
   },
-  "changesets": []
+  "changesets": [
+    "fresh-dolls-appear"
+  ]
 }

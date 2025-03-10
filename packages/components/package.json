@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "3.12.0",
+  "version": "4.0.0-next.0",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -14,22 +14,22 @@
     "dev": "bun --watch src/index.ts"
   },
   "peerDependencies": {
-    "@orion-js/dogs": "^3.2.33",
-    "@orion-js/echoes": "^3.2.33",
-    "@orion-js/graphql": "^3.2.33",
-    "@orion-js/helpers": "^3.2.21",
-    "@orion-js/http": "^3.2.33",
-    "@orion-js/models": "^3.2.33",
-    "@orion-js/services": "^3.2.21"
+    "@orion-js/dogs": "^4.0.0-next.0",
+    "@orion-js/echoes": "^4.0.0-next.0",
+    "@orion-js/graphql": "^4.0.0-next.0",
+    "@orion-js/helpers": "^4.0.0-next.0",
+    "@orion-js/http": "^4.0.0-next.0",
+    "@orion-js/models": "^4.0.0-next.0",
+    "@orion-js/services": "^4.0.0-next.0"
   },
   "devDependencies": {
-    "@orion-js/dogs": "^4.0.0-alpha.2",
-    "@orion-js/echoes": "^4.0.0-alpha.2",
-    "@orion-js/graphql": "^4.0.0-alpha.2",
-    "@orion-js/helpers": "^4.0.0-alpha.2",
-    "@orion-js/http": "^4.0.0-alpha.2",
-    "@orion-js/models": "^4.0.0-alpha.2",
-    "@orion-js/services": "^4.0.0-alpha.2",
+    "@orion-js/dogs": "^4.0.0-next.0",
+    "@orion-js/echoes": "^4.0.0-next.0",
+    "@orion-js/graphql": "^4.0.0-next.0",
+    "@orion-js/helpers": "^4.0.0-next.0",
+    "@orion-js/http": "^4.0.0-next.0",
+    "@orion-js/models": "^4.0.0-next.0",
+    "@orion-js/services": "^4.0.0-next.0",
     "reflect-metadata": "0.1.13",
     "typescript": "^5.4.5",
     "@types/bun": "^1.2.4"
