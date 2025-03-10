@@ -2,6 +2,7 @@
   "license": "MIT",
   "name": "orionjs",
   "private": true,
+  "packageManager": "bun@1.1.21",
   "workspaces": [
     "packages/*"
   ],
