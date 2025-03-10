@@ -13,3 +13,7 @@ website/node_modules
 website/i18n/*
 
 packages/*/dist
+
+
+.nx/cache
+.nx/workspace-data
