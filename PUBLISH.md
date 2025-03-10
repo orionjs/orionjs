@@ -16,5 +16,5 @@ git commit -m "chore: update changelog"
 ```
 
 ```
-pnpm changeset publish
+pnpm publish -r --tag next
 ```
