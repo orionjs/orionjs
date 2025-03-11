@@ -1,10 +1,9 @@
-import {Service, Inject} from '../../typedi'
+import {Service, Inject} from '../../di'
 import {TokenStorage} from './TokenStorage'
-// import {getInstance, Service} from '@orion-js/services'
 
 @Service()
 export class AuthService {
-  @Inject()
+  @Inject(() => TokenStorage)
   private tokenStorage: TokenStorage
 
   login(email: string) {

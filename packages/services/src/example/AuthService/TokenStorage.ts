@@ -1,11 +1,10 @@
 import {AuthService} from './AuthService'
-import type {AuthService as AuthServiceType} from './AuthService'
-import {Service, Inject} from '../../typedi'
+import {Service, Inject} from '../../di'
 
 @Service()
 export class TokenStorage {
   @Inject(() => AuthService)
-  private authService: AuthServiceType
+  private authService: AuthService
 
   storeToken(token: string) {
     const message = this.authService.onLogin()
