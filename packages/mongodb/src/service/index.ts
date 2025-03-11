@@ -6,7 +6,7 @@ import {CreateCollectionOptions, ModelClassBase} from '../types'
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 
 export function Repository() {
-  return function (target: any, context: ClassDecoratorContext<any>) {
+  return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
 
     context.addInitializer(function (this) {
@@ -18,9 +18,9 @@ export function Repository() {
 export function MongoCollection<ModelClass extends ModelClassBase = ModelClassBase>(
   options: CreateCollectionOptions<ModelClass>,
 ) {
-  return function (_target: any, context: ClassFieldDecoratorContext) {
+  return (_target: any, context: ClassFieldDecoratorContext) => {
     context.addInitializer(function (this) {
-      const repo = serviceMetadata.get(this)
+      const repo = serviceMetadata.get(this.constructor)
       if (!repo || repo._serviceType !== 'repo') {
         throw new Error(
           'You must pass a class decorated with @Repository if you want to use @MongoCollection',

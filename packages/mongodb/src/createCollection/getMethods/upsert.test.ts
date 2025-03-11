@@ -52,7 +52,7 @@ it('adds default value when creating docs', async () => {
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model,
+    schema: model,
   })
 
   const {modifiedCount, upsertedId} = await Tests.upsert(
@@ -88,7 +88,7 @@ it('should upsert documents passing cleaning validation', async () => {
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model,
+    schema: model,
   })
 
   const {upsertedId} = await Tests.upsert(

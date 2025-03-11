@@ -1,5 +1,5 @@
 import {getInstance, Service} from '@orion-js/services'
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {WithoutId} from 'mongodb'
 import {MongoCollection, Repository} from '.'
 import type {Collection} from '../types'
@@ -54,7 +54,7 @@ describe('Collection as IOC', () => {
         users: Collection
       }
 
-      const instance = getInstance(UserErrorRepo)
+      getInstance(UserErrorRepo)
     } catch (error) {
       expect(error.message).toBe(
         'You must pass a class decorated with @Repository if you want to use @MongoCollection',
@@ -64,7 +64,7 @@ describe('Collection as IOC', () => {
 
   it('should work with the same example that is failing in migrations', () => {
     @Repository()
-    class MigrationsRepo {
+    class _MigrationsRepo {
       @MongoCollection({
         name: 'orionjs.migrations',
         idPrefix: 'scnmg-',
