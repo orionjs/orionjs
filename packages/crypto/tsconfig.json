@@ -16,14 +16,10 @@
     "forceConsistentCasingInFileNames": true,
 
     // required for typed models
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    // "experimentalDecorators": false,
+    // "emitDecoratorMetadata": false,
     
-    // Best practices
     "strict": false,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node"]
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  }
 }

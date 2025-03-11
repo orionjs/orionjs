@@ -232,9 +232,6 @@ describe('typed-schema e2e tests', () => {
           }
         }
 
-        console.log("expected", expected)
-        console.log("got", getSchemaForClass(Spec))
-
         expect(getSchemaForClass(Spec)).toEqual(expected)
       })
 
@@ -425,9 +422,6 @@ describe('typed-schema e2e tests', () => {
           }
         }
       })
-
-      console.log("expected", JSON.stringify(expected.getCleanSchema(), null, 2))
-      console.log("got", JSON.stringify(getModelForClass(Spec).getCleanSchema(), null, 2))
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
       expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())

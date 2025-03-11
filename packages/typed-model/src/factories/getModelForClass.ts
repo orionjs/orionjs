@@ -44,7 +44,7 @@ export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedM
 
     schema[schemaProp] = {
       ...prop,
-      type: getParamTypeForProp(prop.type)
+      type: getParamTypeForProp(prop.type as any)
     }
   }
 

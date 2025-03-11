@@ -1,9 +1,9 @@
-import {getInstance, Service} from '@orion-js/services'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-import {WithoutId} from 'mongodb'
-import {MongoCollection, Repository} from '.'
-import type {Collection} from '../types'
-import {describe, it, expect} from 'vitest'
+import { getInstance, Service } from '@orion-js/services'
+import { Prop, TypedSchema, getModelForClass } from '@orion-js/typed-model'
+import { WithoutId } from 'mongodb'
+import { MongoCollection, Repository } from '.'
+import type { Collection } from '../types'
+import { describe, it, expect } from 'vitest'
 
 describe('Collection as IOC', () => {
   it('should create the collection and set the methods', async () => {
@@ -11,7 +11,7 @@ describe('Collection as IOC', () => {
 
     @TypedSchema()
     class User {
-      @Prop({type: 'string'})
+      @Prop({ type: 'string' })
       _id: UserId
 
       @Prop()
@@ -33,13 +33,13 @@ describe('Collection as IOC', () => {
       }
 
       async getUserByName(name: string) {
-        return await this.users.findOne({name})
+        return await this.users.findOne({ name })
       }
     }
 
     const instance = getInstance(UserRepo)
 
-    const userId = await instance.createUser({name: 'Nico'})
+    const userId = await instance.createUser({ name: 'Nico' })
     const user = await instance.getUserByName('Nico')
 
     expect(user._id).toBe(userId)
@@ -50,7 +50,7 @@ describe('Collection as IOC', () => {
     try {
       @Service()
       class UserErrorRepo {
-        @MongoCollection({name: 'users2'})
+        @MongoCollection({ name: 'users2' })
         users: Collection
       }
 
@@ -63,7 +63,7 @@ describe('Collection as IOC', () => {
   })
 
 
-  it('should work with the same example that is failing in migrations',  () => {
+  it('should work with the same example that is failing in migrations', () => {
     @Repository()
     class MigrationsRepo {
       @MongoCollection({
@@ -79,7 +79,7 @@ describe('Collection as IOC', () => {
       }
 
       async saveCompletedMigration(name: string) {
-        await this.collection.insertOne({name, completedAt: new Date()})
+        await this.collection.insertOne({ name, completedAt: new Date() })
       }
     }
 

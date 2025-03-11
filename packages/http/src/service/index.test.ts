@@ -1,10 +1,10 @@
-import {Inject, Service} from '@orion-js/services'
-import {getServiceRoutes, Route, Routes} from '.'
-import {getApp} from '../start'
+import { Inject, Service } from '@orion-js/services'
+import { getServiceRoutes, Route, Routes } from '.'
+import { getApp } from '../start'
 import request from 'supertest'
 import registerRoutes from '../routes/registerRoutes'
-import type {Request} from '../types'
-import {describe, it, expect} from 'vitest'
+import type { Request } from '../types'
+import { describe, it, expect } from 'vitest'
 
 describe('Routes with service injections', () => {
   it('Should define a routes map using services', async () => {
@@ -17,17 +17,21 @@ describe('Routes with service injections', () => {
 
     @Routes()
     class RoutesService {
-      @Inject()
+      @Inject(() => ServiceExample)
       serviceExample: ServiceExample
 
-      @Route({method: 'post', path: '/route-service-test', bodyParser: 'json'})
+      @Route({ method: 'post', path: '/route-service-test', bodyParser: 'json' })
       async route(req: Request) {
         return {
           statusCode: 200,
-          body: { 
-            message: this.serviceExample.sayHi(req.body.name)
+          body: {
+            message: await this.helper(req)
           }
         }
+      }
+
+      async helper(req) {
+        return this.serviceExample.sayHi(req.body.name)
       }
     }
 
@@ -35,7 +39,7 @@ describe('Routes with service injections', () => {
     registerRoutes(routes)
 
     const app = getApp()
-    const response = await request(app).post('/route-service-test').send({name: 'nico'})
-    expect(response.body).toEqual({message: `hello nico`})
+    const response = await request(app).post('/route-service-test').send({ name: 'nico' })
+    expect(response.body).toEqual({ message: `hello nico` })
   })
 })

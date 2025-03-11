@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import 'reflect-metadata'
 import { Command } from 'commander'
 import start from './start'
 import build from './build'

@@ -1,10 +1,11 @@
-import {Model} from '@orion-js/models'
-import {Schema} from '@orion-js/schema'
-import {cloneDeep, isPlainObject} from 'lodash'
-import {CreateCollectionOptions} from '../types'
+import { Model } from '@orion-js/models'
+import { Schema } from '@orion-js/schema'
+import { cloneDeep, isPlainObject } from 'lodash'
+import { CreateCollectionOptions } from '../types'
 
 export function getModel(options: CreateCollectionOptions): Model {
   if (!options.model) return
+
   return options.model && options.model.getModel ? options.model.getModel() : options.model
 }
 
@@ -39,8 +40,11 @@ export function getSchemaAndModel(options: CreateCollectionOptions): {
   schema: Schema
   model: Model
 } {
+  console.log('getting model', options)
   const model = getModel(options)
   const schema = getSchema(options, model)
 
-  return {schema, model}
+
+
+  return { schema, model }
 }

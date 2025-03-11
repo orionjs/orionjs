@@ -8,7 +8,6 @@ import cleanReturns from './cleanReturns'
 import { getResolverArgs } from './getArgs'
 
 function createResolver(options: any) {
-  console.log('creating model resolver')
   options.params = cleanParams(options.params)
   options.returns = cleanReturns(options.returns)
 

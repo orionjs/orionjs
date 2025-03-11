@@ -16,10 +16,10 @@
     "forceConsistentCasingInFileNames": true,
 
     // required for typed models
-    // "experimentalDecorators": true,
-    // "emitDecoratorMetadata": true,
+    // "experimentalDecorators": false,
+    // "emitDecoratorMetadata": false,
     
     "strict": false,
     "noFallthroughCasesInSwitch": true,
-  }
+  } 
 }

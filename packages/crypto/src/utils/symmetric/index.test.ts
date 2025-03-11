@@ -1,5 +1,4 @@
-import 'reflect-metadata'
-import {symmetric} from '.'
+import { symmetric } from '.'
 
 describe('Symmetric', () => {
   it('should de able to encrypt a decrypt texts', () => {

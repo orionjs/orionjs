@@ -1,11 +1,10 @@
-import 'reflect-metadata'
-import {setLogLevel} from '@orion-js/logger'
-import {Container} from '@orion-js/services'
-import {JobsRepo} from './repos/JobsRepo'
-import {JobsHistoryRepo} from './repos/JobsHistoryRepo'
-import {EventsService} from './services/EventsService'
-import {WorkerService} from './services/WorkerService'
-import {Executor} from './services/Executor'
+import { setLogLevel } from '@orion-js/logger'
+import { Container } from '@orion-js/services'
+import { JobsRepo } from './repos/JobsRepo'
+import { JobsHistoryRepo } from './repos/JobsHistoryRepo'
+import { EventsService } from './services/EventsService'
+import { WorkerService } from './services/WorkerService'
+import { Executor } from './services/Executor'
 
 // Set log level to error for tests
 setLogLevel('error')

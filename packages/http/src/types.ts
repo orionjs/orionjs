@@ -1,18 +1,18 @@
 import express from 'express'
-import * as bodyParser from 'body-parser'
+import { OptionsJson, OptionsText, OptionsUrlencoded } from 'body-parser'
 
 export interface RouteResponseObject {
   statusCode?: number
-  headers?: {[key: string]: string}
+  headers?: { [key: string]: string }
   body: string | object
 }
 
 export type RouteResponse = Promise<RouteResponseObject | void>
 
 export type RouteResolve = (
-  req: express.Request,
-  res: express.Response,
-  viewer: any
+  req?: express.Request,
+  res?: express.Response,
+  viewer?: any
 ) => RouteResponse
 
 export interface OrionRouteOptions {
@@ -31,7 +31,7 @@ export interface OrionRouteOptions {
   /**
    * Selected body parser options.
    */
-  bodyParserOptions?: bodyParser.OptionsJson | bodyParser.OptionsText | bodyParser.OptionsUrlencoded
+  bodyParserOptions?: OptionsJson | OptionsText | OptionsUrlencoded
   /**
    * Add a middleware to the route.
    * See https://expressjs.com/en/4x/api.html#middleware
@@ -46,7 +46,7 @@ export interface OrionRouteOptions {
   app?: express.Application
 }
 
-export interface RouteType extends OrionRouteOptions {}
+export interface RouteType extends OrionRouteOptions { }
 
 export interface RoutesMap {
   [key: string]: RouteType

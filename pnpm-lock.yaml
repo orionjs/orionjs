@@ -29,6 +29,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
     devDependencies:
       '@types/lodash':
         specifier: 4.14.176
@@ -488,9 +491,12 @@ importers:
       express:
         specifier: 4.17.1
         version: 4.17.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       reflect-metadata:
         specifier: ^0.1.13
-        version: 0.1.13
+        version: 0.1.14
     devDependencies:
       '@types/body-parser':
         specifier: ^1.19.1
@@ -706,6 +712,9 @@ importers:
       dot-object:
         specifier: 2.1.4
         version: 2.1.4
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       mongodb:
         specifier: 6.5.0
         version: 6.5.0
@@ -713,6 +722,9 @@ importers:
       '@types/dot-object':
         specifier: ^2.1.6
         version: 2.1.6
+      '@types/lodash':
+        specifier: ^4.17.16
+        version: 4.17.16
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -780,6 +792,9 @@ importers:
       '@orion-js/schema':
         specifier: workspace:*
         version: link:../schema
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
     devDependencies:
       '@types/lodash':
         specifier: 4.14.176
@@ -2261,6 +2276,9 @@ packages:
 
   '@types/lodash@4.14.195':
     resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
+
+  '@types/lodash@4.17.16':
+    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
 
   '@types/long@4.0.2':
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
@@ -3964,6 +3982,9 @@ packages:
 
   reflect-metadata@0.1.13:
     resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
+
+  reflect-metadata@0.1.14:
+    resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
 
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
@@ -6143,6 +6164,8 @@ snapshots:
 
   '@types/lodash@4.14.195': {}
 
+  '@types/lodash@4.17.16': {}
+
   '@types/long@4.0.2': {}
 
   '@types/memcached@2.2.10':
@@ -7946,6 +7969,8 @@ snapshots:
   readdirp@4.1.2: {}
 
   reflect-metadata@0.1.13: {}
+
+  reflect-metadata@0.1.14: {}
 
   regenerator-runtime@0.14.1: {}
 

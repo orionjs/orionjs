@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "test": "vitest run",
-    "prepare": "pnpm build",
+    "prepare": "",
     "clean": "rm -rf ./dist",
     "build": "tsup",
     "upgrade-interactive": "pnpm upgrade --interactive",
@@ -24,18 +24,19 @@
     "@orion-js/services": "workspace:*",
     "body-parser": "1.19.0",
     "express": "4.17.1",
+    "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.1",
     "@types/express": "4.17.13",
     "@types/lodash": "4.14.176",
+    "@types/node": "^18.0.0",
     "@types/supertest": "2.0.11",
     "superagent": "^6.1.0",
     "supertest": "^6.1.6",
-    "typescript": "^5.4.5",
-    "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
     "vitest": "^1.1.0"
   },
   "publishConfig": {

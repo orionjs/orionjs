@@ -1,12 +1,12 @@
-import {format, transports} from 'winston'
+import { format, transports } from 'winston'
 import util from 'node:util'
-import {isEmpty} from 'lodash'
-import opentelemetry, {Span} from '@opentelemetry/api'
+import { isEmpty } from 'lodash'
+import opentelemetry, { Span } from '@opentelemetry/api'
 
-const {metadata, timestamp, json, colorize, combine, printf} = format
+const { metadata, timestamp, json, colorize, combine, printf } = format
 
 const opentelemetryContext = format(info => {
-  const activeSpan: Span & {name?: string} = opentelemetry.trace.getActiveSpan()
+  const activeSpan: Span & { name?: string } = opentelemetry.trace.getActiveSpan()
   if (activeSpan) {
     const spanContex = activeSpan.spanContext()
     if (activeSpan.name && !info.context) {
@@ -38,8 +38,8 @@ const metaError = format((info: any) => {
   return info
 })
 
-export const sentryFormat = format(info => {
-  const {path, label, ...extra} = info
+export const sentryFormat: any = format(info => {
+  const { path, label, ...extra } = info
   return {
     ...extra,
     tags: {
@@ -50,7 +50,7 @@ export const sentryFormat = format(info => {
 })
 
 function getMetadataText(metadata: any) {
-  const {value, ...rest} = metadata
+  const { value, ...rest } = metadata
   if (isEmpty(rest)) {
     if (typeof value === 'undefined') return ''
     return util.inspect(value)
@@ -58,9 +58,9 @@ function getMetadataText(metadata: any) {
   return `${util.inspect(value)} ${util.inspect(rest)}`
 }
 
-export const textConsoleFormat = combine(
+export const textConsoleFormat: any = combine(
   colorize(),
-  metadata({fillExcept: ['fileName', 'level', 'message', 'stack']}),
+  metadata({ fillExcept: ['fileName', 'level', 'message', 'stack'] }),
   opentelemetryContext(),
   metaError(),
   timestamp(),
@@ -86,8 +86,8 @@ export const textConsoleTransport = new transports.Console({
   format: textConsoleFormat,
 })
 
-export const jsonConsoleFormat = combine(
-  metadata({fillExcept: ['fileName', 'level', 'message']}),
+export const jsonConsoleFormat: any = combine(
+  metadata({ fillExcept: ['fileName', 'level', 'message'] }),
   opentelemetryContext(),
   metaError(),
   timestamp(),
