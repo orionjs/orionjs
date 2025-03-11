@@ -1,18 +1,20 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
-import {Collection, ModelToUpdateFilter, MongoCollection, Repository} from '@orion-js/mongodb'
+import {Collection, ModelToUpdateFilter, MongoCollection} from '@orion-js/mongodb'
 import {values} from 'lodash'
 import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
 import {JobToRun} from '../types/Worker'
+import {getModelForClass} from '@orion-js/typed-model'
+import {Repository} from '@orion-js/mongodb'
 
 @Repository()
 export class JobsRepo {
   @MongoCollection({
     idGeneration: 'uuid',
     name: 'orionjs.jobs_dogs_records',
-    schema: JobRecord,
+    schema: getModelForClass(JobRecord),
     indexes: [
       {
         keys: {
@@ -128,7 +130,7 @@ export class JobsRepo {
   }
 
   async ensureJobRecord(job: JobDefinitionWithName) {
-    await this.jobs.connectionPromise
+    console.log(this.jobs)
     const result = await this.jobs.upsert(
       {
         jobName: job.name,
@@ -153,6 +155,8 @@ export class JobsRepo {
 
   async scheduleJob(options: ScheduleJobRecordOptions) {
     try {
+      console.log(this.jobs.schema)
+      console.log(this.jobs.getSchema(), {nextRunAt: options.nextRunAt})
       await this.jobs.insertOne({
         jobName: options.name,
         uniqueIdentifier: options.uniqueIdentifier,

@@ -1,6 +1,5 @@
 import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
-
 import {JobsRepo} from '../repos/JobsRepo'
 import {ScheduleJobOptions} from '../types/Events'
 import {getNextRunDate} from './getNextRunDate'

@@ -11,14 +11,15 @@ export default function (type: any): FieldValidatorType {
     return 'plainObject'
   }
   if (isArray(type)) return 'array'
+
   if (type === String) return 'string'
-  if (type === Date) return 'date'
+  if (typeof type === 'function' && type.name === 'Date') return 'date'
   if (type === Number) return 'number'
   if (type === Boolean) return 'boolean'
   if (type === 'enum') return 'string'
 
   if (!isString(type)) {
-    throw new Error('Field type is invalid. Pass a string or a custom field type. Got ' + type)
+    throw new Error(`Field type is invalid. Pass a string or a custom field type. Got ${type}`)
   }
 
   const exists = has(fieldTypes, type)

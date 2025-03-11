@@ -6,13 +6,14 @@ import {
 } from '@orion-js/mongodb'
 import {omit} from 'lodash'
 import {HistoryRecord} from '../types/HistoryRecord'
+import {getModelForClass} from '@orion-js/typed-model'
 
 @Repository()
 export class JobsHistoryRepo {
   @MongoCollection({
     name: 'orionjs.jobs_dogs_history',
     idGeneration: 'uuid',
-    schema: HistoryRecord,
+    schema: getModelForClass(HistoryRecord),
     indexes: [
       {
         keys: {

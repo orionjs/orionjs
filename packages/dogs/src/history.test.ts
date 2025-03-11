@@ -1,9 +1,6 @@
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
-import {setLogLevel} from '@orion-js/logger'
 import {describe, it, expect} from 'vitest'
-
-setLogLevel('none')
 
 describe('Test Jobs History', () => {
   it('Should save success history types', async () => {
@@ -11,7 +8,7 @@ describe('Test Jobs History', () => {
     const job = defineJob({
       type: 'event',
       async resolve() {
-        await sleep(50)
+        await sleep(10)
         return {
           number: 1,
         }
@@ -20,25 +17,26 @@ describe('Test Jobs History', () => {
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
-      workersCount: 1,
+      workersCount: 10,
       pollInterval: 10,
     })
 
     await scheduleJob({
       name: jobId,
-      runIn: 1,
+      runIn: 0,
       params: {id: 2},
     })
 
-    await sleep(100)
+    await sleep(200)
     await instance.stop()
+    await sleep(100)
 
     const executions = await jobsHistoryRepo.getExecutions(jobId)
 
     expect(executions.length).toBe(1)
 
     const execution = executions[0]
-    expect(execution.duration).toBeGreaterThan(49)
+    expect(execution.duration).toBeGreaterThanOrEqual(10)
     expect(execution).toEqual({
       _id: expect.any(String),
       jobId: expect.any(String),
@@ -120,7 +118,7 @@ describe('Test Jobs History', () => {
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
-      workersCount: 1,
+      workersCount: 3,
       pollInterval: 10,
       lockTime: 10,
     })

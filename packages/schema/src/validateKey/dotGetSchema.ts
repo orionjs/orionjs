@@ -13,7 +13,9 @@ const dotGet = function dotGet(object: SchemaNode, path: string) {
 
   if (first === '$' || /^[0-9]+$/.test(first)) {
     return dotGet({type: levelObject[0]}, remainingPath)
-  } else if (isPlainObject(levelObject[first])) {
+  }
+
+  if (isPlainObject(levelObject[first])) {
     return dotGet(levelObject[first], remainingPath)
   }
 

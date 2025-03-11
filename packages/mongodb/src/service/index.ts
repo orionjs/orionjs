@@ -19,6 +19,7 @@ export function MongoCollection<ModelClass extends ModelClassBase = ModelClassBa
   options: CreateCollectionOptions<ModelClass>,
 ) {
   return (_target: any, context: ClassFieldDecoratorContext) => {
+    const propertyKey = String(context.name)
     context.addInitializer(function (this) {
       const repo = serviceMetadata.get(this.constructor)
       if (!repo || repo._serviceType !== 'repo') {
@@ -28,7 +29,7 @@ export function MongoCollection<ModelClass extends ModelClassBase = ModelClassBa
       }
 
       const collection = createCollection(options)
-      this[options.name] = collection
+      this[propertyKey] = collection
     })
   }
 }

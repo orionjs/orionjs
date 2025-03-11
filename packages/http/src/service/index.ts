@@ -7,7 +7,7 @@ const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const routeMetadata = new WeakMap<any, Record<string, any>>()
 
 export function Routes() {
-  return function (target: any, context: ClassDecoratorContext<any>) {
+  return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
 
     context.addInitializer(function (this) {
@@ -21,10 +21,10 @@ export function Route<
   TArgs extends Parameters<OrionRouteOptions['resolve']>,
   TReturn extends ReturnType<OrionRouteOptions['resolve']>,
 >(options: Omit<OrionRouteOptions, 'resolve'>) {
-  return function (
+  return (
     method: (this: This, ...args: TArgs) => TReturn,
     context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+  ) => {
     const propertyKey = String(context.name)
 
     context.addInitializer(function (this: This) {

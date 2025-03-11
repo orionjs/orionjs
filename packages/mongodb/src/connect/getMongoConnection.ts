@@ -43,15 +43,12 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
    */
   const startConnection = async () => {
     if (internalConnectionPromise) {
-      console.log(`Reusing existing connection for "${name}"`)
       return await internalConnectionPromise
     }
 
-    console.log(`Starting new connection to MongoDB for "${name}" with URI: ${uri}`)
     internalConnectionPromise = connect(client)
     allConnectionPromises.push(internalConnectionPromise)
     internalConnectionPromise.then(client => {
-      console.log(`Successfully connected to MongoDB for "${name}"`)
       resolveConnected(client)
     })
 

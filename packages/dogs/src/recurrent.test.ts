@@ -1,16 +1,13 @@
 import {sleep} from '@orion-js/helpers'
 import {defineJob, startWorkers} from '.'
-import {setLogLevel} from '@orion-js/logger'
 import {describe, it, expect} from 'vitest'
-
-setLogLevel('error')
 
 describe('Recurrent tests', () => {
   it('Should run a recurrent job', async () => {
     let ran = false
     const job1 = defineJob({
       type: 'recurrent',
-      runEvery: 100,
+      runEvery: 10,
       async resolve() {
         ran = true
       },
@@ -18,9 +15,9 @@ describe('Recurrent tests', () => {
 
     const instance = startWorkers({
       jobs: {job1},
-      workersCount: 1,
-      pollInterval: 100,
-      cooldownPeriod: 100,
+      workersCount: 3,
+      pollInterval: 10,
+      cooldownPeriod: 10,
     })
 
     await sleep(500)
@@ -33,7 +30,7 @@ describe('Recurrent tests', () => {
     let count = 0
     const job2 = defineJob({
       type: 'recurrent',
-      runEvery: 20,
+      runEvery: 1,
       async resolve() {
         count++
       },
@@ -41,9 +38,9 @@ describe('Recurrent tests', () => {
 
     const instance = startWorkers({
       jobs: {job2},
-      workersCount: 1,
-      pollInterval: 10,
-      cooldownPeriod: 10,
+      workersCount: 3,
+      pollInterval: 1,
+      cooldownPeriod: 1,
     })
 
     await sleep(200)

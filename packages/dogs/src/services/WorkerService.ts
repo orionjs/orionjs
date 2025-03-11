@@ -70,7 +70,7 @@ export class WorkerService {
       workersCount: config.workersCount,
       workers: [],
       stop: async () => {
-        logger.debug('Stopping workers...', workersInstance.workers)
+        logger.info('Stopping workers...')
         workersInstance.running = false
         const stopingPromises = workersInstance.workers.map(worker => worker.stop())
         await Promise.all(stopingPromises)

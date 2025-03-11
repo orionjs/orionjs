@@ -9,6 +9,9 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     setupFiles: ['./setup-tests.ts'],
-    maxConcurrency: 0,
+    hookTimeout: 3000,
+    testTimeout: 3000,
+    fileParallelism: false,
+    maxConcurrency: 1,
   },
 })

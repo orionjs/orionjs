@@ -1,4 +1,4 @@
-import {getInstance, Service} from '@orion-js/services'
+import {getInstance, Inject, Service} from '@orion-js/services'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {WithoutId} from 'mongodb'
 import {MongoCollection, Repository} from '.'
@@ -81,5 +81,42 @@ describe('Collection as IOC', () => {
         await this.collection.insertOne({name, completedAt: new Date()})
       }
     }
+  })
+
+  it('should init the collection when injected to other initialized class', async () => {
+    @Repository()
+    class UserRepo {
+      @MongoCollection({
+        name: 'users2',
+        idGeneration: 'random',
+        idPrefix: 'user_',
+      })
+      users: Collection
+
+      async createUser(user: any) {
+        return await this.users.insertOne(user)
+      }
+
+      async getUserByName(name: string) {
+        return await this.users.findOne({name})
+      }
+    }
+
+    @Service()
+    class UserService {
+      @Inject(() => UserRepo)
+      userRepo: UserRepo
+
+      async checkForTests() {
+        console.log('checkForTests', this.userRepo)
+        await this.userRepo.createUser({name: 'Nico'})
+        return await this.userRepo.getUserByName('Nico')
+      }
+    }
+
+    const instance = getInstance(UserService)
+    const user = await instance.checkForTests()
+
+    expect(user.name).toBe('Nico')
   })
 })
