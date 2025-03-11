@@ -1,49 +1,61 @@
-import {Container, Service} from '@orion-js/services'
-import {UserError} from '@orion-js/helpers'
-import {OrionSubscription, OrionSubscriptionOptions} from '../types/subscription'
-import {subscription} from '..'
+import { getInstance, Service } from '@orion-js/services'
+import { OrionSubscription, OrionSubscriptionOptions } from '../types/subscription'
+import { subscription } from '..'
 
-export function Subscriptions(): ClassDecorator {
-  return (target: any) => {
-    Service()(target)
-    target.prototype.service = target
-    target.prototype.serviceType = 'subscriptions'
-  }
+
+// Define metadata storage using WeakMaps
+const serviceMetadata = new WeakMap<any, { _serviceType: string }>();
+const subscriptionsMetadata = new WeakMap<any, Record<string, any>>();
+
+export function Subscriptions() {
+  return function (target: any, context: ClassDecoratorContext<any>) {
+    Service()(target, context);
+
+    context.addInitializer(function (this) {
+      serviceMetadata.set(this, { _serviceType: 'subscriptions' });
+    });
+  };
 }
 
-export function Subscription<T = any, ReturnType = any>(options: OrionSubscriptionOptions) {
-  return (object: any, propertyName: string, index?: number) => {
-    const sub: OrionSubscription<T, ReturnType> = subscription({
-      name: propertyName,
-      ...options,
-    })
 
-    object.subscriptions = object.subscriptions || {}
-    object.subscriptions[propertyName] = sub
+export function Subscription<This, TArgs extends any[], TReturn extends any>(options: OrionSubscriptionOptions) {
+  return function (
+    method: (this: This, ...args: TArgs) => TReturn,
+    context: ClassMethodDecoratorContext<This, typeof method>
+  ) {
+    const propertyKey = String(context.name);
 
-    Container.registerHandler({
-      object,
-      propertyName,
-      index,
-      value: _containerInstance => {
-        if (!object.serviceType || object.serviceType !== 'subscriptions') {
-          throw new Error(
-            'You must pass a class decorated with @Subscriptions if you want to use @Subscription',
-          )
-        }
+    context.addInitializer(function (this: This) {
+      const subscriptions = subscriptionsMetadata.get(this) || {};
 
-        return sub
-      },
-    })
+      subscriptions[propertyKey] = subscription({
+        name: propertyKey,
+        ...options,
+      })
+
+      subscriptionsMetadata.set(this, subscriptions);
+    });
+
+    return method;
   }
 }
 
 export function getServiceSubscriptions(target: any): {
   [key: string]: OrionSubscription
 } {
-  if (!target.prototype) {
-    throw new UserError('You must pass a class to getSubscriptions')
+  const instance = getInstance(target);
+
+  if (!serviceMetadata.has(instance.constructor)) {
+    throw new Error('You must pass a class decorated with @Subscriptions to getServiceSubscriptions');
   }
 
-  return target.prototype.subscriptions || {}
+  const instanceMetadata = serviceMetadata.get(instance.constructor)
+  if (instanceMetadata._serviceType !== 'subscriptions') {
+    throw new Error('You must pass a class decorated with @Subscriptions to getServiceSubscriptions');
+  }
+
+  const subscriptionsMap = subscriptionsMetadata.get(instance) || {};
+
+  return subscriptionsMap;
 }
+

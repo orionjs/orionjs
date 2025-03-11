@@ -1,12 +1,12 @@
-import {generateId} from '@orion-js/helpers'
-import {logger} from '@orion-js/logger'
-import {createCollection, ModelToUpdateFilter} from '@orion-js/mongodb'
-import {Service} from '@orion-js/services'
-import {values} from 'lodash'
-import {ScheduleJobRecordOptions} from '../types/Events'
-import {JobRecord} from '../types/JobRecord'
-import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
-import {JobToRun} from '../types/Worker'
+import { generateId } from '@orion-js/helpers'
+import { logger } from '@orion-js/logger'
+import { createCollection, ModelToUpdateFilter } from '@orion-js/mongodb'
+import { Service } from '@orion-js/services'
+import { values } from 'lodash'
+import { ScheduleJobRecordOptions } from '../types/Events'
+import { JobRecord } from '../types/JobRecord'
+import { JobDefinitionWithName, RecurrentJobDefinition } from '../types/JobsDefinition'
+import { JobToRun } from '../types/Worker'
 
 @Service()
 export class JobsRepo {
@@ -14,7 +14,7 @@ export class JobsRepo {
     createCollection<JobRecord>({
       idGeneration: 'uuid',
       name: 'orionjs.jobs_dogs_records',
-      model: JobRecord,
+      schema: JobRecord,
       indexes: [
         {
           keys: {
@@ -29,7 +29,7 @@ export class JobsRepo {
           },
           options: {
             unique: true,
-            partialFilterExpression: {type: 'recurrent'}
+            partialFilterExpression: { type: 'recurrent' }
           }
         },
         {
@@ -49,12 +49,12 @@ export class JobsRepo {
 
     const job = await this.jobs().findOneAndUpdate(
       {
-        jobName: {$in: jobNames},
-        nextRunAt: {$lte: new Date()},
-        $or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: new Date()}}]
+        jobName: { $in: jobNames },
+        nextRunAt: { $lte: new Date() },
+        $or: [{ lockedUntil: { $exists: false } }, { lockedUntil: { $lte: new Date() } }]
       },
       {
-        $set: {lockedUntil, lastRunAt: new Date()}
+        $set: { lockedUntil, lastRunAt: new Date() }
       },
       {
         mongoOptions: {
@@ -73,7 +73,7 @@ export class JobsRepo {
 
     if (job.lockedUntil) {
       logger.info(`Running job "${job.jobName}" that was staled`)
-      this.jobs().updateOne(job._id, {$inc: {tries: 1}})
+      this.jobs().updateOne(job._id, { $inc: { tries: 1 } })
       tries++
     }
 
@@ -91,7 +91,7 @@ export class JobsRepo {
   }
 
   async setJobRecordPriority(jobId: string, priority: number) {
-    await this.jobs().updateOne(jobId, {$set: {priority}})
+    await this.jobs().updateOne(jobId, { $set: { priority } })
   }
 
   async scheduleNextRun(options: {
@@ -101,19 +101,19 @@ export class JobsRepo {
     priority: number
   }) {
     const updator: ModelToUpdateFilter<JobRecord> = {
-      $set: {nextRunAt: options.nextRunAt, priority: options.priority},
-      $unset: {lockedUntil: ''}
+      $set: { nextRunAt: options.nextRunAt, priority: options.priority },
+      $unset: { lockedUntil: '' }
     }
 
     if (options.addTries) {
-      updator.$inc = {tries: 1}
+      updator.$inc = { tries: 1 }
     }
 
     await this.jobs().updateOne(options.jobId, updator)
   }
 
   async deleteEventJob(jobId: string) {
-    await this.jobs().deleteOne({_id: jobId, type: 'event'})
+    await this.jobs().deleteOne({ _id: jobId, type: 'event' })
   }
 
   async extendLockTime(jobId: string, extraTime: number) {
@@ -123,7 +123,7 @@ export class JobsRepo {
         _id: jobId
       },
       {
-        $set: {lockedUntil}
+        $set: { lockedUntil }
       }
     )
   }

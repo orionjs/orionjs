@@ -1,4 +1,4 @@
-import { getInstance, Service } from '@orion-js/services'
+import { Service } from '@orion-js/services'
 import createCollection from '../createCollection'
 import { CreateCollectionOptions, ModelClassBase } from '../types'
 
@@ -23,6 +23,11 @@ export function MongoCollection<ModelClass extends ModelClassBase = ModelClassBa
     _target: any, context: ClassFieldDecoratorContext
   ) {
     context.addInitializer(function (this) {
+      const repo = serviceMetadata.get(this)
+      if (!repo || repo._serviceType !== 'repo') {
+        throw new Error('You must pass a class decorated with @Repository if you want to use @MongoCollection')
+      }
+
       const collection = createCollection(options)
       this[options.name] = collection
     })

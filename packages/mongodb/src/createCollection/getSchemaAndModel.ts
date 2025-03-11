@@ -3,11 +3,8 @@ import { Schema } from '@orion-js/schema'
 import { cloneDeep, isPlainObject } from 'lodash'
 import { CreateCollectionOptions } from '../types'
 
-export function getModel(options: CreateCollectionOptions): Model {
-  if (!options.model) return
-
-  return options.model && options.model.getModel ? options.model.getModel() : options.model
-}
+// @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
+Symbol.metadata ??= Symbol("Symbol.metadata");
 
 export function prepareShema(schema: Schema): Schema {
   if (!schema._id) {
@@ -18,33 +15,34 @@ export function prepareShema(schema: Schema): Schema {
   return schema
 }
 
-export function getSchema(options: CreateCollectionOptions, optionsModel?: Model): Schema {
-  if (optionsModel) {
-    const schema = optionsModel ? cloneDeep(optionsModel.getCleanSchema()) : {}
+export function getSchema(options: CreateCollectionOptions,): Schema {
+  if (!options.schema) return
+
+  if (options.schema[Symbol.metadata]?._getModel) {
+    return options.schema[Symbol.metadata]._getModel().getCleanSchema()
+  }
+
+  // schema is a model
+  if (options.schema.getCleanSchema) {
+    const schema = options.schema.getCleanSchema()
     return prepareShema(schema)
   }
 
+  // schema is a model
+  if (options.schema.getSchema) {
+    const schema = options.schema.getSchema()
+    return prepareShema(schema)
+  }
+
+
   // schema is a typed model
-  if (options.schema && options.schema.getModel) {
+  if (options.schema.getModel) {
     const model = options.schema.getModel()
     const schema = model ? cloneDeep(model.getCleanSchema()) : {}
     return prepareShema(schema)
   }
 
-  if (options.schema && isPlainObject(options.schema)) {
+  if (isPlainObject(options.schema)) {
     return prepareShema(options.schema)
   }
-}
-
-export function getSchemaAndModel(options: CreateCollectionOptions): {
-  schema: Schema
-  model: Model
-} {
-  console.log('getting model', options)
-  const model = getModel(options)
-  const schema = getSchema(options, model)
-
-
-
-  return { schema, model }
 }

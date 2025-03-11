@@ -1,21 +1,21 @@
-import {generateId} from '@orion-js/helpers'
-import createCollection, {createIndexesPromises} from '.'
-import {it, describe, expect, mock} from 'vitest'
+import { generateId } from '@orion-js/helpers'
+import createCollection, { createIndexesPromises } from '.'
+import { it, describe, expect, vi } from 'vitest'
 
 describe('Test indexes', () => {
   it('Should store all create indexes promises in the array', async () => {
     const collection = createCollection({
       name: generateId(),
-      indexes: [{keys: {a: 1}, options: {unique: true}}],
+      indexes: [{ keys: { a: 1 }, options: { unique: true } }],
     })
 
-    expect(collection.createIndexesPromise).toBeOneOf(createIndexesPromises)
+    expect(createIndexesPromises).toContain(collection.createIndexesPromise)
   })
 
   it('Should create collection indexes correctly', async () => {
     const collection = createCollection({
       name: generateId(),
-      indexes: [{keys: {a: 1}, options: {unique: true}}],
+      indexes: [{ keys: { a: 1 }, options: { unique: true } }],
     })
 
     const results = await collection.createIndexesPromise
@@ -29,14 +29,14 @@ describe('Test indexes', () => {
       name: collectionName,
     })
 
-    await collection1.insertOne({a: 1})
-    await collection1.insertOne({a: 1})
+    await collection1.insertOne({ a: 1 })
+    await collection1.insertOne({ a: 1 })
 
-    console.error = mock()
+    console.error = vi.fn()
 
     const collection2 = createCollection({
       name: collectionName,
-      indexes: [{keys: {a: 1}, options: {unique: true}}],
+      indexes: [{ keys: { a: 1 }, options: { unique: true } }],
     })
 
     const result = await collection2.createIndexesPromise
@@ -48,16 +48,16 @@ describe('Test indexes', () => {
     const collectionName = generateId()
     const collection1 = createCollection({
       name: collectionName,
-      indexes: [{keys: {a: 1}, options: {unique: true}}],
+      indexes: [{ keys: { a: 1 }, options: { unique: true } }],
     })
 
     await collection1.createIndexesPromise
 
-    console.warn = mock(() => Math.random())
+    console.warn = vi.fn(() => Math.random())
 
     const collection2 = createCollection({
       name: collectionName,
-      indexes: [{keys: {ba: 1}, options: {unique: true}}],
+      indexes: [{ keys: { ba: 1 }, options: { unique: true } }],
     })
 
     await collection2.createIndexesPromise
@@ -69,20 +69,20 @@ describe('Test indexes', () => {
     const collectionName = generateId()
     const collection1 = createCollection({
       name: collectionName,
-      indexes: [{keys: {name: 1}}],
+      indexes: [{ keys: { name: 1 } }],
     })
 
     await collection1.createIndexesPromise
 
-    console.info = mock()
+    console.info = vi.fn()
 
     const collection2 = createCollection({
       name: collectionName,
-      indexes: [{keys: {name: 1}, options: {unique: true}}],
+      indexes: [{ keys: { name: 1 }, options: { unique: true } }],
     })
 
     await collection2.createIndexesPromise
 
-    expect(console.warn).toHaveBeenCalled()
+    expect(console.info).toHaveBeenCalled()
   })
 })

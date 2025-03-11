@@ -1,12 +1,12 @@
 import * as MongoDB from 'mongodb'
-import {Model} from '@orion-js/models'
-import {Blackbox, Schema} from '@orion-js/schema'
-import {OrionMongoClient} from '../connect/connections'
+import { Model } from '@orion-js/models'
+import { Blackbox, Schema } from '@orion-js/schema'
+import { OrionMongoClient } from '../connect/connections'
 
 type RemoveFunctions<T extends ModelClassBase> = Pick<
   T,
-  {[Key in keyof T]-?: T[Key] extends Function ? never : Key}[keyof T]
-> & {_id: ModelClassBase['_id']}
+  { [Key in keyof T]-?: T[Key] extends Function ? never : Key }[keyof T]
+> & { _id: ModelClassBase['_id'] }
 
 export type ModelClassBase = {
   _id: string
@@ -77,7 +77,7 @@ export namespace DataLoader {
 }
 
 export type MongoFilter<ModelClass extends ModelClassBase = ModelClassBase> =
-  MongoDB.Filter<ModelClass> & ({_id?: ModelClass['_id']} | {_id?: {$in: ModelClass['_id'][]}})
+  MongoDB.Filter<ModelClass> & ({ _id?: ModelClass['_id'] } | { _id?: { $in: ModelClass['_id'][] } })
 
 export type MongoSelector<ModelClass extends ModelClassBase = ModelClassBase> =
   | ModelClass['_id']
@@ -194,10 +194,6 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
    */
   schema?: any
   /**
-   * @deprecated Use schema instead. If you use model, all items will be initialized with the model to add resolvers (which are also deprecated)
-   */
-  model?: any
-  /**
    * The indexes to use
    */
   indexes?: Array<CollectionIndex>
@@ -228,10 +224,6 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
   connectionName?: string
   schema?: Schema
-  /**
-   * @deprecated Use schema instead. If you use model, all items will be initialized with the model to add resolvers (which are also deprecated)
-   */
-  model?: Model
   indexes: Array<CollectionIndex>
   generateId: () => ModelClass['_id']
   getSchema: () => Schema

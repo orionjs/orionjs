@@ -1,53 +1,53 @@
 import type { Blackbox } from '@orion-js/schema'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import { Prop, TypedSchema } from '@orion-js/typed-model'
 
 @TypedSchema()
 export class HistoryRecord {
-  @Prop()
+  @Prop({ type: String })
   _id: string
 
-  @Prop()
+  @Prop({ type: String })
   jobId: string
 
-  @Prop()
+  @Prop({ type: String })
   executionId: string
 
-  @Prop()
+  @Prop({ type: String })
   jobName: string
 
-  @Prop()
+  @Prop({ type: String })
   type: 'recurrent' | 'event'
 
-  @Prop()
+  @Prop({ type: Number })
   priority: number
 
-  @Prop()
+  @Prop({ type: Number })
   tries: number
 
-  @Prop({optional: true})
+  @Prop({ type: String, optional: true })
   uniqueIdentifier?: string
 
-  @Prop()
+  @Prop({ type: Date })
   startedAt: Date
 
-  @Prop()
+  @Prop({ type: Date })
   endedAt: Date
 
-  @Prop()
+  @Prop({ type: Number })
   duration: number
 
-  @Prop({optional: true})
+  @Prop({ type: Date, optional: true })
   expiresAt?: Date
 
-  @Prop()
+  @Prop({ type: String })
   status: 'success' | 'error' | 'stale'
 
-  @Prop({optional: true})
+  @Prop({ type: String, optional: true })
   errorMessage?: string
 
-  @Prop({type: 'blackbox', optional: true})
+  @Prop({ type: 'blackbox', optional: true })
   params?: Blackbox
 
-  @Prop({type: 'blackbox', optional: true})
+  @Prop({ type: 'blackbox', optional: true })
   result?: Blackbox
 }

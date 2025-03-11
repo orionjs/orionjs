@@ -14,15 +14,27 @@ importers:
       '@changesets/cli':
         specifier: ^2.28.1
         version: 2.28.1
+      '@orion-js/mongodb':
+        specifier: ^3.12.0
+        version: 3.12.0(@orion-js/cache@4.0.0-next.3)
       '@types/node':
         specifier: ^22.13.10
         version: 22.13.10
+      mongodb-memory-server:
+        specifier: ^10.1.4
+        version: 10.1.4
       oxc-transform:
         specifier: ^0.56.5
         version: 0.56.5
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@22.13.10)
+      vitest-mongodb:
+        specifier: ^1.0.1
+        version: 1.0.1
 
   packages/cache:
     dependencies:
@@ -185,12 +197,18 @@ importers:
       '@orion-js/mongodb':
         specifier: workspace:*
         version: link:../mongodb
+      '@orion-js/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@orion-js/services':
         specifier: workspace:*
         version: link:../services
       '@orion-js/typed-model':
         specifier: workspace:*
         version: link:../typed-model
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
     devDependencies:
       '@orion-js/logger':
         specifier: workspace:*
@@ -764,6 +782,9 @@ importers:
       '@orion-js/typed-model':
         specifier: workspace:*
         version: link:../typed-model
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
     devDependencies:
       '@types/lodash':
         specifier: 4.14.176
@@ -2011,6 +2032,39 @@ packages:
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
+
+  '@orion-js/cache@4.0.0-next.3':
+    resolution: {integrity: sha512-A87RpdjgPk0LAifl0yZ87u9JJDN/t7jmYhJguy7Ic84ajyIU2UyfHv0PkHOtQyZIs2rlYLHqpZYxxFoxgYASnw==}
+
+  '@orion-js/env@4.0.0-next.3':
+    resolution: {integrity: sha512-6uIyvhvJDN6ste5bu8u7FhOcteRcVHzTgwgMGjsLuohJuEDU4nJH/9rWB93vkSiGZVJSKva8cAr3WbtVYUq+bw==}
+    hasBin: true
+
+  '@orion-js/helpers@4.0.0-next.3':
+    resolution: {integrity: sha512-RA5heu6sYsqCEJZ4EGnfLjznIORpFpz31QiVnUGQvvYhg7rSAfvqjb0GGmbDSNGVPmslig6dYAmkUHMahBxIYw==}
+
+  '@orion-js/logger@4.0.0-next.3':
+    resolution: {integrity: sha512-JpfsyhqVce0tsb2qwbIX6AP/6RdoF8Sy7iMCHkF6Zkdpg+ukgPp9QVXq5kIJ5XaGNOCCObcyDRGPn9r9wIvQgw==}
+
+  '@orion-js/models@4.0.0-next.3':
+    resolution: {integrity: sha512-Yw6lo5LB8/yTQV+otYqdGIqka0KHIUeUZCEkO/PXrYpUyQKggSeJhtMmgRR4D82UNir+6gCYz/pQJJjNH6a51g==}
+    peerDependencies:
+      '@orion-js/cache': 4.0.0-next.3
+
+  '@orion-js/mongodb@3.12.0':
+    resolution: {integrity: sha512-NAIZ4EzfQktmqXjjpJUdzt2acYkXAvVyxgtlAlsIZDOVarCyny3X3GowSiOxJ6Z45O7y26BFR9e4YFqM+xAs8A==}
+
+  '@orion-js/resolvers@4.0.0-next.3':
+    resolution: {integrity: sha512-HgGc1tAz02eSOBvKOoQ+vBHwWfV1bJWHBnl8cJhuKpi6t4zSuhYqUhwPYvoYxRXqkIS3tR4N8HmQgzGkUMsd7g==}
+
+  '@orion-js/schema@4.0.0-next.3':
+    resolution: {integrity: sha512-2L/Z4kQbOf9mCczrC/R7pnlnjERamVBui8U3cJ3/RwrV1Rx09skwMaDLmRxZuO1tN07SZ7oLx9a++pep4epzjw==}
+
+  '@orion-js/services@4.0.0-next.3':
+    resolution: {integrity: sha512-sCGNXWCj8r+cBRhmDBUR2LfPjP7chx5YLKu5wWKUKoKQ3NwFtq9N0T6jnUPBZqcvGxK/jCaQbiG/ZmLIde9lqQ==}
+
+  '@orion-js/typed-model@4.0.0-next.3':
+    resolution: {integrity: sha512-MMjOReZ+zxP6yEDsDZp1P+pDnosOKmMRLMxgdp/SwGTLMewcDzkKj56Kokg+2QGaYhS/n+8nzUkxDa5+S3dLcw==}
 
   '@oxc-transform/binding-darwin-arm64@0.56.5':
     resolution: {integrity: sha512-OlLgqKlWqA5A5IW3/YOKV2egeT/h/I36FjB88f07xbOGn/4B1Zj8TeIyvW49rbvi2edz6z5roPzp/CV/htXVHQ==}
@@ -4505,6 +4559,9 @@ packages:
       terser:
         optional: true
 
+  vitest-mongodb@1.0.1:
+    resolution: {integrity: sha512-a9Mc2F35h8qxI1uOgsrCUH28TglClAd8gdXkn7CBqmC6bLr6D2Ibyxp0Xz6/AU0ukAOfuf/6oqUS+ZN0VlxVyQ==}
+
   vitest@1.6.1:
     resolution: {integrity: sha512-Ljb1cnSJSivGN0LqXd/zmDbWEM0RNNg2t1QW/XUhYl/qPqyu7CsqeWtqQXHVaJsecLPuDoak2oJcZN2QoRIOag==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -5957,6 +6014,91 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
 
+  '@orion-js/cache@4.0.0-next.3':
+    dependencies:
+      '@orion-js/helpers': 4.0.0-next.3
+
+  '@orion-js/env@4.0.0-next.3':
+    dependencies:
+      colors: 1.4.0
+      commander: 9.5.0
+      prompts: 2.4.2
+      tweetnacl: 1.0.3
+      tweetnacl-util: 0.15.1
+      yaml: 2.7.0
+
+  '@orion-js/helpers@4.0.0-next.3':
+    dependencies:
+      object-hash: 2.2.0
+
+  '@orion-js/logger@4.0.0-next.3':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      color: 4.2.3
+      lodash: 4.17.21
+      object-hash: 2.2.0
+      text-hex: 1.0.0
+      winston: 3.17.0
+
+  '@orion-js/models@4.0.0-next.3(@orion-js/cache@4.0.0-next.3)':
+    dependencies:
+      '@orion-js/cache': 4.0.0-next.3
+      '@orion-js/helpers': 4.0.0-next.3
+      '@orion-js/resolvers': 4.0.0-next.3
+      '@orion-js/schema': 4.0.0-next.3
+
+  '@orion-js/mongodb@3.12.0(@orion-js/cache@4.0.0-next.3)':
+    dependencies:
+      '@orion-js/env': 4.0.0-next.3
+      '@orion-js/helpers': 4.0.0-next.3
+      '@orion-js/logger': 4.0.0-next.3
+      '@orion-js/models': 4.0.0-next.3(@orion-js/cache@4.0.0-next.3)
+      '@orion-js/resolvers': 4.0.0-next.3
+      '@orion-js/schema': 4.0.0-next.3
+      '@orion-js/services': 4.0.0-next.3
+      '@orion-js/typed-model': 4.0.0-next.3(@orion-js/cache@4.0.0-next.3)
+      bson: 6.10.3
+      dataloader: 2.2.2
+      dot-object: 2.1.4
+      mongodb: 6.5.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - '@orion-js/cache'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+
+  '@orion-js/resolvers@4.0.0-next.3':
+    dependencies:
+      '@orion-js/cache': 4.0.0-next.3
+      '@orion-js/helpers': 4.0.0-next.3
+      '@orion-js/schema': 4.0.0-next.3
+
+  '@orion-js/schema@4.0.0-next.3':
+    dependencies:
+      dot-object: 2.1.4
+      lodash: 4.17.21
+
+  '@orion-js/services@4.0.0-next.3':
+    dependencies:
+      '@orion-js/helpers': 4.0.0-next.3
+      typedi: 0.10.0
+
+  '@orion-js/typed-model@4.0.0-next.3(@orion-js/cache@4.0.0-next.3)':
+    dependencies:
+      '@orion-js/helpers': 4.0.0-next.3
+      '@orion-js/models': 4.0.0-next.3(@orion-js/cache@4.0.0-next.3)
+      '@orion-js/resolvers': 4.0.0-next.3
+      '@orion-js/schema': 4.0.0-next.3
+      '@orion-js/services': 4.0.0-next.3
+      lodash: 4.17.21
+      reflect-metadata: 0.1.13
+    transitivePeerDependencies:
+      - '@orion-js/cache'
+
   '@oxc-transform/binding-darwin-arm64@0.56.5':
     optional: true
 
@@ -6339,7 +6481,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.2
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -7232,7 +7374,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.2
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -7557,7 +7699,7 @@ snapshots:
       '@types/tmp': 0.2.6
       async-mutex: 0.3.2
       camelcase: 6.3.0
-      debug: 4.3.2
+      debug: 4.4.0
       find-cache-dir: 3.3.2
       get-port: 5.1.1
       https-proxy-agent: 5.0.1
@@ -8517,6 +8659,24 @@ snapshots:
       - supports-color
       - terser
 
+  vite-node@1.6.1(@types/node@22.13.10):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.0
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      vite: 5.4.14(@types/node@22.13.10)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite@5.4.14(@types/node@18.19.80):
     dependencies:
       esbuild: 0.21.5
@@ -8525,6 +8685,29 @@ snapshots:
     optionalDependencies:
       '@types/node': 18.19.80
       fsevents: 2.3.3
+
+  vite@5.4.14(@types/node@22.13.10):
+    dependencies:
+      esbuild: 0.21.5
+      postcss: 8.5.3
+      rollup: 4.35.0
+    optionalDependencies:
+      '@types/node': 22.13.10
+      fsevents: 2.3.3
+
+  vitest-mongodb@1.0.1:
+    dependencies:
+      debug: 4.4.0
+      mongodb-memory-server: 10.1.4
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
 
   vitest@1.6.1(@types/node@18.19.80):
     dependencies:
@@ -8550,6 +8733,40 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 18.19.80
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@1.6.1(@types/node@22.13.10):
+    dependencies:
+      '@vitest/expect': 1.6.1
+      '@vitest/runner': 1.6.1
+      '@vitest/snapshot': 1.6.1
+      '@vitest/spy': 1.6.1
+      '@vitest/utils': 1.6.1
+      acorn-walk: 8.3.4
+      chai: 4.5.0
+      debug: 4.4.0
+      execa: 8.0.1
+      local-pkg: 0.5.1
+      magic-string: 0.30.17
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      std-env: 3.8.1
+      strip-literal: 2.1.1
+      tinybench: 2.9.0
+      tinypool: 0.8.4
+      vite: 5.4.14(@types/node@22.13.10)
+      vite-node: 1.6.1(@types/node@22.13.10)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.13.10
     transitivePeerDependencies:
       - less
       - lightningcss

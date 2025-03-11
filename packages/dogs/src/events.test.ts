@@ -1,6 +1,7 @@
 import { sleep, generateId } from '@orion-js/helpers'
 import { defineJob, scheduleJob, startWorkers } from '.'
 import { setLogLevel } from '@orion-js/logger'
+import { describe, it, expect } from 'vitest'
 
 setLogLevel('error')
 

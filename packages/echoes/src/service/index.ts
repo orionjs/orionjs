@@ -28,7 +28,7 @@ export function EchoEvent<This, TArgs extends Parameters<EchoConfig['resolve']>,
     const propertyKey = String(context.name);
 
     context.addInitializer(function (this: This) {
-      const echoes = echoesMetadata.get(context.metadata) || {};
+      const echoes = echoesMetadata.get(this) || {};
 
       echoes[propertyKey] = echo({
         ...options,
@@ -52,7 +52,7 @@ export function EchoRequest<This, TArgs extends Parameters<EchoConfig['resolve']
     const propertyKey = String(context.name);
 
     context.addInitializer(function (this: This) {
-      const echoes = echoesMetadata.get(context.metadata) || {};
+      const echoes = echoesMetadata.get(this) || {};
 
       echoes[propertyKey] = echo({
         ...options,

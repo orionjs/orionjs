@@ -8,6 +8,7 @@ export default defineConfig({
     includeTaskLocation: true,
     globals: true,
     environment: 'node',
-    include: ['src/**/*.test.ts']
+    include: ['src/**/*.test.ts'],
+    setupFiles: ['./setup-tests.ts']
   }
 }) 

@@ -1,63 +1,93 @@
-import {getInstance, Service} from '@orion-js/services'
-import {GlobalResolverResolve, ResolverOptions, resolver, Resolver} from '@orion-js/resolvers'
-import {UserError} from '@orion-js/helpers'
-import {getTargetMetadata} from './otherParams'
-import {GraphQLResolveInfo} from 'graphql'
+import { getInstance, Service } from '@orion-js/services'
+import { GlobalResolverResolve, ResolverOptions, resolver, Resolver } from '@orion-js/resolvers'
 
-export function Resolvers(): ClassDecorator {
-  return (target: any) => {
-    Service()(target)
-    target.prototype.service = target
+// Define metadata storage using WeakMaps
+const serviceMetadata = new WeakMap<any, { _serviceType: string }>();
+const resolversMetadata = new WeakMap<any, Record<string, any>>();
+
+export function Resolvers() {
+  return function (target: any, context: ClassDecoratorContext<any>) {
+    Service()(target, context);
+
+    context.addInitializer(function (this) {
+      serviceMetadata.set(this, { _serviceType: 'resolvers' });
+    });
+  };
+}
+
+
+
+export function Query<This, TArgs extends any[], TReturn extends any>(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
+  return function (
+    method: (this: This, ...args: TArgs) => TReturn,
+    context: ClassMethodDecoratorContext<This, typeof method>
+  ) {
+    const propertyKey = String(context.name);
+
+    context.addInitializer(function (this: This) {
+      const resolvers = resolversMetadata.get(this) || {};
+
+      resolvers[propertyKey] = resolver({
+        resolverId: propertyKey,
+        // params: getTargetMetadata(target, propertyKey, 'params'),
+        // returns: getTargetMetadata(target, propertyKey, 'returns'),
+        // middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
+        ...options,
+        resolve: this[propertyKey].bind(this)
+      })
+
+      resolversMetadata.set(this, resolvers);
+    });
+
+    return method;
   }
 }
 
-export interface GlobalResolverPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
-  value?: GlobalResolverResolve
-}
 
-export function Query(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
-  return (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) => {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
+export function Mutation<This, TArgs extends any[], TReturn extends any>(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
+  return function (
+    method: (this: This, ...args: TArgs) => TReturn,
+    context: ClassMethodDecoratorContext<This, typeof method>
+  ) {
+    const propertyKey = String(context.name);
 
-    target.resolvers = target.resolvers || {}
-    target.resolvers[propertyKey] = resolver({
-      resolverId: propertyKey,
-      params: getTargetMetadata(target, propertyKey, 'params'),
-      returns: getTargetMetadata(target, propertyKey, 'returns'),
-      middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
-      ...options,
-      resolve: async (params, viewer, info: GraphQLResolveInfo) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer, info)
-      },
-    })
+    context.addInitializer(function (this: This) {
+      const resolvers = resolversMetadata.get(this) || {};
+
+      resolvers[propertyKey] = resolver({
+        resolverId: propertyKey,
+        // params: getTargetMetadata(target, propertyKey, 'params'),
+        // returns: getTargetMetadata(target, propertyKey, 'returns'),
+        // middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
+        ...options,
+        mutation: true,
+        resolve: this[propertyKey].bind(this)
+      })
+
+      resolversMetadata.set(this, resolvers);
+    });
+
+    return method;
   }
 }
 
-export function Mutation(options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>) {
-  return (target: any, propertyKey: string, descriptor: GlobalResolverPropertyDescriptor) => {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
-    target.resolvers = target.resolvers || {}
-    target.resolvers[propertyKey] = resolver({
-      resolverId: propertyKey,
-      params: getTargetMetadata(target, propertyKey, 'params'),
-      returns: getTargetMetadata(target, propertyKey, 'returns'),
-      middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
-      ...options,
-      mutation: true,
-      resolve: async (params, viewer, info: GraphQLResolveInfo) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer, info)
-      },
-    })
-  }
-}
+export function getServiceResolvers(target: any): {
+  [key: string]: Resolver<GlobalResolverResolve>
+} {
+  const instance = getInstance(target);
 
-export function getServiceResolvers(target: any): {[key: string]: Resolver<GlobalResolverResolve>} {
-  if (!target.prototype) {
-    throw new UserError('You must pass a class to getResolvers')
+  if (!serviceMetadata.has(instance.constructor)) {
+    throw new Error('You must pass a class decorated with @Resolvers to getServiceResolvers');
   }
 
-  return target.prototype.resolvers || {}
+  const instanceMetadata = serviceMetadata.get(instance.constructor)
+  if (instanceMetadata._serviceType !== 'resolvers') {
+    throw new Error('You must pass a class decorated with @Resolvers to getServiceResolvers');
+  }
+
+  const resolversMap = resolversMetadata.get(instance) || {};
+
+  return resolversMap;
 }
+

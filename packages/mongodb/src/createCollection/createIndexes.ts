@@ -1,5 +1,5 @@
-import {MongoExpiredSessionError} from 'mongodb'
-import {Collection, ModelClassBase} from '..'
+import { MongoExpiredSessionError } from 'mongodb'
+import { Collection, ModelClassBase } from '..'
 
 function matchingDefinition(defIndex, curIndex) {
   if (defIndex.options && defIndex.options.name === curIndex.name) return true
@@ -21,16 +21,15 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
 
   const indexesToDelete = collection.indexes
     ? currentIndexes.filter(
-        index =>
-          index.name !== '_id_' &&
-          !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index))
-      )
+      index =>
+        index.name !== '_id_' &&
+        !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index))
+    )
     : currentIndexes
 
   if (indexesToDelete.length > 0) {
     console.warn(
-      `${indexesToDelete.length} unexpected indexes found in collection "${
-        collection.name
+      `${indexesToDelete.length} unexpected indexes found in collection "${collection.name
       }": ${indexesToDelete
         .map(i => i.name)
         .join(', ')} | Delete the index or fix the collection definition`
@@ -46,13 +45,17 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
   await collection.client.connectionPromise
 
   const results = Promise.all(
-    collection.indexes.map(async ({keys, options}) => {
+    collection.indexes.map(async ({ keys, options }) => {
       try {
         return await collection.rawCollection.createIndex(keys, options)
       } catch (error) {
-        if (error.code === 85) {
+        if (error.code === 85 || error.code === 86) {
           console.info('Will delete index to create the new version')
-          const indexName = error.message.split('name: ')[1].split(' ')[0]
+          const indexName = (() => {
+            const message = error.errorResponse.errmsg
+            const indexName = message.split('name: "')[1].split('"')[0]
+            return indexName
+          })()
           await collection.rawCollection.dropIndex(indexName)
           console.info('Index was deleted, creating new index')
           const result = await collection.rawCollection.createIndex(keys, options)

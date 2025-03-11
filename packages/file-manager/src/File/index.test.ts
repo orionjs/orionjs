@@ -1,9 +1,9 @@
-import {FileSchema} from './schema'
-import {Files} from '../Files'
+import { FileSchema } from './schema'
+import { Files } from '../Files'
 import File from '.'
-import {createModel} from '@orion-js/models'
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {describe, it, expect} from 'vitest'
+import { createModel } from '@orion-js/models'
+import { Prop, TypedSchema, getModelForClass } from '@orion-js/typed-model'
+import { describe, it, expect } from 'vitest'
 
 describe('File model', () => {
   it('should correctly clean on a simple file input', async () => {
@@ -55,7 +55,7 @@ describe('File model', () => {
       })
       image: FileSchema
 
-      @Prop()
+      @Prop({ type: String })
       name: string
     }
 
@@ -76,7 +76,7 @@ describe('File model', () => {
 
     @TypedSchema()
     class Config {
-      @Prop({type: [getModelForClass(Banner)]})
+      @Prop({ type: [getModelForClass(Banner)] })
       banners: Banner[]
     }
 

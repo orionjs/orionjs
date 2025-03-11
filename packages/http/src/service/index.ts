@@ -25,7 +25,7 @@ export function Route<This, TArgs extends Parameters<OrionRouteOptions['resolve'
     const propertyKey = String(context.name);
 
     context.addInitializer(function (this: This) {
-      const routes = routeMetadata.get(context.metadata) || {};
+      const routes = routeMetadata.get(this) || {};
 
       routes[propertyKey] = route({
         ...options,

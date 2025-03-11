@@ -1,5 +1,5 @@
 import initItem from './initItem'
-import type {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
+import type { Collection, CreateCollection, CreateCollectionOptions, ModelClassBase } from '../types'
 import {
   countDocuments,
   deleteMany,
@@ -17,11 +17,11 @@ import {
   upsert,
   insertAndFind,
 } from './getMethods'
-import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
+import { loadById, loadOne, loadMany, loadData } from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
-import {loadIndexes} from './createIndexes'
-import {getMongoConnection} from '..'
-import {getSchemaAndModel} from './getSchemaAndModel'
+import { loadIndexes } from './createIndexes'
+import { getMongoConnection } from '..'
+import { getSchema } from './getSchemaAndModel'
 
 export const createIndexesPromises = []
 
@@ -30,7 +30,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
 ) => {
   const connectionName = options.connectionName || 'main'
 
-  const orionConnection = getMongoConnection({name: connectionName})
+  const orionConnection = getMongoConnection({ name: connectionName })
   if (!orionConnection) {
     throw new Error(`The connection to MongoDB "${connectionName}" was not found`)
   }
@@ -38,13 +38,12 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
   const db = orionConnection.db
   const rawCollection = db.collection<DocumentType>(options.name)
 
-  const {schema, model} = getSchemaAndModel(options)
+  const schema = getSchema(options)
 
   const collection: Partial<Collection<DocumentType>> = {
     name: options.name,
     connectionName,
     schema,
-    model,
     indexes: options.indexes || [],
     db,
     client: orionConnection,

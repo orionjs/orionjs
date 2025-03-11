@@ -1,34 +1,34 @@
-import {Prop, TypedModel} from '@orion-js/typed-model'
+import { Prop, TypedSchema } from '@orion-js/typed-model'
 
-@TypedModel()
+@TypedSchema()
 export class JobRecord {
-  @Prop()
+  @Prop({ type: String })
   _id: string
 
-  @Prop()
+  @Prop({ type: String })
   jobName: string
 
-  @Prop()
+  @Prop({ type: String })
   type: 'recurrent' | 'event'
 
-  @Prop()
+  @Prop({ type: Number })
   priority: number
 
-  @Prop({optional: true})
+  @Prop({ type: String, optional: true })
   uniqueIdentifier?: string
 
-  @Prop()
+  @Prop({ type: Date })
   nextRunAt: Date
 
-  @Prop({optional: true})
+  @Prop({ type: Date, optional: true })
   lastRunAt?: Date
 
-  @Prop({optional: true})
+  @Prop({ type: Date, optional: true })
   lockedUntil?: Date
 
-  @Prop({optional: true})
+  @Prop({ type: Number, optional: true })
   tries?: number
 
-  @Prop({type: 'blackbox', optional: true})
+  @Prop({ type: 'blackbox', optional: true })
   params?: any
 }

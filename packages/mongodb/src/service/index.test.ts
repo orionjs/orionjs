@@ -14,7 +14,7 @@ describe('Collection as IOC', () => {
       @Prop({ type: 'string' })
       _id: UserId
 
-      @Prop()
+      @Prop({ type: 'string' })
       name: string
     }
 
