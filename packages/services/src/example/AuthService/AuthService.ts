@@ -1,5 +1,5 @@
-import {Service, Inject} from '../../di'
-import {TokenStorage} from './TokenStorage'
+import { Service, Inject } from '../../di'
+import { TokenStorage } from './TokenStorage'
 
 @Service()
 export class AuthService {
