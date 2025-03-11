@@ -18,15 +18,15 @@ export default ({returns, modelName}) => {
         modelName: modelName,
         typename: returns.name,
         userId: viewer.userId,
-        params: params
+        params: params,
       })
       return String(Math.abs(num))
-    }
+    },
   })
 
   const totalCount = modelResolver({
     returns: 'integer',
-    resolve: getTotalCount
+    resolve: getTotalCount,
   })
 
   const totalPages = modelResolver({
@@ -35,7 +35,7 @@ export default ({returns, modelName}) => {
       const count = await getTotalCount(paginated)
       if (!paginated.options.limit) return 1
       return Math.ceil(count / paginated.options.limit)
-    }
+    },
   })
 
   const hasNextPage = modelResolver({
@@ -45,7 +45,7 @@ export default ({returns, modelName}) => {
       const {skip, limit} = paginated.options
       if (!limit) return false
       return skip + limit < count
-    }
+    },
   })
 
   const hasPreviousPage = modelResolver({
@@ -54,14 +54,14 @@ export default ({returns, modelName}) => {
       const count = await getTotalCount(paginated)
       const {skip} = paginated.options
       return count && skip !== 0
-    }
+    },
   })
 
   const items = modelResolver({
     returns: [returns],
     async resolve({cursor}) {
       return await cursor.toArray()
-    }
+    },
   })
 
   return createModel({
@@ -72,7 +72,7 @@ export default ({returns, modelName}) => {
       totalPages,
       hasNextPage,
       hasPreviousPage,
-      items
-    }
+      items,
+    },
   })
 }

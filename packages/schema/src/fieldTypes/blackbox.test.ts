@@ -1,5 +1,6 @@
 import blackbox from './blackbox'
 import Errors from '../Errors'
+import {test, expect} from 'vitest'
 
 test('return an error when the value is incorrect', async () => {
   expect(blackbox.validate('a string')).toBe(Errors.NOT_AN_OBJECT)

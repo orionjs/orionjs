@@ -1,4 +1,5 @@
-import { Echoes, EchoEvent, EchoRequest, getServiceEchoes } from '.'
+import {Echoes, EchoEvent, EchoRequest, getServiceEchoes} from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Echoes with service injections', () => {
   it('Should define a echoes map using services', async () => {
@@ -20,12 +21,12 @@ describe('Echoes with service injections', () => {
     expect(echoes).toMatchObject({
       echo: {
         type: 'request',
-        onRequest: expect.any(Function)
+        onRequest: expect.any(Function),
       },
       echoEvent: {
         type: 'event',
-        resolve: expect.any(Function)
-      }
+        resolve: expect.any(Function),
+      },
     })
   })
 })

@@ -15,7 +15,7 @@ export {
   ResolverParamsInfo,
   serializeSchema,
   subscription,
-  getBasicResultQuery
+  getBasicResultQuery,
 }
 
 export * from './types'

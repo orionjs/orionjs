@@ -11,7 +11,7 @@ const resolvers: ResolversMap = {
   fileManagerFile,
   fileManagerFiles,
   completeUpload,
-  generateUploadCredentials
+  generateUploadCredentials,
 }
 
 export default resolvers

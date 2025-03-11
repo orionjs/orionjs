@@ -4,6 +4,7 @@ import registerRoute from './registerRoute'
 import request from 'supertest'
 import {range} from 'lodash'
 import {sleep} from '@orion-js/helpers'
+import {describe, it} from 'vitest'
 
 const app = getApp()
 

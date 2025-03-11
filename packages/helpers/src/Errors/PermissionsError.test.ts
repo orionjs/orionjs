@@ -1,5 +1,6 @@
 import PermissionsError from './PermissionsError'
 import {OrionError} from './OrionError'
+import {describe, it, expect} from 'vitest'
 
 describe('PermissionsError', () => {
   it('should extend OrionError', () => {

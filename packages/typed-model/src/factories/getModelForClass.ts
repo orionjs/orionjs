@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { createModel, Model, ModelSchema, ModelResolversMap } from '@orion-js/models'
-import { SchemaFromTypedModelMetadata } from '..'
-import { getParamTypeForProp } from './processTypeForProp';
+import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
+import {SchemaFromTypedSchemaMetadata} from '..'
+import {getParamTypeForProp} from './processTypeForProp'
 
 // @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
-Symbol.metadata ??= Symbol("Symbol.metadata");
+Symbol.metadata ??= Symbol('Symbol.metadata')
 
 const modelCache = new Map<string, Model>()
 
@@ -18,7 +18,7 @@ export function getModelForClass(target: any): Model {
     return targetAsModel
   }
 
-  const metadata = target[Symbol.metadata] as SchemaFromTypedModelMetadata
+  const metadata = target[Symbol.metadata] as SchemaFromTypedSchemaMetadata
 
   if (!metadata) {
     return targetAsModel
@@ -27,7 +27,7 @@ export function getModelForClass(target: any): Model {
   return internal_getModelForClassFromMetadata(metadata)
 }
 
-export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedModelMetadata) {
+export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedSchemaMetadata) {
   const modelName = metadata._modelName
   if (modelCache.has(modelName)) {
     return modelCache.get(modelName)
@@ -37,14 +37,13 @@ export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedM
   const keys = Object.keys(metadata ?? {})
   const injectionKeys = keys.filter(key => key.startsWith('_prop:'))
 
-
   for (const key of injectionKeys) {
     const prop = metadata[key] as ModelSchema
     const schemaProp = key.replace('_prop:', '')
 
     schema[schemaProp] = {
       ...prop,
-      type: getParamTypeForProp(prop.type as any)
+      type: getParamTypeForProp(prop.type as any),
     }
   }
 

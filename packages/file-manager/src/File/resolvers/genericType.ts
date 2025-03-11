@@ -8,5 +8,5 @@ export default modelResolver({
     if (type.startsWith('image/')) return 'image'
     if (type.startsWith('application/pdf')) return 'pdf'
     return 'unknown'
-  }
+  },
 })

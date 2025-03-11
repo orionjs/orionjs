@@ -13,7 +13,7 @@ export function getStaticFields(model: Model): Array<SchemaNode> {
         const field = schema[key]
         return {
           ...field,
-          key
+          key,
         } as SchemaNode
       })
       // there is a compile error if we don't do this

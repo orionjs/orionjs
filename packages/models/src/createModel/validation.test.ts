@@ -1,14 +1,15 @@
 import createModel from './index'
 import {resolver} from '@orion-js/resolvers'
+import {it, expect} from 'vitest'
 
 it('should validate a schema', async () => {
   const model = createModel({
     name: 'AModel',
     schema: {
       name: {
-        type: String
-      }
-    }
+        type: String,
+      },
+    },
   })
 
   await model.validate({name: 'String'})
@@ -19,21 +20,21 @@ it('should allow deep model validation', async () => {
     name: 'AModel',
     schema: {
       firstName: {
-        type: String
+        type: String,
       },
       lastName: {
-        type: String
-      }
-    }
+        type: String,
+      },
+    },
   })
 
   const model1 = createModel({
     name: 'AModel2',
     schema: {
       data: {
-        type: model2
-      }
-    }
+        type: model2,
+      },
+    },
   })
 
   await model1.validate({data: {firstName: 'Nicolás', lastName: 'López'}})
@@ -51,23 +52,23 @@ it('[regression test]: should allow correct doc cleaning for resolver params', a
     name: 'Point',
     schema: {
       latitude: {
-        type: Number
+        type: Number,
       },
       longitude: {
-        type: Number
-      }
-    }
+        type: Number,
+      },
+    },
   })
 
   const resolver1 = resolver({
     params: {
       point: {
-        type: Point
-      }
+        type: Point,
+      },
     },
     async resolve({point}) {
       return point
-    }
+    },
   })
 
   const doc = await resolver1.resolve({point: {latitude: '11', longitude: '12'}})

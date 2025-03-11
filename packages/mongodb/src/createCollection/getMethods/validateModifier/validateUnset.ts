@@ -3,7 +3,7 @@ import {validateKey, ValidationError} from '@orion-js/schema'
 /**
  * Validates $unset
  */
-export default async function({schema, operationDoc}) {
+export default async function ({schema, operationDoc}) {
   const errors = {}
   for (const key of Object.keys(operationDoc)) {
     const error = await validateKey(schema, key, null)

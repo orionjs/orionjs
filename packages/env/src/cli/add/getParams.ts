@@ -6,17 +6,17 @@ export const getParams = async (config: Config) => {
     {
       type: 'text',
       name: 'key',
-      message: 'Key'
+      message: 'Key',
     },
     {
       type: 'text',
       name: 'value',
-      message: 'Value'
-    }
+      message: 'Value',
+    },
   ])
 
   return {
     key: response.key as string,
-    value: response.value as string
+    value: response.value as string,
   }
 }

@@ -14,23 +14,23 @@ export class JobsHistoryRepo {
         {
           keys: {
             jobName: 1,
-            startedAt: 1
-          }
+            startedAt: 1,
+          },
         },
         {
           keys: {
-            executionId: 1
-          }
+            executionId: 1,
+          },
         },
         {
           keys: {
-            expiresAt: 1
+            expiresAt: 1,
           },
           options: {
-            expireAfterSeconds: 0
-          }
-        }
-      ]
+            expireAfterSeconds: 0,
+          },
+        },
+      ],
     })
 
   async saveExecution(record: ModelToDocumentTypeWithoutId<HistoryRecord>) {
@@ -38,12 +38,12 @@ export class JobsHistoryRepo {
       {executionId: record.executionId},
       {
         $setOnInsert: {
-          status: record.status
+          status: record.status,
         },
         $set: {
-          ...omit(record, 'status')
-        }
-      }
+          ...omit(record, 'status'),
+        },
+      },
     )
   }
 

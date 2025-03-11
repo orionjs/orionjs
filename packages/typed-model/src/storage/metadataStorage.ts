@@ -1,7 +1,7 @@
-import { PropOptions } from '..'
-import { CreateModelOptions, ModelResolversMap } from '@orion-js/models'
+import {PropOptions} from '..'
+import {CreateModelOptions, ModelResolversMap} from '@orion-js/models'
 
-export type PropertiesMap = { [key: string]: PropOptions }
+export type PropertiesMap = {[key: string]: PropOptions}
 
 interface SchemaStorage {
   schema: any

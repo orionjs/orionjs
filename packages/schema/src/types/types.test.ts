@@ -1,5 +1,6 @@
 import {Schema} from '.'
 import {clean} from '..'
+import { test, expect } from 'vitest'
 
 test('check ts types for schema', async () => {
   const schema: Schema = {

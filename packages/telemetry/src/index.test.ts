@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { setupTelemetry } from './index'
+import {describe, it, expect} from 'vitest'
+import {setupTelemetry} from './index'
 
 /**
  * This is a simple test file to ensure the tests run for the telemetry package.
@@ -11,4 +11,4 @@ describe('Telemetry', () => {
     expect(setupTelemetry).toBeDefined()
     expect(typeof setupTelemetry).toBe('function')
   })
-}) 
+})

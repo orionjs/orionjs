@@ -1,11 +1,12 @@
-import {Prop, TypedModel} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import serializeSchema from './serializeSchema'
+import {it, expect} from 'vitest'
 
 it('should create a JSON of the schema', async () => {
   const schema = {
     name: {
-      type: String
-    }
+      type: String,
+    },
   }
   const result = await serializeSchema(schema)
   expect(result).toEqual({name: {type: 'string', __graphQLType: 'String'}})
@@ -15,19 +16,19 @@ it('should pass field options', async () => {
   const schema = {
     name: {
       type: [String],
-      label: '1234'
-    }
+      label: '1234',
+    },
   }
   const result = await serializeSchema(schema)
   expect(result.name).toEqual({
     type: ['string'],
     label: '1234',
-    __graphQLType: '[String]'
+    __graphQLType: '[String]',
   })
 })
 
 it('should serialize a typed model', async () => {
-  @TypedModel()
+  @TypedSchema()
   class Point {
     @Prop({label: 'Name'})
     name: string
@@ -37,6 +38,6 @@ it('should serialize a typed model', async () => {
   expect(result.name).toEqual({
     type: 'string',
     label: 'Name',
-    __graphQLType: 'String'
+    __graphQLType: 'String',
   })
 })

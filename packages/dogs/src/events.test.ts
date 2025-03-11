@@ -1,7 +1,7 @@
-import { sleep, generateId } from '@orion-js/helpers'
-import { defineJob, scheduleJob, startWorkers } from '.'
-import { setLogLevel } from '@orion-js/logger'
-import { describe, it, expect } from 'vitest'
+import {sleep, generateId} from '@orion-js/helpers'
+import {defineJob, scheduleJob, startWorkers} from '.'
+import {setLogLevel} from '@orion-js/logger'
+import {describe, it, expect} from 'vitest'
 
 setLogLevel('error')
 
@@ -12,28 +12,28 @@ describe('Event tests', () => {
       type: 'event',
       async resolve(params) {
         count += params.add
-      }
+      },
     })
 
     const instance = startWorkers({
-      jobs: { job3 },
+      jobs: {job3},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10
+      cooldownPeriod: 10,
     })
 
     expect(count).toBe(0)
 
     await scheduleJob({
       name: 'job3',
-      params: { add: 5 },
-      runIn: 1
+      params: {add: 5},
+      runIn: 1,
     })
 
     await scheduleJob({
       name: 'job3',
-      params: { add: 25 },
-      runIn: 1
+      params: {add: 25},
+      runIn: 1,
     })
 
     await sleep(100)
@@ -55,23 +55,23 @@ describe('Event tests', () => {
       async onError() {
         return {
           action: 'retry',
-          runIn: 1
+          runIn: 1,
         }
-      }
+      },
     })
 
     const instance = startWorkers({
-      jobs: { job4 },
+      jobs: {job4},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10
+      cooldownPeriod: 10,
     })
 
     expect(passes).toBe(false)
 
     await scheduleJob({
       name: 'job4',
-      runIn: 1
+      runIn: 1,
     })
 
     await sleep(100)
@@ -97,20 +97,20 @@ describe('Event tests', () => {
       async onStale(params, context) {
         expect(context.tries).toBe(1)
         staleCount++
-      }
+      },
     })
 
     const instance = startWorkers({
-      jobs: { [jobId]: job },
+      jobs: {[jobId]: job},
       workersCount: 2,
       pollInterval: 10,
       cooldownPeriod: 10,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({
       name: jobId,
-      runIn: 1
+      runIn: 1,
     })
 
     await sleep(300)
@@ -127,26 +127,26 @@ describe('Event tests', () => {
       type: 'event',
       async resolve() {
         ranCount++
-      }
+      },
     })
 
     const instance = startWorkers({
-      jobs: { [jobId]: job },
+      jobs: {[jobId]: job},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10
+      cooldownPeriod: 10,
     })
 
     await scheduleJob({
       name: jobId,
       runIn: 1,
-      uniqueIdentifier: 'unique'
+      uniqueIdentifier: 'unique',
     })
 
     await scheduleJob({
       name: jobId,
       runIn: 1,
-      uniqueIdentifier: 'unique'
+      uniqueIdentifier: 'unique',
     })
 
     await sleep(50)

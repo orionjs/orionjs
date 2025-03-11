@@ -18,7 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const moduleAlias = require('./moduleAliasLib')
 const path =  __dirname + '/app'
 moduleAlias.addAlias('app', path)
-  `
+  `,
   )
 
   const indexPath = `${basePath}/index.js`
@@ -28,6 +28,6 @@ moduleAlias.addAlias('app', path)
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./moduleAlias");
 require("./app");
-  `
+  `,
   )
 }

@@ -1,7 +1,7 @@
 import {Collection, EstimatedDocumentCount, ModelClassBase} from '../../types'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const func: EstimatedDocumentCount<DocumentType> = async function (options) {
     await collection.connectionPromise

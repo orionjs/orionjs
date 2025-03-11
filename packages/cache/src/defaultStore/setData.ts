@@ -10,7 +10,7 @@ export default async function (key: string, value: any, options: SetCacheOptions
     value: cloneDeep(value),
     timeout: setTimeout(() => {
       invalidateData(key)
-    }, options.ttl)
+    }, options.ttl),
   }
 
   store[key] = stored

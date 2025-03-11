@@ -11,7 +11,7 @@ const simulateLatency = internalGetEnv('simulate_latency', 'SIMULATE_LATENCY')
 export async function executeRequest(
   route: RouteType,
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) {
   if (simulateLatency) {
     const time = parseInt(simulateLatency)

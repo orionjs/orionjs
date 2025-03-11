@@ -15,7 +15,7 @@ export function PaginatedQuery(options: Omit<PaginatedResolverOpts, 'getCursor'>
       getCursor: async (params, viewer) => {
         const instance: any = getInstance(target.service)
         return await instance[propertyKey](params, viewer)
-      }
+      },
     })
   }
 }

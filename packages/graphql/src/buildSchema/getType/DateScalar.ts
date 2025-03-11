@@ -5,5 +5,5 @@ export default new GraphQLScalarType({
   name: 'Date',
   serialize: GraphQLDateTime.serialize,
   parseValue: GraphQLDateTime.parseValue,
-  parseLiteral: GraphQLDateTime.parseLiteral
+  parseLiteral: GraphQLDateTime.parseLiteral,
 })

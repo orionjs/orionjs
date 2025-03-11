@@ -23,7 +23,7 @@ export class WorkerService {
     return Object.keys(jobs).map(name => {
       return {
         name,
-        ...jobs[name]
+        ...jobs[name],
       }
     })
   }
@@ -31,7 +31,7 @@ export class WorkerService {
   async runWorkerLoop(config: StartWorkersConfig, workerInstance: WorkerInstance) {
     const names = this.getJobNames(config.jobs)
     logger.debug(
-      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`
+      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
     )
     const jobToRun = await this.jobsRepo.getJobAndLock(names, config.lockTime)
     if (!jobToRun) {
@@ -73,7 +73,7 @@ export class WorkerService {
         workersInstance.running = false
         const stopingPromises = workersInstance.workers.map(worker => worker.stop())
         await Promise.all(stopingPromises)
-      }
+      },
     }
 
     return workersInstance
@@ -88,7 +88,7 @@ export class WorkerService {
         .map(async job => {
           logger.debug(`Ensuring records for job "${job.name}"...`)
           await this.jobsRepo.ensureJobRecord(job)
-        })
+        }),
     )
   }
 
@@ -109,7 +109,7 @@ export class WorkerService {
         logger.info(`Respawning worker [w${workerIndex}]...`)
         workerInstance.stop()
         await this.startANewWorker(config, workersInstance)
-      }
+      },
     }
 
     const workerPromise = this.startWorker(config, workerInstance)
@@ -133,12 +133,12 @@ export class WorkerService {
       cooldownPeriod: 100,
       pollInterval: 3000,
       workersCount: 4,
-      lockTime: 30 * 1000
+      lockTime: 30 * 1000,
     }
 
     const config = {
       ...defaultConfig,
-      ...userConfig
+      ...userConfig,
     }
 
     const workersInstance = this.createWorkersInstanceDefinition(config)

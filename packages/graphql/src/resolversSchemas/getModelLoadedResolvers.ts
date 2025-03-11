@@ -13,7 +13,7 @@ export function getModelLoadedResolvers(model: Model, options: StartGraphQLOptio
       const resolver = resolvers[key]
       return {
         ...resolver,
-        key
+        key,
       }
     })
     .filter(resolver => !resolver.private)

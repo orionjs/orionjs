@@ -7,7 +7,7 @@ export default async function ({params, callParams}: {params: any; callParams: a
   if (params) {
     const options = {
       filter: false,
-      removeEmptyStrings: false
+      removeEmptyStrings: false,
     }
     const schema = getSchema(params)
     const cleaned = await clean(schema, callParams, options)

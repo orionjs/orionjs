@@ -18,10 +18,10 @@
     // required for typed models
     "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
-    
+
     // Best practices
     "strict": false,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*.ts"]
 }

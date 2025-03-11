@@ -1,5 +1,6 @@
 import {resolver} from '@orion-js/resolvers'
 import createModel from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Test init item', () => {
   // Tests if the resolvers are passed to the item
@@ -7,15 +8,15 @@ describe('Test init item', () => {
     const Person = createModel({
       name: 'PersonModel',
       schema: {
-        name: {type: String}
+        name: {type: String},
       },
       resolvers: {
         title: resolver({
           resolve: async (person, {title}) => {
             return `${title} ${person.name}`
-          }
-        })
-      }
+          },
+        }),
+      },
     })
 
     const doc = {name: 'Nico'}

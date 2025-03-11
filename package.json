@@ -2,9 +2,7 @@
   "license": "MIT",
   "name": "orionjs",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "test": "pnpm --filter=* test",
     "build": "pnpm --filter=* build"

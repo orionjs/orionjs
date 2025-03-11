@@ -7,7 +7,7 @@ import gql from 'graphql-tag'
 import {sleep} from '@orion-js/helpers'
 import {random} from 'lodash'
 import {setGetWebsockerViewer} from './websockerViewer'
-import {TypedModel, Prop, getModelForClass, TypedSchema} from '@orion-js/typed-model'
+import {TypedSchema, Prop, getModelForClass} from '@orion-js/typed-model'
 import {GraphQLWsLink} from '@apollo/client/link/subscriptions'
 import {createClient} from 'graphql-ws'
 import ws, {WebSocketServer} from 'ws'
@@ -16,53 +16,54 @@ import {express, getServer} from '@orion-js/http'
 import WebSocket from 'ws'
 import http from 'http'
 import request from 'superwstest'
+import {describe, it, expect} from 'vitest'
 
 const getStartServerOptions = async () => {
   const resolvers = {
     helloWorld: resolver({
       params: {
         name: {
-          type: 'string'
-        }
+          type: 'string',
+        },
       },
       returns: 'string',
       async resolve({name}) {
         return `Hello ${name}`
-      }
-    })
+      },
+    }),
   }
 
   const onNewGreeting = subscription<{name: string}, string>({
     params: {
       name: {
-        type: 'string'
-      }
+        type: 'string',
+      },
     },
-    returns: 'string'
+    returns: 'string',
   })
 
   const withPermissionsSub = subscription({
     returns: 'string',
-    checkPermission: async () => null
+    checkPermission: async () => null,
   })
 
   const withoutPermissionsSub = subscription({
     returns: 'string',
-    checkPermission: async () => 'notAllowed'
+    checkPermission: async () => 'notAllowed',
   })
 
   const withGlobalPermissionsSub = subscription({
     returns: 'string',
     permissionsOptions: {
-      role: 'user'
-    }
+      role: 'user',
+    },
   })
 
   const withoutGlobalPermissionsSub = subscription({
     returns: 'string',
     permissionsOptions: {
-      role: 'admin'
-    }
+      role: 'admin',
+    },
   })
 
   @TypedSchema()
@@ -73,16 +74,16 @@ const getStartServerOptions = async () => {
 
   @TypedSchema()
   class TestModel {
-    @Prop()
+    @Prop({type: String})
     name: string
 
-    @Prop()
+    @Prop({type: Number})
     age: number
   }
 
   const modelSub = subscription<TestParams, TestModel>({
     params: getModelForClass(TestParams),
-    returns: getModelForClass(TestModel)
+    returns: getModelForClass(TestModel),
   })
 
   const subscriptions = {
@@ -91,12 +92,12 @@ const getStartServerOptions = async () => {
     withoutPermissionsSub,
     withGlobalPermissionsSub,
     withoutGlobalPermissionsSub,
-    modelSub
+    modelSub,
   }
 
   const apolloOptions = await getApolloOptions({
     resolvers,
-    subscriptions
+    subscriptions,
   })
 
   return {apolloOptions, resolvers, subscriptions}
@@ -115,7 +116,7 @@ const gqClient = async () => {
   const server = new WebSocketServer({
     server: getServer(),
     path: '/subscriptions',
-    port: RANDOM_WS_PORT
+    port: RANDOM_WS_PORT,
   })
   startWebsocket({schema: apolloOptions.schema}, {resolvers: {}, subscriptions: {}}, server)
 
@@ -135,8 +136,8 @@ const gqClient = async () => {
     generateID: () =>
       // @ts-expect-error this is the way to do it segun la doc
       ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-        (c ^ (crypto.randomBytes(1)[0] & (15 >> (c / 4)))).toString(16)
-      )
+        (c ^ (crypto.randomBytes(1)[0] & (15 >> (c / 4)))).toString(16),
+      ),
   })
 
   // The uri of the WebSocketLink has to match the customServer uri.
@@ -146,9 +147,9 @@ const gqClient = async () => {
   return {
     client: new ApolloClient({
       link: wsLink,
-      cache: new InMemoryCache()
+      cache: new InMemoryCache(),
     }),
-    subscriptions
+    subscriptions,
   }
 }
 
@@ -163,12 +164,12 @@ describe('Test GraphQL Subscriptions', () => {
             info: onNewGreeting(name: $name)
           }
         `,
-        variables: {name: 'Nico'}
+        variables: {name: 'Nico'},
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('finally')
-        }
+        },
       })
 
     await sleep(50)
@@ -190,12 +191,12 @@ describe('Test GraphQL Subscriptions', () => {
           subscription {
             info: withPermissionsSub
           }
-        `
+        `,
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('yes')
-        }
+        },
       })
 
     client
@@ -204,12 +205,12 @@ describe('Test GraphQL Subscriptions', () => {
           subscription {
             info: withoutPermissionsSub
           }
-        `
+        `,
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('no')
-        }
+        },
       })
 
     await sleep(50)
@@ -227,7 +228,7 @@ describe('Test GraphQL Subscriptions', () => {
 
     setGetWebsockerViewer((connectionParams: any) => {
       return {
-        role: 'user'
+        role: 'user',
       }
     })
 
@@ -243,12 +244,12 @@ describe('Test GraphQL Subscriptions', () => {
           subscription {
             info: withGlobalPermissionsSub
           }
-        `
+        `,
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('yes')
-        }
+        },
       })
 
     client
@@ -257,12 +258,12 @@ describe('Test GraphQL Subscriptions', () => {
           subscription {
             info: withoutGlobalPermissionsSub
           }
-        `
+        `,
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('no')
-        }
+        },
       })
 
     await sleep(50)
@@ -287,12 +288,12 @@ describe('Test GraphQL Subscriptions', () => {
             }
           }
         `,
-        variables: {userId: '1'}
+        variables: {userId: '1'},
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual({name: 'Nico', __typename: 'TestModel'})
-        }
+        },
       })
 
     await sleep(50)

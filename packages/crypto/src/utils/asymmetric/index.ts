@@ -13,7 +13,7 @@ class Asymmetric {
 
     return {
       encryptKey: encryptKeyHex,
-      decryptKey: decryptKeyHex
+      decryptKey: decryptKeyHex,
     }
   }
 

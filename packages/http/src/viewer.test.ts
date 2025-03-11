@@ -10,7 +10,7 @@ describe('Test viewer', () => {
     setGetViewer(async req => {
       return {
         name: req.params.name,
-        lastName: req.body.lastName
+        lastName: req.body.lastName,
       }
     })
 
@@ -20,7 +20,7 @@ describe('Test viewer', () => {
       bodyParser: 'json',
       async resolve(req, res, viewer) {
         return {body: viewer}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -41,7 +41,7 @@ describe('Test viewer', () => {
       bodyParser: 'json',
       async resolve(req, res, viewer) {
         return {body: viewer}
-      }
+      },
     })
 
     registerRoute(testRoute)

@@ -23,14 +23,14 @@ export default async function (options: StartGraphQLOptions) {
 
   const server = new ApolloServer({
     ...apolloOptions,
-    plugins: [...(apolloOptions.plugins || []), ...drainPlugins, ...subPlugins]
+    plugins: [...(apolloOptions.plugins || []), ...drainPlugins, ...subPlugins],
   })
 
   await server.start()
 
   const middleware = expressMiddleware(server, {
     // @ts-expect-error
-    context: ({req, res}) => req._viewer
+    context: ({req, res}) => req._viewer,
   })
 
   registerRoute(
@@ -40,9 +40,9 @@ export default async function (options: StartGraphQLOptions) {
       path: '/graphql',
       bodyParser: 'json',
       async resolve(req: Request, res, viewer) {
-        (req as any)._viewer = viewer
+        ;(req as any)._viewer = viewer
         return middleware(req, res, req.next)
-      }
-    })
+      },
+    }),
   )
 }

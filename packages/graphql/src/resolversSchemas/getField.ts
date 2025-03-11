@@ -16,7 +16,7 @@ export default async function getParams(field) {
     return {
       ...serialized,
       type: [serialized.type],
-      __graphQLType: `[${serialized.__graphQLType}]`
+      __graphQLType: `[${serialized.__graphQLType}]`,
     }
   } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
     const model = type.__isModel ? type : type.__model
@@ -31,7 +31,7 @@ export default async function getParams(field) {
     return {
       ...omit(field, 'key'),
       type: fields,
-      __graphQLType: model.name + 'Input'
+      __graphQLType: model.name + 'Input',
     }
   } else {
     const schemaType = await getFieldType(type)
@@ -39,7 +39,7 @@ export default async function getParams(field) {
     return {
       ...omit(field, 'key'),
       type: schemaType.name,
-      __graphQLType: graphQLType.name
+      __graphQLType: graphQLType.name,
     }
   }
 }

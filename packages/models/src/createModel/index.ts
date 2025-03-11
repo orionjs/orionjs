@@ -10,7 +10,7 @@ interface GetSchemaOptions {
 }
 
 export default function createModel<TSchema = any>(
-  modelOptions: CreateModelOptions
+  modelOptions: CreateModelOptions,
 ): Model<TSchema> {
   const name = modelOptions.name
   let resolvedSchema = null
@@ -96,12 +96,12 @@ export default function createModel<TSchema = any>(
           createModel,
           getSchema,
           getResolvers,
-          modelOptions
+          modelOptions,
         },
-        cloneOptions
+        cloneOptions,
       )
     },
-    type: null
+    type: null,
   }
 
   return model

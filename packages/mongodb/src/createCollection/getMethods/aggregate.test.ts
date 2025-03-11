@@ -1,5 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import createCollection from '..'
+import {it, expect} from 'vitest'
 
 it('ensuring the options are passed properly to the aggregate command', async () => {
   const Tests = createCollection({name: generateId()})
@@ -11,12 +12,12 @@ it('ensuring the options are passed properly to the aggregate command', async ()
   const cursorSecondary = Tests.aggregate(
     [
       {
-        $match: {}
-      }
+        $match: {},
+      },
     ],
     {
-      readPreference: 'secondary'
-    }
+      readPreference: 'secondary',
+    },
   )
 
   expect(cursorSecondary.readPreference.mode).toBe('secondary')

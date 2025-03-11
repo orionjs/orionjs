@@ -10,13 +10,13 @@ export const Files: Collection<FileSchema> = createCollection<FileSchema>({
     {
       keys: {
         key: 1,
-        bucket: 1
-      }
+        bucket: 1,
+      },
     },
     {
       keys: {
-        hash: 1
-      }
-    }
-  ]
+        hash: 1,
+      },
+    },
+  ],
 })

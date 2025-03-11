@@ -1,10 +1,11 @@
+import {describe, it, expect} from 'vitest'
 import {
   isOrionError,
   isUserError,
   isPermissionsError,
   OrionError,
   UserError,
-  PermissionsError
+  PermissionsError,
 } from './index'
 
 describe('Error type guards', () => {
@@ -21,7 +22,7 @@ describe('Error type guards', () => {
       this.getInfo = () => ({
         error: this.code,
         message: this.message,
-        extra: this.extra
+        extra: this.extra,
       })
     }
   }
@@ -35,7 +36,7 @@ describe('Error type guards', () => {
 
     it('should return false for non-OrionError objects', () => {
       expect(isOrionError(new Error('Regular error'))).toBe(false)
-      expect(isOrionError({ message: 'Not an error' })).toBe(false)
+      expect(isOrionError({message: 'Not an error'})).toBe(false)
       expect(isOrionError(null)).toBe(false)
       expect(isOrionError(undefined)).toBe(false)
     })
@@ -66,4 +67,4 @@ describe('Error type guards', () => {
       expect(isPermissionsError(null)).toBe(false)
     })
   })
-}) 
+})

@@ -1,6 +1,7 @@
 import createModel from './index'
 import {sleep} from '@orion-js/helpers'
 import {modelResolver, resolver} from '@orion-js/resolvers'
+import {it, expect} from 'vitest'
 
 it('should call the resolver', async () => {
   let index = 0
@@ -14,9 +15,9 @@ it('should call the resolver', async () => {
         async resolve() {
           index++
           return index
-        }
-      })
-    }
+        },
+      }),
+    },
   })
 
   const item = model.initItem({index: 0})
@@ -34,21 +35,21 @@ it('should call the custom clean function if present', async () => {
     name: 'AModel',
     schema: {
       someValue: {
-        type: String
-      }
+        type: String,
+      },
     },
-    clean: doc => ({someValue: 'hello world'})
+    clean: doc => ({someValue: 'hello world'}),
   })
 
   const aResolver = resolver({
     params: {
       model: {
-        type: AModel
-      }
+        type: AModel,
+      },
     },
     resolve: ({model}) => {
       return model
-    }
+    },
   })
 
   const doc = AModel.initItem({someValue: 'hello'})

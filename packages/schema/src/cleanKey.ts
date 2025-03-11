@@ -2,10 +2,10 @@ import clean from './clean'
 import dotGetSchema from './dotGetSchema'
 
 const defaultOptions = {
-  filter: true
+  filter: true,
 }
 
-export default async function(schema, key, value, passedOptions = {}, ...args) {
+export default async function (schema, key, value, passedOptions = {}, ...args) {
   const options = {...defaultOptions, ...passedOptions}
   const keySchema = dotGetSchema(schema, key)
 

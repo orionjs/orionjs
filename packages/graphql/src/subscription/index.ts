@@ -5,12 +5,12 @@ import {
   checkPermissions as checkResolverPermissions,
   cleanParams,
   cleanReturns,
-  ResolverOptions
+  ResolverOptions,
 } from '@orion-js/resolvers'
 
 const createSubscription: CreateOrionSubscriptionFunction = function (options) {
   const subscription = {
-    name: options.name
+    name: options.name,
   } as OrionSubscription
 
   // the publish function

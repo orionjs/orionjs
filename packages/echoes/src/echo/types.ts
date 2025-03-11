@@ -1,4 +1,4 @@
 export default {
   event: 'event',
-  request: 'request'
+  request: 'request',
 }

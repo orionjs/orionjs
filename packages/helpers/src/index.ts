@@ -11,7 +11,7 @@ import {
   UserError,
   isOrionError,
   isUserError,
-  isPermissionsError
+  isPermissionsError,
 } from './Errors'
 import type {OrionErrorInformation} from './Errors'
 
@@ -28,16 +28,14 @@ export {
   generateId,
   hashObject,
   sleep,
-
   // Error classes
   OrionError,
   PermissionsError,
   UserError,
-
   // Error type guards
   isOrionError,
   isUserError,
-  isPermissionsError
+  isPermissionsError,
 }
 
 export type {OrionErrorInformation}

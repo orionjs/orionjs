@@ -1,4 +1,5 @@
-import { getSearchTokens, getSearchQueryForTokens } from './searchTokens'
+import {getSearchTokens, getSearchQueryForTokens} from './searchTokens'
+import {describe, it, expect} from 'vitest'
 
 describe('Search Tokens Utilities', () => {
   describe('getSearchTokens', () => {
@@ -29,7 +30,7 @@ describe('Search Tokens Utilities', () => {
     })
 
     it('should add metadata tokens when provided', () => {
-      const result = getSearchTokens('Hello World', { id: '123', category: 'test' })
+      const result = getSearchTokens('Hello World', {id: '123', category: 'test'})
       expect(result).toEqual(['hello', 'world', '_id:123', '_category:test'])
     })
 
@@ -42,11 +43,11 @@ describe('Search Tokens Utilities', () => {
   describe('getSearchQueryForTokens', () => {
     it('should return empty query when no params provided', () => {
       const result = getSearchQueryForTokens()
-      expect(result).toEqual({ $all: [] })
+      expect(result).toEqual({$all: []})
     })
 
     it('should convert filter string to RegExp tokens', () => {
-      const result = getSearchQueryForTokens({ filter: 'hello world' })
+      const result = getSearchQueryForTokens({filter: 'hello world'})
 
       expect(result.$all.length).toBe(2)
       expect(result.$all[0]).toBeInstanceOf(RegExp)
@@ -58,15 +59,15 @@ describe('Search Tokens Utilities', () => {
     })
 
     it('should ignore empty filter', () => {
-      const result = getSearchQueryForTokens({ filter: '' })
-      expect(result).toEqual({ $all: [] })
+      const result = getSearchQueryForTokens({filter: ''})
+      expect(result).toEqual({$all: []})
     })
 
     it('should add metadata tokens for additional parameters', () => {
       const result = getSearchQueryForTokens({
         filter: 'search',
         category: 'books',
-        id: '123'
+        id: '123',
       })
 
       // Should have one RegExp token from filter and two metadata tokens
@@ -80,7 +81,7 @@ describe('Search Tokens Utilities', () => {
       const result = getSearchQueryForTokens({
         category: 'books',
         author: '',
-        id: '123'
+        id: '123',
       })
 
       expect(result.$all.length).toBe(2)
@@ -92,7 +93,7 @@ describe('Search Tokens Utilities', () => {
     it('should handle complex filter with metadata', () => {
       const result = getSearchQueryForTokens({
         filter: 'Héllô Wôrld!',
-        status: 'active'
+        status: 'active',
       })
 
       expect(result.$all.length).toBe(3)
@@ -108,7 +109,7 @@ describe('Search Tokens Utilities', () => {
     it('should maintain correct order with filter and metadata', () => {
       const result = getSearchQueryForTokens({
         filter: 'search term',
-        category: 'books'
+        category: 'books',
       })
 
       // Filter tokens should come first, then metadata
@@ -118,4 +119,4 @@ describe('Search Tokens Utilities', () => {
       expect(result.$all[2]).toBe('_category:books')
     })
   })
-}) 
+})

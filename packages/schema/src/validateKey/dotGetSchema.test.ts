@@ -1,29 +1,30 @@
 import {Schema, SchemaNode, SchemaRecursiveNodeType} from '..'
 import dotGetSchema from './dotGetSchema'
+import {test, expect} from 'vitest'
 
 const tag: Schema = {
   name: {
-    type: String
+    type: String,
   },
   other: {
-    type: 'string'
-  }
+    type: 'string',
+  },
 }
 const car: Schema = {
   brand: {
-    type: String
+    type: String,
   },
   tags: {
-    type: [tag]
-  }
+    type: [tag],
+  },
 }
 const schema: Schema = {
   name: {
-    type: String
+    type: String,
   },
   car: {
-    type: car
-  }
+    type: car,
+  },
 }
 
 test('handle deep schemas', async () => {
@@ -58,8 +59,8 @@ test('replaces numbers to $', async () => {
 test('returns information when is blackbox child', async () => {
   const schema: Schema = {
     services: {
-      type: 'blackbox'
-    }
+      type: 'blackbox',
+    },
   }
 
   expect(dotGetSchema(schema, 'services')).toBe(schema.services)

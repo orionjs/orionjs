@@ -1,5 +1,6 @@
 import array from './array'
 import Errors from '../Errors'
+import {it, test, expect} from 'vitest'
 
 it('should convert a single item into and array when cleaning', async () => {
   const options = {autoConvert: true}

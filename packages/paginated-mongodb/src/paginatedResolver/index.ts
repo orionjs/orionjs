@@ -71,9 +71,9 @@ export default function paginatedResolver({
         params,
         viewer,
         options,
-        count
+        count,
       }
     },
-    ...otherOptions
+    ...otherOptions,
   })
 }

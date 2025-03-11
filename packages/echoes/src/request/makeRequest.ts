@@ -10,17 +10,17 @@ export const makeRequest: RequestMaker = async options => {
         url: options.url,
         timeout: options.timeout,
         headers: {
-          'User-Agent': 'Orionjs-Echoes/1.1'
+          'User-Agent': 'Orionjs-Echoes/1.1',
         },
-        data: options.data
+        data: options.data,
       })
     },
     options.retries,
-    200
+    200,
   )
 
   return {
     data: result.data as object,
-    statusCode: result.status
+    statusCode: result.status,
   }
 }

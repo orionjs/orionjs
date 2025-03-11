@@ -24,9 +24,9 @@ export function loadMigrations(migrationServices: any[], options?: Options) {
         async resolve(params, context) {
           const instance = getInstance(MigrationsService)
           await instance.runMigrations(migrations, context)
-        }
-      })
-    }
+        },
+      }),
+    },
   })
 
   return migrations

@@ -14,7 +14,7 @@ const dataLoad = async (options: Options) => {
   const dataLoader = getDataLoader({
     key: hashObject(options.loaderKey),
     func: options.load,
-    timeout: options.timeout || 5
+    timeout: options.timeout || 5,
   })
 
   if (options.ids) {

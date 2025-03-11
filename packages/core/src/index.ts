@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Command } from 'commander'
+import {Command} from 'commander'
 import start from './start'
 import build from './build'
 import create from './create'

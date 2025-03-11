@@ -1,4 +1,5 @@
 import {createModel} from '..'
+import { it } from 'vitest'
 
 it('should create correctly a model with its schema', async () => {
   const model1 = createModel({

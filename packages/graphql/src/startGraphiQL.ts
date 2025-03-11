@@ -11,7 +11,7 @@ function safeSerialize(data) {
 const getHTML = function (
   apolloOptions: ApolloServerOptions<any>,
   options: StartGraphQLOptions,
-  data
+  data,
 ) {
   // Current latest version of GraphiQL.
   const GRAPHIQL_VERSION = '0.11.11'
@@ -214,9 +214,9 @@ export default function (apolloOptions: ApolloServerOptions<any>, options: Start
       method: 'get',
       async resolve(req) {
         return {
-          body: getHTML(apolloOptions, options, req.query)
+          body: getHTML(apolloOptions, options, req.query),
         }
-      }
-    })
+      },
+    }),
   )
 }

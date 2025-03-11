@@ -8,7 +8,7 @@ global.orionjsCache = {}
 const defaultCacheStore: CacheStore = {
   set: setData,
   get: getData,
-  invalidate: invalidateData
+  invalidate: invalidateData,
 }
 
 export default defaultCacheStore

@@ -42,6 +42,6 @@ export default function fieldType(opts: FieldTypeOpts): FieldType {
     name,
     validate: overwrittenValidate,
     clean: overwrittenClean,
-    _isFieldType: true
+    _isFieldType: true,
   }
 }

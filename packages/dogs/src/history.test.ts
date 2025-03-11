@@ -1,6 +1,7 @@
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
 import {setLogLevel} from '@orion-js/logger'
+import {describe, it, expect} from 'vitest'
 
 setLogLevel('none')
 
@@ -12,21 +13,21 @@ describe('Test Jobs History', () => {
       async resolve() {
         await sleep(50)
         return {
-          number: 1
+          number: 1,
         }
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
       workersCount: 1,
-      pollInterval: 10
+      pollInterval: 10,
     })
 
     await scheduleJob({
       name: jobId,
       runIn: 1,
-      params: {id: 2}
+      params: {id: 2},
     })
 
     await sleep(100)
@@ -53,7 +54,7 @@ describe('Test Jobs History', () => {
       status: 'success',
       errorMessage: null,
       params: {id: 2},
-      result: {number: 1}
+      result: {number: 1},
     })
   })
 
@@ -63,19 +64,19 @@ describe('Test Jobs History', () => {
       type: 'event',
       async resolve() {
         throw new Error('Hello')
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
       workersCount: 1,
-      pollInterval: 10
+      pollInterval: 10,
     })
 
     await scheduleJob({
       name: jobId,
       runIn: 1,
-      params: {id: 4}
+      params: {id: 4},
     })
 
     await sleep(100)
@@ -101,7 +102,7 @@ describe('Test Jobs History', () => {
       status: 'error',
       errorMessage: 'Hello',
       params: {id: 4},
-      result: null
+      result: null,
     })
   })
 
@@ -114,19 +115,19 @@ describe('Test Jobs History', () => {
           await sleep(100)
         }
         return {status: 'ok'}
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
       workersCount: 1,
       pollInterval: 10,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({
       name: jobId,
-      runIn: 1
+      runIn: 1,
     })
 
     await sleep(150)
@@ -154,7 +155,7 @@ describe('Test Jobs History', () => {
       status: 'stale',
       errorMessage: null,
       params: null,
-      result: {status: 'ok'}
+      result: {status: 'ok'},
     })
   })
 })

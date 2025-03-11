@@ -3,24 +3,25 @@ import {generateId} from '@orion-js/helpers'
 import paginatedResolver from '.'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {createCollection} from '@orion-js/mongodb'
+import {describe, it, expect} from 'vitest'
 
 describe('Full example of paginated resolver', () => {
   const createResolver = async () => {
     @TypedSchema()
     class ItemSchema {
-      @Prop()
+      @Prop({type: String})
       _id: string
 
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       index: number
     }
 
     const collection = createCollection<ItemSchema>({
       name: generateId(),
-      schema: ItemSchema
+      schema: ItemSchema,
     })
 
     await collection.insertMany([
@@ -29,12 +30,12 @@ describe('Full example of paginated resolver', () => {
       {name: `Number 3`, index: 3},
       {name: `Number 4`, index: 4},
       {name: `Number 5`, index: 5},
-      {name: `Number 6`, index: 6}
+      {name: `Number 6`, index: 6},
     ])
 
     @TypedSchema()
     class Params {
-      @Prop({optional: true})
+      @Prop({type: String, optional: true})
       filter?: string
     }
 
@@ -48,7 +49,7 @@ describe('Full example of paginated resolver', () => {
           query.name = params.filter
         }
         return collection.find(query)
-      }
+      },
     })
   }
 
@@ -56,9 +57,9 @@ describe('Full example of paginated resolver', () => {
     const resolver = await createResolver()
     const result = (await resolver.resolve(
       {
-        filter: `Number 1`
+        filter: `Number 1`,
       },
-      {}
+      {},
     )) as any
     const items = await result.items()
     const count = await result.totalCount()
@@ -72,9 +73,9 @@ describe('Full example of paginated resolver', () => {
     const result = (await resolver.resolve(
       {
         sortBy: 'index',
-        sortType: 'asc'
+        sortType: 'asc',
       },
-      {}
+      {},
     )) as any
     const items = await result.items()
     const count = await result.totalCount()
@@ -87,23 +88,23 @@ describe('Cursors with count', () => {
   const createResolver = async () => {
     const cursor = {
       count: () => 100,
-      toArray: async () => [{hello: 'foo'}]
+      toArray: async () => [{hello: 'foo'}],
     }
     return paginatedResolver({
       returns: createModel({
         name: 'Hello',
         schema: {
           hello: {
-            type: String
-          }
-        }
+            type: String,
+          },
+        },
       }),
       async getCursor() {
         return {
           cursor: cursor,
-          count: () => 10
+          count: () => 10,
         }
-      }
+      },
     })
   }
 

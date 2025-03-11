@@ -9,7 +9,7 @@ export function generateKeys() {
 
   return {
     encryptKey: encryptKeyHex,
-    decryptKey: decryptKeyHex
+    decryptKey: decryptKeyHex,
   }
 }
 

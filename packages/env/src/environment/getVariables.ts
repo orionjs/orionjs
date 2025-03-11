@@ -26,7 +26,7 @@ function readSecrets(readFromSecret): {variables: Variables; secretKey: string} 
     const keys = readFromSecret[secretName]
     if (!process.env[secretName]) {
       console.warn(
-        `@orion/env could not find the secret "${secretName}" in the environment. Related variables will be undefined.`
+        `@orion/env could not find the secret "${secretName}" in the environment. Related variables will be undefined.`,
       )
       continue
     }
@@ -41,18 +41,18 @@ function readSecrets(readFromSecret): {variables: Variables; secretKey: string} 
           variables[key] = values[key]
         } else {
           console.warn(
-            `@orion/env could not find the variable "${key}" in the secret "${secretName}". Related variables will be undefined.`
+            `@orion/env could not find the variable "${key}" in the secret "${secretName}". Related variables will be undefined.`,
           )
         }
       }
     } catch (error) {
       console.warn(
-        `'@orion/env found a the secret "${secretName}" variable in the environment but it is not a valid JSON. Related variables will be undefined.'`
+        `'@orion/env found a the secret "${secretName}" variable in the environment but it is not a valid JSON. Related variables will be undefined.'`,
       )
     }
   }
   return {variables, secretKey: secretKey}
-} 
+}
 
 export function getVariables(config: Config, secretKey?: string): Variables {
   const {cleanKeys, encryptedKeys, readFromSecret} = config
@@ -60,7 +60,7 @@ export function getVariables(config: Config, secretKey?: string): Variables {
   let decryptKey = foundSecretKey || secretKey
   if (!decryptKey) {
     throw new Error(
-      'Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not defined'
+      'Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not defined',
     )
   }
 
@@ -75,7 +75,7 @@ export function getVariables(config: Config, secretKey?: string): Variables {
       variables[key] = decrypt(decryptKey, encrypted)
     } catch (error) {
       throw new Error(
-        `Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not the right key for "${key}"`
+        `Orion encrypted env was passed but process.env.ORION_ENV_SECRET_KEY is not the right key for "${key}"`,
       )
     }
   }

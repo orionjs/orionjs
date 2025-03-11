@@ -20,7 +20,7 @@ export const encrypt = (bSecretKey: Uint8Array, aPublicKey: Uint8Array, message:
 export const decrypt = (
   aSecretKey: Uint8Array,
   bPublicKey: Uint8Array,
-  messageWithNonce: string
+  messageWithNonce: string,
 ) => {
   const messageWithNonceAsUint8Array = decodeBase64(messageWithNonce)
   const nonce = messageWithNonceAsUint8Array.slice(0, box.nonceLength)

@@ -24,7 +24,7 @@ const simulateNewDoc = function (selector, modifier) {
     ...modifier.$inc,
     ...getPushSimulation(modifier.$push),
     ...getPushSimulation(modifier.$addToSet),
-    ...modifier.$setOnInsert
+    ...modifier.$setOnInsert,
   })
 }
 

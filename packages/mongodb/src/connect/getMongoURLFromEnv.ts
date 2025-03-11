@@ -14,7 +14,7 @@ export const getMongoURLFromEnv = (connectionName: string): string => {
   const uri = connections[connectionName]?.uri ?? internalGetEnv(envName, processEnvName)
   if (!uri) {
     throw new Error(
-      `To use the connection "${connectionName}" you must initialize it first calling getMongoConnection({name: "${connectionName}", uri: "MONGOURI"}) or setting the environment variable ${processEnvName}.`
+      `To use the connection "${connectionName}" you must initialize it first calling getMongoConnection({name: "${connectionName}", uri: "MONGOURI"}) or setting the environment variable ${processEnvName}.`,
     )
   }
 

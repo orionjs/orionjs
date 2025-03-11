@@ -2,6 +2,7 @@ import createInsert from './insertOne'
 import {generateId} from '@orion-js/helpers'
 import createCollection from '..'
 import {createModel} from '@orion-js/models'
+import {describe, it, expect} from 'vitest'
 
 describe('InsertOne', () => {
   it('should return a function', async () => {
@@ -20,13 +21,13 @@ describe('InsertOne', () => {
 
   it('should insertOne documents passing deep validation', async () => {
     const wife = {
-      name: {type: String}
+      name: {type: String},
     }
     const schema = {
-      wife: {type: wife}
+      wife: {type: wife},
     }
     const model = createModel({name: generateId(), schema})
-    const Tests = createCollection({name: generateId(), model})
+    const Tests = createCollection({name: generateId(), schema: model})
 
     await Tests.insertOne({'wife.name': 'Francisca'})
   })
@@ -35,10 +36,10 @@ describe('InsertOne', () => {
     const now = new Date()
     const schema = {
       name: {type: String},
-      createdAt: {type: Date, autoValue: () => now}
+      createdAt: {type: Date, autoValue: () => now},
     }
     const model = createModel({name: generateId(), schema})
-    const Tests = createCollection({name: generateId(), model})
+    const Tests = createCollection({name: generateId(), schema: model})
 
     const docId = await Tests.insertOne({name: 1234})
     const result = await Tests.findOne(docId)
@@ -49,7 +50,7 @@ describe('InsertOne', () => {
   it('should validate a document', async () => {
     const schema = {name: {type: String}}
     const model = createModel({name: generateId(), schema})
-    const Tests = createCollection({name: generateId(), model})
+    const Tests = createCollection({name: generateId(), schema: model})
 
     expect.assertions(1)
     try {
@@ -63,18 +64,18 @@ describe('InsertOne', () => {
     const model = createModel({
       name: 'File',
       schema: {
-        name: {type: String}
+        name: {type: String},
       },
       async clean(value) {
         if (!value) return null
         return {
           ...value,
-          name: value.name.toUpperCase() + value._id
+          name: value.name.toUpperCase() + value._id,
         }
-      }
+      },
     })
 
-    const Tests = createCollection({name: generateId(), model})
+    const Tests = createCollection({name: generateId(), schema: model})
     const docId = await Tests.insertOne({name: 'hello'})
     const result = await Tests.findOne(docId)
     expect(result.name).toBe('HELLO' + docId)
@@ -86,13 +87,13 @@ describe('InsertOne', () => {
       indexes: [
         {
           keys: {
-            name: 1
+            name: 1,
           },
           options: {
-            unique: true
-          }
-        }
-      ]
+            unique: true,
+          },
+        },
+      ],
     })
     await Tests.createIndexesPromise
 

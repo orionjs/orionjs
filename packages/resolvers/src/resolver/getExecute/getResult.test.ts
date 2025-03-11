@@ -1,6 +1,7 @@
 import {defaultCache} from '@orion-js/cache'
 import {sleep} from '@orion-js/helpers'
 import getResult from './getResult'
+import {it, expect} from 'vitest'
 
 const cacheProvider = defaultCache
 

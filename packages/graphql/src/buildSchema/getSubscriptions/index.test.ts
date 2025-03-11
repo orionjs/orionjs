@@ -1,27 +1,28 @@
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {subscription} from '../..'
 import getSubscriptions from './index'
+import {describe, it, expect} from 'vitest'
 
 describe('Test get subscriptions schema', () => {
   it('Should correctly build a subscriptions schema using typed models', async () => {
     @TypedSchema()
     class TestParams {
-      @Prop()
+      @Prop({type: String})
       userId: string
     }
 
     @TypedSchema()
     class TestModel {
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       age: number
     }
 
     const modelSub = subscription<TestParams, TestModel>({
       params: TestParams,
-      returns: TestModel
+      returns: TestModel,
     })
 
     const subscriptions = {modelSub}

@@ -1,26 +1,25 @@
-import { createModel } from '@orion-js/models'
-import { Prop, TypedSchema } from '../decorators'
-import { getModelForClass } from './getModelForClass'
-import { describe, it, expect } from 'vitest'
+import {createModel} from '@orion-js/models'
+import {Prop, TypedSchema} from '../decorators'
+import {getModelForClass} from './getModelForClass'
+import {describe, it, expect} from 'vitest'
 
 describe('getModelForClass', () => {
   it('should correctly pass the clean option to submodels', async () => {
-    const clean = () => ({ name: 'hello' })
+    const clean = () => ({name: 'hello'})
     const FileModel = createModel({
       name: 'File',
       schema: {
         name: {
-          type: 'string'
-        }
+          type: 'string',
+        },
       },
-      clean
+      clean,
     })
-
 
     @TypedSchema()
     class Config {
       @Prop({
-        type: [FileModel]
+        type: [FileModel],
       })
       files: any
     }
@@ -31,14 +30,13 @@ describe('getModelForClass', () => {
     console.log(schemaForConfig.files.type[0])
     expect(schemaForConfig.files.type[0].__clean).toBeTypeOf('function')
 
-
     const ConfigAsModel = createModel({
       name: 'Config',
       schema: {
         files: {
-          type: [FileModel]
-        }
-      }
+          type: [FileModel],
+        },
+      },
     })
 
     const modelForClass = getModelForClass(Config)
@@ -46,9 +44,9 @@ describe('getModelForClass', () => {
     const example = {
       files: [
         {
-          _id: '1'
-        }
-      ]
+          _id: '1',
+        },
+      ],
     }
 
     const cleanedAsModel = await ConfigAsModel.cleanAndValidate(example)

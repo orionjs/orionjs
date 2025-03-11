@@ -1,4 +1,5 @@
 import {improveFileName} from './getFileName'
+import {describe, it, expect} from 'vitest'
 
 describe('GetFileName', () => {
   it('Should clean @package in node_modules', () => {

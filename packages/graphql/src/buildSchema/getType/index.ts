@@ -38,11 +38,11 @@ export default function getGraphQLType(type: any, options: StartGraphQLOptions) 
                 resolver: field.graphQLResolver,
                 getGraphQLType,
                 options,
-                model
+                model,
               })
             } else {
               fields[field.key] = {
-                type: getGraphQLType(field.type, options)
+                type: getGraphQLType(field.type, options),
               }
             }
           } catch (error) {
@@ -55,7 +55,7 @@ export default function getGraphQLType(type: any, options: StartGraphQLOptions) 
             fields[resolver.key] = getTypeAsResolver({resolver, getGraphQLType, options, model})
           } catch (error) {
             throw new Error(
-              `Error getting resolver type for resolver "${resolver.key}": ${error.message}`
+              `Error getting resolver type for resolver "${resolver.key}": ${error.message}`,
             )
           }
         }
@@ -65,12 +65,12 @@ export default function getGraphQLType(type: any, options: StartGraphQLOptions) 
             fields[resolver.key] = getTypeAsResolver({resolver, getGraphQLType, options, model})
           } catch (error) {
             throw new Error(
-              `Error getting resolver type for resolver "${resolver.key}": ${error.message}`
+              `Error getting resolver type for resolver "${resolver.key}": ${error.message}`,
             )
           }
         }
         return fields
-      }
+      },
     })
 
     return model.graphQLType

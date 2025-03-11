@@ -14,7 +14,7 @@ const getModelInput = function (model, fields) {
 
   storedModelInput[model.name] = new GraphQLInputObjectType({
     name: model.name + 'Input',
-    fields
+    fields,
   })
 
   return storedModelInput[model.name]
@@ -36,7 +36,7 @@ export default function getParams(type) {
 
     for (const field of getStaticFields(model)) {
       fields[field.key] = {
-        type: getParams(field.type)
+        type: getParams(field.type),
       }
     }
 

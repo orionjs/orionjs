@@ -13,7 +13,7 @@ export interface LoadEnvOptions {
 const defaultOptions: LoadEnvOptions = {
   secretKey: process.env.ORION_ENV_SECRET_KEY,
   envFilePath: process.env.ORION_ENV_FILE_PATH,
-  override: !!process.env.ORION_ENV_OVERRIDE
+  override: !!process.env.ORION_ENV_OVERRIDE,
 }
 
 export function loadEnv(passedOptions: LoadEnvOptions = {}) {

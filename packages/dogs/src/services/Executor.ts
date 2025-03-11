@@ -6,7 +6,7 @@ import {JobDefinition, JobsDefinition} from '../types/JobsDefinition'
 import {ExecutionContext, JobToRun} from '../types/Worker'
 import {getNextRunDate} from './getNextRunDate'
 import {trace, SpanStatusCode} from '@opentelemetry/api'
-import { Blackbox } from '@orion-js/schema'
+import {Blackbox} from '@orion-js/schema'
 
 @Service()
 export class Executor {

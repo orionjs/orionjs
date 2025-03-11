@@ -1,5 +1,6 @@
 import {modelResolver, resolver} from '..'
 import {createResolverMiddleware} from '../../createResolverMiddleware'
+import {it, expect} from 'vitest'
 
 it('should call middlewares in the correct order', async () => {
   const order: (string | number)[] = []
@@ -26,7 +27,7 @@ it('should call middlewares in the correct order', async () => {
     async resolve() {
       order.push(5)
       return 'resolve'
-    }
+    },
   })
 
   const finalResult = await testResolver.resolve()
@@ -46,7 +47,7 @@ it('should let you throw an error inside a middleware', () => {
     middlewares: [middleware1],
     async resolve() {
       return 'resolve'
-    }
+    },
   })
 
   expect(testResolver.resolve()).rejects.toEqual(new Error('middleware1'))
@@ -65,12 +66,12 @@ it('should work with model resolvers and modify its params', async () => {
     middlewares: [middleware1],
     async resolve(model, params, viewer) {
       return `${model.text} ${params.number}`
-    }
+    },
   })
 
   const finalResult = await testResolver.execute({
     params: {number: 1},
-    parent: {text: 'test'}
+    parent: {text: 'test'},
   })
 
   expect(finalResult).toEqual('middleware 2')

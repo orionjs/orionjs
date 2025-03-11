@@ -10,7 +10,7 @@ export function getDynamicFields(model: Model): any {
       const resolver = resolvers[key]
       return {
         ...resolver,
-        key
+        key,
       }
     })
     .filter(resolver => !resolver.private)

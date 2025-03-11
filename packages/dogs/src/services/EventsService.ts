@@ -18,7 +18,7 @@ export class EventsService {
       priority: options.priority || 100,
       nextRunAt: getNextRunDate(options),
       params: options.params || null,
-      uniqueIdentifier: options.uniqueIdentifier
+      uniqueIdentifier: options.uniqueIdentifier,
     })
   }
 }

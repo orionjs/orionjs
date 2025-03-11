@@ -7,10 +7,10 @@ export function startProcess(options) {
   return spawn(startCommand, args, {
     env: {
       ORION_DEV: 'local',
-      ...process.env
+      ...process.env,
     },
     cwd: process.cwd(),
     stdio: 'inherit',
-    detached: false
+    detached: false,
   })
 }

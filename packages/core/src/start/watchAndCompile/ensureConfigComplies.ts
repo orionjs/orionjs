@@ -12,8 +12,8 @@ export function ensureConfigComplies(configPath) {
       compilerOptions: {
         ...config.compilerOptions,
         outDir: `./.orion/build/app`,
-        baseUrl: `./`
-      }
+        baseUrl: `./`,
+      },
     }
 
     if (!config.compilerOptions?.rootDir && !config.compilerOptions?.rootDirs) {

@@ -1,3 +1,4 @@
+import {describe, it, expect} from 'vitest'
 import {createModel} from '@orion-js/models'
 import getParams from './params'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
@@ -5,52 +6,52 @@ import {TypedSchema, Prop} from '@orion-js/typed-model'
 describe('Get params', () => {
   it('should return the params', () => {
     const params = getParams({
-      params: {foo: 'bar'}
+      params: {foo: 'bar'},
     })
     expect(params).toEqual({
       page: {
         type: 'integer',
         defaultValue: 1,
-        min: 1
+        min: 1,
       },
       limit: {
         type: 'integer',
         defaultValue: 0,
         min: 0,
-        max: 200
+        max: 200,
       },
-      foo: 'bar'
+      foo: 'bar',
     })
   })
 
   it('should return the params with allowed sort', () => {
     const params = getParams({
       params: {foo: 'bar'},
-      allowedSorts: ['foo']
+      allowedSorts: ['foo'],
     })
     expect(params).toEqual({
       page: {
         type: 'integer',
         defaultValue: 1,
-        min: 1
+        min: 1,
       },
       limit: {
         type: 'integer',
         defaultValue: 0,
         min: 0,
-        max: 200
+        max: 200,
       },
       sortBy: {
         type: String,
         allowedValues: ['foo'],
-        optional: true
+        optional: true,
       },
       sortType: {
         type: String,
         allowedValues: ['asc', 'desc'],
-        optional: true
+        optional: true,
       },
-      foo: 'bar'
+      foo: 'bar',
     })
   })
 
@@ -59,80 +60,80 @@ describe('Get params', () => {
       name: 'Params',
       schema: {
         foo: {
-          type: 'string'
-        }
-      }
+          type: 'string',
+        },
+      },
     })
     const params = getParams({
       params: model,
-      allowedSorts: ['foo']
+      allowedSorts: ['foo'],
     })
 
     expect(params).toEqual({
       page: {
         type: 'integer',
         defaultValue: 1,
-        min: 1
+        min: 1,
       },
       limit: {
         type: 'integer',
         defaultValue: 0,
         min: 0,
-        max: 200
+        max: 200,
       },
       sortBy: {
         type: String,
         allowedValues: ['foo'],
-        optional: true
+        optional: true,
       },
       sortType: {
         type: String,
         allowedValues: ['asc', 'desc'],
-        optional: true
+        optional: true,
       },
       foo: {
-        type: 'string'
-      }
+        type: 'string',
+      },
     })
   })
 
   it('should return the params correctly if we pass a typed schema', () => {
     @TypedSchema()
     class Schema {
-      @Prop()
+      @Prop({type: String})
       foo: string
     }
 
     const params = getParams({
       params: Schema,
-      allowedSorts: ['foo']
+      allowedSorts: ['foo'],
     })
 
     expect(params).toEqual({
       page: {
         type: 'integer',
         defaultValue: 1,
-        min: 1
+        min: 1,
       },
       limit: {
         type: 'integer',
         defaultValue: 0,
         min: 0,
-        max: 200
+        max: 200,
       },
       sortBy: {
         type: String,
         allowedValues: ['foo'],
-        optional: true
+        optional: true,
       },
       sortType: {
         type: String,
         allowedValues: ['asc', 'desc'],
-        optional: true
+        optional: true,
       },
       foo: {
-        type: String
-      }
+        type: String,
+      },
     })
   })
 })

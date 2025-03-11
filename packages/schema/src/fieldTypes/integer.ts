@@ -8,5 +8,5 @@ export default fieldType({
   validate(value: number, info) {
     if (!isInteger(value)) return Errors.NOT_AN_INTEGER
     return number.validate(value, info)
-  }
+  },
 })

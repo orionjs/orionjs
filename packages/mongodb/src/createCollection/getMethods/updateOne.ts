@@ -5,12 +5,12 @@ import validateModifier from './validateModifier'
 import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const updateOne: UpdateOne<DocumentType> = async function (
     selectorArg,
     modifierArg,
-    options = {}
+    options = {},
   ) {
     await collection.connectionPromise
     let modifier = modifierArg as any

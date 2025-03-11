@@ -29,5 +29,5 @@ export {
   deleteMany,
   upsert,
   estimatedDocumentCount,
-  countDocuments
+  countDocuments,
 }

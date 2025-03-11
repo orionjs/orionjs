@@ -16,5 +16,5 @@ export default {
   NOT_A_BOOLEAN: 'notABoolean',
   NOT_AN_EMAIL: 'notAnEmail',
   NOT_UNIQUE: 'notUnique',
-  NOT_AN_ALLOWED_VALUE: 'notAnAllowedValue'
+  NOT_AN_ALLOWED_VALUE: 'notAnAllowedValue',
 }

@@ -1,13 +1,13 @@
-import { defineConfig } from 'vitest/config'
+import {defineConfig} from 'vitest/config'
 
 export default defineConfig({
   esbuild: {
-    target: 'es2022'
+    target: 'es2022',
   },
   test: {
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts'],
-    setupFiles: ['../../setup-tests.ts']
-  }
+    setupFiles: ['../../setup-tests.ts'],
+  },
 })

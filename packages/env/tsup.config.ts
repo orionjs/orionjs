@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup'
+import {defineConfig} from 'tsup'
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -9,9 +9,9 @@ export default defineConfig({
   clean: true,
   target: 'node16',
   outDir: 'dist',
-  outExtension({ format }) {
+  outExtension({format}) {
     return {
-      js: format === 'esm' ? '.js' : '.cjs'
+      js: format === 'esm' ? '.js' : '.cjs',
     }
-  }
-}) 
+  },
+})

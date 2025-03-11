@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import {describe, it, expect} from 'vitest'
 import version from './version'
 
 /**
@@ -9,4 +9,4 @@ describe('Core Package', () => {
     expect(version).toBeDefined()
     expect(typeof version).toBe('string')
   })
-}) 
+})

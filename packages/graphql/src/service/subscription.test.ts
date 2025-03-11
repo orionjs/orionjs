@@ -9,13 +9,13 @@ describe('Subscriptions classes', () => {
   it('should get the subscriptions using services', async () => {
     @TypedSchema()
     class Params {
-      @Prop()
+      @Prop({type: String})
       name: string
     }
 
     @TypedSchema()
     class User {
-      @Prop()
+      @Prop({type: String})
       name: string
     }
 
@@ -23,7 +23,7 @@ describe('Subscriptions classes', () => {
     class ExampleSubscriptionsService {
       @Subscription<Params, User>({
         params: Params,
-        returns: User
+        returns: User,
       })
       onUserCreated: OrionSubscription<Params, User>
     }

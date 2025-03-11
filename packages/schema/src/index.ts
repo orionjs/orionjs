@@ -19,7 +19,7 @@ export {
   cleanKey,
   dotGetSchema,
   validateKey,
-  createEnum
+  createEnum,
 }
 
 export * from './types'

@@ -26,7 +26,7 @@ export default function ({schema, resolvers, name}: InitItemOptions, item: any):
         return resolver.execute({
           parent: item,
           params,
-          viewer
+          viewer,
         })
       }
     }

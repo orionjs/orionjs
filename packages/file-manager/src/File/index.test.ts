@@ -1,34 +1,34 @@
-import { FileSchema } from './schema'
-import { Files } from '../Files'
+import {FileSchema} from './schema'
+import {Files} from '../Files'
 import File from '.'
-import { createModel } from '@orion-js/models'
-import { Prop, TypedSchema, getModelForClass } from '@orion-js/typed-model'
-import { describe, it, expect } from 'vitest'
+import {createModel} from '@orion-js/models'
+import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {describe, it, expect} from 'vitest'
 
 describe('File model', () => {
   it('should correctly clean on a simple file input', async () => {
     await Files.rawCollection.insertOne({
       _id: '1',
-      externalUrl: 'https://example.com/file.jpg'
+      externalUrl: 'https://example.com/file.jpg',
     })
 
     const input = {
       name: 'test',
       image: {
-        _id: '1'
-      }
+        _id: '1',
+      },
     }
 
     const model = createModel({
       name: 'Test',
       schema: {
         name: {
-          type: String
+          type: String,
         },
         image: {
-          type: File
-        }
-      }
+          type: File,
+        },
+      },
     })
 
     const cleaned = await model.clean(input)
@@ -37,51 +37,51 @@ describe('File model', () => {
       name: 'test',
       image: {
         _id: '1',
-        externalUrl: 'https://example.com/file.jpg'
-      }
+        externalUrl: 'https://example.com/file.jpg',
+      },
     })
   })
 
   it('should correctly clean the file input on a complex schema', async () => {
     await Files.rawCollection.insertOne({
       _id: '2',
-      externalUrl: 'https://example.com/file.jpg'
+      externalUrl: 'https://example.com/file.jpg',
     })
 
     @TypedSchema()
     class Banner {
       @Prop({
-        type: File
+        type: File,
       })
       image: FileSchema
 
-      @Prop({ type: String })
+      @Prop({type: String})
       name: string
     }
 
     const cleanedBanner = await getModelForClass(Banner).clean({
       name: 'test',
       image: {
-        _id: '2'
-      }
+        _id: '2',
+      },
     })
 
     expect(cleanedBanner).toEqual({
       name: 'test',
       image: {
         _id: '2',
-        externalUrl: 'https://example.com/file.jpg'
-      }
+        externalUrl: 'https://example.com/file.jpg',
+      },
     })
 
     @TypedSchema()
     class Config {
-      @Prop({ type: [getModelForClass(Banner)] })
+      @Prop({type: [getModelForClass(Banner)]})
       banners: Banner[]
     }
 
     const cleaned = await getModelForClass(Config).cleanAndValidate({
-      banners: [cleanedBanner]
+      banners: [cleanedBanner],
     })
 
     expect(cleaned).toEqual({
@@ -90,10 +90,10 @@ describe('File model', () => {
           name: 'test',
           image: {
             _id: '2',
-            externalUrl: 'https://example.com/file.jpg'
-          }
-        }
-      ]
+            externalUrl: 'https://example.com/file.jpg',
+          },
+        },
+      ],
     })
   })
 })

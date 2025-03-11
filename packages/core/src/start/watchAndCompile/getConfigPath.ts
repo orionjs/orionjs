@@ -8,7 +8,6 @@ export function getConfigPath() {
     ts.findConfigFile(appBasePath, ts.sys.fileExists, 'tsconfig.server.json') ||
     ts.findConfigFile(appBasePath, ts.sys.fileExists, 'tsconfig.json')
 
-
   if (!configPath) {
     throw new Error("Could not find a valid 'tsconfig.json'.")
   }

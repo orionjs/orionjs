@@ -1,10 +1,10 @@
-import {getSchemaFromTypedModel} from '../getSchemaFromTypedModel'
+import {getSchemaFromTypedSchema} from '../getSchemaFromTypedSchema'
 import {Schema} from '../types/schema'
 import doValidation from './doValidation'
 import getValidationErrorsObject from './getValidationErrorsObject'
 
 const defaultOptions = {
-  omitRequired: false
+  omitRequired: false,
 }
 
 export default async function getValidationErrors(
@@ -13,7 +13,7 @@ export default async function getValidationErrors(
   passedOptions = {},
   ...args
 ) {
-  schema = getSchemaFromTypedModel(schema)
+  schema = getSchemaFromTypedSchema(schema)
 
   const options = {...defaultOptions, ...passedOptions}
   const errors: {key: string; code: string}[] = []
@@ -21,7 +21,7 @@ export default async function getValidationErrors(
   const addError = function (keys, code) {
     errors.push({
       key: keys.join('.'),
-      code
+      code,
     })
   }
 
@@ -33,7 +33,7 @@ export default async function getValidationErrors(
     currentSchema: {type: schema},
     addError,
     options,
-    args
+    args,
   })
 
   return getValidationErrorsObject(errors)

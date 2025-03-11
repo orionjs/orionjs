@@ -22,8 +22,8 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
       return {
         default: {
           ...getResolvers(),
-          ...options.extendResolvers
-        }
+          ...options.extendResolvers,
+        },
       }
     },
     schema: () => {
@@ -53,11 +53,11 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
 
       const clonedSchema = {
         ...newSchema,
-        ...options.extendSchema
+        ...options.extendSchema,
       } as Schema
 
       return {default: clonedSchema}
-    }
+    },
   })
 }
 

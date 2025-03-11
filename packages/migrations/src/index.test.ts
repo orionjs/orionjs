@@ -13,7 +13,7 @@ describe('Migrations end to end', () => {
 
     @MigrationService({
       name: generateId(),
-      useMongoTransactions: false
+      useMongoTransactions: false,
     })
     class MoveUsersMigrationService {
       async runMigration() {
@@ -40,7 +40,7 @@ describe('Migrations end to end', () => {
 
     @MigrationService({
       name: migrationName,
-      useMongoTransactions: false
+      useMongoTransactions: false,
     })
     class MoveUsersMigrationService {
       async runMigration() {

@@ -12,12 +12,7 @@
     "groups": [
       {
         "group": "Get Started",
-        "pages": [
-          "introduction",
-          "quickstart",
-          "project-structure",
-          "deploying"
-        ]
+        "pages": ["introduction", "quickstart", "project-structure", "deploying"]
       },
       {
         "group": "Essentials",

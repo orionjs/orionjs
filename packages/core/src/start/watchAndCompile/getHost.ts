@@ -39,7 +39,7 @@ export function getHost(runner: Runner) {
     ts.sys,
     createProgram,
     reportDiagnostic,
-    reportWatchStatusChanged
+    reportWatchStatusChanged,
   )
 
   return host

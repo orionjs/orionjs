@@ -13,11 +13,11 @@ export default async function (options: StartGraphQLOptions) {
     'executeGraphQLCache',
     'useGraphiql',
     'app',
-    'pubsub'
+    'pubsub',
   ])
   return {
     ...passedOptions,
     schema,
-    formatError
+    formatError,
   } as unknown as ApolloServerOptions<any>
 }

@@ -20,7 +20,7 @@ export const getDataLoader = function (params: Options): DataLoader<any, any> {
   }
 
   const options = {
-    batchScheduleFn: callback => setTimeout(callback, timeout)
+    batchScheduleFn: callback => setTimeout(callback, timeout),
   }
 
   const dataLoader = new DataLoader(load, options)

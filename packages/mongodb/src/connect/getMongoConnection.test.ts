@@ -1,6 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {getMongoConnection} from '.'
 import {createCollection} from '..'
+import {describe, test, expect} from 'vitest'
 
 describe('Get Mongo Connection', () => {
   test('Should get mongo connection for main connection', async () => {
@@ -25,7 +26,7 @@ describe('Get Mongo Connection', () => {
 
     const collection = createCollection({
       name: generateId(),
-      connectionName: 'nico2'
+      connectionName: 'nico2',
     })
 
     await collection.connectionPromise
@@ -40,13 +41,13 @@ describe('Get Mongo Connection', () => {
     try {
       const collection = createCollection({
         name: generateId(),
-        connectionName: 'nico3'
+        connectionName: 'nico3',
       })
 
       await collection.connectionPromise
     } catch (error) {
       expect(error.message).toBe(
-        `To use the connection "nico3" you must initialize it first calling getMongoConnection({name: "nico3", uri: "MONGOURI"}) or setting the environment variable MONGO_URL_NICO3.`
+        `To use the connection "nico3" you must initialize it first calling getMongoConnection({name: "nico3", uri: "MONGOURI"}) or setting the environment variable MONGO_URL_NICO3.`,
       )
     }
   })

@@ -8,11 +8,11 @@ declare const global: any
 export default resolver({
   params: {
     name: {
-      type: 'ID'
+      type: 'ID',
     },
     mutation: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
   returns: ResolverParams,
   mutation: false,
@@ -21,12 +21,12 @@ export default resolver({
     if (!resolver) {
       throw new UserError(
         'notFound',
-        `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`
+        `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`,
       )
     }
     if (!!resolver.mutation !== !!mutation) {
       throw new UserError('incorrectType', `"${name}" is ${mutation ? 'not' : ''} a mutation`)
     }
     return {resolver, name}
-  }
+  },
 })

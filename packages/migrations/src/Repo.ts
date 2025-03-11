@@ -1,6 +1,6 @@
-import { createCollection } from '@orion-js/mongodb'
-import { MigrationSchema } from './Schema'
-import { Service } from '@orion-js/services'
+import {createCollection} from '@orion-js/mongodb'
+import {MigrationSchema} from './Schema'
+import {Service} from '@orion-js/services'
 
 @Service()
 export class MigrationsRepo {
@@ -8,7 +8,7 @@ export class MigrationsRepo {
     name: 'orionjs.migrations',
     schema: MigrationSchema,
     idPrefix: 'scnmg-',
-    indexes: []
+    indexes: [],
   })
 
   async getCompletedMigrationNames() {
@@ -17,6 +17,6 @@ export class MigrationsRepo {
   }
 
   async saveCompletedMigration(name: string) {
-    await this.collection.insertOne({ name, completedAt: new Date() })
+    await this.collection.insertOne({name, completedAt: new Date()})
   }
 }

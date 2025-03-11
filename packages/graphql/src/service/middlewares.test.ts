@@ -1,16 +1,17 @@
 import 'reflect-metadata'
-import {Service} from '@orion-js/services'
+import { Service } from '@orion-js/services'
+import { describe, it, expect } from 'vitest'
 import {
   Query,
   getServiceResolvers,
   Resolvers,
   ModelResolvers,
   ModelResolver,
-  getServiceModelResolvers
+  getServiceModelResolvers,
 } from './index'
-import {ResolverParams, ResolverReturns, UseMiddleware} from './otherParams'
-import {createResolverMiddleware} from '@orion-js/resolvers'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import { ResolverParams, ResolverReturns, UseMiddleware } from './otherParams'
+import { createResolverMiddleware } from '@orion-js/resolvers'
+import { Prop, TypedSchema } from '@orion-js/typed-model'
 
 describe('Resolvers with service injection and middlewares', () => {
   it('should allow to pass resolver middlewares with decorators', async () => {
@@ -39,7 +40,7 @@ describe('Resolvers with service injection and middlewares', () => {
     @Resolvers()
     class ExampleResolverService {
       @Query()
-      @ResolverParams({name: {type: 'string'}})
+      @ResolverParams({ name: { type: 'string' } })
       @ResolverReturns(String)
       @UseMiddleware(exampleMiddleware)
       @CheckRoles(['admin'])
@@ -52,14 +53,14 @@ describe('Resolvers with service injection and middlewares', () => {
 
     expect(resolvers.sayHi).toBeDefined()
 
-    const result = await resolvers.sayHi.execute({params: {name: 'Orion'}})
+    const result = await resolvers.sayHi.execute({ params: { name: 'Orion' } })
     expect(result).toBe(`intercepted`)
   })
 
   it('show also work with model resolvers', async () => {
     @TypedSchema()
     class Person {
-      @Prop()
+      @Prop({ type: String })
       name: string
     }
 
@@ -80,8 +81,8 @@ describe('Resolvers with service injection and middlewares', () => {
 
     const data = getServiceModelResolvers(PersonResolvers)
 
-    const item: Person = {name: 'Orion'}
-    const result = await data.Person.getAge.execute({parent: item})
+    const item: Person = { name: 'Orion' }
+    const result = await data.Person.getAge.execute({ parent: item })
     expect(result).toBe(`hello Orion, nice to meet you`)
   })
 
@@ -104,7 +105,7 @@ describe('Resolvers with service injection and middlewares', () => {
     }
 
     const resolvers = getServiceResolvers(ExampleResolverService)
-    await resolvers.sayHi.execute({params: {}})
+    await resolvers.sayHi.execute({ params: {} })
     expect(mutationName).toBe('sayHi')
   })
 })

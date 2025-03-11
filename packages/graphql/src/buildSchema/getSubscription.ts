@@ -8,6 +8,6 @@ export default async function (options: StartGraphQLOptions): Promise<GraphQLObj
   const fields = await getSubscriptions(options)
   return new GraphQLObjectType({
     name: 'Subscription',
-    fields
+    fields,
   })
 }

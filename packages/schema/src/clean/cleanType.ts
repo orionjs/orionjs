@@ -4,7 +4,7 @@ import {
   CurrentNodeInfo,
   SchemaMetaFieldType,
   SchemaNode,
-  SchemaRecursiveNodeType
+  SchemaRecursiveNodeType,
 } from '../types/schema'
 import {FieldValidatorType} from '../types/fieldValidators'
 import getObjectNode from './getObjectNode'

@@ -1,4 +1,4 @@
-import { PropOptions } from '../decorators/prop'
+import {PropOptions} from '../decorators/prop'
 import isPlainObject from 'lodash/isPlainObject'
 
 export function getParamTypeForProp(type: PropOptions['type']) {
@@ -29,7 +29,7 @@ export function getParamTypeForProp(type: PropOptions['type']) {
 
       subschema[key] = {
         ...type[key],
-        type: getParamTypeForProp(type[key].type)
+        type: getParamTypeForProp(type[key].type),
       }
     })
 

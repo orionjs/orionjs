@@ -3,7 +3,7 @@ import {Filter} from 'mongodb'
 import {ModelClassBase, ModelToMongoSelector, MongoSelector} from '../../types'
 
 export default function getSelector<ModelClass extends ModelClassBase>(
-  args: IArguments
+  args: IArguments,
 ): Filter<ModelClass> {
   if (args.length === 0) return {}
 
@@ -18,6 +18,6 @@ export default function getSelector<ModelClass extends ModelClassBase>(
   }
 
   return {
-    _id: 'shouldReturnNull'
+    _id: 'shouldReturnNull',
   } as Filter<ModelClass>
 }

@@ -1,6 +1,7 @@
 import {generateId, sleep} from '@orion-js/helpers'
 import {setLogLevel} from '@orion-js/logger'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
+import {describe, it, expect} from 'vitest'
 
 setLogLevel('none')
 
@@ -14,7 +15,7 @@ describe('Stale Jobs Management', () => {
           await sleep(100)
         }
         return {status: 'finished'}
-      }
+      },
     })
 
     const jobName2 = 'job2' + generateId()
@@ -22,7 +23,7 @@ describe('Stale Jobs Management', () => {
       type: 'event',
       async resolve() {
         return {status: 'finished'}
-      }
+      },
     })
 
     const instance = startWorkers({
@@ -30,7 +31,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({name: jobName1})
@@ -60,7 +61,7 @@ describe('Stale Jobs Management', () => {
         if (context.tries === 1) {
           await sleep(100)
         }
-      }
+      },
     })
 
     const jobName2 = 'job2' + generateId()
@@ -68,7 +69,7 @@ describe('Stale Jobs Management', () => {
       type: 'event',
       async resolve() {
         executions.push('success')
-      }
+      },
     })
 
     const instance = startWorkers({
@@ -76,7 +77,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({name: jobName1})
@@ -103,7 +104,7 @@ describe('Stale Jobs Management', () => {
           didStale = true
           await sleep(100)
         }
-      }
+      },
     })
 
     const instance = startWorkers({
@@ -111,7 +112,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await sleep(150)

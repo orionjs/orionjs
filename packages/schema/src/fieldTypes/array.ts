@@ -15,5 +15,5 @@ export default fieldType({
     }
 
     return value
-  }
+  },
 })

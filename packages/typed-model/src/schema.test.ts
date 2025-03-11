@@ -1,39 +1,39 @@
-import { createModel } from '@orion-js/models'
-import { clean, validate } from '@orion-js/schema'
-import { getModelForClass, Prop, TypedSchema } from '.'
-import { describe, it, expect } from 'vitest'
+import {createModel} from '@orion-js/models'
+import {clean, validate} from '@orion-js/schema'
+import {getModelForClass, Prop, TypedSchema} from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Test typed model with Schema', () => {
   it('Should allow passing a typed model to schema', async () => {
     @TypedSchema()
     class Point {
-      @Prop({ type: Number })
+      @Prop({type: Number})
       latitude: number
 
-      @Prop({ type: Number })
+      @Prop({type: Number})
       longitude: number
     }
 
     const schema = {
       points: {
-        type: [Point]
-      }
+        type: [Point],
+      },
     }
 
-    const result = await clean(schema, { points: [{ latitude: '1', longitude: 2 }] })
+    const result = await clean(schema, {points: [{latitude: '1', longitude: 2}]})
 
-    expect(result).toEqual({ points: [{ latitude: 1, longitude: 2 }] })
+    expect(result).toEqual({points: [{latitude: 1, longitude: 2}]})
 
-    await validate(schema, { points: [{ latitude: 1, longitude: 2 }] })
+    await validate(schema, {points: [{latitude: 1, longitude: 2}]})
   })
 
   it('Should allow passing a typed model to a model using getModelForClass', async () => {
     @TypedSchema()
     class Point {
-      @Prop({ type: Number })
+      @Prop({type: Number})
       latitude: number
 
-      @Prop({ type: Number })
+      @Prop({type: Number})
       longitude: number
     }
 
@@ -41,19 +41,19 @@ describe('Test typed model with Schema', () => {
       name: 'Item',
       schema: {
         points: {
-          type: [getModelForClass(Point)]
-        }
-      }
+          type: [getModelForClass(Point)],
+        },
+      },
     })
 
-    const result = await Item.clean({ points: [{ latitude: '1', longitude: 2 }] })
+    const result = await Item.clean({points: [{latitude: '1', longitude: 2}]})
 
     expect.assertions(2)
 
-    expect(result).toEqual({ points: [{ latitude: 1, longitude: 2 }] })
+    expect(result).toEqual({points: [{latitude: 1, longitude: 2}]})
 
     try {
-      await Item.validate({ points: [{ latitude: '1', longitude: 2 }] })
+      await Item.validate({points: [{latitude: '1', longitude: 2}]})
     } catch (error) {
       expect(error.message).toBe('Validation Error: {points.0.latitude: notANumber}')
     }
@@ -62,19 +62,19 @@ describe('Test typed model with Schema', () => {
   it('Should allow cleaning and validating just the typed model', async () => {
     @TypedSchema()
     class Point {
-      @Prop({ type: Number })
+      @Prop({type: Number})
       latitude: number
 
-      @Prop({ type: Number })
+      @Prop({type: Number})
       longitude: number
     }
 
-    const result = await clean(Point, { latitude: '1', longitude: 2 })
+    const result = await clean(Point, {latitude: '1', longitude: 2})
 
-    expect(result).toEqual({ latitude: 1, longitude: 2 })
+    expect(result).toEqual({latitude: 1, longitude: 2})
 
     try {
-      await validate(Point, { latitude: '1', longitude: 2 })
+      await validate(Point, {latitude: '1', longitude: 2})
     } catch (error) {
       expect(error.message).toBe('Validation Error: {latitude: notANumber}')
     }

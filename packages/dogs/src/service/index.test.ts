@@ -1,5 +1,5 @@
-import { expect, describe, it } from 'vitest'
-import { EventJob, getServiceJobs, Jobs, RecurrentJob } from '.'
+import {expect, describe, it} from 'vitest'
+import {EventJob, getServiceJobs, Jobs, RecurrentJob} from '.'
 
 describe('Jobs (dogs) with service injections', () => {
   it('Should define a jobs map using services', async () => {
@@ -10,7 +10,7 @@ describe('Jobs (dogs) with service injections', () => {
         return {}
       }
 
-      @RecurrentJob({ runEvery: 1000 })
+      @RecurrentJob({runEvery: 1000})
       async job2() {
         return {}
       }
@@ -18,7 +18,7 @@ describe('Jobs (dogs) with service injections', () => {
 
     const jobs = getServiceJobs(ExampleJobsService)
 
-    console.log({ serviceJobs: jobs })
+    console.log({serviceJobs: jobs})
 
     expect(jobs).toMatchObject({
       job1: {

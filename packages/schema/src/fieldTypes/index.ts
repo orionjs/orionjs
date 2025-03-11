@@ -21,5 +21,5 @@ export default {
   boolean,
   email,
   blackbox,
-  any
+  any,
 }

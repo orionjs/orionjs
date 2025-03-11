@@ -1,10 +1,11 @@
+import {describe, it, expect} from 'vitest'
 import {
   removeAccentsAndTrim,
   normalizeForSearch,
   normalizeForCompactSearch,
   normalizeForFileKey,
   removeAccentsOnly,
-  normalizeForSearchToken
+  normalizeForSearchToken,
 } from './normalize'
 
 describe('Text normalization functions', () => {
@@ -67,7 +68,9 @@ describe('Text normalization functions', () => {
     })
 
     it('should replace special characters with hyphens', () => {
-      expect(normalizeForFileKey('file@name#with$special&chars')).toBe('file-name-with-special-chars')
+      expect(normalizeForFileKey('file@name#with$special&chars')).toBe(
+        'file-name-with-special-chars',
+      )
     })
 
     it('should handle empty string', () => {
@@ -129,5 +132,4 @@ describe('Text normalization functions', () => {
       expect(normalizeForSearchToken('hello@world#123')).toBe('hello world 123')
     })
   })
-
-}) 
+})

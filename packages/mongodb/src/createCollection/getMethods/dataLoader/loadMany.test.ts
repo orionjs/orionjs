@@ -3,6 +3,7 @@ import random from 'lodash/random'
 import sortBy from 'lodash/sortBy'
 import {generateId} from '@orion-js/helpers'
 import createCollection from '../../index'
+import {it, expect} from 'vitest'
 
 it('should data load many not by id', async () => {
   const Tests = createCollection({name: generateId()})
@@ -15,13 +16,13 @@ it('should data load many not by id', async () => {
     Tests.loadMany({
       key: 'websiteId',
       value: '1',
-      match: {deletedAt: null}
+      match: {deletedAt: null},
     }),
     Tests.loadMany({
       key: 'websiteId',
       value: '2',
-      match: {deletedAt: null}
-    })
+      match: {deletedAt: null},
+    }),
   ])
 
   const [[loaded1, loaded2], [loaded3]] = result
@@ -42,13 +43,13 @@ it('should load many on many', async () => {
     Tests.loadMany({
       key: 'websiteId',
       values: [1, 2],
-      sort: {websiteId: 1}
+      sort: {websiteId: 1},
     }),
     Tests.loadMany({
       key: 'websiteId',
       values: [2, 3],
-      sort: {websiteId: 1}
-    })
+      sort: {websiteId: 1},
+    }),
   ])
 
   const values1 = result1.map(r => r.websiteId)
@@ -70,18 +71,18 @@ it('should load sorted data', async () => {
     Tests.loadMany({
       key: 'websiteId',
       value: '1',
-      sort: {index: 1}
+      sort: {index: 1},
     }),
     Tests.loadMany({
       key: 'websiteId',
       value: '2',
-      sort: {index: 1}
+      sort: {index: 1},
     }),
     Tests.loadMany({
       key: 'websiteId',
       value: '3',
-      sort: {index: 1}
-    })
+      sort: {index: 1},
+    }),
   ])
 
   const indexes1 = results1.map(result => result.index)

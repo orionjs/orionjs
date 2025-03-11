@@ -1,9 +1,9 @@
 import express from 'express'
-import { OptionsJson, OptionsText, OptionsUrlencoded } from 'body-parser'
+import {OptionsJson, OptionsText, OptionsUrlencoded} from 'body-parser'
 
 export interface RouteResponseObject {
   statusCode?: number
-  headers?: { [key: string]: string }
+  headers?: {[key: string]: string}
   body: string | object
 }
 
@@ -12,7 +12,7 @@ export type RouteResponse = Promise<RouteResponseObject | void>
 export type RouteResolve = (
   req?: express.Request,
   res?: express.Response,
-  viewer?: any
+  viewer?: any,
 ) => RouteResponse
 
 export interface OrionRouteOptions {
@@ -46,7 +46,7 @@ export interface OrionRouteOptions {
   app?: express.Application
 }
 
-export interface RouteType extends OrionRouteOptions { }
+export interface RouteType extends OrionRouteOptions {}
 
 export interface RoutesMap {
   [key: string]: RouteType

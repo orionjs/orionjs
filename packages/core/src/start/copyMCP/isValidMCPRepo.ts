@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import colors from 'colors/safe'
-import { VERSION_FILE, MCP_VERSION } from './consts'
+import {VERSION_FILE, MCP_VERSION} from './consts'
 
 /**
  * Checks if the MCP repository appears to be already installed correctly
@@ -34,7 +34,11 @@ export async function isValidMCPRepository(directoryPath: string): Promise<boole
       // If the version in the file doesn't match the current version,
       // consider the repository outdated
       if (versionContent.trim() !== MCP_VERSION) {
-        console.log(colors.yellow(`=> ✨ MCP version mismatch: installed=${versionContent.trim()}, required=${MCP_VERSION}`))
+        console.log(
+          colors.yellow(
+            `=> ✨ MCP version mismatch: installed=${versionContent.trim()}, required=${MCP_VERSION}`,
+          ),
+        )
         return false
       }
     } catch {

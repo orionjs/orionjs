@@ -1,6 +1,6 @@
 import colors from 'colors/safe'
 import writeFile from '../../helpers/writeFile'
-import { startProcess } from './startProcess'
+import {startProcess} from './startProcess'
 
 export interface RunnerOptions {
   shell: boolean
@@ -52,6 +52,6 @@ export function getRunner(options: RunnerOptions): Runner {
   return {
     restart,
     stop,
-    basePath: `${process.cwd()}/.orion/build`
+    basePath: `${process.cwd()}/.orion/build`,
   }
 }

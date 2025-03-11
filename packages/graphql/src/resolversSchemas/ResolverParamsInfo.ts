@@ -19,15 +19,15 @@ export default createModel({
   name: 'ResolverParams',
   schema: {
     name: {
-      type: String
-    }
+      type: String,
+    },
   },
   resolvers: {
     params: resolver({
       returns: 'blackbox',
       resolve: async function ({resolver}: ResolverMetaParam) {
         return await serializeSchema(resolver.params)
-      }
+      },
     }),
     result: resolver({
       returns: String,
@@ -35,16 +35,16 @@ export default createModel({
         const returns = isArray(resolver.returns) ? resolver.returns[0] : resolver.returns
         if (resolverReturnsIsModel(returns)) return returns.name
         return
-      }
+      },
     }),
     basicResultQuery: resolver({
       returns: String,
       resolve: async function ({resolver}: ResolverMetaParam) {
         const returns = isArray(resolver.returns) ? resolver.returns[0] : resolver.returns
         return await getBasicResultQuery({
-          type: resolverReturnsIsModel(returns) ? returns.getSchema() : ''
+          type: resolverReturnsIsModel(returns) ? returns.getSchema() : '',
         })
-      }
-    })
-  }
+      },
+    }),
+  },
 })

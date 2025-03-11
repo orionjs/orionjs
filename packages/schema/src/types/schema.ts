@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import {FieldType} from '../fieldType'
+import { FieldType } from '../fieldType'
 
 export type Constructor<T> = new (...args: any[]) => T
 
-export type Blackbox = {[name: string]: any}
+export type Blackbox = { [name: string]: any }
 
 export type FieldTypesList =
   | 'string'
@@ -17,7 +17,7 @@ export type FieldTypesList =
   | 'blackbox'
   | 'any'
 
-export type TypedModelOnSchema = Function
+export type TypedSchemaOnSchema = Function
 
 export type ConstructorsTypesList =
   | Constructor<String>
@@ -43,7 +43,7 @@ export type SchemaMetaFieldTypeSingle =
   | ConstructorsTypesList
   | SchemaRecursiveNodeType
   | FieldType
-  | TypedModelOnSchema
+  | TypedSchemaOnSchema
 
 export type SchemaMetaFieldType = SchemaMetaFieldTypeSingle | SchemaMetaFieldTypeSingle[]
 

@@ -1,12 +1,13 @@
-import { startGraphQL } from '.'
-import { resolver } from '@orion-js/resolvers'
-import { express } from '@orion-js/http'
+import {startGraphQL} from '.'
+import {resolver} from '@orion-js/resolvers'
+import {express} from '@orion-js/http'
 import request from 'supertest'
-import { TypedSchema, Prop } from '@orion-js/typed-model'
-import { cleanResolvers } from './cleanResolvers'
-import { createModel } from '@orion-js/models'
-import { UserError } from '@orion-js/helpers'
-import { GraphQLResolveInfo } from 'graphql'
+import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {cleanResolvers} from './cleanResolvers'
+import {createModel} from '@orion-js/models'
+import {UserError} from '@orion-js/helpers'
+import {GraphQLResolveInfo} from 'graphql'
+import {expect, it, describe, beforeEach} from 'vitest'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {
@@ -22,7 +23,7 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({ name }) {
+        async resolve({name}) {
           return `Hello ${name}`
         },
       }),
@@ -44,7 +45,7 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({ name }) {
+        async resolve({name}) {
           return `Hello ${name}`
         },
       }),
@@ -68,7 +69,7 @@ describe('Test GraphQL Server', () => {
       }`,
       })
 
-    expect(response.body.data).toEqual({ helloWorld: 'Hello Nico' })
+    expect(response.body.data).toEqual({helloWorld: 'Hello Nico'})
   })
 
   it('should return errors correctly', async () => {
@@ -80,7 +81,7 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({ name }) {
+        async resolve({name}) {
           return `Hello ${name}`
         },
       }),
@@ -122,7 +123,7 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({ name }) {
+        async resolve({name}) {
           return `Hello ${name}`
         },
       }),
@@ -188,7 +189,7 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({ name }) {
+        async resolve({name}) {
           throw new UserError('code', 'message')
           return `Hello ${name}`
         },
@@ -252,7 +253,7 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({ name }) {
+        async resolve({name}) {
           throw new Error('message')
           return `Hello ${name}`
         },
@@ -308,20 +309,20 @@ describe('Test GraphQL Server', () => {
   it('Should make requests to schemas with typed models', async () => {
     @TypedSchema()
     class Params {
-      @Prop({ type: String })
+      @Prop({type: String})
       userId: string
     }
 
     @TypedSchema()
     class User {
-      @Prop({ type: String })
+      @Prop({type: String})
       name: string
 
-      @Prop({ type: Number })
+      @Prop({type: Number})
       age: number
     }
 
-    const resolve = async ({ userId }) => {
+    const resolve = async ({userId}) => {
       if (userId !== '1') return null
       return {
         name: 'Nico',
@@ -338,7 +339,7 @@ describe('Test GraphQL Server', () => {
     const model = createModel({
       name: 'Model',
       schema: {
-        user: { type: User },
+        user: {type: User},
       },
     })
 
@@ -349,7 +350,7 @@ describe('Test GraphQL Server', () => {
       resolve,
     })
 
-    const resolvers = { user, modelMutation }
+    const resolvers = {user, modelMutation}
     const app = express()
     await startGraphQL({
       resolvers,
@@ -382,10 +383,10 @@ describe('Test GraphQL Server', () => {
   it('Should pass graphql request info in fourth param', async () => {
     @TypedSchema()
     class User {
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       age: number
     }
 
@@ -403,7 +404,7 @@ describe('Test GraphQL Server', () => {
       },
     })
 
-    const resolvers = { user }
+    const resolvers = {user}
     const app = express()
     await startGraphQL({
       resolvers,

@@ -1,12 +1,13 @@
 import validateKey from './index'
 import Errors from '../Errors'
 import {Schema} from '..'
+import {test, expect} from 'vitest'
 
 test('autoconvert value', async () => {
   const schema = {
     number: {
-      type: Number
-    }
+      type: Number,
+    },
   }
   const errors = await validateKey(schema, 'number', '12')
   expect(errors).toEqual(Errors.NOT_A_NUMBER)
@@ -15,24 +16,24 @@ test('autoconvert value', async () => {
 test('deep validate fields', async () => {
   const tag: Schema = {
     name: {
-      type: 'string'
-    }
+      type: 'string',
+    },
   }
   const car: Schema = {
     brand: {
-      type: 'string'
+      type: 'string',
     },
     tags: {
-      type: [tag]
-    }
+      type: [tag],
+    },
   }
   const schema: Schema = {
     name: {
-      type: 'string'
+      type: 'string',
     },
     car: {
-      type: car
-    }
+      type: car,
+    },
   }
 
   expect(await validateKey(schema, 'car.brand', 'Nissan')).toBeNull()
@@ -46,8 +47,8 @@ test('deep validate fields', async () => {
 test('filters keys not in schema', async () => {
   const schema: Schema = {
     services: {
-      type: 'blackbox'
-    }
+      type: 'blackbox',
+    },
   }
 
   expect(await validateKey(schema, 'person.name', 'Nicolás')).toBeNull()
@@ -56,28 +57,28 @@ test('filters keys not in schema', async () => {
 test('dont filter keys not in schema if specified', async () => {
   const schema: Schema = {
     services: {
-      type: 'blackbox'
-    }
+      type: 'blackbox',
+    },
   }
 
   expect(await validateKey(schema, 'person.name', 'Nicolás', {filter: true})).toBe(
-    Errors.NOT_IN_SCHEMA
+    Errors.NOT_IN_SCHEMA,
   )
 })
 
 test('should handle $ correctly', async () => {
   const Email: Schema = {
     address: {
-      type: String
+      type: String,
     },
     verified: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   }
   const user: Schema = {
     emails: {
-      type: [Email]
-    }
+      type: [Email],
+    },
   }
 
   expect(await validateKey(user, 'emails.$.verified', true)).toBeNull()
@@ -86,7 +87,7 @@ test('should handle $ correctly', async () => {
 test('validate blackbox child', async () => {
   const schema: Schema = {
     _id: {type: 'ID'},
-    services: {type: 'blackbox'}
+    services: {type: 'blackbox'},
   }
 
   expect(await validateKey(schema, 'services.phoneVerification.tries', 1)).toBeNull()

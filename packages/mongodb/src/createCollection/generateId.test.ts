@@ -1,12 +1,12 @@
-import { generateId } from '@orion-js/helpers'
+import {generateId} from '@orion-js/helpers'
 import createCollection from './index'
-import { ObjectId } from 'bson'
-import { TypedSchema, Prop } from '@orion-js/typed-model'
-import { DistinctDocumentId } from '../types'
-import { expect, it } from 'vitest'
+import {ObjectId} from 'bson'
+import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {DistinctDocumentId} from '../types'
+import {expect, it} from 'vitest'
 
 it('generates a usable mongo objectId as string', async () => {
-  const Tests = createCollection({ name: generateId() })
+  const Tests = createCollection({name: generateId()})
 
   const now = new Date()
 
@@ -28,10 +28,10 @@ it('generates a ids with uuidv4', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop({ type: 'string' })
+    @Prop({type: 'string'})
     _id: DocId
 
-    @Prop({ type: 'string' })
+    @Prop({type: 'string'})
     name: string
   }
 
@@ -53,10 +53,10 @@ it('generates a ids with a prefix', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop({ type: 'string' })
+    @Prop({type: 'string'})
     _id: DocId
 
-    @Prop({ type: 'string' })
+    @Prop({type: 'string'})
     name: string
   }
 
@@ -73,7 +73,7 @@ it('generates a ids with a prefix', async () => {
 
   const item = await Tests.findOne(userId)
   // no te deja usar otra cosa que no sea con el prefix
-  await Tests.updateOne({ _id: 'pref_123' }, { $set: { name: 'Nicolás' } })
+  await Tests.updateOne({_id: 'pref_123'}, {$set: {name: 'Nicolás'}})
 
   expect(userId).toMatch(/^pref_/)
 })
@@ -83,10 +83,10 @@ it('generates a ids with a distinct type', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop({ type: 'string' })
+    @Prop({type: 'string'})
     _id: DocId
 
-    @Prop({ type: 'string' })
+    @Prop({type: 'string'})
     name: string
   }
 

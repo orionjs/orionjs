@@ -3,6 +3,7 @@ import {cloneSchemaClass, getModelForClass, Prop, TypedSchema} from '@orion-js/t
 import getResolvers from '../getResolvers'
 import {createEnum} from '@orion-js/schema'
 import buildSchema from '..'
+import {describe, it, expect} from 'vitest'
 
 describe('Enum test', () => {
   it('Should create correctly enum types', async () => {

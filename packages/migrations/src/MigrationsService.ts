@@ -40,7 +40,7 @@ export class MigrationsService {
 
   async runMigration(
     func: (context: ExecutionContext) => Promise<void>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ) {
     try {
       await func(context)
@@ -52,7 +52,7 @@ export class MigrationsService {
 
   async runAsTransaction(
     func: (context: ExecutionContext) => Promise<void>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ) {
     const {client} = this.migrationsRepo.collection.client
     const session = client.startSession()

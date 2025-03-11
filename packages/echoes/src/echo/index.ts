@@ -13,7 +13,7 @@ const echo = function createNewEcho(options: EchoConfig): EchoType {
 
       const context = {
         ...messageData,
-        data
+        data,
       }
 
       await options.resolve(data.params || {}, context)
@@ -23,7 +23,7 @@ const echo = function createNewEcho(options: EchoConfig): EchoType {
       const params = deserialize(serializedParams)
       const result = await options.resolve(params || {}, context)
       return result
-    }
+    },
   }
 }
 

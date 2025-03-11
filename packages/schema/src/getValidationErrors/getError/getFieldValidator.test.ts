@@ -2,6 +2,7 @@ import getFieldValidator from './getFieldValidator'
 import fieldType from '../../fieldType'
 import getFieldType from './getFieldType'
 import {clean, Schema, validate} from '../..'
+import {test, expect} from 'vitest'
 
 test('returns object validator when an object is passed', async () => {
   const validator = getFieldValidator({name: {type: String}})
@@ -40,7 +41,7 @@ test('returns integer validator when a integer key is passed', async () => {
 
 test('get custom field type validator', async () => {
   const aFieldType = fieldType({
-    name: 'customFieldType'
+    name: 'customFieldType',
   })
 
   const result = getFieldType(aFieldType)
@@ -68,8 +69,8 @@ test('returns unkown field validator when an unkown type string is passed', asyn
 test('passes when field type is custom (for client side)', async () => {
   const schema: Schema = {
     name: {
-      type: 'enum' as any
-    }
+      type: 'enum' as any,
+    },
   }
   await clean(schema, {name: 'test'})
   await validate(schema, {name: 'test'})

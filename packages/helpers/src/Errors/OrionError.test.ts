@@ -1,4 +1,5 @@
-import { OrionError, OrionErrorInformation } from './OrionError'
+import {OrionError, OrionErrorInformation} from './OrionError'
+import {describe, it, expect} from 'vitest'
 
 // Since OrionError is an abstract class with unimplemented methods,
 // we'll create a concrete implementation for testing
@@ -14,7 +15,7 @@ class TestOrionError extends OrionError {
       return {
         error: this.code,
         message: this.message,
-        extra: this.extra
+        extra: this.extra,
       }
     }
   }
@@ -36,14 +37,14 @@ describe('OrionError', () => {
   })
 
   it('should have a getInfo method that returns the correct structure', () => {
-    const extraData = { userId: '123', context: 'testing' }
+    const extraData = {userId: '123', context: 'testing'}
     const error = new TestOrionError('Test error message', 'custom_code', extraData)
 
     const info = error.getInfo()
     expect(info).toEqual({
       error: 'custom_code',
       message: 'Test error message',
-      extra: extraData
+      extra: extraData,
     })
   })
 
@@ -55,4 +56,4 @@ describe('OrionError', () => {
     expect(error.message).toBe('Test error message')
     expect(error.isOrionError).toBe(true)
   })
-}) 
+})

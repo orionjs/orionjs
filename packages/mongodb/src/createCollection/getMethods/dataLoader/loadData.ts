@@ -4,13 +4,13 @@ import {
   Collection,
   ModelClassBase,
   MongoFilter,
-  ModelToMongoSelector
+  ModelToMongoSelector,
 } from '../../../types'
 import cloneDeep from 'lodash/cloneDeep'
 import dataLoad from './dataLoad'
 
 export default function <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) {
   const loadData: DataLoader.LoadData<DocumentType> = async options => {
     await collection.connectionPromise
@@ -21,7 +21,7 @@ export default function <DocumentType extends ModelClassBase>(
         match: options.match,
         sort: options.sort,
         project: options.project,
-        collectionName: collection.name
+        collectionName: collection.name,
       },
       id: options.value,
       ids: options.values,
@@ -29,7 +29,7 @@ export default function <DocumentType extends ModelClassBase>(
       load: async values => {
         const query = {
           ...cloneDeep(options.match),
-          [options.key]: {$in: values}
+          [options.key]: {$in: values},
         } as ModelToMongoSelector<DocumentType>
 
         const cursor = collection.find(query)
@@ -52,7 +52,7 @@ export default function <DocumentType extends ModelClassBase>(
         return values.map(value => {
           return itemsMap[value] || []
         })
-      }
+      },
     })
 
     return result

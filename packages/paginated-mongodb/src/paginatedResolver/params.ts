@@ -10,21 +10,21 @@ export default function getParams(options: Pick<PaginatedResolverOpts, OptionsKe
     page: {
       type: 'integer',
       defaultValue: 1,
-      min: 1
+      min: 1,
     },
     limit: {
       type: 'integer',
       defaultValue: 0,
       min: 0,
-      max: 200
-    }
+      max: 200,
+    },
   }
 
   if (allowedSorts && allowedSorts.length) {
     schema.sortBy = {
       type: String,
       allowedValues: allowedSorts,
-      optional: true
+      optional: true,
     }
     if (defaultSortBy) {
       schema.sortBy.defaultValue = defaultSortBy
@@ -32,7 +32,7 @@ export default function getParams(options: Pick<PaginatedResolverOpts, OptionsKe
     schema.sortType = {
       type: String,
       allowedValues: ['asc', 'desc'],
-      optional: true
+      optional: true,
     }
     if (defaultSortType) {
       schema.sortType.defaultValue = defaultSortType

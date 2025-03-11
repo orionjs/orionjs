@@ -18,8 +18,8 @@
     // required for typed models
     // "experimentalDecorators": false,
     // "emitDecoratorMetadata": false,
-    
+
     "strict": false,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true
   }
 }

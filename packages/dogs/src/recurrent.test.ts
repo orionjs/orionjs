@@ -13,14 +13,14 @@ describe('Recurrent tests', () => {
       runEvery: 1000,
       async resolve() {
         ran = true
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {job1},
       workersCount: 1,
       pollInterval: 100,
-      cooldownPeriod: 100
+      cooldownPeriod: 100,
     })
 
     await sleep(500)
@@ -36,14 +36,14 @@ describe('Recurrent tests', () => {
       runEvery: 20,
       async resolve() {
         count++
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {job2},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10
+      cooldownPeriod: 10,
     })
 
     await sleep(200)

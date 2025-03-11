@@ -1,7 +1,7 @@
 import {ValidationError} from '@orion-js/schema'
 
 export const wrapErrors = async <TFunc extends () => Promise<any>>(
-  operation: TFunc
+  operation: TFunc,
 ): Promise<ReturnType<TFunc>> => {
   try {
     return await operation()
@@ -12,7 +12,7 @@ export const wrapErrors = async <TFunc extends () => Promise<any>>(
 
       if (!match) {
         throw new ValidationError({
-          unknownKey: 'notUnique'
+          unknownKey: 'notUnique',
         })
       }
 

@@ -1,21 +1,22 @@
 import {resolver} from '@orion-js/resolvers'
-import {TypedModel, Prop} from '@orion-js/typed-model'
+import {TypedSchema, Prop} from '@orion-js/typed-model'
 import getResolvers from './index'
+import {describe, it, expect} from 'vitest'
 
 describe('Test get resolvers schema', () => {
   it('Should correctly build a resolvers schema using typed models', async () => {
-    @TypedModel()
+    @TypedSchema()
     class TestParams {
-      @Prop()
+      @Prop({type: String})
       userId: string
     }
 
-    @TypedModel()
+    @TypedSchema()
     class TestModel {
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       age: number
     }
 

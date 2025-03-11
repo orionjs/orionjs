@@ -5,7 +5,7 @@ import fs from 'fs'
 export async function watchDeletes() {
   const projectPath = path.resolve('./app')
   const watcher = chokidar.watch(projectPath, {
-    ignoreInitial: true
+    ignoreInitial: true,
   })
 
   watcher.on('unlink', async filepath => {
@@ -18,7 +18,7 @@ export async function watchDeletes() {
       fs.unlinkSync(`${atBuildPath}.d.ts`)
     } catch (error) {
       console.log(
-        `Error cleaning ${atBuildPath}. Restar project is suggested. Error: ${error.message}`
+        `Error cleaning ${atBuildPath}. Restar project is suggested. Error: ${error.message}`,
       )
     }
   })

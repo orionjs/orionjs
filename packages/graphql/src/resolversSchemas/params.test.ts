@@ -2,26 +2,27 @@ import paramsResolver from './params'
 import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
 import {resolver} from '@orion-js/resolvers'
 import {createModel} from '@orion-js/models'
+import {describe, it, expect} from 'vitest'
 
 describe('Get params tests', () => {
   it('Should return the correct information for a resolver that returns a string array', async () => {
     resolversStore.aResolver = resolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: [String],
       async resolve() {
         return ['a', 'b']
-      }
+      },
     })
 
     const response = (await paramsResolver.execute({
       params: {
         name: 'aResolver',
-        mutation: false
-      }
+        mutation: false,
+      },
     })) as any
 
     const params = await response.params()
@@ -38,20 +39,20 @@ describe('Get params tests', () => {
     resolversStore.aaResolver = resolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: [String],
       async resolve() {
         return 'a'
-      }
+      },
     })
 
     const response = (await paramsResolver.execute({
       params: {
         name: 'aaResolver',
-        mutation: false
-      }
+        mutation: false,
+      },
     })) as any
 
     const params = await response.params()
@@ -69,28 +70,28 @@ describe('Get params tests', () => {
       name: 'Item',
       schema: {
         name: {
-          type: String
-        }
-      }
+          type: String,
+        },
+      },
     })
 
     resolversStore.bResolver = resolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: [model],
       async resolve() {
         return [{name: 'Nico'}]
-      }
+      },
     })
 
     const response = (await paramsResolver.execute({
       params: {
         name: 'bResolver',
-        mutation: false
-      }
+        mutation: false,
+      },
     })) as any
 
     const params = await response.params()
@@ -107,28 +108,28 @@ describe('Get params tests', () => {
       name: 'Item2',
       schema: {
         name: {
-          type: String
-        }
-      }
+          type: String,
+        },
+      },
     })
 
     resolversStore.cResolver = resolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: model2,
       async resolve() {
         return [{name: 'Nico'}]
-      }
+      },
     })
 
     const response = (await paramsResolver.execute({
       params: {
         name: 'cResolver',
-        mutation: false
-      }
+        mutation: false,
+      },
     })) as any
 
     const params = await response.params()

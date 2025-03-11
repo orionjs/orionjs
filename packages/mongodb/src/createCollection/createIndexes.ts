@@ -1,5 +1,5 @@
-import { MongoExpiredSessionError } from 'mongodb'
-import { Collection, ModelClassBase } from '..'
+import {MongoExpiredSessionError} from 'mongodb'
+import {Collection, ModelClassBase} from '..'
 
 function matchingDefinition(defIndex, curIndex) {
   if (defIndex.options && defIndex.options.name === curIndex.name) return true
@@ -10,7 +10,7 @@ function matchingDefinition(defIndex, curIndex) {
 }
 
 export async function checkIndexes<DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) {
   let currentIndexes = []
   try {
@@ -21,23 +21,24 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
 
   const indexesToDelete = collection.indexes
     ? currentIndexes.filter(
-      index =>
-        index.name !== '_id_' &&
-        !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index))
-    )
+        index =>
+          index.name !== '_id_' &&
+          !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index)),
+      )
     : currentIndexes
 
   if (indexesToDelete.length > 0) {
     console.warn(
-      `${indexesToDelete.length} unexpected indexes found in collection "${collection.name
+      `${indexesToDelete.length} unexpected indexes found in collection "${
+        collection.name
       }": ${indexesToDelete
         .map(i => i.name)
-        .join(', ')} | Delete the index or fix the collection definition`
+        .join(', ')} | Delete the index or fix the collection definition`,
     )
   }
 }
 export async function loadIndexes<DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ): Promise<string[]> {
   if (!collection.indexes) return
   if (!collection.indexes.length) return
@@ -45,7 +46,7 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
   await collection.client.connectionPromise
 
   const results = Promise.all(
-    collection.indexes.map(async ({ keys, options }) => {
+    collection.indexes.map(async ({keys, options}) => {
       try {
         return await collection.rawCollection.createIndex(keys, options)
       } catch (error) {
@@ -70,7 +71,7 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
           return error.message
         }
       }
-    })
+    }),
   )
 
   await checkIndexes(collection)

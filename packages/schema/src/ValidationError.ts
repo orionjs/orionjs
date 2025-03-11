@@ -43,7 +43,7 @@ export default class ValidationError extends Error {
     return {
       error: 'validationError',
       message: 'Validation Error',
-      validationErrors: this.validationErrors
+      validationErrors: this.validationErrors,
     }
   }
 

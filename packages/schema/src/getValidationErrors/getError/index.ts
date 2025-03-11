@@ -6,7 +6,7 @@ import {CurrentNodeInfo, SchemaRecursiveNodeTypeExtras} from '../../types/schema
 import {FieldType} from '../../fieldType'
 
 export default async function getValidationErrors(
-  params: CurrentNodeInfo
+  params: CurrentNodeInfo,
 ): Promise<object | string | void> {
   const {schema, doc, currentDoc, value, currentSchema, keys, options = {}, args = []} = params
   const info = {schema, doc, currentDoc, keys, currentSchema, options}

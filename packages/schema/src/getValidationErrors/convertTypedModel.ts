@@ -1,5 +1,5 @@
-import { getSchemaFromTypedModel } from '../getSchemaFromTypedModel'
-import { CurrentNodeInfo } from '../types/schema'
+import {getSchemaFromTypedSchema} from '../getSchemaFromTypedSchema'
+import {CurrentNodeInfo} from '../types/schema'
 
 const convertOnParam = (info: CurrentNodeInfo, paramName: string) => {
   if (!info[paramName]) return
@@ -7,10 +7,10 @@ const convertOnParam = (info: CurrentNodeInfo, paramName: string) => {
   const type = info[paramName].type as any
   if (!type) return
 
-  info[paramName].type = getSchemaFromTypedModel(type)
+  info[paramName].type = getSchemaFromTypedSchema(type)
 }
 
-export const convertTypedModel = (info: CurrentNodeInfo) => {
+export const convertTypedSchema = (info: CurrentNodeInfo) => {
   convertOnParam(info, 'schema')
   convertOnParam(info, 'currentSchema')
 }

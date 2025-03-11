@@ -8,6 +8,6 @@ export default async function (options: StartGraphQLOptions) {
   if (isEmpty(fields)) return null
   return new GraphQLObjectType({
     name: 'Query',
-    fields
+    fields,
   })
 }

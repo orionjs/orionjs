@@ -23,8 +23,8 @@ export default function errorHandler(error, data) {
         isValidationError: !!error.isValidationError,
         code: error.code,
         hash,
-        info: error.getInfo()
-      }
+        info: error.getInfo(),
+      },
     })
   } else {
     console.error(message, error)
@@ -34,8 +34,8 @@ export default function errorHandler(error, data) {
         isOrionError: false,
         isValidationError: false,
         code: 'INTERNAL_SERVER_ERROR',
-        hash: hash
-      }
+        hash: hash,
+      },
     })
   }
 }

@@ -6,10 +6,10 @@ import isNil from 'lodash/isNil'
 import difference from 'lodash/difference'
 import Errors from '../Errors'
 import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
-import {convertTypedModel} from './convertTypedModel'
+import {convertTypedSchema} from './convertTypedSchema'
 
 export default async function doValidation(params: CurrentNodeInfo) {
-  convertTypedModel(params)
+  convertTypedSchema(params)
 
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
   const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
@@ -51,7 +51,7 @@ export default async function doValidation(params: CurrentNodeInfo) {
         currentDoc: value,
         value: itemValue,
         currentSchema: itemSchema,
-        keys: keyItemKeys
+        keys: keyItemKeys,
       })
     }
 
@@ -73,7 +73,7 @@ export default async function doValidation(params: CurrentNodeInfo) {
         currentDoc: value,
         value: itemValue,
         currentSchema: {type: itemSchema},
-        keys: keyItemKeys
+        keys: keyItemKeys,
       })
     }
   }

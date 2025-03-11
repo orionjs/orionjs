@@ -12,8 +12,6 @@ const uri = mongod.getUri()
 process.env.MONGO_URL = uri
 
 beforeAll(async () => {
-  
-
   // The Server can be stopped again with
 
   const connection = getMongoConnection({name: 'main'})

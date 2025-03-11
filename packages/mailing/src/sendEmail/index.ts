@@ -7,16 +7,16 @@ const envMailFrom = internalGetEnv('mail_from', 'MAIL_FROM')
 const envMailURL = internalGetEnv('mail_url', 'MAIL_URL')
 
 const defaultMailOptions = {
-  from: envMailFrom || '"Orionjs App" <app@orionjs.com>'
+  from: envMailFrom || '"Orionjs App" <app@orionjs.com>',
 }
 
 export default async function (
   options: SendMailOptions,
-  transporter: Transporter<any> = defaultTransporter
+  transporter: Transporter<any> = defaultTransporter,
 ): Promise<SentMessageInfo> {
   const mailOptions = {
     ...defaultMailOptions,
-    ...options
+    ...options,
   }
 
   if (!envMailURL) {

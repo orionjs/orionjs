@@ -1,11 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getParamTypeForProp } from './processTypeForProp'
+import {describe, it, expect, vi, beforeEach} from 'vitest'
+import {getParamTypeForProp} from './processTypeForProp'
 import isPlainObject from 'lodash/isPlainObject'
-import { Prop, PropOptions } from '../decorators/prop'
-import { TypedSchema } from '../decorators/typedSchema'
+import {Prop, PropOptions} from '../decorators/prop'
+import {TypedSchema} from '../decorators/typedSchema'
 
 describe('getParamTypeForProp', () => {
-
   it('should return the type unchanged for primitive types', () => {
     expect(getParamTypeForProp(String)).toBe(String)
     expect(getParamTypeForProp(Number)).toBe(Number)
@@ -26,28 +25,28 @@ describe('getParamTypeForProp', () => {
   it('should call getModel when doing typedschema', () => {
     @TypedSchema()
     class SchemaName {
-      @Prop({ type: 'string' })
+      @Prop({type: 'string'})
       _id: string
 
-      @Prop({ type: 'string' })
+      @Prop({type: 'string'})
       name: string
     }
 
     const result = getParamTypeForProp(SchemaName).getCleanSchema()
     expect(result).toEqual({
-      _id: { type: 'string' },
-      name: { type: 'string' }
+      _id: {type: 'string'},
+      name: {type: 'string'},
     })
   })
 
   it('should process plain objects recursively', () => {
     const schema = {
-      name: { type: 'string', optional: true },
-      age: { type: 'number' },
-      createdAt: { type: 'date' },
-      isDeleted: { type: 'boolean' },
-      metadata: { type: 'object' }
+      name: {type: 'string', optional: true},
+      age: {type: 'number'},
+      createdAt: {type: 'date'},
+      isDeleted: {type: 'boolean'},
+      metadata: {type: 'object'},
     }
     expect(getParamTypeForProp(schema)).toEqual(schema)
   })
-}) 
+})

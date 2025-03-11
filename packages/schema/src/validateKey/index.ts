@@ -4,7 +4,7 @@ import Errors from '../Errors'
 import {CurrentNodeInfoOptions, Schema} from '..'
 
 const defaultOptions = {
-  filter: false
+  filter: false,
 }
 
 export default async function (
@@ -33,7 +33,7 @@ export default async function (
     {validate: keySchema as any},
     {validate: value},
     options,
-    ...args
+    ...args,
   )
 
   if (!result) return null

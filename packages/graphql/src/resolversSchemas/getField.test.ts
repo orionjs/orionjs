@@ -1,13 +1,14 @@
-import {Prop, TypedModel} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import getField from './getField'
+import {describe, it, expect} from 'vitest'
 
 describe('Field serialization', () => {
   it('should return a valid serialization of the field', async () => {
     const schema = {
       name: {
         type: String,
-        a: '1234'
-      }
+        a: '1234',
+      },
     }
     const result = await getField(schema.name)
     expect(result).toEqual({type: 'string', a: '1234', __graphQLType: 'String'})
@@ -17,15 +18,15 @@ describe('Field serialization', () => {
     const schema = {
       name: {
         type: [String],
-        a: '1234'
-      }
+        a: '1234',
+      },
     }
     const result = await getField(schema.name)
     expect(result.a).toEqual(schema.name.a)
   })
 
   it('Should allow serialization of typed models', async () => {
-    @TypedModel()
+    @TypedSchema()
     class Point {
       @Prop({label: 'Name'})
       name: string
@@ -33,8 +34,8 @@ describe('Field serialization', () => {
 
     const schema = {
       point: {
-        type: Point
-      }
+        type: Point,
+      },
     }
 
     const result = await getField(schema.point)

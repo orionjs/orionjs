@@ -1,6 +1,7 @@
 import {resolver as createResolver, modelResolver as createModelResolver} from './index'
 import {Schema} from '@orion-js/schema'
 import {sleep} from '@orion-js/helpers'
+import {it, expect} from 'vitest'
 
 it('should return a function with a resolver id', () => {
   const resolver = createResolver({

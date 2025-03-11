@@ -3,6 +3,7 @@ import testRequest from 'supertest'
 import {getApp} from '@orion-js/http'
 import {RequestMaker} from '../../types'
 import {ValidationError} from '@orion-js/schema'
+import {describe, it, expect} from 'vitest'
 
 describe('Test echoes requests', () => {
   const makeRequest: RequestMaker = async options => {

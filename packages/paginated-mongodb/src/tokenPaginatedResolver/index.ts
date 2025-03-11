@@ -72,8 +72,8 @@ export default function ({collection, params, resolve, ...otherOptions}) {
         query = {
           $or: [
             {...restOfQuery, [sortingField]: offsetDocument[sortingField], _id: {$gt: idOffset}},
-            {...query, [sortingField]: {[sortOperator]: offsetDocument[sortingField]}}
-          ]
+            {...query, [sortingField]: {[sortOperator]: offsetDocument[sortingField]}},
+          ],
         }
       }
     }
@@ -104,14 +104,14 @@ export default function ({collection, params, resolve, ...otherOptions}) {
       ...params,
       idOffset: {
         type: 'ID',
-        optional: true
+        optional: true,
       },
       limit: {
         type: 'integer',
         defaultValue: 10,
         min: 1,
-        max: 200
-      }
+        max: 200,
+      },
     },
     returns: getReturnModel({modelName, collection}),
     async resolve(...args) {
@@ -127,9 +127,9 @@ export default function ({collection, params, resolve, ...otherOptions}) {
       return {
         params,
         cursor,
-        viewer
+        viewer,
       }
     },
-    ...otherOptions
+    ...otherOptions,
   })
 }

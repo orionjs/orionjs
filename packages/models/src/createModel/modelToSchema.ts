@@ -1,27 +1,39 @@
-import { isPlainObject, omit } from 'lodash'
-import { Model, ModelSchema, ModelsSchemaNode } from '..'
-import { Schema, SchemaMetaFieldType, SchemaMetaFieldTypeSingle, SchemaNode, validate } from '@orion-js/schema'
+import {isPlainObject, omit} from 'lodash'
+import {Model, ModelSchema, ModelsSchemaNode} from '..'
+import {
+  Schema,
+  SchemaMetaFieldType,
+  SchemaMetaFieldTypeSingle,
+  SchemaNode,
+  validate,
+} from '@orion-js/schema'
 
 function isModelSchema(type: Model | [Model] | SchemaMetaFieldType): type is Model {
   return type && typeof type === 'object' && '__isModel' in type
 }
 
-type ModelSchemaWithModel = ModelsSchemaNode & { __model?: Model }
+type ModelSchemaWithModel = ModelsSchemaNode & {__model?: Model}
 
-export function processModelSchemaKey(modelSchema: ModelSchemaWithModel, clean?: boolean): SchemaNode & { __model?: Model } {
+export function processModelSchemaKey(
+  modelSchema: ModelSchemaWithModel,
+  clean?: boolean,
+): SchemaNode & {__model?: Model} {
   if (Array.isArray(modelSchema.type)) {
-    const processedItem = processModelSchemaKey({
-      ...modelSchema,
-      type: modelSchema.type[0],
-      __model: (modelSchema.type[0] as any).__model
-    }, clean)
+    const processedItem = processModelSchemaKey(
+      {
+        ...modelSchema,
+        type: modelSchema.type[0],
+        __model: (modelSchema.type[0] as any).__model,
+      },
+      clean,
+    )
 
     const type = processedItem.type as SchemaMetaFieldTypeSingle
 
     return {
       ...processedItem,
       type: [type],
-      __model: clean ? undefined : processedItem.__model
+      __model: clean ? undefined : processedItem.__model,
     }
   }
 
@@ -30,16 +42,16 @@ export function processModelSchemaKey(modelSchema: ModelSchemaWithModel, clean?:
     return {
       ...modelSchema,
       type: clean ? model.getCleanSchema() : model.getSchema(),
-      __model: clean ? undefined : model
+      __model: clean ? undefined : model,
     }
   }
 
   if ((modelSchema as any).__model) {
     const model = (modelSchema as any).__model as Model
     return {
-      ...clean ? omit(modelSchema, ['__model']) : modelSchema,
+      ...(clean ? omit(modelSchema, ['__model']) : modelSchema),
       type: clean ? model.getCleanSchema() : model.getSchema(),
-      __model: clean ? undefined : model
+      __model: clean ? undefined : model,
     }
   }
 
@@ -73,7 +85,7 @@ export function modelToSchemaWithModel(modelSchema: ModelSchema, model?: Model) 
 
   return {
     ...schema,
-    __model: model
+    __model: model,
   }
 }
 

@@ -2,7 +2,7 @@ import {Collection, ModelClassBase, UpdateItem} from '../../types'
 import {wrapErrors} from './wrapErrors'
 
 export default function <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) {
   const updateItem: UpdateItem<DocumentType> = async function (item, modifier, options = {}) {
     await collection.connectionPromise

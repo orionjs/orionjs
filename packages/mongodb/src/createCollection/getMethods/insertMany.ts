@@ -7,7 +7,7 @@ import {clean, validate} from '@orion-js/schema'
 import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const insertMany: InsertMany<DocumentType> = async (docs, options = {}) => {
     await collection.connectionPromise

@@ -15,20 +15,20 @@ const rules = [
 // Function to download the file content
 const downloadFile = (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    https.get(url, (response) => {
+    https.get(url, response => {
       if (response.statusCode !== 200) {
         reject(new Error(`Failed to download, status code: ${response.statusCode}`))
         return
       }
 
       let data = ''
-      response.on('data', (chunk) => {
+      response.on('data', chunk => {
         data += chunk
       })
       response.on('end', () => {
         resolve(data)
       })
-      response.on('error', (err) => {
+      response.on('error', err => {
         reject(err)
       })
     })
@@ -41,7 +41,7 @@ export async function copyCursorRule() {
   try {
     // Create target directory if it doesn't exist
     const targetDir = path.join(process.cwd(), '.cursor', 'rules')
-    await fs.mkdir(targetDir, { recursive: true })
+    await fs.mkdir(targetDir, {recursive: true})
 
     // Process each rule file
     for (const rule of rules) {

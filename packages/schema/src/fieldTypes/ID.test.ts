@@ -1,5 +1,6 @@
 import ID from './ID'
 import Errors from '../Errors'
+import {test, expect} from 'vitest'
 
 test('return an error when the value is incorrect', async () => {
   //@ts-ignore

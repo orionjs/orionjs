@@ -5,7 +5,7 @@ import includes from 'lodash/includes'
 
 export default function createEnum<TValues extends readonly string[]>(
   name: string,
-  values: TValues
+  values: TValues,
 ): FieldType & {type: TValues[number]} {
   return {
     type: values[0],
@@ -13,7 +13,7 @@ export default function createEnum<TValues extends readonly string[]>(
       name: 'enum',
       meta: {
         enumName: name,
-        enumValues: values
+        enumValues: values,
       },
       toGraphQLType: GraphQL => {
         global.GraphQLEnums = global.GraphQLEnums || {}
@@ -25,7 +25,7 @@ export default function createEnum<TValues extends readonly string[]>(
             values: values.reduce((result, value) => {
               result[value] = {value}
               return result
-            }, {})
+            }, {}),
           })
 
         return global.GraphQLEnums[name]
@@ -55,7 +55,7 @@ export default function createEnum<TValues extends readonly string[]>(
         }
 
         return value
-      }
-    })
+      },
+    }),
   }
 }

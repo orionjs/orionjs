@@ -4,12 +4,12 @@ import cleanModifier from './cleanModifier'
 import {Collection, FindOneAndUpdate, ModelClassBase} from '../../types'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const findOneAndUpdate: FindOneAndUpdate<DocumentType> = async function (
     selectorArg,
     modifierArg,
-    options = {}
+    options = {},
   ) {
     await collection.connectionPromise
     let modifier = modifierArg as any
@@ -28,7 +28,7 @@ export default <DocumentType extends ModelClassBase>(
     const result = await collection.rawCollection.findOneAndUpdate(
       selector,
       modifier,
-      options.mongoOptions
+      options.mongoOptions,
     )
 
     if (!result) return null

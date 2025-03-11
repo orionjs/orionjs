@@ -1,6 +1,6 @@
-import { getApp } from './../start'
-import { RouteType } from '../types'
-import { executeRequest } from './executeRequest'
+import {getApp} from './../start'
+import {RouteType} from '../types'
+import {executeRequest} from './executeRequest'
 import express from 'express'
 import bodyParser from 'body-parser'
 

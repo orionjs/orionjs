@@ -19,7 +19,7 @@ describe('cloneSchemaClass', () => {
 
     const ClonedSchema = cloneSchemaClass(SchemaName, {
       name: 'Test',
-      pickFields: ['name'] as const
+      pickFields: ['name'] as const,
     })
 
     type ClonedType = typeof ClonedSchema.type
