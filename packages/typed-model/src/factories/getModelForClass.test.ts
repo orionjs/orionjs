@@ -1,6 +1,7 @@
 import {createModel} from '@orion-js/models'
 import {Prop, TypedSchema} from '../decorators'
 import {getModelForClass} from './getModelForClass'
+import {describe, it, expect} from 'vitest'
 
 describe('getModelForClass', () => {
   it('should correctly pass the clean option to submodels', async () => {

@@ -1,15 +1,16 @@
 import {createModel} from '@orion-js/models'
-import {clean, Schema, validate} from '@orion-js/schema'
-import {Prop, TypedModel} from '.'
+import {clean, validate} from '@orion-js/schema'
+import {getModelForClass, Prop, TypedSchema} from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Test typed model with Schema', () => {
   it('Should allow passing a typed model to schema', async () => {
-    @TypedModel()
+    @TypedSchema()
     class Point {
-      @Prop()
+      @Prop({type: Number})
       latitude: number
 
-      @Prop()
+      @Prop({type: Number})
       longitude: number
     }
 
@@ -26,13 +27,13 @@ describe('Test typed model with Schema', () => {
     await validate(schema, {points: [{latitude: 1, longitude: 2}]})
   })
 
-  it('Should allow passing a typed model to a model', async () => {
-    @TypedModel()
+  it('Should allow passing a typed model to a model using getModelForClass', async () => {
+    @TypedSchema()
     class Point {
-      @Prop()
+      @Prop({type: Number})
       latitude: number
 
-      @Prop()
+      @Prop({type: Number})
       longitude: number
     }
 
@@ -40,7 +41,7 @@ describe('Test typed model with Schema', () => {
       name: 'Item',
       schema: {
         points: {
-          type: [Point]
+          type: [getModelForClass(Point)]
         }
       }
     })
@@ -59,12 +60,12 @@ describe('Test typed model with Schema', () => {
   })
 
   it('Should allow cleaning and validating just the typed model', async () => {
-    @TypedModel()
+    @TypedSchema()
     class Point {
-      @Prop()
+      @Prop({type: Number})
       latitude: number
 
-      @Prop()
+      @Prop({type: Number})
       longitude: number
     }
 

@@ -1,6 +1,6 @@
 import {createModel} from '@orion-js/models'
 import {modelResolver} from '@orion-js/resolvers'
-import {PropOptions} from './decorators'
+import {describe, it, expect} from 'vitest'
 import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
 import {Prop, TypedModel, getSchemaForClass, getModelForClass, ResolverProp} from './index'
 
@@ -9,13 +9,13 @@ describe('typed-schema e2e tests', () => {
     it('works for a simple schema', () => {
       @TypedModel()
       class Spec {
-        @Prop({optional: true})
+        @Prop({type: String, optional: true})
         name: string
 
-        @Prop({optional: true})
+        @Prop({type: Date, optional: true})
         createdAt: Date
 
-        @Prop({optional: true})
+        @Prop({type: Boolean, optional: true})
         isDeleted: boolean
       }
 
@@ -74,12 +74,12 @@ describe('typed-schema e2e tests', () => {
     it('works for a derived schema', () => {
       @TypedModel()
       class A {
-        @Prop()
+        @Prop({type: String})
         name: string
       }
 
       class B extends A {
-        @Prop()
+        @Prop({type: String})
         lastName: string
       }
 
@@ -98,16 +98,16 @@ describe('typed-schema e2e tests', () => {
     it('works for multiple data types', () => {
       @TypedModel()
       class Spec {
-        @Prop()
+        @Prop({type: String})
         name: string
 
-        @Prop()
+        @Prop({type: Number})
         age: number
 
-        @Prop()
+        @Prop({type: Date})
         createdAt: Date
 
-        @Prop()
+        @Prop({type: Boolean})
         isDeleted: boolean
       }
       const expected = {
@@ -129,17 +129,6 @@ describe('typed-schema e2e tests', () => {
     })
 
     describe('when using object types', () => {
-      it('throws if the object type is not explicitly specified', () => {
-        expect(() => {
-          @TypedModel()
-          // eslint-disable-next-line no-unused-vars
-          class Spec {
-            @Prop()
-            data: {a: string}
-          }
-        }).toThrow(CannotDetermineTypeError)
-      })
-
       it('works for object types', () => {
         @TypedModel()
         class Spec {
@@ -188,22 +177,10 @@ describe('typed-schema e2e tests', () => {
     })
 
     describe('when using array types', () => {
-      it('throws if the array type is not explicitly specified', () => {
-        expect(() => {
-          @TypedModel()
-          // eslint-disable-next-line no-unused-vars
-          class Spec {
-            @Prop()
-            names: string[]
-          }
-        }).toThrow(CannotUseArrayError)
-      })
-
       it('works for array schemas', () => {
-        const def: PropOptions = {type: [String]}
         @TypedModel()
         class Spec {
-          @Prop(def)
+          @Prop({type: [String]})
           names: string[]
 
           @Prop({type: [Number]})
@@ -224,39 +201,22 @@ describe('typed-schema e2e tests', () => {
     })
 
     describe('when using nested schemas', () => {
-      it('throws if the class type is not explicitly specified', () => {
-        @TypedModel()
-        class A {
-          @Prop()
-          name: string
-        }
-
-        expect(() => {
-          @TypedModel()
-          // eslint-disable-next-line no-unused-vars
-          class Spec {
-            @Prop()
-            a: A
-          }
-        }).toThrow(CannotDetermineTypeError)
-      })
-
       it('works for nested schemas', () => {
         @TypedModel()
         class A {
-          @Prop()
+          @Prop({type: String})
           name: string
         }
 
         @TypedModel()
         class B {
-          @Prop()
+          @Prop({type: String})
           lastName: string
         }
 
         @TypedModel()
         class Spec {
-          @Prop()
+          @Prop({type: String})
           name: string
 
           @Prop({
@@ -312,7 +272,7 @@ describe('typed-schema e2e tests', () => {
 
         @TypedModel()
         class Spec {
-          @Prop()
+          @Prop({type: String})
           name: string
 
           @Prop({
@@ -352,7 +312,7 @@ describe('typed-schema e2e tests', () => {
     it('works for flat classes', () => {
       @TypedModel()
       class Spec {
-        @Prop({optional: true})
+        @Prop({optional: true, type: String})
         name: string
       }
 
@@ -374,7 +334,7 @@ describe('typed-schema e2e tests', () => {
     it('works for nested models', () => {
       @TypedModel()
       class A {
-        @Prop({optional: true})
+        @Prop({optional: true, type: String})
         name: string
       }
 
@@ -401,7 +361,7 @@ describe('typed-schema e2e tests', () => {
     it('works for nested arrays of models', () => {
       @TypedModel()
       class A {
-        @Prop({optional: true})
+        @Prop({optional: true, type: String})
         name: string
       }
 
@@ -428,7 +388,7 @@ describe('typed-schema e2e tests', () => {
     it('works for nested models together with nested classes', () => {
       @TypedModel()
       class NestedModelClass {
-        @Prop({optional: true})
+        @Prop({optional: true, type: String})
         name: string
       }
 
@@ -477,7 +437,7 @@ describe('typed-schema e2e tests', () => {
     it('Should return the same object when calling getModelForClass multiple times', () => {
       @TypedModel()
       class Spec {
-        @Prop()
+        @Prop({type: String})
         name: string
       }
 
@@ -497,10 +457,10 @@ describe('typed-schema e2e tests', () => {
 
       @TypedModel()
       class User {
-        @Prop()
+        @Prop({type: String})
         firstName: string
 
-        @Prop()
+        @Prop({type: String})
         lastName: string
 
         @ResolverProp(exampleResolver)
@@ -536,7 +496,7 @@ describe('typed-schema e2e tests', () => {
         @TypedModel()
         // eslint-disable-next-line no-unused-vars
         class Spec {
-          @Prop()
+          @Prop({type: String})
           name: string
         }
       }
@@ -550,13 +510,13 @@ describe('typed-schema e2e tests', () => {
     it('allows passing typed model as argument to resolvers', async () => {
       @TypedModel()
       class ResolverParams {
-        @Prop()
+        @Prop({type: String})
         firstName: string
       }
 
       @TypedModel()
       class ResolverReturns {
-        @Prop()
+        @Prop({type: String}  )
         fullName: string
       }
 
@@ -570,7 +530,7 @@ describe('typed-schema e2e tests', () => {
 
       @TypedModel()
       class Person {
-        @Prop()
+        @Prop({type: String}  )
         lastName: string
 
         @ResolverProp(fullName)

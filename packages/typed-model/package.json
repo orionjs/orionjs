@@ -29,14 +29,14 @@
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
     "@orion-js/services": "workspace:*",
-    "lodash": "^4.17.21",
-    "reflect-metadata": "0.1.13"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
     "typescript": "^5.4.5",
     "tsup": "^8.0.1",
-    "vitest": "^1.1.0"
+    "vitest": "^1.1.0",
+    "reflect-metadata": "0.1.13"
   },
   "publishConfig": {
     "access": "public"

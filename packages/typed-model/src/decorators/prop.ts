@@ -1,41 +1,30 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import {Constructor, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
 import {MetadataStorage} from '../storage/metadataStorage'
-import 'reflect-metadata'
-import {CannotDetermineTypeError, CannotUseArrayError} from '../errors'
-import {isClass} from '../utils/isClass'
 import {Model} from '@orion-js/models'
+import {CannotDetermineTypeError} from '../errors/CannotDetermineType'
+import {CannotUseArrayError} from '../errors/CannotUseArray'
 
 export interface SchemaNodeForClasses extends Omit<SchemaNode, 'type'> {
   type: SchemaMetaFieldType | Constructor<any> | Model | Model[]
 }
 
-export type PropOptions = Partial<SchemaNodeForClasses>
-
-export function Prop(options: PropOptions = {}): PropertyDecorator {
-  return (classDef: Function, propertyKey: string) => {
-    const schemaName = classDef.constructor?.name
-
+export function Prop(options: SchemaNodeForClasses): PropertyDecorator {
+  return (classDef: Object, propertyKey: string | symbol) => {
+    const schemaName = classDef.constructor?.name || 'Unknown'
+    const propKey = String(propertyKey)
+    
     if (!options.type) {
-      const type = Reflect.getMetadata('design:type', classDef, propertyKey)
-
-      if (isClass(type) || type === Object) {
-        throw new CannotDetermineTypeError(schemaName, propertyKey)
-      }
-
-      if (type === Array) {
-        throw new CannotUseArrayError(schemaName, propertyKey)
-      }
-
-      if (type) {
-        options.type = type
-      } else {
-        throw new CannotDetermineTypeError(schemaName, propertyKey)
-      }
+      throw new CannotDetermineTypeError(schemaName, propKey)
     }
 
-    MetadataStorage.addPropMetadata({target: classDef.constructor, propertyKey, options})
+    // Check if it's an array type
+    if (Array.isArray(options.type) && options.type.length === 0) {
+      throw new CannotUseArrayError(schemaName, propKey)
+    }
 
+    MetadataStorage.addPropMetadata({target: classDef.constructor, propertyKey: propKey, options})
+
+    // @ts-ignore: Property assignment
     classDef[propertyKey] = options
   }
 }
