@@ -10,9 +10,9 @@ import {logger} from '@orion-js/logger'
 
 @Service()
 export class WorkerService {
-  @Inject()
+  @Inject(() => JobsRepo)
   private jobsRepo: JobsRepo
-  @Inject()
+  @Inject(() => Executor)
   private executor: Executor
 
   getJobNames(jobs: JobsDefinition) {

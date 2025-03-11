@@ -10,10 +10,10 @@ import { Blackbox } from '@orion-js/schema'
 
 @Service()
 export class Executor {
-  @Inject()
+  @Inject(() => JobsRepo)
   private readonly jobsRepo: JobsRepo
 
-  @Inject()
+  @Inject(() => JobsHistoryRepo)
   private readonly jobsHistoryRepo: JobsHistoryRepo
 
   getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {

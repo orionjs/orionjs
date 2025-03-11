@@ -7,7 +7,7 @@ import {getNextRunDate} from './getNextRunDate'
 
 @Service()
 export class EventsService {
-  @Inject()
+  @Inject(() => JobsRepo)
   private jobsRepo: JobsRepo
 
   async scheduleJob(options: ScheduleJobOptions) {
