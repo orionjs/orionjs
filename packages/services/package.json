@@ -3,7 +3,9 @@
   "version": "4.0.0-next.3",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -20,7 +22,6 @@
   },
   "devDependencies": {
     "@types/lodash": "4.14.176",
-    "reflect-metadata": "^0.1.13",
     "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",

@@ -9,7 +9,7 @@ export class JobsHistoryRepo {
     createCollection<HistoryRecord>({
       name: 'orionjs.jobs_dogs_history',
       idGeneration: 'uuid',
-      model: HistoryRecord,
+      schema: HistoryRecord,
       indexes: [
         {
           keys: {
