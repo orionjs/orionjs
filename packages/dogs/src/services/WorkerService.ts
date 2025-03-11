@@ -12,6 +12,7 @@ import {logger} from '@orion-js/logger'
 export class WorkerService {
   @Inject(() => JobsRepo)
   private jobsRepo: JobsRepo
+
   @Inject(() => Executor)
   private executor: Executor
 
@@ -57,7 +58,7 @@ export class WorkerService {
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
-        logger.error(`Error in job runner.`, error)
+        logger.error('Error in job runner.', error)
         await sleep(config.pollInterval)
       }
     }
@@ -122,7 +123,7 @@ export class WorkerService {
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
 
-    for (const workerIndex of range(config.workersCount)) {
+    for (const _ of range(config.workersCount)) {
       this.startANewWorker(config, workersInstance)
     }
   }

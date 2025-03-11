@@ -5,9 +5,11 @@ import {it, expect} from 'vitest'
 it('ensuring the options are passed properly to the aggregate command', async () => {
   const Tests = createCollection({name: generateId()})
 
+  await Tests.startConnection()
+
   const cursorDefault = Tests.aggregate([{$match: {}}])
 
-  expect(cursorDefault.readPreference.mode).toBe('primary')
+  expect(cursorDefault.readPreference?.mode).toBe('primary')
 
   const cursorSecondary = Tests.aggregate(
     [
@@ -20,5 +22,5 @@ it('ensuring the options are passed properly to the aggregate command', async ()
     },
   )
 
-  expect(cursorSecondary.readPreference.mode).toBe('secondary')
+  expect(cursorSecondary.readPreference?.mode).toBe('secondary')
 })

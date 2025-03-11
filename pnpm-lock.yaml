@@ -84,9 +84,6 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: 0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -123,9 +120,6 @@ importers:
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       yaml:
         specifier: ^2.2.1
         version: 2.7.0
@@ -170,9 +164,6 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: 0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -203,6 +194,9 @@ importers:
       '@orion-js/typed-model':
         specifier: workspace:*
         version: link:../typed-model
+      dataloader:
+        specifier: 2.2.2
+        version: 2.2.2
       dot-object:
         specifier: ^2.1.5
         version: 2.1.5
@@ -216,12 +210,6 @@ importers:
       '@types/lodash':
         specifier: 4.14.176
         version: 4.14.176
-      '@types/node':
-        specifier: ^18.0.0
-        version: 18.19.80
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -230,7 +218,7 @@ importers:
         version: 5.8.2
       vitest:
         specifier: ^1.1.0
-        version: 1.6.1(@types/node@18.19.80)
+        version: 1.6.1(@types/node@22.13.10)
 
   packages/echoes:
     dependencies:
@@ -271,9 +259,6 @@ importers:
       '@types/supertest':
         specifier: 2.0.11
         version: 2.0.11
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       supertest:
         specifier: ^6.1.6
         version: 6.3.4
@@ -445,9 +430,6 @@ importers:
       graphql:
         specifier: ^16.6.0
         version: 16.10.0
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       supertest:
         specifier: ^6.3.3
         version: 6.3.4
@@ -512,9 +494,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.14
     devDependencies:
       '@types/body-parser':
         specifier: ^1.19.1
@@ -648,9 +627,6 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -823,9 +799,6 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -879,9 +852,6 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: ^0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -941,9 +911,6 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
-      reflect-metadata:
-        specifier: 0.1.13
-        version: 0.1.13
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -4008,12 +3975,6 @@ packages:
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
-
-  reflect-metadata@0.1.13:
-    resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
-
-  reflect-metadata@0.1.14:
-    resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
 
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
@@ -8006,10 +7967,6 @@ snapshots:
       picomatch: 2.3.1
 
   readdirp@4.1.2: {}
-
-  reflect-metadata@0.1.13: {}
-
-  reflect-metadata@0.1.14: {}
 
   regenerator-runtime@0.14.1: {}
 

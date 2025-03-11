@@ -1,11 +1,10 @@
-import {beforeAll, afterAll} from 'vitest'
+import {afterAll} from 'vitest'
 import {MongoMemoryServer} from 'mongodb-memory-server'
 import {connections} from './src/connect/connections'
 import {createIndexesPromises} from './src/createCollection'
-import {getMongoConnection} from './src'
 
 // Declare mongod at module scope so it can be accessed by both beforeAll and afterAll
-let mongod = await MongoMemoryServer.create()
+const mongod = await MongoMemoryServer.create()
 
 const uri = mongod.getUri()
 // Replace console.log with a comment
@@ -13,10 +12,9 @@ const uri = mongod.getUri()
 
 process.env.MONGO_URL = uri
 
-beforeAll(async () => {
-  const connection = getMongoConnection({name: 'main'})
-  await connection.connectionPromise
-})
+// beforeAll(async () => {
+//   const connection = getMongoConnection({name: 'main'})
+// })
 
 afterAll(async () => {
   /**

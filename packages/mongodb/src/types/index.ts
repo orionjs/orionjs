@@ -280,6 +280,7 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   createIndexes: () => Promise<string[]>
   createIndexesPromise: Promise<string[]>
   connectionPromise: Promise<MongoDB.MongoClient>
+  startConnection: () => Promise<MongoDB.MongoClient>
 }
 
 export type DistinctDocumentId<DistinctId extends string> = string & {

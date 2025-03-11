@@ -30,6 +30,7 @@
     "@orion-js/schema": "workspace:*",
     "@orion-js/services": "workspace:*",
     "@orion-js/typed-model": "workspace:*",
+    "dataloader": "2.2.2",
     "dot-object": "^2.1.5",
     "lodash": "^4.17.21"
   },

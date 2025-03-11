@@ -31,8 +31,32 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
     retryReads: true,
   })
 
-  const connectionPromise = connect(client)
-  allConnectionPromises.push(connectionPromise)
+  let resolveConnected: (value: MongoClient) => void
+  const connectionPromise = new Promise<MongoClient>(resolve => {
+    resolveConnected = resolve
+  })
+  let internalConnectionPromise: Promise<MongoClient>
+
+  /**
+   * This function will start the connection to the database
+   * and return the promise of the connection
+   */
+  const startConnection = async () => {
+    if (internalConnectionPromise) {
+      console.log(`Reusing existing connection for "${name}"`)
+      return await internalConnectionPromise
+    }
+
+    console.log(`Starting new connection to MongoDB for "${name}" with URI: ${uri}`)
+    internalConnectionPromise = connect(client)
+    allConnectionPromises.push(internalConnectionPromise)
+    internalConnectionPromise.then(client => {
+      console.log(`Successfully connected to MongoDB for "${name}"`)
+      resolveConnected(client)
+    })
+
+    return await internalConnectionPromise
+  }
 
   const dbName = getDBName(uri)
   const db = client.db(dbName)
@@ -41,6 +65,7 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
     uri,
     client,
     connectionPromise,
+    startConnection,
     dbName,
     db,
     connectionName: name,

@@ -7,7 +7,7 @@ setLogLevel('none')
 
 describe('Stale Jobs Management', () => {
   it('Should spawn a new worker when a job is stale and kill the stale worker after it ends', async () => {
-    const jobName1 = 'job1' + generateId()
+    const jobName1 = `job1${generateId()}`
     const job1 = defineJob({
       type: 'event',
       async resolve(_, context) {
@@ -18,7 +18,7 @@ describe('Stale Jobs Management', () => {
       },
     })
 
-    const jobName2 = 'job2' + generateId()
+    const jobName2 = `job2${generateId()}`
     const job2 = defineJob({
       type: 'event',
       async resolve() {

@@ -1,7 +1,7 @@
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, scheduleJob, startWorkers} from '.'
 import {setLogLevel} from '@orion-js/logger'
-import {describe, it, expect} from 'vitest'
+import {describe, it, expect, vi} from 'vitest'
 
 setLogLevel('error')
 
@@ -15,6 +15,8 @@ describe('Event tests', () => {
       },
     })
 
+    vi.useFakeTimers()
+
     const instance = startWorkers({
       jobs: {job3},
       workersCount: 1,
@@ -27,7 +29,7 @@ describe('Event tests', () => {
     await scheduleJob({
       name: 'job3',
       params: {add: 5},
-      runIn: 1,
+      runIn: 100,
     })
 
     await scheduleJob({
@@ -36,7 +38,8 @@ describe('Event tests', () => {
       runIn: 1,
     })
 
-    await sleep(100)
+    await vi.advanceTimersByTimeAsync(100)
+
     await instance.stop()
 
     expect(count).toBe(30)
@@ -46,7 +49,7 @@ describe('Event tests', () => {
     let passes = false
     const job4 = defineJob({
       type: 'event',
-      async resolve(params, context) {
+      async resolve(_, context) {
         if (context.tries < 3) {
           throw new Error('Failed')
         }
@@ -86,7 +89,7 @@ describe('Event tests', () => {
     let staleCount = 0
     const job = defineJob({
       type: 'event',
-      async resolve(params, context) {
+      async resolve(_, context) {
         if (context.tries === 2) {
           context.extendLockTime(10000)
         }
@@ -94,7 +97,7 @@ describe('Event tests', () => {
         await sleep(100)
         ranCount++
       },
-      async onStale(params, context) {
+      async onStale(_, context) {
         expect(context.tries).toBe(1)
         staleCount++
       },

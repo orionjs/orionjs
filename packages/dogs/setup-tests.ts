@@ -1,20 +1,16 @@
 import {createIndexesPromises, getMongoConnection, connections} from '@orion-js/mongodb'
-import {beforeAll, afterAll} from 'vitest'
+import {beforeEach, afterAll} from 'vitest'
 import {MongoMemoryServer} from 'mongodb-memory-server'
+import {generateId} from '@orion-js/helpers'
 
-// Declare mongod at module scope so it can be accessed by both beforeAll and afterAll
-let mongod = await MongoMemoryServer.create()
-
+const mongod: MongoMemoryServer = await MongoMemoryServer.create()
 const uri = mongod.getUri()
-// Replace console.log with a comment
-// console.log('mongodb_uri', { uri })
 
-process.env.MONGO_URL = uri
-
-beforeAll(async () => {
-  // The Server can be stopped again with
+beforeEach(async () => {
+  process.env.MONGO_URL = `${uri}${generateId(12)}`
 
   const connection = getMongoConnection({name: 'main'})
+  console.log(connection)
   await connection.connectionPromise
 })
 

@@ -1,4 +1,4 @@
-import {MongoExpiredSessionError} from 'mongodb'
+import {MongoExpiredSessionError, MongoNotConnectedError} from 'mongodb'
 import {Collection, ModelClassBase} from '..'
 
 function matchingDefinition(defIndex, curIndex) {
@@ -12,6 +12,8 @@ function matchingDefinition(defIndex, curIndex) {
 export async function checkIndexes<DocumentType extends ModelClassBase>(
   collection: Partial<Collection<DocumentType>>,
 ) {
+  await collection.connectionPromise
+
   let currentIndexes = []
   try {
     currentIndexes = await collection.rawCollection.indexes()
@@ -43,7 +45,7 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
   if (!collection.indexes) return
   if (!collection.indexes.length) return
 
-  await collection.client.connectionPromise
+  await collection.connectionPromise
 
   const results = Promise.all(
     collection.indexes.map(async ({keys, options}) => {
@@ -62,7 +64,8 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
           const result = await collection.rawCollection.createIndex(keys, options)
           console.info('Index updated correctly')
           return result
-        } else if (error instanceof MongoExpiredSessionError) {
+        }
+        if (error instanceof MongoExpiredSessionError || error instanceof MongoNotConnectedError) {
           // this errors is thrown when we are on tests environment
           // but it's not a problem never, index will be created on the next connection
         } else {

@@ -10,7 +10,7 @@ describe('Recurrent tests', () => {
     let ran = false
     const job1 = defineJob({
       type: 'recurrent',
-      runEvery: 1000,
+      runEvery: 100,
       async resolve() {
         ran = true
       },

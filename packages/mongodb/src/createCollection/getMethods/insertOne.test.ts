@@ -95,6 +95,7 @@ describe('InsertOne', () => {
         },
       ],
     })
+    await Tests.startConnection()
     await Tests.createIndexesPromise
 
     await Tests.insertOne({name: 'one'})

@@ -22,6 +22,7 @@ import getIdGenerator from './generateId'
 import {loadIndexes} from './createIndexes'
 import {getMongoConnection} from '..'
 import {getSchema} from './getSchemaAndModel'
+import {wrapMethods} from './wrapMethods'
 
 export const createIndexesPromises = []
 
@@ -48,6 +49,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
     db,
     client: orionConnection,
     connectionPromise: orionConnection.connectionPromise,
+    startConnection: orionConnection.startConnection,
     rawCollection,
     generateId: getIdGenerator(options),
     getSchema: () => schema,
@@ -89,6 +91,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
   collection.loadMany = loadMany(collection)
 
   const createIndexes = async () => {
+    await orionConnection.connectionPromise
     const createIndexPromise = loadIndexes(collection)
     createIndexesPromises.push(createIndexPromise)
     collection.createIndexesPromise = createIndexPromise
@@ -100,6 +103,8 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
   if (!process.env.DONT_CREATE_INDEXES_AUTOMATICALLY) {
     createIndexes()
   }
+
+  wrapMethods(collection as any)
 
   return collection as Collection<DocumentType>
 }

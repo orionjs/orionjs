@@ -1,40 +1,44 @@
-import {createCollection, ModelToDocumentTypeWithoutId} from '@orion-js/mongodb'
-import {Service} from '@orion-js/services'
+import {
+  Collection,
+  ModelToDocumentTypeWithoutId,
+  MongoCollection,
+  Repository,
+} from '@orion-js/mongodb'
 import {omit} from 'lodash'
 import {HistoryRecord} from '../types/HistoryRecord'
 
-@Service()
+@Repository()
 export class JobsHistoryRepo {
-  public history = () =>
-    createCollection<HistoryRecord>({
-      name: 'orionjs.jobs_dogs_history',
-      idGeneration: 'uuid',
-      schema: HistoryRecord,
-      indexes: [
-        {
-          keys: {
-            jobName: 1,
-            startedAt: 1,
-          },
+  @MongoCollection({
+    name: 'orionjs.jobs_dogs_history',
+    idGeneration: 'uuid',
+    schema: HistoryRecord,
+    indexes: [
+      {
+        keys: {
+          jobName: 1,
+          startedAt: 1,
         },
-        {
-          keys: {
-            executionId: 1,
-          },
+      },
+      {
+        keys: {
+          executionId: 1,
         },
-        {
-          keys: {
-            expiresAt: 1,
-          },
-          options: {
-            expireAfterSeconds: 0,
-          },
+      },
+      {
+        keys: {
+          expiresAt: 1,
         },
-      ],
-    })
+        options: {
+          expireAfterSeconds: 0,
+        },
+      },
+    ],
+  })
+  history: Collection<HistoryRecord>
 
   async saveExecution(record: ModelToDocumentTypeWithoutId<HistoryRecord>) {
-    await this.history().upsert(
+    await this.history.upsert(
       {executionId: record.executionId},
       {
         $setOnInsert: {
@@ -48,7 +52,7 @@ export class JobsHistoryRepo {
   }
 
   async getExecutions(jobName: string, limit?: number, skip?: number): Promise<HistoryRecord[]> {
-    const cursor = this.history().find({jobName}).sort({startedAt: -1})
+    const cursor = this.history.find({jobName}).sort({startedAt: -1})
 
     if (skip) {
       cursor.skip(skip)

@@ -9,6 +9,8 @@ describe('Test indexes', () => {
       indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
 
+    await collection.startConnection()
+
     expect(createIndexesPromises).toContain(collection.createIndexesPromise)
   })
 
@@ -17,6 +19,8 @@ describe('Test indexes', () => {
       name: generateId(),
       indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
+
+    await collection.startConnection()
 
     const results = await collection.createIndexesPromise
 
@@ -39,6 +43,8 @@ describe('Test indexes', () => {
       indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
 
+    await collection2.startConnection()
+
     const result = await collection2.createIndexesPromise
     expect(result[0]).toContain('E11000')
     expect(console.error).toHaveBeenCalled()
@@ -50,7 +56,7 @@ describe('Test indexes', () => {
       name: collectionName,
       indexes: [{keys: {a: 1}, options: {unique: true}}],
     })
-
+    await collection1.startConnection()
     await collection1.createIndexesPromise
 
     console.warn = vi.fn(() => Math.random())
@@ -59,7 +65,7 @@ describe('Test indexes', () => {
       name: collectionName,
       indexes: [{keys: {ba: 1}, options: {unique: true}}],
     })
-
+    await collection2.startConnection()
     await collection2.createIndexesPromise
 
     expect(console.warn).toHaveBeenCalled()
@@ -72,6 +78,7 @@ describe('Test indexes', () => {
       indexes: [{keys: {name: 1}}],
     })
 
+    await collection1.startConnection()
     await collection1.createIndexesPromise
 
     console.info = vi.fn()
@@ -81,6 +88,7 @@ describe('Test indexes', () => {
       indexes: [{keys: {name: 1}, options: {unique: true}}],
     })
 
+    await collection2.startConnection()
     await collection2.createIndexesPromise
 
     expect(console.info).toHaveBeenCalled()
