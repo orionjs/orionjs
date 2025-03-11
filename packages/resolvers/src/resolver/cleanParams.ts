@@ -1,11 +1,15 @@
 import clone from 'lodash/clone'
 
+// @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
+Symbol.metadata ??= Symbol("Symbol.metadata");
+
+
 export default function (rawParams: any) {
   if (!rawParams) return
 
   // for typed model
-  if (rawParams.getModel) {
-    rawParams = rawParams.getModel()
+  if (rawParams[Symbol.metadata]?._getModel) {
+    rawParams = rawParams[Symbol.metadata]._getModel()
   }
 
   if (rawParams.__isModel) {

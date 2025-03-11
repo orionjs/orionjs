@@ -1,10 +1,11 @@
-import {getModelForClass, Prop, TypedSchema} from '..'
-import {describe, it, expect} from 'vitest'
+import { getModelForClass, Prop, TypedSchema } from '..'
+import { describe, it, expect } from 'vitest'
+
 describe('Test prop type generator', () => {
   it('Should detect strings automatically', async () => {
     @TypedSchema()
     class Schema {
-      @Prop({type: String})
+      @Prop({ type: String })
       key: string
     }
 

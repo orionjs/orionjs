@@ -18,5 +18,7 @@
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "autoimport.filesToScan": "**/src/**/*.{ts,tsx}",
-  "autoimport.useSemiColon": false
+  "autoimport.useSemiColon": false,
+  "vitest.maximumConfigs": 20,
+  "vitest.disableWorkspaceWarning": true
 }

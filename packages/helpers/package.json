@@ -23,12 +23,13 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "object-hash": "^2.2.0"
+    "object-hash": "^2.2.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
-    "typescript": "^5.4.5",
     "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
     "vitest": "^1.1.0"
   },
   "publishConfig": {

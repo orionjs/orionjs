@@ -19,7 +19,8 @@
   "dependencies": {
     "@orion-js/helpers": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
-    "@orion-js/schema": "workspace:*"
+    "@orion-js/schema": "workspace:*",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "@orion-js/cache": "workspace:*"
@@ -27,9 +28,9 @@
   "devDependencies": {
     "@orion-js/cache": "workspace:*",
     "@types/lodash": "4.14.176",
-    "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
     "vitest": "^1.1.0"
   },
   "publishConfig": {

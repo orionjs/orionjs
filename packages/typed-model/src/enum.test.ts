@@ -1,6 +1,6 @@
-import {createEnum} from '@orion-js/schema'
-import {getModelForClass, Prop, TypedSchema} from '.'
-import {describe, it, expect} from 'vitest'
+import { createEnum } from '@orion-js/schema'
+import { getModelForClass, Prop, TypedSchema } from '.'
+import { describe, it, expect } from 'vitest'
 
 describe('Test custom fields', () => {
   it('Should convert custom fields correctly', async () => {
@@ -9,7 +9,7 @@ describe('Test custom fields', () => {
 
     @TypedSchema()
     class TestParams {
-      @Prop({type: colorsEnum})
+      @Prop({ type: colorsEnum })
       color: enumType
     }
 

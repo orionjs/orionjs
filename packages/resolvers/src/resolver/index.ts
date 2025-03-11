@@ -1,13 +1,14 @@
 import getExecute from './getExecute'
 import cleanParams from './cleanParams'
-import {generateId} from '@orion-js/helpers'
-import {CreateResolver} from './types'
-import {defaultCache} from '@orion-js/cache'
-import {CreateModelResolver} from '..'
+import { generateId } from '@orion-js/helpers'
+import { CreateResolver } from './types'
+import { defaultCache } from '@orion-js/cache'
+import { CreateModelResolver } from '..'
 import cleanReturns from './cleanReturns'
-import {getResolverArgs} from './getArgs'
+import { getResolverArgs } from './getArgs'
 
 function createResolver(options: any) {
+  console.log('creating model resolver')
   options.params = cleanParams(options.params)
   options.returns = cleanReturns(options.returns)
 
@@ -42,4 +43,4 @@ function createResolver(options: any) {
 const resolver: CreateResolver = createResolver
 const modelResolver: CreateModelResolver = createResolver
 
-export {resolver, modelResolver}
+export { resolver, modelResolver }

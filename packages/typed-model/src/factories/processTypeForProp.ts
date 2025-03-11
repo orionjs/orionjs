@@ -1,0 +1,40 @@
+import { PropOptions } from '../decorators/prop'
+import isPlainObject from 'lodash/isPlainObject'
+
+export function getParamTypeForProp(type: PropOptions['type']) {
+  if (Array.isArray(type)) {
+    const itemType = type[0]
+    return [getParamTypeForProp(itemType)]
+  }
+
+  if (type?.[Symbol.metadata]?._getModel) {
+    return type[Symbol.metadata]._getModel(type)
+  }
+
+  if (type?.getSchema) {
+    return getParamTypeForProp(type.getSchema())
+  }
+
+  if (isPlainObject(type)) {
+    if (type._isFieldType) {
+      return type
+    }
+
+    const subschema = {}
+    Object.keys(type).forEach(key => {
+      if (key.startsWith('__')) {
+        subschema[key] = type[key]
+        return
+      }
+
+      subschema[key] = {
+        ...type[key],
+        type: getParamTypeForProp(type[key].type)
+      }
+    })
+
+    return subschema
+  }
+
+  return type
+}

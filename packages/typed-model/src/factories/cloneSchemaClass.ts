@@ -1,7 +1,7 @@
-import {Model} from '@orion-js/models'
-import {CloneOptions} from '@orion-js/models'
-import {Constructor} from '../utils/interfaces'
-import {getModelForClass} from './getModelForClass'
+import { Model } from '@orion-js/models'
+import { CloneOptions } from '@orion-js/models'
+import { getModelForClass } from './getModelForClass'
+import { Constructor } from '../utils/interfaces'
 
 export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
   name: string

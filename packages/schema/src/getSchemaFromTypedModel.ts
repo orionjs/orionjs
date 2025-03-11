@@ -1,11 +1,13 @@
-import {Schema} from '.'
-import {isClass} from './getValidationErrors/convertTypedModel'
+import { Schema } from '.'
+
+// @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
+Symbol.metadata ??= Symbol("Symbol.metadata");
 
 export const getSchemaFromTypedModel = (schema: Schema | Function): Schema => {
   const item = schema as any
-  if (typeof item !== 'function') return item
-  if (!isClass(item)) return item
-  if (!item.getModel || !item.__schemaId) return item
 
-  return item.getModel().getCleanSchema()
+  if (!schema[Symbol.metadata]) return item
+  if (!schema[Symbol.metadata]._isTypedSchema) return item
+
+  return schema[Symbol.metadata]._getModel().getCleanSchema()
 }

@@ -1,7 +1,7 @@
 export class CannotDetermineTypeError extends Error {
-  constructor(schemaName: string, propertyKey: string) {
+  constructor(propertyKey: string) {
     super(
-      `Cannot determine type at "${schemaName}.${propertyKey}". type: is required for all props since Orion v4`
+      `Cannot determine type at @Prop() "${propertyKey}". type: is required for all props since Orion v4`
     )
   }
 }

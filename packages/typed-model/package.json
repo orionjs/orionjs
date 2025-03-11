@@ -24,7 +24,6 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "workspace:*",
     "@orion-js/models": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",

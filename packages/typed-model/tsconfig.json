@@ -19,7 +19,6 @@
     // "experimentalDecorators": true,
     // "emitDecoratorMetadata": true,
     
-    // Best practices
     "strict": false,
     "noFallthroughCasesInSwitch": true,
   }
