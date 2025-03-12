@@ -1,4 +1,8 @@
-import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import resolvers from './resolvers'
+import {generateImageInfo} from '../resolvers/generateImageInfo'
+import {pick} from 'lodash'
+import {getFileData} from './getFileData'
 
 @TypedSchema()
 export class FileSchemaResizeData {
@@ -39,7 +43,38 @@ export class FileSchemaColorsData {
   blurhash?: string
 }
 
-@TypedSchema()
+@TypedSchema({
+  name: 'File',
+  resolvers,
+  // this is only called when its child
+  async clean(value) {
+    if (!value) return null
+    const fileId = value._id
+    const file = await getFileData(fileId)
+    if (!file) return null
+
+    await generateImageInfo(file)
+
+    const keys = [
+      '_id',
+      'hash',
+      'externalUrl',
+      'key',
+      'bucket',
+      'name',
+      'type',
+      'size',
+      // 'status',
+      // 'createdBy',
+      // 'createdAt',
+      'dimensions',
+      'resizedData',
+      'colorsData',
+    ]
+    const data = pick(file, keys)
+    return data
+  },
+})
 export class FileSchema {
   @Prop({type: 'ID'})
   _id: string
@@ -74,12 +109,12 @@ export class FileSchema {
   @Prop({optional: true, type: Date})
   createdAt?: Date
 
-  @Prop({optional: true, type: getModelForClass(FileSchemaDimensionsData)})
+  @Prop({optional: true, type: FileSchemaDimensionsData})
   dimensions?: FileSchemaDimensionsData
 
-  @Prop({optional: true, type: getModelForClass(FileSchemaResizeData)})
+  @Prop({optional: true, type: FileSchemaResizeData})
   resizedData?: FileSchemaResizeData
 
-  @Prop({optional: true, type: getModelForClass(FileSchemaColorsData)})
+  @Prop({optional: true, type: FileSchemaColorsData})
   colorsData?: FileSchemaColorsData
 }

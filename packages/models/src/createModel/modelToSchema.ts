@@ -1,12 +1,6 @@
 import {isPlainObject, omit} from 'lodash'
 import {Model, ModelSchema, ModelsSchemaNode} from '..'
-import {
-  Schema,
-  SchemaMetaFieldType,
-  SchemaMetaFieldTypeSingle,
-  SchemaNode,
-  validate,
-} from '@orion-js/schema'
+import {Schema, SchemaMetaFieldType, SchemaMetaFieldTypeSingle, SchemaNode} from '@orion-js/schema'
 
 function isModelSchema(type: Model | [Model] | SchemaMetaFieldType): type is Model {
   return type && typeof type === 'object' && '__isModel' in type
@@ -23,7 +17,7 @@ export function processModelSchemaKey(
       {
         ...modelSchema,
         type: modelSchema.type[0],
-        __model: (modelSchema.type[0] as any).__model,
+        ...(clean ? {} : {__model: (modelSchema.type[0] as any).__model}),
       },
       clean,
     )
@@ -33,7 +27,7 @@ export function processModelSchemaKey(
     return {
       ...processedItem,
       type: [type],
-      __model: clean ? undefined : processedItem.__model,
+      ...(clean ? {} : {__model: processedItem.__model}),
     }
   }
 
@@ -42,7 +36,7 @@ export function processModelSchemaKey(
     return {
       ...modelSchema,
       type: clean ? model.getCleanSchema() : model.getSchema(),
-      __model: clean ? undefined : model,
+      ...(clean ? {} : {__model: model}),
     }
   }
 
@@ -51,7 +45,7 @@ export function processModelSchemaKey(
     return {
       ...(clean ? omit(modelSchema, ['__model']) : modelSchema),
       type: clean ? model.getCleanSchema() : model.getSchema(),
-      __model: clean ? undefined : model,
+      ...(clean ? {} : {__model: model}),
     }
   }
 

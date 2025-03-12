@@ -1,6 +1,5 @@
 import {FileSchema} from './schema'
 import {Files} from '../Files'
-import File from '.'
 import {createModel} from '@orion-js/models'
 import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
 import {describe, it, expect} from 'vitest'
@@ -19,6 +18,8 @@ describe('File model', () => {
       },
     }
 
+    console.log(getModelForClass(FileSchema).getCleanSchema())
+
     const model = createModel({
       name: 'Test',
       schema: {
@@ -26,7 +27,7 @@ describe('File model', () => {
           type: String,
         },
         image: {
-          type: File,
+          type: FileSchema,
         },
       },
     })
@@ -51,7 +52,7 @@ describe('File model', () => {
     @TypedSchema()
     class Banner {
       @Prop({
-        type: File,
+        type: FileSchema,
       })
       image: FileSchema
 

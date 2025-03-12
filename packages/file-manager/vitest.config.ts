@@ -5,9 +5,9 @@ export default defineConfig({
     target: 'es2022',
   },
   test: {
-    includeTaskLocation: true,
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    setupFiles: ['./setup-tests.ts'],
   },
 })
