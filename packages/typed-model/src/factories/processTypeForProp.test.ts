@@ -1,7 +1,6 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest'
+import {describe, it, expect} from 'vitest'
 import {getParamTypeForProp} from './processTypeForProp'
-import isPlainObject from 'lodash/isPlainObject'
-import {Prop, PropOptions} from '../decorators/prop'
+import {Prop} from '../decorators/prop'
 import {TypedSchema} from '../decorators/typedSchema'
 
 describe('getParamTypeForProp', () => {
@@ -32,8 +31,9 @@ describe('getParamTypeForProp', () => {
       name: string
     }
 
-    const result = getParamTypeForProp(SchemaName).getCleanSchema()
+    const result = getParamTypeForProp(SchemaName).getSchema()
     expect(result).toEqual({
+      __modelName: 'SchemaName',
       _id: {type: 'string'},
       name: {type: 'string'},
     })

@@ -18,7 +18,7 @@ export default async function getValidationErrors(
   const options = {...defaultOptions, ...passedOptions}
   const errors: {key: string; code: string}[] = []
 
-  const addError = function (keys, code) {
+  const addError = (keys, code) => {
     errors.push({
       key: keys.join('.'),
       code,

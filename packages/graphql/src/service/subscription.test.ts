@@ -21,7 +21,7 @@ describe('Subscriptions classes', () => {
 
     @Subscriptions()
     class ExampleSubscriptionsService {
-      @Subscription<Params, User>({
+      @Subscription({
         params: Params,
         returns: User,
       })

@@ -1,6 +1,7 @@
 import createModel from '.'
 import {clean, createEnum, SchemaNode} from '@orion-js/schema'
-import {describe, it, expect} from 'vitest'
+import {it, expect} from 'vitest'
+import {sleep} from '../../../helpers/dist'
 
 it('should add the __model field when converting to schema', async () => {
   const model = createModel({
@@ -13,7 +14,7 @@ it('should add the __model field when converting to schema', async () => {
 
   const schema = model.getSchema() as any
 
-  expect(schema.__model.name).toEqual('test')
+  expect(schema.__modelName).toEqual('test')
 })
 
 it('can clean a schema with nested models', async () => {
@@ -26,6 +27,10 @@ it('can clean a schema with nested models', async () => {
     },
     clean: () => ({name: 'Model Schema'}),
   })
+
+  console.log('model1 schema', JSON.stringify(model.getSchema(), null, 2))
+
+  await sleep(200)
 
   const finalModel = createModel({
     name: 'Test',
@@ -43,9 +48,10 @@ it('can clean a schema with nested models', async () => {
     },
   })
 
-  const doc = {subModel: {name: 'Joaquin'}, subModelArray: [{name: 'Roberto'}], primitive: 'hello'}
-
   const schema = finalModel.getSchema()
+  console.log('fina schema', JSON.stringify(schema, null, 2))
+
+  const doc = {subModel: {name: 'Joaquin'}, subModelArray: [{name: 'Roberto'}], primitive: 'hello'}
 
   expect(await clean(schema, doc)).toEqual({
     subModel: {name: 'Model Schema'},
@@ -71,7 +77,7 @@ it('Should return a schema with __clean if clean param is passed to model', asyn
   expect(await schema.__clean()).toEqual(await clean())
 })
 
-it('Should keep __model to sub schemas when calling getSchema', async () => {
+it('Should keep __modelName to sub schemas when calling getSchema', async () => {
   const friend = createModel({
     name: 'Friend',
     schema: {
@@ -89,38 +95,8 @@ it('Should keep __model to sub schemas when calling getSchema', async () => {
 
   const schema = model.getSchema()
 
-  expect(schema?.__model).toBeDefined()
-  expect((schema?.friends as SchemaNode).type[0]?.__model).toBeDefined()
-})
-
-it('Should strip __model to sub schemas when calling getCleanSchema', async () => {
-  const friend = createModel({
-    name: 'Friend',
-    schema: {
-      name: {type: 'string'},
-    },
-  }).getSchema()
-
-  const model = createModel({
-    name: 'test',
-    schema: {
-      name: {type: 'string'},
-      friends: {type: [friend]},
-    },
-  })
-
-  const schema = model.getCleanSchema()
-
-  expect(schema).toEqual({
-    name: {type: 'string'},
-    friends: {
-      type: [
-        {
-          name: {type: 'string'},
-        },
-      ],
-    },
-  })
+  expect(schema?.__modelName).toBe('test')
+  expect((schema?.friends as SchemaNode).type[0]?.__modelName).toBeDefined()
 })
 
 it('Should convert custom fields correctly', async () => {
@@ -133,7 +109,9 @@ it('Should convert custom fields correctly', async () => {
     },
   })
 
-  expect((model.getCleanSchema() as any).color.type._isFieldType).toBe(true)
+  expect((model.getSchema() as any).__modelName).toBe('test')
+  console.log(model.getSchema().color.type)
+  expect((model.getSchema() as any).color.type.__isFieldType).toBe(true)
 })
 
 it('should correctly pass the clean option to submodels', async () => {

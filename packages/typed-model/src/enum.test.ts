@@ -15,6 +15,6 @@ describe('Test custom fields', () => {
 
     const model = getModelForClass(TestParams)
 
-    expect((model.getCleanSchema() as any).color.type._isFieldType).toBe(true)
+    expect((model.getSchema() as any).color.type.__isFieldType).toBe(true)
   })
 })

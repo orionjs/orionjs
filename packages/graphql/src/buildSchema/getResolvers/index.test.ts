@@ -23,7 +23,8 @@ describe('Test get resolvers schema', () => {
     const globalResolver = resolver({
       params: TestParams,
       returns: TestModel,
-      async resolve(params: TestParams) {
+      async resolve(params) {
+        params.userId
         return {
           userId: params.userId,
           name: 'test',

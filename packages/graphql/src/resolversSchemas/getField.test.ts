@@ -28,7 +28,7 @@ describe('Field serialization', () => {
   it('Should allow serialization of typed models', async () => {
     @TypedSchema()
     class Point {
-      @Prop({label: 'Name'})
+      @Prop({label: 'Name', type: String})
       name: string
     }
 

@@ -2,7 +2,7 @@ import fieldType from '../fieldType'
 import isBoolean from 'lodash/isBoolean'
 import Errors from '../Errors'
 
-export default fieldType({
+export default fieldType<boolean>({
   name: 'boolean',
   validate(value) {
     if (!isBoolean(value)) return Errors.NOT_A_BOOLEAN
@@ -10,10 +10,11 @@ export default fieldType({
   clean(value, {options}) {
     if (options.autoConvert) {
       if (typeof value === 'string') {
-        if (value === 'true') {
+        const stringValue = value as string
+        if (stringValue === 'true') {
           value = true
         }
-        if (value === 'false') {
+        if (stringValue === 'false') {
           value = false
         }
       }

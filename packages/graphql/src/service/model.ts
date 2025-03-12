@@ -5,6 +5,7 @@ import {
   modelResolver,
   ModelResolver as ModelResolverType,
 } from '@orion-js/resolvers'
+import {InternalModelResolverResolveAtDecorator} from './types'
 
 export interface ModelResolversOptions {
   // the model name to add resolvers. If not specified, the model name will be the schema name
@@ -14,31 +15,34 @@ export interface ModelResolversOptions {
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<
   any,
-  {_serviceType: string; options: ModelResolversOptions; _typedSchema: any}
+  {_serviceType: string; options: ModelResolversOptions; _typedSchema: any; _modelName: string}
 >()
 const modelResolversMetadata = new WeakMap<any, Record<string, any>>()
 
 export function ModelResolvers(typedSchema: any, options: ModelResolversOptions = {}) {
-  return function (target: any, context: ClassDecoratorContext<any>) {
+  return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
+
+    const modelName = options.modelName || typedSchema.name
 
     context.addInitializer(function (this) {
       serviceMetadata.set(this, {
         _serviceType: 'modelResolvers',
         options: options,
         _typedSchema: typedSchema,
+        _modelName: modelName,
       })
     })
   }
 }
 
-export function ModelResolver<This, TArgs extends any[], TReturn extends any>(
+export function ModelResolver<This, TItem, TParams, TReturns, TViewer, TInfo>(
   options?: Omit<ResolverOptions<any>, 'resolve' | 'middlewares'>,
 ) {
-  return function (
-    method: (this: This, ...args: TArgs) => TReturn,
+  return (
+    method: InternalModelResolverResolveAtDecorator<This, TItem, TParams, TReturns, TViewer, TInfo>,
     context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+  ) => {
     const propertyKey = String(context.name)
 
     context.addInitializer(function (this: This) {
@@ -81,5 +85,7 @@ export function getServiceModelResolvers(target: any): {
 
   const modelResolversMap = modelResolversMetadata.get(instance) || {}
 
-  return modelResolversMap
+  return {
+    [instanceMetadata._modelName]: modelResolversMap,
+  }
 }

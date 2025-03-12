@@ -30,11 +30,12 @@ it('should pass field options', async () => {
 it('should serialize a typed model', async () => {
   @TypedSchema()
   class Point {
-    @Prop({label: 'Name'})
+    @Prop({label: 'Name', type: String})
     name: string
   }
 
   const result = await serializeSchema(Point)
+  console.log(result)
   expect(result.name).toEqual({
     type: 'string',
     label: 'Name',

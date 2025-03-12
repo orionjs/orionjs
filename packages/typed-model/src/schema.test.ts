@@ -1,5 +1,5 @@
 import {createModel} from '@orion-js/models'
-import {clean, validate} from '@orion-js/schema'
+import {clean, InferSchemaType, validate} from '@orion-js/schema'
 import {getModelForClass, Prop, TypedSchema} from '.'
 import {describe, it, expect} from 'vitest'
 
@@ -80,3 +80,20 @@ describe('Test typed model with Schema', () => {
     }
   })
 })
+
+// infer type
+@TypedSchema()
+class Point {
+  @Prop({type: Number})
+  latitude: number
+
+  @Prop({type: Number, optional: true})
+  longitude?: number
+}
+
+type PointType = InferSchemaType<typeof Point>
+
+const _point: PointType = {
+  latitude: 1,
+  // longitude: 2,
+}

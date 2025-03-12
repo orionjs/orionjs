@@ -1,10 +1,9 @@
-import crypto from 'crypto'
-import {UserError} from '@orion-js/helpers'
-import {GraphQLError, GraphQLErrorOptions, GraphQLFormattedError} from 'graphql'
+import crypto from 'node:crypto'
+import {GraphQLError} from 'graphql'
 
 export default function errorHandler(error, data) {
   const message = `Error in resolver "${data.name}" ${
-    data.model ? `of model "${data.model.name}"` : ''
+    data.schema ? `of model "${data.schema.__modelName}"` : ''
   }`
 
   const hash = crypto
@@ -14,7 +13,7 @@ export default function errorHandler(error, data) {
     .substring(0, 10)
   error.hash = hash
 
-  if (error && error.isOrionError) {
+  if (error?.isOrionError) {
     console.warn(message, error)
     throw new GraphQLError(error.message, {
       originalError: error,
@@ -26,16 +25,15 @@ export default function errorHandler(error, data) {
         info: error.getInfo(),
       },
     })
-  } else {
-    console.error(message, error)
-    throw new GraphQLError(`${error.message} [${hash}]`, {
-      // originalError: error,
-      extensions: {
-        isOrionError: false,
-        isValidationError: false,
-        code: 'INTERNAL_SERVER_ERROR',
-        hash: hash,
-      },
-    })
   }
+  console.error(message, error)
+  throw new GraphQLError(`${error.message} [${hash}]`, {
+    // originalError: error,
+    extensions: {
+      isOrionError: false,
+      isValidationError: false,
+      code: 'INTERNAL_SERVER_ERROR',
+      hash: hash,
+    },
+  })
 }

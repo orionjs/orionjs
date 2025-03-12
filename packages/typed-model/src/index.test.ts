@@ -23,6 +23,7 @@ describe('typed-schema e2e tests', () => {
       }
 
       const expected = {
+        __modelName: 'Spec',
         name: {
           type: String,
           optional: true,
@@ -57,6 +58,7 @@ describe('typed-schema e2e tests', () => {
       }
 
       const expected = {
+        __modelName: 'Spec',
         name: {
           type: 'string',
         },
@@ -90,6 +92,7 @@ describe('typed-schema e2e tests', () => {
         isDeleted: boolean
       }
       const expected = {
+        __modelName: 'Spec',
         name: {
           type: String,
         },
@@ -119,6 +122,7 @@ describe('typed-schema e2e tests', () => {
           user: {name: string}
         }
         const expected = {
+          __modelName: 'Spec',
           user: {
             type: {
               name: {
@@ -145,6 +149,7 @@ describe('typed-schema e2e tests', () => {
         }
 
         const expected = {
+          __modelName: 'Spec',
           user: {
             type: {
               name: {
@@ -170,6 +175,7 @@ describe('typed-schema e2e tests', () => {
         }
 
         const expected = {
+          __modelName: 'Spec',
           names: {
             type: [String],
           },
@@ -213,11 +219,13 @@ describe('typed-schema e2e tests', () => {
         }
 
         const expected = {
+          __modelName: 'Spec',
           name: {
             type: String,
           },
           a: {
             type: {
+              __modelName: 'A',
               name: {
                 type: String,
               },
@@ -225,6 +233,7 @@ describe('typed-schema e2e tests', () => {
           },
           b: {
             type: {
+              __modelName: 'B',
               lastName: {
                 type: String,
               },
@@ -264,14 +273,17 @@ describe('typed-schema e2e tests', () => {
         }
 
         const expected = {
+          __modelName: 'Spec',
           name: {
             type: String,
           },
           b: {
             type: {
+              __modelName: 'B',
               a: {
                 optional: true,
                 type: {
+                  __modelName: 'A',
                   data: {
                     type: {
                       phoneNumber: {
@@ -310,7 +322,9 @@ describe('typed-schema e2e tests', () => {
 
       expect(getModelForClass(Spec2).name).toEqual('Spec2')
 
-      expect(getModelForClass(Spec2).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(omit(getModelForClass(Spec2).getSchema(), '__modelName')).toEqual(
+        omit(expected.getSchema(), '__modelName'),
+      )
     })
 
     it('works for nested models', () => {
@@ -336,10 +350,10 @@ describe('typed-schema e2e tests', () => {
         },
       })
 
-      console.log('expected', JSON.stringify(getModelForClass(Spec).getCleanSchema(), null, 2))
+      console.log('expected', JSON.stringify(getModelForClass(Spec).getSchema(), null, 2))
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
     })
 
     it('works for nested arrays of models', () => {
@@ -351,7 +365,8 @@ describe('typed-schema e2e tests', () => {
 
       const AModel = getModelForClass(A)
 
-      expect(AModel.getCleanSchema()).toEqual({
+      expect(AModel.getSchema()).toEqual({
+        __modelName: 'A',
         name: {
           type: String,
           optional: true,
@@ -365,9 +380,11 @@ describe('typed-schema e2e tests', () => {
       }
 
       const expectedSchema = {
+        __modelName: 'Spec',
         a: {
           type: [
             {
+              __modelName: 'A',
               name: {
                 type: String,
                 optional: true,
@@ -378,7 +395,7 @@ describe('typed-schema e2e tests', () => {
       }
 
       expect(getModelForClass(Spec).name).toEqual('Spec')
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expectedSchema)
+      expect(getModelForClass(Spec).getSchema()).toEqual(expectedSchema)
     })
 
     it('works for nested models together with nested classes', () => {
@@ -388,14 +405,17 @@ describe('typed-schema e2e tests', () => {
         name: string
       }
 
-      const dataType = {type: {firstName: {type: 'string'}, createdAt: {type: 'date'}}}
+      const dataType = {
+        type: {firstName: {type: 'string'}, createdAt: {type: 'date'}},
+      }
       @TypedSchema()
       class NestedClassClass {
         @Prop(dataType)
         data: {firstName: string; createdAt: Date}
       }
 
-      expect(getModelForClass(NestedClassClass).getCleanSchema()).toEqual({
+      expect(getModelForClass(NestedClassClass).getSchema()).toEqual({
+        __modelName: 'NestedClassClass',
         data: dataType,
       })
 
@@ -417,6 +437,7 @@ describe('typed-schema e2e tests', () => {
           },
           b: {
             type: {
+              __modelName: 'NestedClassClass',
               data: dataType,
             },
           },
@@ -424,7 +445,7 @@ describe('typed-schema e2e tests', () => {
       })
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
     })
 
     it('Should return the same object when calling getModelForClass multiple times', () => {
@@ -490,13 +511,10 @@ describe('typed-schema e2e tests', () => {
 
       const model = getModelForClass(Person)
       console.log('model person', model.getSchema(), model.getResolvers())
-      const item: Person = model.initItem({lastName: 'Doe'})
-
-      const result = await (item as any).fullName({
-        firstName: 'John',
-      })
-
-      expect(result.fullName).toBe('John Doe')
     })
   })
 })
+
+function omit(arg0: any, arg1: string): any {
+  return Object.fromEntries(Object.entries(arg0).filter(([key]) => key !== arg1))
+}

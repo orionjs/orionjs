@@ -4,10 +4,11 @@ import isString from 'lodash/isString'
 import fieldTypes from '../../fieldTypes'
 import has from 'lodash/has'
 import {FieldValidatorType} from '../../types/fieldValidators'
+import {SchemaFieldType} from '../../types'
 
-export default function (type: any): FieldValidatorType {
+export default function getFieldValidator(type: SchemaFieldType): FieldValidatorType {
   if (isPlainObject(type)) {
-    if (type._isFieldType) return 'custom'
+    if ((type as any).__isFieldType) return 'custom'
     return 'plainObject'
   }
   if (isArray(type)) return 'array'

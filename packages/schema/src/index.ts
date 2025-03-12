@@ -23,4 +23,5 @@ export {
 }
 
 export * from './types'
+export * from './models'
 export * from './fieldType'

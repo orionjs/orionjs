@@ -1,12 +1,14 @@
 import {getInstance, Service} from '@orion-js/services'
 import {GlobalResolverResolve, ResolverOptions, resolver, Resolver} from '@orion-js/resolvers'
+import {getTargetMetadata} from './middlewares'
+import {InternalGlobalResolverResolveAtDecorator} from './types'
 
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const resolversMetadata = new WeakMap<any, Record<string, any>>()
 
 export function Resolvers() {
-  return function (target: any, context: ClassDecoratorContext<any>) {
+  return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
 
     context.addInitializer(function (this) {
@@ -15,13 +17,13 @@ export function Resolvers() {
   }
 }
 
-export function Query<This, TArgs extends any[], TReturn extends any>(
-  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>,
+export function Query<This, TParams, TReturns, TViewer, TInfo>(
+  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'> = {},
 ) {
-  return function (
-    method: (this: This, ...args: TArgs) => TReturn,
+  return (
+    method: InternalGlobalResolverResolveAtDecorator<This, TParams, TReturns, TViewer, TInfo>,
     context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+  ) => {
     const propertyKey = String(context.name)
 
     context.addInitializer(function (this: This) {
@@ -29,9 +31,9 @@ export function Query<This, TArgs extends any[], TReturn extends any>(
 
       resolvers[propertyKey] = resolver({
         resolverId: propertyKey,
-        // params: getTargetMetadata(target, propertyKey, 'params'),
-        // returns: getTargetMetadata(target, propertyKey, 'returns'),
-        // middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
+        params: getTargetMetadata(method, propertyKey, 'params') || {},
+        returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+        middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
         ...options,
         resolve: this[propertyKey].bind(this),
       })
@@ -43,13 +45,13 @@ export function Query<This, TArgs extends any[], TReturn extends any>(
   }
 }
 
-export function Mutation<This, TArgs extends any[], TReturn extends any>(
+export function Mutation<This, TParams, TReturns, TViewer, TInfo>(
   options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>,
 ) {
-  return function (
-    method: (this: This, ...args: TArgs) => TReturn,
+  return (
+    method: InternalGlobalResolverResolveAtDecorator<This, TParams, TReturns, TViewer, TInfo>,
     context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+  ) => {
     const propertyKey = String(context.name)
 
     context.addInitializer(function (this: This) {
@@ -57,9 +59,9 @@ export function Mutation<This, TArgs extends any[], TReturn extends any>(
 
       resolvers[propertyKey] = resolver({
         resolverId: propertyKey,
-        // params: getTargetMetadata(target, propertyKey, 'params'),
-        // returns: getTargetMetadata(target, propertyKey, 'returns'),
-        // middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
+        params: getTargetMetadata(method, propertyKey, 'params') || {},
+        returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+        middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
         ...options,
         mutation: true,
         resolve: this[propertyKey].bind(this),

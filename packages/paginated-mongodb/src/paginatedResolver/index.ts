@@ -1,4 +1,4 @@
-import {resolver} from '@orion-js/resolvers'
+import {createResolver} from '@orion-js/resolvers'
 import getModel from './getModel'
 import getParams from './params'
 import setOptions from './setOptions'
@@ -48,13 +48,12 @@ export default function paginatedResolver({
     if ((result as PaginatedResolverGetCursorResultWithCount).cursor) {
       const resultWithCount = result as PaginatedResolverGetCursorResultWithCount
       return {cursor: resultWithCount.cursor, getCount: () => resultWithCount.count()}
-    } else {
-      const resultWithoutCount = result as PaginatedCursor
-      return {cursor: resultWithoutCount, getCount: () => resultWithoutCount.count()}
     }
+    const resultWithoutCount = result as PaginatedCursor
+    return {cursor: resultWithoutCount, getCount: () => resultWithoutCount.count()}
   }
 
-  return resolver({
+  return createResolver({
     params: getParams({params, allowedSorts, defaultSortBy, defaultSortType}),
     returns: getModel({modelName, returns}),
     async resolve(...args) {

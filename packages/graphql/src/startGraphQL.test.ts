@@ -189,9 +189,9 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({name}) {
+        async resolve() {
           throw new UserError('code', 'message')
-          return `Hello ${name}`
+          // return `Hello ${name}`
         },
       }),
     }
@@ -253,9 +253,9 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({name}) {
+        async resolve() {
           throw new Error('message')
-          return `Hello ${name}`
+          // return `Hello ${name}`
         },
       }),
     }

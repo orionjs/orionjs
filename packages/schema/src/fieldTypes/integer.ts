@@ -3,7 +3,7 @@ import isInteger from 'lodash/isInteger'
 import Errors from '../Errors'
 import number from './number'
 
-export default fieldType({
+export default fieldType<number>({
   name: 'integer',
   validate(value: number, info) {
     if (!isInteger(value)) return Errors.NOT_AN_INTEGER

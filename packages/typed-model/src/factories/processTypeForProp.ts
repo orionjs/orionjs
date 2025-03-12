@@ -16,7 +16,7 @@ export function getParamTypeForProp(type: PropOptions['type']) {
   }
 
   if (isPlainObject(type)) {
-    if (type._isFieldType) {
+    if (type.__isFieldType) {
       return type
     }
 

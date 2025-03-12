@@ -44,7 +44,7 @@ export default function getParams(options: Pick<PaginatedResolverOpts, OptionsKe
 
   if (params) {
     if (params[Symbol.metadata]?._getModel) {
-      const modelSchema = params[Symbol.metadata]._getModel().getCleanSchema()
+      const modelSchema = params[Symbol.metadata]._getModel().getSchema()
       Object.assign(schema, omit(modelSchema, '__model'))
     } else if (typeof params === 'function' && params.getModel && params.__schemaId) {
       const modelSchema = params.getModel().getSchema()

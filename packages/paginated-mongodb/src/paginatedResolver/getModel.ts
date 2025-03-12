@@ -3,7 +3,7 @@ import hash from './hash'
 import {modelResolver} from '@orion-js/resolvers'
 
 export default ({returns, modelName}) => {
-  const getTotalCount = async function (paginated) {
+  const getTotalCount = async paginated => {
     if (typeof paginated.count === 'undefined') {
       paginated.count = await paginated.cursor.count()
     }
@@ -12,7 +12,7 @@ export default ({returns, modelName}) => {
 
   const _id = modelResolver({
     returns: 'ID',
-    async resolve(paginated: any, p, viewer): Promise<string> {
+    async resolve(paginated: any, viewer): Promise<string> {
       const {params} = paginated
       const num = hash({
         modelName: modelName,
@@ -74,5 +74,5 @@ export default ({returns, modelName}) => {
       hasPreviousPage,
       items,
     },
-  })
+  }) as any
 }

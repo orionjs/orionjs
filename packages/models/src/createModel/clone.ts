@@ -1,12 +1,12 @@
 import includes from 'lodash/includes'
-import {CreateModel, CloneOptions, CreateModelOptions} from '../types'
+import {CreateModel, CloneOptions, CreateModelOptions, ModelResolversMap} from '../types'
 import cloneDeep from 'lodash/cloneDeep'
 import {Schema} from '@orion-js/schema'
 
 interface CloneInfo {
   createModel: CreateModel
-  getSchema: () => any
-  getResolvers: () => any
+  getSchema: () => Schema
+  getResolvers: () => ModelResolversMap
   modelOptions: CreateModelOptions
 }
 
@@ -16,17 +16,15 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
     name: options.name,
     clean: modelOptions.clean,
     validate: modelOptions.validate,
-    resolvers: () => {
+    resolvers: (() => {
       if (!options.extendResolvers) return getResolvers()
 
       return {
-        default: {
-          ...getResolvers(),
-          ...options.extendResolvers,
-        },
-      }
-    },
-    schema: () => {
+        ...getResolvers(),
+        ...options.extendResolvers,
+      } as ModelResolversMap
+    })(),
+    schema: (() => {
       const oldSchema = cloneDeep(getSchema())
       const newSchema = {}
 
@@ -49,15 +47,15 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
         }
       }
 
-      if (!options.extendSchema) return {default: newSchema}
+      if (!options.extendSchema) return newSchema
 
       const clonedSchema = {
         ...newSchema,
         ...options.extendSchema,
       } as Schema
 
-      return {default: clonedSchema}
-    },
+      return clonedSchema
+    })(),
   })
 }
 

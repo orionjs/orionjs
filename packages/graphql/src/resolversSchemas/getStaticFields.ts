@@ -1,9 +1,12 @@
-import {Model} from '@orion-js/models'
-import {SchemaNode} from '@orion-js/schema'
+import {Schema, SchemaNode} from '@orion-js/schema'
 
-export function getStaticFields(model: Model): Array<SchemaNode> {
-  const schema = model.getSchema()
+export function getStaticFields(schema: Schema): Array<SchemaNode> {
   if (!schema) return []
+
+  // retrocompatibility with model
+  if ((schema as any).getSchema) {
+    schema = (schema as any).getSchema()
+  }
 
   const keys = Object.keys(schema).filter(key => !key.startsWith('__'))
 

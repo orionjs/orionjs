@@ -3,10 +3,10 @@ import isString from 'lodash/isString'
 import Errors from '../Errors'
 import includes from 'lodash/includes'
 
-export default function createEnum<TValues extends readonly string[]>(
+export default function createEnum<const TValues extends readonly string[]>(
   name: string,
   values: TValues,
-): FieldType & {type: TValues[number]} {
+): FieldType<TValues[number]> & {type: TValues[number]} {
   return {
     type: values[0],
     ...fieldType({

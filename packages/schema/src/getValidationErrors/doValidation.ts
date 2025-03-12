@@ -29,7 +29,7 @@ export default async function doValidation(params: CurrentNodeInfo) {
     const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
 
     if (type) {
-      if (type._isFieldType) {
+      if (type.__isFieldType) {
         return
       }
 

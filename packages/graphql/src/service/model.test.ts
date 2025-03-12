@@ -43,7 +43,7 @@ describe('Service with graphql models', () => {
 
     const item: Person = {name: 'Orion'}
     const result = await data.Person.getAge.execute({parent: item})
-    expect(result).toBe(`Orion is 100 years old`)
+    expect(result).toBe('Orion is 100 years old')
   })
 
   it('should startGraphQL and make a request', async () => {
@@ -69,10 +69,18 @@ describe('Service with graphql models', () => {
       }
     }
 
+    const resolvers = getServiceResolvers(GlobalResolvers)
+    const modelResolvers = getServiceModelResolvers(PersonResolvers)
+
+    console.log({
+      resolvers,
+      modelResolvers,
+    })
+
     const app = express()
     await startGraphQL({
-      resolvers: getServiceResolvers(GlobalResolvers),
-      modelResolvers: getServiceModelResolvers(PersonResolvers),
+      resolvers,
+      modelResolvers,
       app,
     })
 

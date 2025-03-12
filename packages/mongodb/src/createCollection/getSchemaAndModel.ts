@@ -19,13 +19,7 @@ export function getSchema(options: CreateCollectionOptions): Schema {
   if (!options.schema) return
 
   if (options.schema[Symbol.metadata]?._getModel) {
-    return options.schema[Symbol.metadata]._getModel().getCleanSchema()
-  }
-
-  // schema is a model
-  if (options.schema.getCleanSchema) {
-    const schema = options.schema.getCleanSchema()
-    return prepareShema(schema)
+    return options.schema[Symbol.metadata]._getModel().getSchema()
   }
 
   // schema is a model
@@ -37,7 +31,7 @@ export function getSchema(options: CreateCollectionOptions): Schema {
   // schema is a typed model
   if (options.schema.getModel) {
     const model = options.schema.getModel()
-    const schema = model ? cloneDeep(model.getCleanSchema()) : {}
+    const schema = model ? cloneDeep(model.getSchema()) : {}
     return prepareShema(schema)
   }
 

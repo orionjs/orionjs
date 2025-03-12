@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { FieldType } from '../fieldType'
+import {FieldType} from '../fieldType'
+import {InferSchemaType} from './fields'
 
 export type Constructor<T> = new (...args: any[]) => T
 
-export type Blackbox = { [name: string]: any }
+export type Blackbox = {[name: string]: any}
 
 export type FieldTypesList =
   | 'string'
@@ -17,73 +18,86 @@ export type FieldTypesList =
   | 'blackbox'
   | 'any'
 
-export type TypedSchemaOnSchema = Function
+// export type TypedSchemaOnSchema = Function
+export type TypedSchemaOnSchema = never
 
 export type ConstructorsTypesList =
   | Constructor<String>
   | Constructor<Number>
   | Constructor<Boolean>
   | Constructor<Date>
-
-export type SchemaRecursiveNodeTypeExtras = {
-  _isFieldType?: boolean
-  __clean?: CleanFunction
-  __validate?: ValidateFunction
-  __skipChildValidation?: (value: any, info: CurrentNodeInfo) => Promise<boolean>
-}
-
-export interface Schema {
-  [key: string]: SchemaNode | Function
-}
-
-export type SchemaRecursiveNodeType = Schema & SchemaRecursiveNodeTypeExtras
+  | StringConstructor
+  | NumberConstructor
+  | BooleanConstructor
+  | DateConstructor
+  | String
+  | Number
+  | Boolean
+  | Date
 
 export type SchemaMetaFieldTypeSingle =
   | FieldTypesList
   | ConstructorsTypesList
-  | SchemaRecursiveNodeType
+  | SchemaNode
   | FieldType
   | TypedSchemaOnSchema
 
-export type SchemaMetaFieldType = SchemaMetaFieldTypeSingle | SchemaMetaFieldTypeSingle[]
+export type SchemaFieldType = SchemaMetaFieldTypeSingle | SchemaMetaFieldTypeSingle[]
 
-export type ValidateFunction = (
-  value: any,
+export type ValidateFunction<TType = any> = (
+  value: TType,
   info?: Partial<CurrentNodeInfo>,
   ...args: any[]
-) => object | string | void | Promise<object | string | void>
-export type CleanFunction = (
-  value: any,
+  // biome-ignore lint/suspicious/noConfusingVoidType: void is needed to allow the function to have no return clause
+) => object | string | null | undefined | void | Promise<object | string | null | undefined | void>
+
+export type CleanFunction<TType = any> = (
+  value: TType,
   info?: Partial<CurrentNodeInfo>,
   ...args: any[]
-) => any | Promise<any>
+) => TType | Promise<TType>
 
-export interface SchemaNode {
+export type SchemaRecursiveNodeTypeExtras = {
+  /**
+   * The name of the model (to make it compatible with GraphQL)
+   */
+  __modelName?: string
+  __isFieldType?: boolean
+  __clean?: CleanFunction
+  __validate?: ValidateFunction
+  __GraphQLType?: any
+  __skipChildValidation?: (value: any, info: CurrentNodeInfo) => Promise<boolean>
+}
+
+export type SchemaNode<TFieldType extends SchemaFieldType = any> = {
   /**
    * The type of the field. Used for type validations. Can also contain a subschema.
    */
-  type: SchemaMetaFieldType
+  type: TFieldType
 
   /**
    * Defaults to false
    */
   optional?: boolean
 
-  allowedValues?: Array<any>
+  allowedValues?: Array<InferSchemaType<TFieldType>>
 
-  defaultValue?: ((info: CurrentNodeInfo, ...args: any[]) => any | Promise<any>) | any
+  defaultValue?:
+    | ((
+        info: CurrentNodeInfo,
+        ...args: any[]
+      ) => InferSchemaType<TFieldType> | Promise<InferSchemaType<TFieldType>>)
+    | InferSchemaType<TFieldType>
 
   /**
    * Function that takes a value and returns an error message if there are any errors. Must return null or undefined otherwise.
    */
-  validate?: ValidateFunction
+  validate?: ValidateFunction<InferSchemaType<TFieldType>>
 
   /**
    * Function that preprocesses a value before it is set.
    */
-  clean?: CleanFunction
-
-  autoValue?: (value: any, info: CurrentNodeInfo, ...args: any[]) => any | Promise<any>
+  clean?: CleanFunction<InferSchemaType<TFieldType>>
 
   /**
    * The minimum value if it's a number, the minimum length if it's a string or array.
@@ -99,11 +113,6 @@ export interface SchemaNode {
    * Internal use only.
    */
   isBlackboxChild?: boolean
-
-  /**
-   * @deprecated
-   */
-  custom?: ValidateFunction
 
   /**
    * Used in GraphQL. If true, the field will be omitted from the schema.
@@ -138,13 +147,13 @@ export interface SchemaNode {
   /**
    * The field type that would be used in a front-end form
    */
-  fieldType?: string //TODO: allow only possible values
+  fieldType?: string
 
   /**
    * The field options that will be passed as props to the front-end field
    */
   fieldOptions?: any
-}
+} & SchemaRecursiveNodeTypeExtras
 
 export interface CurrentNodeInfoOptions {
   autoConvert?: boolean
@@ -155,7 +164,7 @@ export interface CurrentNodeInfoOptions {
   omitRequired?: boolean
 }
 
-export interface CurrentNodeInfo {
+export interface CurrentNodeInfo<TType extends SchemaFieldType = any> {
   /**
    * The global schema, prefaced by {type: {...}} to be compatible with subschemas
    * Sometimes it's given without {type: {...}}. TODO: Normalize this.
@@ -164,15 +173,19 @@ export interface CurrentNodeInfo {
   /**
    * The current node subschema
    */
-  currentSchema?: Partial<SchemaNode>
+  currentSchema?: Partial<SchemaNode<TType>>
 
-  value: any
+  value: TType
   doc?: any
   currentDoc?: any
   options?: CurrentNodeInfoOptions
   args?: any[]
-  type?: SchemaMetaFieldType
+  type?: TType
   keys?: string[]
 
   addError?: (keys: string[], code: string | object) => void
 }
+
+export type Schema = {
+  [key: string]: SchemaNode
+} & SchemaRecursiveNodeTypeExtras

@@ -3,9 +3,9 @@ import isString from 'lodash/isString'
 import Errors from '../Errors'
 import isNil from 'lodash/isNil'
 
-export default fieldType({
+export default fieldType<string>({
   name: 'email',
-  validate(value: string, {currentSchema}) {
+  validate(value, {currentSchema}) {
     if ((value === '' || isNil(value)) && !currentSchema.optional) {
       return Errors.REQUIRED
     }

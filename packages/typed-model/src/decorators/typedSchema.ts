@@ -4,12 +4,15 @@ import {TypedSchemaOptions} from '../storage/metadataStorage'
 import {Model} from '@orion-js/models'
 import {PropOptions} from './prop'
 
+/**
+ * @deprecated use schema with InferSchemaType<schema as const> instead
+ */
 export function TypedSchema(options: TypedSchemaOptions = {}) {
-  return function (_target: any, context: ClassDecoratorContext<any>) {
-    context.metadata['_isTypedSchema'] = true
-    context.metadata['_modelName'] = options.name || context.name
-    context.metadata['_modelOptions'] = omit(options, 'name')
-    context.metadata['_getModel'] = () => {
+  return (_target: any, context: ClassDecoratorContext<any>) => {
+    context.metadata._isTypedSchema = true
+    context.metadata._modelName = options.name || context.name
+    context.metadata._modelOptions = omit(options, 'name')
+    context.metadata._getModel = () => {
       return internal_getModelForClassFromMetadata(
         context.metadata as SchemaFromTypedSchemaMetadata,
       )

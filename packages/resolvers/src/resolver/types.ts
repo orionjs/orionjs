@@ -1,20 +1,32 @@
 import {OrionCache} from '@orion-js/cache'
-import {Blackbox} from '@orion-js/schema'
+import {Blackbox, InferSchemaType} from '@orion-js/schema'
 
-export type GlobalResolverResolve = (params: any, viewer: any, info?: any) => Promise<any>
-export type ModelResolverResolve = (item: any, params: any, viewer: any, info?: any) => Promise<any>
+export type GlobalResolverResolve<TParams = any, TReturns = any, TViewer = any, TInfo = any> = (
+  params?: InferSchemaType<TParams>,
+  viewer?: TViewer,
+  info?: TInfo,
+) => Promise<InferSchemaType<TReturns>>
 
-export type GlobalCheckPermissions = (
-  params: any,
-  viewer: any,
-  info?: any,
-) => Promise<string | void>
+export type ModelResolverResolve<
+  TItem = any,
+  TParams = any,
+  TReturns = any,
+  TViewer = any,
+  TInfo = any,
+> = (
+  item?: TItem,
+  params?: InferSchemaType<TParams>,
+  viewer?: TViewer,
+  info?: TInfo,
+) => Promise<InferSchemaType<TReturns>>
+
+export type GlobalCheckPermissions = (params: any, viewer: any, info?: any) => Promise<string>
 export type ModelCheckPermissions = (
   parent: any,
   params: any,
   viewer: any,
   info?: any,
-) => Promise<string | void>
+) => Promise<string>
 
 export type GlobalGetCacheKey = (params: any, viewer: any, info: any) => Promise<any>
 export type ModelGetCacheKey = (parent: any, params: any, viewer: any, info: any) => Promise<any>
@@ -24,7 +36,7 @@ export interface ExecuteOptions {
   viewer: any
   parent?: any
   info?: any
-  options: ResolverOptions
+  options: GlobalResolverOptions | ModelResolverOptions
 }
 
 type Parameters<T> = T extends (...args: infer P) => any ? P : never
@@ -45,10 +57,10 @@ export type Execute<Resolve = Function, IsModel = undefined> = (
   executeOptions: ExecuteParams<Resolve, IsModel>,
 ) => ReturnType<Resolve>
 
-export interface SharedResolverOptions {
+export interface SharedResolverOptions<TParams = any, TReturns = any> {
   resolverId?: string
-  params?: any
-  returns?: any
+  params?: TParams
+  returns?: TReturns
   mutation?: boolean
   private?: boolean
   checkPermission?: GlobalCheckPermissions | ModelCheckPermissions
@@ -59,9 +71,34 @@ export interface SharedResolverOptions {
   middlewares?: ResolverMiddleware[]
 }
 
-export interface ResolverOptions<Resolve = Function> extends SharedResolverOptions {
-  resolve: Resolve
+export type GlobalResolverOptions<
+  TParams = any,
+  TReturns = any,
+  TViewer = any,
+  TInfo = any,
+> = SharedResolverOptions<TParams, TReturns> & {
+  resolve: GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>
 }
+
+export type ModelResolverOptions<
+  TItem = any,
+  TParams = any,
+  TReturns = any,
+  TViewer = any,
+  TInfo = any,
+> = SharedResolverOptions<TParams, TReturns> & {
+  resolve: ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>
+}
+
+export type ResolverOptions<
+  TParams = any,
+  TReturns = any,
+  TViewer = any,
+  TInfo = any,
+  TItem = any,
+> =
+  | GlobalResolverOptions<TParams, TReturns, TViewer, TInfo>
+  | ModelResolverOptions<TItem, TParams, TReturns, TViewer, TInfo>
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never
 
@@ -73,23 +110,29 @@ export interface Resolver<Resolve = Function, IsModel = undefined> extends Share
 
 export type ModelResolver<Resolve = Function> = Resolver<Resolve, true>
 
-export type CreateResolver = <Resolve extends GlobalResolverResolve>(
-  options: ResolverOptions<Resolve>,
-) => Resolver<Resolve>
+export type CreateResolver = <TParams = any, TReturns = any, TViewer = any, TInfo = any>(
+  options: GlobalResolverOptions<TParams, TReturns, TViewer, TInfo>,
+) => Resolver<GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>>
 
-export type CreateModelResolver = <Resolve extends ModelResolverResolve>(
-  options: ResolverOptions<Resolve>,
-) => ModelResolver<Resolve>
+export type CreateModelResolver = <
+  TItem = any,
+  TParams = any,
+  TReturns = any,
+  TViewer = any,
+  TInfo = any,
+>(
+  options: ModelResolverOptions<TItem, TParams, TReturns, TViewer, TInfo>,
+) => ModelResolver<ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>>
 
 export interface PermissionCheckerOptions {
-  resolver: ResolverOptions
+  resolver: GlobalResolverOptions | ModelResolverOptions
   parent: any
   params: any
   viewer: any
   info: any
 }
 
-export type PermissionChecker = (options: PermissionCheckerOptions) => Promise<string | void>
+export type PermissionChecker = (options: PermissionCheckerOptions) => Promise<string>
 
 export type ResolverMiddleware = (
   executeOptions: ExecuteOptions,

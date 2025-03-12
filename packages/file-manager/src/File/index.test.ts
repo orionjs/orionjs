@@ -18,8 +18,6 @@ describe('File model', () => {
       },
     }
 
-    console.log(getModelForClass(FileSchema).getCleanSchema())
-
     const model = createModel({
       name: 'Test',
       schema: {

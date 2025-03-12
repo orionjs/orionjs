@@ -1,5 +1,5 @@
 import {resolver} from '@orion-js/resolvers'
-import {cloneSchemaClass, getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {cloneSchemaClass, Prop, TypedSchema} from '@orion-js/typed-model'
 import getResolvers from '../getResolvers'
 import {createEnum} from '@orion-js/schema'
 import buildSchema from '..'
@@ -25,7 +25,6 @@ describe('Enum test', () => {
     })
 
     const resolvers = {globalResolver}
-    const mutation = false
     const options = {resolvers}
     const schema: any = await getResolvers(options, false)
 

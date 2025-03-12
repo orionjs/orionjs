@@ -4,7 +4,7 @@ import Errors from '../Errors'
 import isString from 'lodash/isString'
 import isNumber from 'lodash/isNumber'
 
-export default fieldType({
+export default fieldType<Date>({
   name: 'date',
   validate(value) {
     if (!isDate(value)) return Errors.NOT_A_DATE
@@ -13,14 +13,14 @@ export default fieldType({
     if (options.autoConvert) {
       if (isString(value)) {
         const result = new Date(value)
-        if (isNaN(result.getTime())) {
+        if (Number.isNaN(result.getTime())) {
           return value
         }
 
         value = result
       } else if (isNumber(value)) {
         const result = new Date(value)
-        if (isNaN(result.getTime())) {
+        if (Number.isNaN(result.getTime())) {
           return value
         }
 

@@ -5,9 +5,16 @@ import {it, expect} from 'vitest'
 
 it('should return a function with a resolver id', () => {
   const resolver = createResolver({
-    params: {},
+    params: {
+      value: {
+        type: 'number',
+      },
+    },
     returns: String,
-    async resolve() {},
+    async resolve(params) {
+      const {value} = params
+      return String(value)
+    },
   })
 
   expect(typeof resolver).toBe('object')
@@ -43,7 +50,7 @@ it('should get from cache', async () => {
     },
     returns: Number,
     cache: 100,
-    async resolve(params: {value: number}) {
+    async resolve() {
       return index++
     },
   })

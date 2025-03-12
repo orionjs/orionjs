@@ -3,7 +3,7 @@ import isString from 'lodash/isString'
 import isInteger from 'lodash/isInteger'
 import Errors from '../Errors'
 
-export default fieldType({
+export default fieldType<string>({
   name: 'ID',
   validate(value: string) {
     if (!isString(value) && !isInteger(value)) return Errors.NOT_AN_ID

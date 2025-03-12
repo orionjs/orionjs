@@ -26,7 +26,7 @@ describe('getModelForClass', () => {
 
     console.log(JSON.stringify(getModelForClass(Config).getSchema().files.type[0], null, 2))
 
-    const schemaForConfig = getModelForClass(Config).getCleanSchema()
+    const schemaForConfig = getModelForClass(Config).getSchema()
     console.log(schemaForConfig.files.type[0])
     expect(schemaForConfig.files.type[0].__clean).toBeTypeOf('function')
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
+import {createModel, Model, ModelSchema} from '@orion-js/models'
 import {SchemaFromTypedSchemaMetadata} from '..'
 import {getParamTypeForProp} from './processTypeForProp'
 

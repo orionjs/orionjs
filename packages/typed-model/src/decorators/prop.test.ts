@@ -9,6 +9,6 @@ describe('Test prop type generator', () => {
       key: string
     }
 
-    expect((getModelForClass(Schema).getCleanSchema() as any).key.type).toBe(String)
+    expect((getModelForClass(Schema).getSchema() as any).key.type).toBe(String)
   })
 })

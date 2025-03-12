@@ -7,7 +7,7 @@ const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const subscriptionsMetadata = new WeakMap<any, Record<string, any>>()
 
 export function Subscriptions() {
-  return function (target: any, context: ClassDecoratorContext<any>) {
+  return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
 
     context.addInitializer(function (this) {
@@ -16,16 +16,22 @@ export function Subscriptions() {
   }
 }
 
-export function Subscription<This, TArgs extends any[], TReturn extends any>(
-  options: OrionSubscriptionOptions,
+export function Subscription<TParams, TReturns>(
+  options: Omit<OrionSubscriptionOptions, 'params' | 'returns'> & {
+    params: TParams
+    returns: TReturns
+  },
 ) {
-  return function (
-    method: (this: This, ...args: TArgs) => TReturn,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+  return (_target: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
+    context.addInitializer(function (this) {
+      const repo = serviceMetadata.get(this.constructor)
+      if (!repo || repo._serviceType !== 'subscriptions') {
+        throw new Error(
+          'You must pass a class decorated with @Subscriptions if you want to use @Subscription',
+        )
+      }
 
-    context.addInitializer(function (this: This) {
       const subscriptions = subscriptionsMetadata.get(this) || {}
 
       subscriptions[propertyKey] = subscription({
@@ -34,9 +40,9 @@ export function Subscription<This, TArgs extends any[], TReturn extends any>(
       })
 
       subscriptionsMetadata.set(this, subscriptions)
-    })
 
-    return method
+      this[propertyKey] = subscriptions[propertyKey]
+    })
   }
 }
 

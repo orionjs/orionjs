@@ -1,13 +1,19 @@
 import getExecute from './getExecute'
 import cleanParams from './cleanParams'
 import {generateId} from '@orion-js/helpers'
-import {CreateResolver} from './types'
+import {
+  GlobalResolverOptions,
+  GlobalResolverResolve,
+  ModelResolver,
+  ModelResolverOptions,
+  ModelResolverResolve,
+  Resolver,
+} from './types'
 import {defaultCache} from '@orion-js/cache'
-import {CreateModelResolver} from '..'
 import cleanReturns from './cleanReturns'
 import {getResolverArgs} from './getArgs'
 
-function createResolver(options: any) {
+function dynamicCreateResolver(options: any) {
   options.params = cleanParams(options.params)
   options.returns = cleanReturns(options.returns)
 
@@ -39,7 +45,37 @@ function createResolver(options: any) {
   return resolver
 }
 
-const resolver: CreateResolver = createResolver
-const modelResolver: CreateModelResolver = createResolver
+const createResolver = <
+  const TParams = any,
+  const TReturns = any,
+  const TViewer = any,
+  const TInfo = any,
+>(
+  options: GlobalResolverOptions<TParams, TReturns, TViewer, TInfo>,
+): Resolver<GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>> => {
+  return dynamicCreateResolver(options)
+}
 
-export {resolver, modelResolver}
+const createModelResolver = <
+  const TItem = any,
+  const TParams = any,
+  const TReturns = any,
+  const TViewer = any,
+  const TInfo = any,
+>(
+  options: ModelResolverOptions<TItem, TParams, TReturns, TViewer, TInfo>,
+): ModelResolver<ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>> => {
+  return dynamicCreateResolver(options)
+}
+
+/**
+ * @deprecated Use createResolver and createModelResolver instead
+ */
+const resolver = createResolver
+
+/**
+ * @deprecated Use createResolver and createModelResolver instead
+ */
+const modelResolver = createModelResolver
+
+export {createResolver, createModelResolver, resolver, modelResolver}

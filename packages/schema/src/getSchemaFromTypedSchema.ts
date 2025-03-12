@@ -9,5 +9,5 @@ export const getSchemaFromTypedSchema = (schema: Schema | Function): Schema => {
   if (!schema[Symbol.metadata]) return item
   if (!schema[Symbol.metadata]._isTypedSchema) return item
 
-  return schema[Symbol.metadata]._getModel().getCleanSchema()
+  return schema[Symbol.metadata]._getModel().getSchema()
 }

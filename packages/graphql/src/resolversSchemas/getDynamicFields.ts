@@ -1,7 +1,17 @@
-import {Model} from '@orion-js/models'
+import {Model, ModelResolversMap} from '@orion-js/models'
+import {Schema} from '@orion-js/schema'
 
-export function getDynamicFields(model: Model): any {
-  const resolvers = model.getResolvers()
+function getResolvers(schema: Schema | Model): ModelResolversMap {
+  if (typeof schema.getResolvers === 'function') {
+    console.warn('Models are deprecated')
+    return (schema as Model).getResolvers()
+  }
+
+  return {}
+}
+
+export function getDynamicFields(schema: Schema): any {
+  const resolvers = getResolvers(schema as any)
   if (!resolvers) return []
   const keys = Object.keys(resolvers)
 

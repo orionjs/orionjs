@@ -2,8 +2,9 @@ import fieldType from '../fieldType'
 import isPlainObject from 'lodash/isPlainObject'
 import Errors from '../Errors'
 import difference from 'lodash/difference'
+import {Blackbox} from '../types'
 
-export default fieldType({
+export default fieldType<Blackbox>({
   name: 'plainObject',
   validate(value: object) {
     if (!isPlainObject(value)) return Errors.NOT_AN_OBJECT
