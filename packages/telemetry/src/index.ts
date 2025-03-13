@@ -1,7 +1,7 @@
 import {getNodeAutoInstrumentations} from '@opentelemetry/auto-instrumentations-node'
 import {NodeSDK, NodeSDKConfiguration} from '@opentelemetry/sdk-node'
-const {PrometheusExporter} = require('@opentelemetry/exporter-prometheus')
-const {HostMetrics} = require('@opentelemetry/host-metrics')
+import {PrometheusExporter} from '@opentelemetry/exporter-prometheus'
+import {HostMetrics} from '@opentelemetry/host-metrics'
 
 function setupTelemetry({
   nodeSDKConfig,
@@ -28,12 +28,12 @@ function setupTelemetry({
     ...nodeSDKConfig,
   })
 
+  sdk.start()
+
   if (metricReader) {
     const hostMetrics = new HostMetrics()
     hostMetrics.start()
   }
-
-  sdk.start()
 }
 
 export {setupTelemetry}
