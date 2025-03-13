@@ -1,15 +1,15 @@
-import {resolver} from '@orion-js/resolvers'
-import File from '../File'
+import {createResolver} from '@orion-js/resolvers'
 import {Files} from '../Files'
 import {generateImageInfo} from './generateImageInfo'
+import {FileSchema} from '../File/schema'
 
-export default resolver({
+export default createResolver({
   params: {
     fileId: {
       type: 'ID',
     },
   },
-  returns: File,
+  returns: FileSchema,
   mutation: true,
   async resolve({fileId}, viewer) {
     const file = await Files.findOne({createdBy: viewer.userId, _id: fileId})

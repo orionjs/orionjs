@@ -1,9 +1,9 @@
 import isPlainObject from 'lodash/isPlainObject'
 import {Filter} from 'mongodb'
-import {ModelClassBase, ModelToMongoSelector, MongoSelector} from '../../types'
+import {ModelClassBase, ModelToMongoSelector} from '../../types'
 
 export default function getSelector<ModelClass extends ModelClassBase>(
-  args: IArguments,
+  args: IArguments | any[],
 ): Filter<ModelClass> {
   if (args.length === 0) return {}
 

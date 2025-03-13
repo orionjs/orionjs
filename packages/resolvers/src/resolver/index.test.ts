@@ -109,47 +109,11 @@ it('should create typed model resolvers', async () => {
   })
 
   await resolver.resolve({value: 1}, {times: 2})
-  const inModel = resolver.modelResolve
 
   await resolver.execute({
     parent: {value: 1},
     params: {times: 2},
   })
-})
-
-it('should accept a model as params', async () => {
-  const aModel = {
-    __isModel: true,
-    name: 'ResolverParams',
-    getSchema(): Schema {
-      return {
-        value: {
-          type: 'string',
-        },
-      }
-    },
-    initItem(item: any) {
-      return item
-    },
-  }
-
-  class TypedParams {
-    value: number = 1
-
-    static getModel() {
-      return aModel
-    }
-  }
-
-  const resolver = createModelResolver({
-    params: TypedParams,
-    returns: Number,
-    resolve: async function (item: any, params: TypedParams) {
-      return params.value * 2
-    },
-  })
-
-  const inModel = resolver.modelResolve
 })
 
 it('should accept a model as returns', async () => {
@@ -163,13 +127,10 @@ it('should accept a model as returns', async () => {
         },
       }
     },
-    initItem(item: any) {
-      return item
-    },
   }
 
   class Returns {
-    value: number = 1
+    value = 1
 
     static getModel() {
       return aModel
@@ -215,13 +176,13 @@ it('should allow calling resolver.resolve', async () => {
 })
 
 it('only allow compliant resolve function', async () => {
-  const resolver = createResolver({
+  createResolver({
     resolve: async () => {
       return 'hello'
     },
   })
 
-  const modelResolver = createModelResolver({
+  createModelResolver({
     resolve: async () => {
       return 'hello'
     },

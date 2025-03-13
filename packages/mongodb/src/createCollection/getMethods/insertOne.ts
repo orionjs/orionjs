@@ -9,7 +9,7 @@ export default <DocumentType extends ModelClassBase>(
 ) => {
   const insertOne: InsertOne<DocumentType> = async (insertDoc, options = {}) => {
     await collection.connectionPromise
-    let doc = insertDoc as any
+    let doc = insertDoc as DocumentType
     if (!doc || !isPlainObject(doc)) {
       throw new Error('Insert must receive a document')
     }

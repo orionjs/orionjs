@@ -1,7 +1,5 @@
 import checkPermissions from './checkPermissions'
 import cleanAndValidate from './cleanAndValidate'
-import initResult from './initResult'
-import getResult from './getResult'
 import {ResolverOptions, Execute, ExecuteOptions} from '../types'
 import {getResultWithMiddlewares} from './getResultWithMiddlewares'
 
@@ -22,7 +20,7 @@ export default function getExecute(options: ResolverOptions) {
 
     const result = await getResultWithMiddlewares(executeOptions)
 
-    return initResult(options, result)
+    return result
   }
 
   return execute

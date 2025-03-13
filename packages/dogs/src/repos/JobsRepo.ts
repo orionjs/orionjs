@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
-import {Collection, ModelToUpdateFilter, MongoCollection} from '@orion-js/mongodb'
+import {Collection, MongoDB, MongoCollection} from '@orion-js/mongodb'
 import {values} from 'lodash'
 import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
@@ -101,7 +101,7 @@ export class JobsRepo {
     addTries: boolean
     priority: number
   }) {
-    const updator: ModelToUpdateFilter<JobRecord> = {
+    const updator: MongoDB.UpdateFilter<JobRecord> = {
       $set: {nextRunAt: options.nextRunAt, priority: options.priority},
       $unset: {lockedUntil: ''},
     }

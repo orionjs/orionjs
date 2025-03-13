@@ -1,9 +1,4 @@
-import {
-  Collection,
-  ModelToDocumentTypeWithoutId,
-  MongoCollection,
-  Repository,
-} from '@orion-js/mongodb'
+import {Collection, MongoCollection, Repository, MongoDB} from '@orion-js/mongodb'
 import {omit} from 'lodash'
 import {HistoryRecord} from '../types/HistoryRecord'
 import {getModelForClass} from '@orion-js/typed-model'
@@ -38,7 +33,7 @@ export class JobsHistoryRepo {
   })
   history: Collection<HistoryRecord>
 
-  async saveExecution(record: ModelToDocumentTypeWithoutId<HistoryRecord>) {
+  async saveExecution(record: MongoDB.WithoutId<HistoryRecord>) {
     await this.history.upsert(
       {executionId: record.executionId},
       {

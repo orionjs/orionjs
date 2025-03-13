@@ -1,40 +1,10 @@
 import * as MongoDB from 'mongodb'
-import { Model } from '@orion-js/models'
-import { Blackbox, Schema } from '@orion-js/schema'
-import { OrionMongoClient } from '../connect/connections'
+import {Blackbox, Schema} from '@orion-js/schema'
+import {OrionMongoClient} from '../connect/connections'
 
-type RemoveFunctions<T extends ModelClassBase> = Pick<
-  T,
-  { [Key in keyof T]-?: T[Key] extends Function ? never : Key }[keyof T]
-> & { _id: ModelClassBase['_id'] }
+export {MongoDB}
 
-export type ModelClassBase = {
-  _id: string
-} & Blackbox
-
-export type DocumentWithIdOptional<T extends ModelClassBase> = Omit<T, '_id'> & {
-  /**
-   * The ID of the document
-   */
-  _id?: T['_id']
-}
-
-export type DocumentWithoutId<T> = Omit<T, '_id'>
-
-export type ModelToDocumentType<ModelClass extends ModelClassBase> = RemoveFunctions<ModelClass>
-export type ModelToDocumentTypeWithId<ModelClass extends ModelClassBase> =
-  RemoveFunctions<ModelClass>
-export type ModelToDocumentTypeWithoutId<ModelClass extends ModelClassBase> = DocumentWithoutId<
-  ModelToDocumentType<ModelClass>
->
-export type ModelToDocumentTypeWithIdOptional<ModelClass extends ModelClassBase> =
-  DocumentWithIdOptional<ModelToDocumentType<ModelClass>>
-export type ModelToMongoSelector<ModelClass extends ModelClassBase> = MongoSelector<
-  ModelToDocumentType<ModelClass>
->
-export type ModelToUpdateFilter<ModelClass extends ModelClassBase> =
-  | MongoDB.UpdateFilter<ModelToDocumentTypeWithoutId<ModelClass>>
-  | Partial<ModelToDocumentTypeWithoutId<ModelClass>>
+export type ModelClassBase = Blackbox & {_id: string}
 
 export interface CollectionIndex {
   keys: MongoDB.IndexSpecification
@@ -77,7 +47,7 @@ export namespace DataLoader {
 }
 
 export type MongoFilter<ModelClass extends ModelClassBase = ModelClassBase> =
-  MongoDB.Filter<ModelClass> & ({ _id?: ModelClass['_id'] } | { _id?: { $in: ModelClass['_id'][] } })
+  MongoDB.Filter<ModelClass>
 
 export type MongoSelector<ModelClass extends ModelClassBase = ModelClassBase> =
   | ModelClass['_id']
@@ -107,46 +77,54 @@ export interface InsertOptions {
 
 export type InitItem<ModelClass extends ModelClassBase> = (doc: any) => ModelClass
 
+export type ModelToMongoSelector<ModelClass extends ModelClassBase> =
+  | MongoDB.Filter<ModelClass>
+  | MongoDB.WithId<ModelClass>['_id']
+
 export type FindOne<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.FindOptions,
+  options?: MongoDB.FindOptions<ModelClass>,
 ) => Promise<ModelClass>
 
 export type Find<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.FindOptions,
+  options?: MongoDB.FindOptions<ModelClass>,
 ) => FindCursor<ModelClass>
 
-export type FindOneAndUpdate<ModelClass extends ModelClassBase> = (
-  selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions,
-) => Promise<ModelClass>
+export type FindOneAndUpdate<ModelClass extends ModelClassBase> = <
+  TSelector extends ModelToMongoSelector<ModelClass>,
+  TFilter extends MongoDB.UpdateFilter<ModelClass>,
+  TOptions extends FindOneAndUpdateUpdateOptions,
+>(
+  selector: TSelector,
+  modifier: TFilter,
+  options?: TOptions,
+) => ReturnType<MongoDB.Collection<ModelClass>['findOneAndUpdate']>
 
 export type UpdateAndFind<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
+  modifier: MongoDB.UpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<ModelClass>
 
 export type UpdateItem<ModelClass extends ModelClassBase> = (
   item: ModelClass,
-  modifier: ModelToUpdateFilter<ModelClass>,
+  modifier: MongoDB.UpdateFilter<ModelClass>,
   options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<void>
 
 export type InsertOne<ModelClass extends ModelClassBase> = (
-  doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
+  doc: MongoDB.OptionalId<ModelClass>,
   options?: InsertOptions,
 ) => Promise<ModelClass['_id']>
 
 export type InsertMany<ModelClass extends ModelClassBase> = (
-  doc: Array<ModelToDocumentTypeWithIdOptional<ModelClass>>,
+  doc: Array<MongoDB.OptionalId<ModelClass>>,
   options?: InsertOptions,
 ) => Promise<Array<ModelClass['_id']>>
 
 export type InsertAndFind<ModelClass extends ModelClassBase> = (
-  doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
+  doc: MongoDB.OptionalId<ModelClass>,
   options?: InsertOptions,
 ) => Promise<ModelClass>
 
@@ -162,19 +140,19 @@ export type DeleteOne<ModelClass extends ModelClassBase> = (
 
 export type UpdateOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
+  modifier: MongoDB.UpdateFilter<ModelClass>,
   options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult>
 
 export type UpdateMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
+  modifier: MongoDB.UpdateFilter<ModelClass>,
   options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult | MongoDB.Document>
 
 export type Upsert<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
+  modifier: MongoDB.UpdateFilter<ModelClass>,
   options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult>
 
@@ -207,7 +185,7 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
   idPrefix?: ModelClass['_id']
 }
 
-export type EstimatedDocumentCount<ModelClass extends ModelClassBase> = (
+export type EstimatedDocumentCount<_ModelClass extends ModelClassBase> = (
   options?: MongoDB.EstimatedDocumentCountOptions,
 ) => Promise<number>
 
@@ -231,7 +209,6 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   db: MongoDB.Db
   client: OrionMongoClient
   rawCollection: MongoDB.Collection<ModelClass>
-  initItem: InitItem<ModelClass>
 
   findOne: FindOne<ModelClass>
   find: Find<ModelClass>

@@ -1,7 +1,8 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel, ModelSchema} from '@orion-js/models'
+import {createModel} from '@orion-js/models'
 import createCollection from '..'
 import {it, expect} from 'vitest'
+import {Schema} from '@orion-js/schema'
 
 it('updates a document if exists', async () => {
   const Tests = createCollection({name: generateId()})
@@ -33,7 +34,7 @@ it('inserts a document if it does not exists', async () => {
 it('adds default value when creating docs', async () => {
   const now = new Date()
   let calls = 0
-  const schema: ModelSchema = {
+  const schema: Schema = {
     firstName: {
       type: String,
       defaultValue: () => 'Nicolás',
@@ -77,7 +78,7 @@ it('should upsert documents passing cleaning validation', async () => {
     state: {type: String, optional: true},
   }
 
-  const schema: ModelSchema = {
+  const schema: Schema = {
     _id: {type: 'ID'},
     name: {type: String},
     label: {type: String},

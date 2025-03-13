@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel, ModelSchema} from '@orion-js/models'
+import {createModel} from '@orion-js/models'
 import {Schema} from '@orion-js/schema'
 import createCollection from '..'
 import {it, expect} from 'vitest'
@@ -31,7 +31,7 @@ it('should update documents that have array passing validation', async () => {
   const friend = {
     name: {type: String},
   }
-  const schema: ModelSchema = {
+  const schema: Schema = {
     friends: {type: [friend]},
   }
   const model = createModel({name: generateId(), schema})
@@ -62,7 +62,7 @@ it('should update documents that have array passing validation', async () => {
 })
 
 it('should do $pull operation', async () => {
-  const schema: ModelSchema = {
+  const schema: Schema = {
     tags: {type: [String]},
   }
   const model = createModel({name: generateId(), schema})
@@ -105,7 +105,7 @@ it('should update documents passing validation', async () => {
 })
 
 it('should handle $inc operator on blackbox', async () => {
-  const schema: ModelSchema = {
+  const schema: Schema = {
     services: {
       type: 'blackbox',
     },
@@ -184,7 +184,7 @@ it('dont add autovalue when updating', async () => {
     },
     count: {
       type: Number,
-      autoValue(name) {
+      autoValue() {
         return index++
       },
     },
@@ -206,7 +206,7 @@ it('should handle $ correctly', async () => {
     address: {type: String},
     verified: {type: Boolean},
   }
-  const schema: ModelSchema = {
+  const schema: Schema = {
     emails: {type: [Email]},
   }
   const model = createModel({name: generateId(), schema})
@@ -253,7 +253,7 @@ it('should pass full doc on clean as well as validate', async () => {
           expect(doc).toEqual({name: item.name})
           return value
         },
-        validate(value, {doc}) {
+        validate(_value, {doc}) {
           expect(doc).toEqual({name: item.name})
         },
       },
@@ -275,7 +275,7 @@ it('Should allow custom clean function on a blackbox field', async () => {
       info: {
         type: 'blackbox',
         optional: true,
-        async clean(info, {doc}) {
+        async clean() {
           return {hello: 'world'}
         },
       },

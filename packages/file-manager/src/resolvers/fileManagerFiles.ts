@@ -1,8 +1,8 @@
 import {paginatedResolver} from '@orion-js/paginated-mongodb'
 import {Resolver} from '@orion-js/resolvers'
 import escapeString from 'escape-string-regexp'
-import File from '../File'
 import {Files} from '../Files'
+import {FileSchema} from '../File/schema'
 
 const fileManagerFiles: Resolver = paginatedResolver({
   params: {
@@ -11,7 +11,7 @@ const fileManagerFiles: Resolver = paginatedResolver({
       optional: true,
     },
   },
-  returns: File,
+  returns: FileSchema,
   async getCursor({filter}, viewer) {
     const query: any = {status: 'uploaded'}
 

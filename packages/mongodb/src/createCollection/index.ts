@@ -1,4 +1,3 @@
-import initItem from './initItem'
 import type {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
 import {
   countDocuments,
@@ -51,12 +50,9 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
     connectionPromise: orionConnection.connectionPromise,
     startConnection: orionConnection.startConnection,
     rawCollection,
-    generateId: getIdGenerator(options),
+    generateId: getIdGenerator<DocumentType>(options),
     getSchema: () => schema,
   }
-
-  // helpers
-  collection.initItem = initItem(collection)
 
   // modified orion methods
   collection.findOne = findOne(collection)

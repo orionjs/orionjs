@@ -8,7 +8,7 @@ interface Options {
   timeout: number
 }
 
-export const getDataLoader = function (params: Options): DataLoader<any, any> {
+export const getDataLoader = (params: Options): DataLoader<any, any> => {
   const {key, func, timeout} = params
 
   const existing = cache.get(key)

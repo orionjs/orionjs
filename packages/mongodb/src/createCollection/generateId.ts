@@ -1,8 +1,10 @@
 import {generateId, generateUUID} from '@orion-js/helpers'
 import {ObjectId} from 'bson'
-import {CreateCollectionOptions} from '..'
+import {CreateCollectionOptions, ModelClassBase} from '..'
 
-const getIdGenerator = (options: CreateCollectionOptions): (() => string) => {
+const getIdGenerator = <DocumentType extends ModelClassBase>(
+  options: CreateCollectionOptions,
+): (() => DocumentType['_id']) => {
   if (options.idPrefix || options.idGeneration === 'uuid') {
     return () => {
       const prefix = options.idPrefix || ''

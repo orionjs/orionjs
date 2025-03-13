@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import {createModel, Model, ModelSchema} from '@orion-js/models'
+import {createModel, Model} from '@orion-js/models'
 import {SchemaFromTypedSchemaMetadata} from '..'
 import {getParamTypeForProp} from './processTypeForProp'
+import {Schema} from '@orion-js/schema'
 
 // @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
@@ -33,12 +34,12 @@ export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedS
     return modelCache.get(modelName)
   }
 
-  const schema: ModelSchema = {}
+  const schema: Schema = {}
   const keys = Object.keys(metadata ?? {})
   const injectionKeys = keys.filter(key => key.startsWith('_prop:'))
 
   for (const key of injectionKeys) {
-    const prop = metadata[key] as ModelSchema
+    const prop = metadata[key] as Schema
     const schemaProp = key.replace('_prop:', '')
 
     schema[schemaProp] = {
