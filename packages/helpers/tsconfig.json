@@ -11,8 +11,6 @@
 
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["vitest/globals"]
-  },
-  "include": ["src/**/*.ts"]  
+    "forceConsistentCasingInFileNames": true
+  }
 }
