@@ -1,5 +1,16 @@
 # @orion-js/core
 
+## 4.0.0-next.7
+
+### Major Changes
+
+- update all to v8
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/env@4.0.0-next.7
+
 ## 4.0.0-next.6
 
 ### Major Changes

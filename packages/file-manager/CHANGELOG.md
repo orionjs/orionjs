@@ -1,5 +1,22 @@
 # @orion-js/file-manager
 
+## 4.0.0-next.8
+
+### Major Changes
+
+- update all to v8
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/paginated-mongodb@4.0.0-next.8
+  - @orion-js/typed-model@4.0.0-next.8
+  - @orion-js/resolvers@4.0.0-next.8
+  - @orion-js/helpers@4.0.0-next.8
+  - @orion-js/mongodb@4.0.0-next.8
+  - @orion-js/models@4.0.0-next.8
+  - @orion-js/schema@4.0.0-next.7
+
 ## 4.0.0-next.7
 
 ### Patch Changes

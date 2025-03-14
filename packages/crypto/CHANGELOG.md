@@ -1,5 +1,16 @@
 # @orion-js/crypto
 
+## 4.0.0-next.8
+
+### Major Changes
+
+- update all to v8
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/services@4.0.0-next.8
+
 ## 4.0.0-next.7
 
 ### Patch Changes
