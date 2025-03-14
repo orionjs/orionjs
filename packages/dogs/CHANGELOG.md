@@ -1,5 +1,21 @@
 # @orion-js/dogs
 
+## 4.0.0-next.4
+
+### Major Changes
+
+- Orion v4 passing all tests
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/typed-model@4.0.0-next.4
+  - @orion-js/services@4.0.0-next.4
+  - @orion-js/helpers@4.0.0-next.4
+  - @orion-js/mongodb@4.0.0-next.4
+  - @orion-js/logger@4.0.0-next.4
+  - @orion-js/schema@4.0.0-next.4
+
 ## 4.0.0-next.3
 
 ### Major Changes

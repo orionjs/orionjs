@@ -1,5 +1,11 @@
 # @orion-js/env
 
+## 4.0.0-next.4
+
+### Major Changes
+
+- Orion v4 passing all tests
+
 ## 4.0.0-next.3
 
 ### Major Changes

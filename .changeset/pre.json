@@ -26,6 +26,7 @@
     "@orion-js/core": "4.0.0-next.0"
   },
   "changesets": [
+    "dark-pants-hear",
     "eleven-apples-drive",
     "fresh-dolls-appear",
     "funny-memes-guess",

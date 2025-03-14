@@ -1,5 +1,22 @@
 # @orion-js/paginated-mongodb
 
+## 4.0.0-next.4
+
+### Major Changes
+
+- Orion v4 passing all tests
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/typed-model@4.0.0-next.4
+  - @orion-js/resolvers@4.0.0-next.4
+  - @orion-js/services@4.0.0-next.4
+  - @orion-js/helpers@4.0.0-next.4
+  - @orion-js/mongodb@4.0.0-next.4
+  - @orion-js/models@4.0.0-next.4
+  - @orion-js/schema@4.0.0-next.4
+
 ## 4.0.0-next.3
 
 ### Major Changes
