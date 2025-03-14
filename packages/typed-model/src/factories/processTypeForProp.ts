@@ -1,3 +1,4 @@
+import {isType} from 'rambdax'
 import {PropOptions} from '../decorators/prop'
 
 export function getParamTypeForProp(type: PropOptions['type']) {
@@ -14,7 +15,7 @@ export function getParamTypeForProp(type: PropOptions['type']) {
     return getParamTypeForProp(type.getSchema())
   }
 
-  if (type(type) === 'Object') {
+  if (isType('Object', type)) {
     if (type.__isFieldType) {
       return type
     }

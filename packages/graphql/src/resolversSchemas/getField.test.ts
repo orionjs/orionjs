@@ -39,6 +39,7 @@ describe('Field serialization', () => {
     }
 
     const result = await getField(schema.point)
+    console.log(result, 'result')
     expect(result.type.name).toEqual({type: 'string', label: 'Name', __graphQLType: 'String'})
   })
 })

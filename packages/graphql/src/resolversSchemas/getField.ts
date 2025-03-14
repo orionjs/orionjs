@@ -4,12 +4,14 @@ import {
   isSchemaLike,
   SchemaNode,
 } from '@orion-js/schema'
-import {omit} from 'rambdax'
+import {isType, omit} from 'rambdax'
 import getScalar from '../buildSchema/getType/getScalar'
 import {getStaticFields} from './getStaticFields'
 
 export default async function getParams(field: SchemaNode) {
   const {type} = field
+
+  console.log(type, 'getting parms')
 
   if (Array.isArray(type)) {
     const serialized = await getParams({...field, type: type[0]})
@@ -36,7 +38,7 @@ export default async function getParams(field: SchemaNode) {
     }
 
     return {
-      ...omit(field, 'key'),
+      ...omit(['key'], field),
       type: fields,
       __graphQLType: `${modelName}Input`,
     }
@@ -44,8 +46,11 @@ export default async function getParams(field: SchemaNode) {
 
   const schemaType = getFieldType(type)
   const graphQLType = await getScalar(schemaType)
+
+  const withoutKey = isType('Object', field) ? omit(['key'], field) : ({} as any)
+
   return {
-    ...omit(field, 'key'),
+    ...withoutKey,
     type: schemaType.name,
     __graphQLType: graphQLType.name,
   }

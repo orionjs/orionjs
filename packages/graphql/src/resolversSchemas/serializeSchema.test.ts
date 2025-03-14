@@ -20,6 +20,7 @@ it('should pass field options', async () => {
     },
   }
   const result = await serializeSchema(schema)
+  console.log(result, 'result')
   expect(result.name).toEqual({
     type: ['string'],
     label: '1234',

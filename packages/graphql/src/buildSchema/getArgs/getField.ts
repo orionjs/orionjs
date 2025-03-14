@@ -2,6 +2,7 @@ import {GraphQLList, GraphQLInputObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
 import getScalar from '../getType/getScalar'
 import {getStaticFields} from '../../resolversSchemas/getStaticFields'
+import {isType} from 'rambdax'
 
 // @ts-ignore polyfill for Symbol.metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
@@ -52,7 +53,7 @@ const resolveType = type => {
 
   if (Array.isArray(type)) return resolveArrayType(type)
 
-  if (!type.__isFieldType && (type(type) === 'Object' || type.__isModel)) {
+  if (!type.__isFieldType && (isType('Object', type) || type.__isModel)) {
     return resolvePlainObjectOrModelType(type)
   }
 
