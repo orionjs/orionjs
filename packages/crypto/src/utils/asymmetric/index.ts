@@ -1,7 +1,7 @@
 import {getInstance} from '@orion-js/services'
 import {Service} from '@orion-js/services'
 import {generateKeyPair, encrypt, decrypt} from './tweetnacl'
-import {encodeBase64, decodeBase64} from 'tweetnacl-util'
+import {encodeBase64, decodeBase64} from './util'
 
 @Service()
 class Asymmetric {
