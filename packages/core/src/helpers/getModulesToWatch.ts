@@ -1,16 +1,15 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
-const getDirectories = function (dir) {
-  return fs
+const getDirectories = dir =>
+  fs
     .readdirSync(dir)
     .map(file => `${dir}/${file}`)
-    .filter(file => {
+    .filter(_file => {
       const stats = fs.statSync(dir)
       return stats.isDirectory()
     })
-}
 
-const getSymlinks = function () {
+const getSymlinks = () => {
   const symlinks = []
   const dirs = getDirectories('./node_modules')
   for (const dir of dirs) {
@@ -23,7 +22,7 @@ const getSymlinks = function () {
     if (dir.includes('@orion-js')) {
       const subDirs = getDirectories(dir)
       for (const subDir of subDirs) {
-        symlinks.push(subDir + '/lib')
+        symlinks.push(`${subDir}/lib`)
       }
     }
   }

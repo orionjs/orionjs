@@ -1,9 +1,9 @@
 #!/usr/bin/env node
+import chalk from 'chalk'
 import {Command} from 'commander'
-import start from './start'
 import build from './build'
 import create from './create'
-import colors from 'colors/safe'
+import start from './start'
 import test from './test'
 import './handleErrors'
 import version from './version'
@@ -11,15 +11,15 @@ import 'dotenv/config'
 
 const program = new Command()
 
-const run = function (action) {
-  return async function (...args) {
+const run =
+  action =>
+  async (...args) => {
     try {
       await action(...args)
     } catch (e) {
-      console.error(colors.red('Error: ' + e.message))
+      console.error(chalk.red(`Error: ${e.message}`))
     }
   }
-}
 
 program
   .command('start')

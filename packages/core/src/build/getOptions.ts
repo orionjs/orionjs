@@ -1,7 +1,7 @@
+import path from 'node:path'
 import ts from 'typescript'
 import {getConfigPath} from '../start/watchAndCompile/getConfigPath'
-import path from 'path'
-import {reportDiagnostic} from '../start/watchAndCompile/reports'
+import {reportDiagnostic} from './reports'
 
 export function getCompilerOptionsJSONFollowExtends(filename: string): {[key: string]: any} {
   let compopts = {}
@@ -13,7 +13,7 @@ export function getCompilerOptionsJSONFollowExtends(filename: string): {[key: st
 
   return {
     ...compopts,
-    ...config.compilerOptions
+    ...config.compilerOptions,
   }
 }
 

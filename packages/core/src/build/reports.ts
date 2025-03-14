@@ -1,5 +1,4 @@
-import ts, {ListFormat} from 'typescript'
-import colors from 'colors/safe'
+import ts from 'typescript'
 
 const format = {
   getCanonicalFileName: fileName => fileName,

@@ -10,7 +10,7 @@ export function getArgs(options: RunnerOptions) {
     startCommand = first
     args.push(...otherArgs)
 
-    console.log('Using custom command: ' + [startCommand, ...args].join(' '))
+    console.log(`Using custom command: ${[startCommand, ...args].join(' ')}`)
   } else if (options.shell) {
     args.push('--inspect')
   }

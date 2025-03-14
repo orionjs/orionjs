@@ -1,7 +1,7 @@
-import path from 'path'
-import fs from 'fs/promises'
-import https from 'https'
-import colors from 'colors/safe'
+import fs from 'node:fs/promises'
+import https from 'node:https'
+import path from 'node:path'
+import chalk from 'chalk'
 
 const rules = [
   'orionjs.mdx',
@@ -36,7 +36,7 @@ const downloadFile = (url: string): Promise<string> => {
 }
 
 export async function copyCursorRule() {
-  const baseUrl = `https://raw.githubusercontent.com/orionjs/orionjs/refs/heads/master/mdc`
+  const baseUrl = 'https://raw.githubusercontent.com/orionjs/orionjs/refs/heads/master/mdc'
 
   try {
     // Create target directory if it doesn't exist
@@ -52,7 +52,7 @@ export async function copyCursorRule() {
       // Construct source URL
       const sourceUrl = `${baseUrl}/${rule}`
 
-      // console.log(colors.gray(`=> ✨ Downloading ${colors.cyan(rule)} to ${colors.cyan(targetFileName)}...`))
+      // console.log(chalk.gray(`=> ✨ Downloading ${chalk.cyan(rule)} to ${chalk.cyan(targetFileName)}...`))
 
       // Download the file content
       const content = await downloadFile(sourceUrl)
@@ -60,11 +60,11 @@ export async function copyCursorRule() {
       // Write the content to the target file
       await fs.writeFile(targetFile, content, 'utf8')
 
-      console.log(colors.bold(`=> ✨ Successfully downloaded ${colors.cyan(targetFileName)}`))
+      console.log(chalk.bold(`=> ✨ Successfully downloaded ${chalk.cyan(targetFileName)}`))
     }
 
-    console.log(colors.bold('=> ✨ All rule files have been successfully copied'))
+    console.log(chalk.bold('=> ✨ All rule files have been successfully copied'))
   } catch (error) {
-    console.error(colors.red(`Error copying rule files: ${error.message}`))
+    console.error(chalk.red(`Error copying rule files: ${error.message}`))
   }
 }

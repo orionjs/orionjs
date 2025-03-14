@@ -1,27 +1,39 @@
+import {parse, stringify} from 'comment-json'
 import getFileContents from '../../helpers/getFileContents'
 import writeFile from '../../helpers/writeFile'
-import {parse, stringify} from 'comment-json'
 
-export function ensureConfigComplies(configPath) {
+// Define TypeScript config interface
+interface TSConfig {
+  compilerOptions?: {
+    outDir?: string
+    baseUrl?: string
+    rootDir?: string
+    rootDirs?: string[]
+    [key: string]: any
+  }
+  [key: string]: any
+}
+
+export function ensureConfigComplies(configPath: string) {
   try {
     const configJSON = getFileContents(configPath)
-    const config = parse(configJSON) as any
+    const config = parse(configJSON) as TSConfig
 
     const newConfig = {
       ...config,
       compilerOptions: {
         ...config.compilerOptions,
-        outDir: `./.orion/build/app`,
-        baseUrl: `./`,
+        outDir: './.orion/build/app',
+        baseUrl: './',
       },
     }
 
     if (!config.compilerOptions?.rootDir && !config.compilerOptions?.rootDirs) {
-      newConfig.compilerOptions.rootDir = `./app`
+      newConfig.compilerOptions.rootDir = './app'
     }
 
     writeFile(configPath, stringify(newConfig, null, 2))
   } catch (error) {
-    console.log(`Error reading tsconfig ${error.message}`)
+    console.log(`Error reading tsconfig: ${error.message}`)
   }
 }

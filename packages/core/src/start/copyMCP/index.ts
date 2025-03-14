@@ -1,9 +1,9 @@
-import path from 'path'
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import chalk from 'chalk'
 import execute from '../../helpers/execute'
-import colors from 'colors/safe'
-import {isValidMCPRepository} from './isValidMCPRepo'
 import {MCP_VERSION, VERSION_FILE} from './consts'
+import {isValidMCPRepository} from './isValidMCPRepo'
 
 export async function copyMCP() {
   const repoUrl = 'https://github.com/orionjs/mcp-docs'
@@ -15,7 +15,7 @@ export async function copyMCP() {
 
     // Check if the repository is already properly installed with current version
     if (await isValidMCPRepository(targetDir)) {
-      console.log(colors.bold(`=> ✨ MCP documentation already installed`))
+      console.log(chalk.bold('=> ✨ MCP documentation already installed'))
       return
     }
 
@@ -26,17 +26,17 @@ export async function copyMCP() {
         // Directory exists, remove it first to ensure fresh clone
         await fs.rm(targetDir, {recursive: true, force: true})
         console.log(
-          colors.bold(
-            `=> ✨ Removed existing .orion/mcp directory (invalid, incomplete, or outdated)`,
+          chalk.bold(
+            '=> ✨ Removed existing .orion/mcp directory (invalid, incomplete, or outdated)',
           ),
         )
       }
-    } catch (error) {
+    } catch (_) {
       // Directory doesn't exist, which is fine
     }
 
     // Clone the repository
-    console.log(colors.bold(`=> ✨ Downloading MCP documentation ${MCP_VERSION}...`))
+    console.log(chalk.bold(`=> ✨ Downloading MCP documentation ${MCP_VERSION}...`))
     await execute(`git clone ${repoUrl} ${targetDir}`)
 
     // Remove git directory to avoid confusion
@@ -46,13 +46,13 @@ export async function copyMCP() {
     await fs.writeFile(path.join(targetDir, VERSION_FILE), MCP_VERSION, 'utf-8')
 
     console.log(
-      colors.bold(`=> ✨ Successfully downloaded MCP documentation v${MCP_VERSION} to .orion/mcp`),
+      chalk.bold(`=> ✨ Successfully downloaded MCP documentation v${MCP_VERSION} to .orion/mcp`),
     )
 
     // Install dependencies in the MCP directory
-    console.log(colors.bold(`=> ✨ Installing MCP dependencies...`))
+    console.log(chalk.bold('=> ✨ Installing MCP dependencies...'))
     await execute(`cd ${targetDir} && npm install`)
-    console.log(colors.bold(`=> ✨ Successfully installed MCP dependencies`))
+    console.log(chalk.bold('=> ✨ Successfully installed MCP dependencies'))
 
     const mcpServerConfig = {
       mcpServers: {
@@ -79,18 +79,18 @@ export async function copyMCP() {
 
       // Write the updated config back
       await fs.writeFile(configPath, JSON.stringify(parsedConfig, null, 2), 'utf-8')
-      console.log(colors.bold(`=> ✨ Updated MCP server configuration in .cursor/mcp.json`))
-    } catch (error) {
+      console.log(chalk.bold('=> ✨ Updated MCP server configuration in .cursor/mcp.json'))
+    } catch (_) {
       // If file doesn't exist or can't be parsed, create a new one
       // Ensure the .cursor directory exists
       await fs.mkdir(path.dirname(configPath), {recursive: true})
 
       // Write the new config file
       await fs.writeFile(configPath, JSON.stringify(mcpServerConfig, null, 2), 'utf-8')
-      console.log(colors.bold(`=> ✨ Created new MCP server configuration in .cursor/mcp.json`))
+      console.log(chalk.bold('=> ✨ Created new MCP server configuration in .cursor/mcp.json'))
     }
   } catch (error) {
-    console.error(colors.red('=> ✨ Error copying MCP documentation:'), error)
+    console.error(chalk.red('=> ✨ Error copying MCP documentation:'), error)
     throw error
   }
 }

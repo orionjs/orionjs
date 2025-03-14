@@ -1,4 +1,4 @@
-import colors from 'colors/safe'
+import chalk from 'chalk'
 import writeFile from '../../helpers/writeFile'
 import {startProcess} from './startProcess'
 
@@ -21,17 +21,18 @@ export function getRunner(options: RunnerOptions): Runner {
   let appProcess = null
 
   if (options.clean) {
-    console.log(colors.bold('=> Cleaning directory...\n'))
+    console.log(chalk.bold('=> Cleaning directory...\n'))
   }
 
   const start = () => {
-    console.log(colors.bold('=> Starting app...\n'))
+    console.log(chalk.bold('=> Starting app...\n'))
     appProcess = startProcess(options)
 
-    appProcess.on('exit', function (code: number, signal: string) {
+    appProcess.on('exit', (code: number, signal: string) => {
       if (!code || code === 143 || code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
+        // Normal termination
       } else {
-        console.log(colors.bold(`=> Error running app. Exit code: ${code}`))
+        console.log(chalk.bold(`=> Error running app. Exit code: ${code}`))
       }
     })
 

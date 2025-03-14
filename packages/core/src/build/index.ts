@@ -1,6 +1,5 @@
-import colors from 'colors/safe'
+import chalk from 'chalk'
 import execute from '../helpers/execute'
-import writeIndex from '../start/watchAndCompile/writeIndex'
 import {compile} from './compile'
 
 export default async function ({output}) {
@@ -8,14 +7,12 @@ export default async function ({output}) {
     output = './build'
   }
 
-  console.log(colors.bold(`Cleaning directory ${output}...`))
+  console.log(chalk.bold(`Cleaning directory ${output}...`))
   await execute(`rm -rf ${output}`)
 
-  console.log(colors.bold('Compiling your app...'))
+  console.log(chalk.bold('Compiling your app...'))
 
   compile({output})
 
-  writeIndex({basePath: output})
-
-  console.log(colors.bold('Build created'))
+  console.log(chalk.bold('Build created'))
 }

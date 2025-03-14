@@ -1,7 +1,7 @@
+import chalk from 'chalk'
 import ts from 'typescript'
 import {getOptions} from './getOptions'
-import colors from 'colors/safe'
-import {reportDiagnostic} from '../start/watchAndCompile/reports'
+import {reportDiagnostic} from './reports'
 
 export function compile({output}): void {
   const options = getOptions({output})
@@ -11,7 +11,7 @@ export function compile({output}): void {
   const preEmitDiagnostics = ts.getPreEmitDiagnostics(program)
 
   if (preEmitDiagnostics.length > 0) {
-    console.log(colors.red(`\n==> Error builing Orion app\n`))
+    console.log(chalk.red('\n==> Error builing Orion app\n'))
   }
 
   preEmitDiagnostics.forEach(reportDiagnostic)

@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import ensureDirectory from '../helpers/ensureDirectory'
 
 export default async function (path: string, content: string): Promise<void> {

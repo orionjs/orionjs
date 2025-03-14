@@ -22,16 +22,14 @@
   "dependencies": {
     "@orion-js/env": "workspace:*",
     "chokidar": "3.5.3",
-    "colors": "^1.4.0",
+    "chalk": "^4.1.2",
     "commander": "^9.4.1",
     "comment-json": "^4.2.3",
     "dotenv": "^16.0.3",
     "lodash": "^4.17.21",
     "prompts": "^2.4.2",
-    "yaml": "^2.2.1"
-  },
-  "peerDependencies": {
-    "typescript": "*"
+    "yaml": "^2.2.1",
+    "typescript": "^5.4.5"
   },
   "publishConfig": {
     "access": "public"
@@ -41,9 +39,7 @@
   },
   "gitHead": "9d85ab24776533db109843c277324e42c65ddedd",
   "devDependencies": {
-    "@shelf/jest-mongodb": "^2.1.0",
     "@types/prompts": "^2.4.2",
-    "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
     "vitest": "^1.1.0"

@@ -1,11 +1,11 @@
-import colors from 'colors/safe'
-import {getRunner, RunnerOptions} from './runner'
-import watchAndCompile from './watchAndCompile'
+import chalk from 'chalk'
 import {copyCursorRule} from './copyCursorRule'
 import {copyMCP} from './copyMCP'
+import {RunnerOptions, getRunner} from './runner'
+import watchAndCompile from './watchAndCompile'
 
 export default async function (options: RunnerOptions) {
-  console.log(colors.bold('\nOrionjs App ' + colors.green(colors.bold('V3\n'))))
+  console.log(chalk.bold(`\nOrionjs App ${chalk.green(chalk.bold('V4\n'))}`))
 
   if (!options.omitCursorRule) {
     await copyCursorRule().catch(console.error)
@@ -16,7 +16,7 @@ export default async function (options: RunnerOptions) {
   }
 
   if (!options.omitMcpServer && !options.omitCursorRule) {
-    console.log(colors.bold(`=> ✨ Orionjs AI is ready\n`))
+    console.log(chalk.bold('=> ✨ Orionjs AI is ready\n'))
   }
 
   const runner = getRunner(options)

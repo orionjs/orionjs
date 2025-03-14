@@ -1,6 +1,6 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import chokidar from 'chokidar'
-import path from 'path'
-import fs from 'fs'
 
 export async function watchDeletes() {
   const projectPath = path.resolve('./app')

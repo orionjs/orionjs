@@ -1,14 +1,15 @@
-import ts from 'typescript'
 import {Runner} from '../runner'
 import cleanDirectory from './cleanDirectory'
-import {getHost} from './getHost'
+import {ensureConfigComplies} from './ensureConfigComplies'
+import {getConfigPath} from './getConfigPath'
 import {watchDeletes} from './watchDeletes'
 import {watchEnvFile} from './writeEnvFile'
 
 export default async function watchAndCompile(runner: Runner) {
+  const configPath = getConfigPath()
+  ensureConfigComplies(configPath)
+
   await cleanDirectory()
-  const host = getHost(runner)
-  ts.createWatchProgram(host)
   watchDeletes()
   watchEnvFile(runner)
 }

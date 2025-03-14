@@ -18,5 +18,13 @@
     "typescript": "^5.8.2",
     "vitest": "^1.6.1",
     "vitest-mongodb": "^1.0.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@orion-js/core": "link:packages/core"
+    }
+  },
+  "dependencies": {
+    "@orion-js/core": "link:packages/core"
   }
 }

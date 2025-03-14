@@ -1,7 +1,7 @@
-import {exec} from 'child_process'
+import {exec} from 'node:child_process'
 
 export default async function (command) {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
       if (error) {
         reject(error)
