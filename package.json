@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "pnpm --filter=* test",
+    "test": "pnpm --filter=* --workspace-concurrency=1 test",
     "build": "pnpm --filter=* build"
   },
   "devDependencies": {
