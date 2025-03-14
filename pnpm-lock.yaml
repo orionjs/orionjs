@@ -435,9 +435,6 @@ importers:
 
   packages/helpers:
     dependencies:
-      object-hash:
-        specifier: ^2.2.0
-        version: 2.2.0
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -515,9 +512,6 @@ importers:
       color:
         specifier: ^4.2.3
         version: 4.2.3
-      object-hash:
-        specifier: ^2.2.0
-        version: 2.2.0
       text-hex:
         specifier: ^1.0.0
         version: 1.0.0
@@ -3419,10 +3413,6 @@ packages:
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
-
-  object-hash@2.2.0:
-    resolution: {integrity: sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==}
-    engines: {node: '>= 6'}
 
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
@@ -7176,8 +7166,6 @@ snapshots:
       path-key: 4.0.0
 
   object-assign@4.1.1: {}
-
-  object-hash@2.2.0: {}
 
   object-inspect@1.13.4: {}
 

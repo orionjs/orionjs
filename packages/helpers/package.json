@@ -23,7 +23,6 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "object-hash": "^2.2.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
