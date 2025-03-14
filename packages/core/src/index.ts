@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import chalk from 'chalk'
 import {Command} from 'commander'
-import build from './build'
 import create from './create'
-import start from './start'
-import test from './test'
+import dev from './dev'
+import prod from './prod'
 import './handleErrors'
 import version from './version'
 import 'dotenv/config'
@@ -22,21 +21,14 @@ const run =
   }
 
 program
-  .command('start')
-  .description('Run the Orionjs app')
+  .command('dev')
+  .description('Run the Orionjs app in development mode')
   .option('--shell', 'Opens a shell in Chrome developer tools')
-  .option('--clean', 'Build the typescript project from scratch')
   .option('--omit-cursor-rule', 'Omit the creation of the Orionjs Cursor rule')
   .option('--omit-mcp-server', 'Omit the creation of the Orionjs MCP server')
-  .action(run(start))
+  .action(run(dev))
 
-program.command('test').allowUnknownOption().description('Deprecated command').action(run(test))
-
-program
-  .command('build')
-  .description('Compiles an Orionjs app and exports it to a simple nodejs app')
-  .option('-o, --output [output]', 'Output directory')
-  .action(run(build))
+program.command('prod').description('Run the Orionjs app in production mode').action(run(prod))
 
 program
   .command('create')

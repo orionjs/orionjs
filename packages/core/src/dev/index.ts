@@ -5,7 +5,7 @@ import {copyMCP} from './copyMCP'
 import chalk from 'chalk'
 
 export default async function (options: RunnerOptions) {
-  console.log(chalk.bold(`\nOrionjs App ${chalk.green(chalk.bold('V3\n'))}`))
+  console.log(chalk.bold(`\nOrionjs App ${chalk.green(chalk.bold('V4'))} Dev mode \n`))
 
   if (!options.omitCursorRule) {
     await copyCursorRule().catch(console.error)
