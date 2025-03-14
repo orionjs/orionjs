@@ -5,8 +5,10 @@ import express from 'express'
 import route from './routes/route'
 import registerRoute from './routes/registerRoute'
 import registerRoutes from './routes/registerRoutes'
-import {json, raw, text, urlencoded} from 'body-parser'
+import bodyParserLib from 'body-parser'
 import {RequestHandler} from 'express'
+
+const {json, raw, text, urlencoded} = bodyParserLib
 
 const bodyParser: {
   json: () => RequestHandler

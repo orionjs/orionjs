@@ -1,4 +1,4 @@
-import {values} from 'lodash'
+import values from 'lodash/values'
 import registerRoute from './registerRoute'
 import {RoutesMap} from '../types'
 

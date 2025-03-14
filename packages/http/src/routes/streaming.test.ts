@@ -2,7 +2,7 @@ import {getApp} from './../start'
 import route from './route'
 import registerRoute from './registerRoute'
 import request from 'supertest'
-import {range} from 'lodash'
+import range from 'lodash/range'
 import {sleep} from '@orion-js/helpers'
 import {describe, it} from 'vitest'
 

@@ -2,7 +2,9 @@ import {RouteType} from './../types'
 import {onError} from '../errors'
 import {getViewer} from './../viewer'
 import express from 'express'
-import {isNil, isPlainObject, random} from 'lodash'
+import isNil from 'lodash/isNil'
+import isPlainObject from 'lodash/isPlainObject'
+import random from 'lodash/random'
 import {internalGetEnv} from '@orion-js/env'
 import {sleep} from '@orion-js/helpers'
 
@@ -14,7 +16,7 @@ export async function executeRequest(
   res: express.Response,
 ) {
   if (simulateLatency) {
-    const time = parseInt(simulateLatency)
+    const time = Number.parseInt(simulateLatency)
     if (time) {
       await sleep(random(time * 0.9, time * 1.1))
     }
