@@ -1,10 +1,29 @@
 import * as MongoDB from 'mongodb'
-import {Blackbox, Schema} from '@orion-js/schema'
+import {FieldType, fieldTypes, Schema, StrictInferSchemaType} from '@orion-js/schema'
 import {OrionMongoClient} from '../connect/connections'
+import {EnhancedOmit} from 'mongodb'
 
 export {MongoDB}
 
-export type ModelClassBase = Blackbox & {_id: string}
+export declare type InferIdType<TSchema> = TSchema extends {
+  _id: infer IdType
+}
+  ? Record<any, never> extends IdType
+    ? never
+    : IdType
+  : TSchema extends {
+        _id?: infer IdType
+      }
+    ? unknown extends IdType
+      ? string
+      : IdType
+    : string
+
+export type DocumentWithId<TSchema> = EnhancedOmit<TSchema, '_id'> & {
+  _id: InferIdType<TSchema>
+}
+
+export type ModelClassBase = DocumentWithId<MongoDB.Document>
 
 export interface CollectionIndex {
   keys: MongoDB.IndexSpecification
@@ -79,7 +98,7 @@ export type InitItem<ModelClass extends ModelClassBase> = (doc: any) => ModelCla
 
 export type ModelToMongoSelector<ModelClass extends ModelClassBase> =
   | MongoDB.Filter<ModelClass>
-  | MongoDB.WithId<ModelClass>['_id']
+  | DocumentWithId<ModelClass>['_id']
 
 export type FindOne<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
@@ -170,7 +189,7 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
   /**
    * The schema used for cleaning and validation of the documents
    */
-  schema?: any
+  schema?: Schema
   /**
    * The indexes to use
    */
@@ -194,9 +213,19 @@ export type CountDocuments<ModelClass extends ModelClassBase> = (
   options?: MongoDB.CountDocumentsOptions,
 ) => Promise<number>
 
-export type CreateCollection = <ModelClass extends ModelClassBase = any>(
-  options: CreateCollectionOptions<ModelClass>,
-) => Collection<ModelClass>
+export type SchemaWithRequiredId = Schema & {_id: {type: any}}
+
+export type InferSchemaTypeWithId<TSchema extends SchemaWithRequiredId> = DocumentWithId<
+  StrictInferSchemaType<TSchema>
+>
+
+export type CreateCollectionOptionsWithSchemaType<T extends SchemaWithRequiredId> = {
+  schema: T
+} & Omit<CreateCollectionOptions<InferSchemaTypeWithId<T>>, 'schema'>
+
+export type CreateCollectionOptionsWithTypedModel<T extends InstanceType<any>> = {
+  schema: any
+} & Omit<CreateCollectionOptions<DocumentWithId<T>>, 'schema'>
 
 export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
@@ -262,4 +291,31 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
 
 export type DistinctDocumentId<DistinctId extends string> = string & {
   __TYPE__: `DistinctDocumentId<${DistinctId}>`
+}
+
+export type TypedId<TPrefix extends string> = `${TPrefix}-${string}`
+
+/**
+ * Use this function to create unique types for the ids of mongodb documents.
+ * You should set it as the type of the _id field in your schema.
+ *
+ * @example
+ * ```ts
+ * type UserId = TypedId<'user'>
+ *
+ * const userSchema = {
+ *   _id: {
+ *     type: TypedId('user'),
+ *   },
+ * }
+ *
+ * ```
+ */
+export function typedId<const TPrefix extends string>(
+  prefix: TPrefix,
+): FieldType<TypedId<TPrefix>> {
+  return {
+    ...fieldTypes.string,
+    name: `typedId:${prefix}`,
+  } as any
 }

@@ -1,5 +1,5 @@
 import {Service} from '@orion-js/services'
-import createCollection from '../createCollection'
+import {createCollection} from '../createCollection'
 import {CreateCollectionOptions, ModelClassBase} from '../types'
 
 // Define metadata storage using WeakMaps

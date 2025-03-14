@@ -8,3 +8,5 @@ export * from './resolver/getArgs'
 export * from './resolver'
 
 export {checkPermissions, addPermissionChecker, cleanParams, cleanReturns}
+
+export * from './schemaWithResolvers'

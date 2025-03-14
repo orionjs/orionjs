@@ -1,19 +1,6 @@
 // import {ModelResolver, ModelResolverResolve} from '@orion-js/resolvers'
-import {Schema} from '@orion-js/schema'
 
-// export interface TypeResolversMap<TSchema> {
-//   [key: string]: ModelResolver<ModelResolverResolve<TSchema>>
-// }
-
-// export interface CreateTypeOptions<
-//   TModelName extends string,
-//   TSchema extends Schema,
-//   // TTypeResolvers extends TypeResolversMap<TSchema>,
-// > {
-//   name: TModelName
-//   schema: TSchema
-//   // resolvers?: TTypeResolvers
-// }
+import {Schema} from '../types'
 
 /**
  * Assigns a name to a schema for GraphQL type generation.

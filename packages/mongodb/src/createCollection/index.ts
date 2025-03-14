@@ -1,4 +1,13 @@
-import type {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
+import type {
+  Collection,
+  CreateCollectionOptions,
+  CreateCollectionOptionsWithSchemaType,
+  CreateCollectionOptionsWithTypedModel,
+  DocumentWithId,
+  InferSchemaTypeWithId,
+  ModelClassBase,
+  SchemaWithRequiredId,
+} from '../types'
 import {
   countDocuments,
   deleteMany,
@@ -25,9 +34,19 @@ import {wrapMethods} from './wrapMethods'
 
 export const createIndexesPromises = []
 
-const createCollection: CreateCollection = <DocumentType extends ModelClassBase>(
-  options: CreateCollectionOptions<DocumentType>,
-) => {
+export function createCollection<T extends SchemaWithRequiredId>(
+  options: CreateCollectionOptionsWithSchemaType<T>,
+): Collection<InferSchemaTypeWithId<T>>
+
+export function createCollection<T extends InstanceType<any>>(
+  options: CreateCollectionOptionsWithTypedModel<T>,
+): Collection<DocumentWithId<T>>
+
+export function createCollection<T extends ModelClassBase>(
+  options: CreateCollectionOptions<T>,
+): Collection<T>
+
+export function createCollection(options: CreateCollectionOptions) {
   const connectionName = options.connectionName || 'main'
 
   const orionConnection = getMongoConnection({name: connectionName})
@@ -36,11 +55,11 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
   }
 
   const db = orionConnection.db
-  const rawCollection = db.collection<DocumentType>(options.name)
+  const rawCollection = db.collection(options.name)
 
   const schema = getSchema(options)
 
-  const collection: Partial<Collection<DocumentType>> = {
+  const collection: Partial<Collection<any>> = {
     name: options.name,
     connectionName,
     schema,
@@ -50,7 +69,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
     connectionPromise: orionConnection.connectionPromise,
     startConnection: orionConnection.startConnection,
     rawCollection,
-    generateId: getIdGenerator<DocumentType>(options),
+    generateId: getIdGenerator(options),
     getSchema: () => schema,
   }
 
@@ -102,7 +121,5 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
 
   wrapMethods(collection as any)
 
-  return collection as Collection<DocumentType>
+  return collection as Collection<ModelClassBase>
 }
-
-export default createCollection

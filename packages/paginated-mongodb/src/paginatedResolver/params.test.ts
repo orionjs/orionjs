@@ -1,13 +1,19 @@
 import {describe, it, expect} from 'vitest'
 import {createModel} from '@orion-js/models'
-import getParams from './params'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {getPaginatedResolverParams} from './params'
+import {schemaWithName} from '@orion-js/schema'
 
 describe('Get params', () => {
   it('should return the params', () => {
-    const params = getParams({
-      params: {foo: 'bar'},
+    const params = getPaginatedResolverParams({
+      params: {
+        foo: {
+          type: 'string',
+        },
+      },
     })
+
     expect(params).toEqual({
       page: {
         type: 'integer',
@@ -20,13 +26,19 @@ describe('Get params', () => {
         min: 0,
         max: 200,
       },
-      foo: 'bar',
+      foo: {
+        type: 'string',
+      },
     })
   })
 
   it('should return the params with allowed sort', () => {
-    const params = getParams({
-      params: {foo: 'bar'},
+    const params = getPaginatedResolverParams({
+      params: {
+        foo: {
+          type: 'string',
+        },
+      },
       allowedSorts: ['foo'],
     })
     expect(params).toEqual({
@@ -51,11 +63,53 @@ describe('Get params', () => {
         allowedValues: ['asc', 'desc'],
         optional: true,
       },
-      foo: 'bar',
+      foo: {
+        type: 'string',
+      },
     })
   })
 
   it('should return the params correctly if we pass a model', () => {
+    const model = schemaWithName('Params', {
+      foo: {
+        type: 'string',
+      },
+    })
+    const params = getPaginatedResolverParams({
+      params: model,
+      allowedSorts: ['foo'],
+    })
+
+    expect(params).toEqual({
+      __modelName: 'Params',
+      page: {
+        type: 'integer',
+        defaultValue: 1,
+        min: 1,
+      },
+      limit: {
+        type: 'integer',
+        defaultValue: 0,
+        min: 0,
+        max: 200,
+      },
+      sortBy: {
+        type: String,
+        allowedValues: ['foo'],
+        optional: true,
+      },
+      sortType: {
+        type: String,
+        allowedValues: ['asc', 'desc'],
+        optional: true,
+      },
+      foo: {
+        type: 'string',
+      },
+    })
+  })
+
+  it('should return the params correctly if we pass a model (backwards)', () => {
     const model = createModel({
       name: 'Params',
       schema: {
@@ -64,12 +118,13 @@ describe('Get params', () => {
         },
       },
     })
-    const params = getParams({
-      params: model,
+    const params = getPaginatedResolverParams({
+      params: model as any,
       allowedSorts: ['foo'],
     })
 
     expect(params).toEqual({
+      __modelName: 'Params',
       page: {
         type: 'integer',
         defaultValue: 1,
@@ -104,12 +159,13 @@ describe('Get params', () => {
       foo: string
     }
 
-    const params = getParams({
-      params: Schema,
+    const params = getPaginatedResolverParams({
+      params: Schema as any,
       allowedSorts: ['foo'],
     })
 
     expect(params).toEqual({
+      __modelName: 'Schema',
       page: {
         type: 'integer',
         defaultValue: 1,

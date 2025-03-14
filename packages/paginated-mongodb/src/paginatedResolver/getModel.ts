@@ -1,35 +1,72 @@
-import {createModel} from '@orion-js/models'
-import hash from './hash'
-import {modelResolver} from '@orion-js/resolvers'
+import {hashObject} from '@orion-js/helpers'
+import {createModelResolver} from '@orion-js/resolvers'
+import {InferSchemaType, Schema} from '@orion-js/schema'
+import {PaginatedCursor} from '.'
 
-export default ({returns, modelName}) => {
-  const getTotalCount = async paginated => {
+export function getPaginatedResolverReturnSchema<TParams extends Schema>(paramsSchema: TParams) {
+  return {
+    cursor: {
+      type: 'any',
+      private: true,
+    },
+    params: {
+      type: paramsSchema,
+      private: true,
+    },
+    viewer: {
+      type: 'any',
+      private: true,
+    },
+    options: {
+      type: 'any',
+      private: true,
+    },
+    count: {
+      type: 'integer',
+      private: true,
+    },
+  } as const
+}
+
+type PaginatedModelResolversInput<TParams extends Schema, TReturns extends Schema> = {
+  cursor: PaginatedCursor<TReturns>
+  params: InferSchemaType<TParams>
+  viewer: any
+  options: any
+  count: number
+}
+
+export function getPaginatedResolverResolvers<TParams extends Schema, TReturns extends Schema>(
+  modelName: string,
+  returns: TReturns,
+) {
+  type Item = PaginatedModelResolversInput<TParams, TReturns>
+
+  const getTotalCount = async (paginated: Item) => {
     if (typeof paginated.count === 'undefined') {
       paginated.count = await paginated.cursor.count()
     }
     return paginated.count
   }
 
-  const _id = modelResolver({
+  const _id = createModelResolver<Item>({
     returns: 'ID',
-    async resolve(paginated: any, viewer): Promise<string> {
+    async resolve(paginated, viewer): Promise<string> {
       const {params} = paginated
-      const num = hash({
+      return hashObject({
         modelName: modelName,
-        typename: returns.name,
         userId: viewer.userId,
         params: params,
       })
-      return String(Math.abs(num))
     },
   })
 
-  const totalCount = modelResolver({
+  const totalCount = createModelResolver<Item>({
     returns: 'integer',
     resolve: getTotalCount,
   })
 
-  const totalPages = modelResolver({
+  const totalPages = createModelResolver<Item>({
     returns: 'integer',
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
@@ -38,7 +75,7 @@ export default ({returns, modelName}) => {
     },
   })
 
-  const hasNextPage = modelResolver({
+  const hasNextPage = createModelResolver<Item>({
     returns: Boolean,
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
@@ -48,7 +85,7 @@ export default ({returns, modelName}) => {
     },
   })
 
-  const hasPreviousPage = modelResolver({
+  const hasPreviousPage = createModelResolver<Item>({
     returns: Boolean,
     async resolve(paginated) {
       const count = await getTotalCount(paginated)
@@ -57,22 +94,20 @@ export default ({returns, modelName}) => {
     },
   })
 
-  const items = modelResolver({
+  const items = createModelResolver<Item>({
     returns: [returns],
     async resolve({cursor}) {
-      return await cursor.toArray()
+      const result = (await cursor.toArray()) as InferSchemaType<TReturns[]>
+      return result
     },
   })
 
-  return createModel({
-    name: modelName || `Paginated${returns.name}`,
-    resolvers: {
-      _id,
-      totalCount,
-      totalPages,
-      hasNextPage,
-      hasPreviousPage,
-      items,
-    },
-  }) as any
+  return {
+    _id,
+    totalCount,
+    totalPages,
+    hasNextPage,
+    hasPreviousPage,
+    items,
+  }
 }

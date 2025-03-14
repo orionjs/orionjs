@@ -1,4 +1,4 @@
-import {schemaWithName, startGraphQL} from '.'
+import {startGraphQL} from '.'
 import {createResolver, resolver} from '@orion-js/resolvers'
 import {express} from '@orion-js/http'
 import request from 'supertest'
@@ -7,6 +7,7 @@ import {cleanResolvers} from './cleanResolvers'
 import {UserError} from '@orion-js/helpers'
 import {GraphQLResolveInfo} from 'graphql'
 import {expect, it, describe, beforeEach} from 'vitest'
+import {schemaWithName} from '@orion-js/schema'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {
@@ -343,7 +344,17 @@ describe('Test GraphQL Server', () => {
       params: Params,
       returns: [model],
       mutation: true,
-      resolve,
+      resolve: async ({userId}) => {
+        if (userId !== '1') return null
+        return [
+          {
+            user: {
+              name: 'Nico',
+              age: 20,
+            },
+          },
+        ]
+      },
     })
 
     const resolvers = {user, modelMutation}

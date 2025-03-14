@@ -7,6 +7,10 @@ function getResolvers(schema: Schema | Model): ModelResolversMap {
     return (schema as Model).getResolvers()
   }
 
+  if ((schema as any).__resolvers) {
+    return (schema as any).__resolvers
+  }
+
   return {}
 }
 

@@ -1,7 +1,7 @@
 import {createResolver} from '@orion-js/resolvers'
 import buildSchema from '..'
 import {describe, it} from 'vitest'
-import {schemaWithName} from '../../schemaWithName'
+import {schemaWithName} from '@orion-js/schema'
 
 describe('Enum test', () => {
   it('Should create correctly types when using schemas (not models)', async () => {

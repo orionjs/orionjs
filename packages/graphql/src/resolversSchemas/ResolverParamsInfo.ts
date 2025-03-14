@@ -1,5 +1,4 @@
-import {schemaWithName} from '../schemaWithName'
-
+import {schemaWithName} from '@orion-js/schema'
 export default schemaWithName('ResolverParams', {
   name: {
     type: 'string',

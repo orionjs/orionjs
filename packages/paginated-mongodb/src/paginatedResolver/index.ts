@@ -1,48 +1,61 @@
-import {createResolver} from '@orion-js/resolvers'
-import getModel from './getModel'
-import getParams from './params'
+import {createResolver, getResolverArgs, internal_schemaWithResolvers} from '@orion-js/resolvers'
+import {getPaginatedResolverParams, paginatedResolverBaseParamsSchema} from './params'
 import setOptions from './setOptions'
-import {getResolverArgs} from '@orion-js/resolvers'
+import {getSchemaWithMetadataFromAnyOrionForm, InferSchemaType, Schema} from '@orion-js/schema'
+import {getPaginatedResolverResolvers, getPaginatedResolverReturnSchema} from './getModel'
 
-export interface PaginatedCursor {
+export interface PaginatedCursor<TReturns extends Schema = Schema> {
   count?: () => Promise<number> | number
-  toArray: () => Promise<any[]>
+  toArray: () => Promise<InferSchemaType<TReturns>[]>
   limit?: (newLimit: number) => void
   skip?: (newSkip: number) => void
   sort?: (newSort: {[key: string]: 1 | -1}) => void
 }
 
-export type PaginatedResolverGetCursorResultWithCount = {
+export type PaginatedResolverGetCursorResultWithCount<TReturns extends Schema = Schema> = {
   count: () => Promise<number> | number
-  cursor: PaginatedCursor
+  cursor: PaginatedCursor<TReturns>
 }
 
-export type PaginatedResolverGetCursorResult =
-  | PaginatedCursor
-  | PaginatedResolverGetCursorResultWithCount
+export type PaginatedResolverGetCursorResult<TReturns extends Schema = Schema> =
+  | PaginatedCursor<TReturns>
+  | PaginatedResolverGetCursorResultWithCount<TReturns>
 
-export interface PaginatedResolverOpts {
-  returns: any
-  getCursor: (params?: any, viewer?: any) => Promise<PaginatedResolverGetCursorResult>
+export interface PaginatedResolverOpts<
+  TParams extends Schema = Schema,
+  TReturns extends Schema = Schema,
+  TViewer = any,
+> {
+  returns: TReturns
+  getCursor: (
+    params?: InferSchemaType<typeof paginatedResolverBaseParamsSchema & TParams>,
+    viewer?: TViewer,
+  ) => Promise<PaginatedResolverGetCursorResult<TReturns>>
   allowedSorts?: string[]
   defaultSortBy?: string
   defaultSortType?: 'asc' | 'desc'
-  params?: any
+  params?: TParams
   modelName?: string
+  /**
+   * @deprecated Just check the permissions in the resolver instead
+   */
   permissionsOptions?: any
 }
 
-export default function paginatedResolver({
+export function createPaginatedResolver<
+  TParams extends Schema = Schema,
+  TReturns extends Schema = Schema,
+  TViewer = any,
+>({
   returns,
   params,
   allowedSorts,
   defaultSortBy,
   defaultSortType,
   getCursor,
-  getCursorAndCount,
   modelName,
   ...otherOptions
-}: PaginatedResolverOpts & {[key: string]: any}) {
+}: PaginatedResolverOpts<TParams, TReturns, TViewer>) {
   const getCursorResult = async (...args) => {
     const result = await getCursor(...args)
     if ((result as PaginatedResolverGetCursorResultWithCount).cursor) {
@@ -53,9 +66,24 @@ export default function paginatedResolver({
     return {cursor: resultWithoutCount, getCount: () => resultWithoutCount.count()}
   }
 
+  const ReturnsModel = getSchemaWithMetadataFromAnyOrionForm(returns)
+  const finalModelName = modelName || `Paginated${ReturnsModel.__modelName}`
+  const paginatedParams = getPaginatedResolverParams<TParams>({
+    params,
+    allowedSorts,
+    defaultSortBy,
+    defaultSortType,
+  })
+  const baseReturnSchema = getPaginatedResolverReturnSchema(paginatedParams)
+  const resolvers = getPaginatedResolverResolvers<TParams, TReturns>(modelName, returns)
+
   return createResolver({
-    params: getParams({params, allowedSorts, defaultSortBy, defaultSortType}),
-    returns: getModel({modelName, returns}),
+    params: paginatedParams,
+    returns: internal_schemaWithResolvers({
+      name: finalModelName,
+      schema: baseReturnSchema,
+      resolvers: resolvers as any,
+    }) as typeof baseReturnSchema,
     async resolve(...args) {
       const {params, viewer} = getResolverArgs(...args)
       const {cursor, getCount} = await getCursorResult(...args)
@@ -76,3 +104,8 @@ export default function paginatedResolver({
     ...otherOptions,
   })
 }
+
+/**
+ * @deprecated Use createPaginatedResolver instead
+ */
+export const paginatedResolver = createPaginatedResolver

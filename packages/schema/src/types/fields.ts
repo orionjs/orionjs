@@ -1,4 +1,4 @@
-import {Blackbox, SchemaRecursiveNodeTypeExtras} from './schema'
+import {Blackbox, Schema, SchemaRecursiveNodeTypeExtras} from './schema'
 
 type InferSchemaTypeForFieldType<T> =
   // field type with setted _tsFieldType
@@ -50,13 +50,19 @@ type InferSchemaTypeForFieldType<T> =
 
 type SchemaKeysNotOfSchemaItems = keyof SchemaRecursiveNodeTypeExtras
 
+type NodeIsOptional<TNode> = TNode extends {optional: true}
+  ? true
+  : TNode extends {defaultValue: any}
+    ? true
+    : false
+
 type InferSchemaTypeForSchema<TSchema extends Record<string, any>> = Omit<
   {
-    -readonly [K in keyof TSchema as TSchema[K]['optional'] extends true
+    -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
       ? never
       : K]: InferSchemaTypeForFieldType<TSchema[K]['type']>
   } & {
-    -readonly [K in keyof TSchema as TSchema[K]['optional'] extends true
+    -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
       ? K
       : never]?: InferSchemaTypeForFieldType<TSchema[K]['type']>
   },
@@ -74,6 +80,9 @@ type IsPossiblyASchema<TType> = TType extends Record<string, any>
 
 type AClass = abstract new (...args: any) => any
 
+/**
+ * Returns the type of the schema
+ */
 export type InferSchemaType<TType> = TType extends {__isModel: true; type: infer U}
   ? InferSchemaTypeForSchema<U>
   : TType extends AClass
@@ -81,3 +90,38 @@ export type InferSchemaType<TType> = TType extends {__isModel: true; type: infer
     : IsPossiblyASchema<TType> extends true
       ? InferSchemaTypeForSchema<TType>
       : InferSchemaTypeForFieldType<TType>
+
+/**
+ * Returns the type of the schema but only if its a schema
+ */
+export type StrictInferSchemaType<TSchema extends Schema> = InferSchemaTypeForSchema<TSchema>
+
+const schema = {
+  filter: {
+    type: 'string',
+  },
+  page: {
+    type: 'integer',
+    defaultValue: 1,
+    min: 1,
+  },
+  limit: {
+    type: 'integer',
+    defaultValue: 0,
+    min: 0,
+    max: 200,
+  },
+  sortBy: {
+    type: String,
+    optional: true,
+  },
+  sortType: {
+    type: String,
+    allowedValues: ['asc', 'desc'],
+    optional: true,
+  },
+} as const
+
+type _ = InferSchemaType<typeof schema>
+
+type _2 = NodeIsOptional<(typeof schema)['sortType']>

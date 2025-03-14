@@ -6,15 +6,15 @@ import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
 import {JobToRun} from '../types/Worker'
-import {getModelForClass} from '@orion-js/typed-model'
 import {Repository} from '@orion-js/mongodb'
+import {JobRecordSchema} from '../types/JobRecord'
 
 @Repository()
 export class JobsRepo {
   @MongoCollection({
     idGeneration: 'uuid',
     name: 'orionjs.jobs_dogs_records',
-    schema: getModelForClass(JobRecord),
+    schema: JobRecordSchema,
     indexes: [
       {
         keys: {

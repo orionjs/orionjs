@@ -1,4 +1,5 @@
-import paginatedResolver, {PaginatedResolverOpts} from '../paginatedResolver'
+import {paginatedResolver} from '..'
+import {PaginatedResolverOpts} from '../paginatedResolver'
 import {getInstance} from '@orion-js/services'
 
 export interface PagiantedQueryDescriptor extends Omit<PropertyDecorator, 'value'> {
@@ -6,7 +7,7 @@ export interface PagiantedQueryDescriptor extends Omit<PropertyDecorator, 'value
 }
 
 export function PaginatedQuery(options: Omit<PaginatedResolverOpts, 'getCursor'>) {
-  return function (target: any, propertyKey: string, descriptor: PagiantedQueryDescriptor) {
+  return (target: any, propertyKey: string, descriptor: PagiantedQueryDescriptor) => {
     if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
 
     target.resolvers = target.resolvers || {}

@@ -5,6 +5,7 @@ import {
   Schema,
   SchemaMetaFieldTypeSingle,
   SchemaNode,
+  SchemaWithMetadata,
 } from '@orion-js/schema'
 
 export function processModelSchemaKey(schemaNode: SchemaNode): SchemaNode {
@@ -46,7 +47,7 @@ interface ModelToSchemaOptions {
 }
 
 export function modelToSchema(options: ModelToSchemaOptions): Schema {
-  const compiledSchema: Schema = {}
+  const compiledSchema: SchemaWithMetadata = {}
 
   if (options.modelName) {
     compiledSchema.__modelName = options.modelName
@@ -68,5 +69,5 @@ export function modelToSchema(options: ModelToSchemaOptions): Schema {
     compiledSchema[key] = processModelSchemaKey(options.modelSchema[key])
   }
 
-  return compiledSchema
+  return compiledSchema as Schema
 }

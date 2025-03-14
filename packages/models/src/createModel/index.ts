@@ -38,16 +38,16 @@ export default function createModel<TSchema extends Schema>(
     getSchema,
     getResolvers,
     validate: async doc => {
-      const schema = getSchema()
+      const schema = getSchema() as any
       return await validate(schema, doc)
     },
     clean: async doc => {
-      const schema = getSchema()
+      const schema = getSchema() as any
       return await clean(schema, doc)
     },
     cleanAndValidate: async doc => {
-      const schema = getSchema()
-      const cleaned = await clean(schema, doc)
+      const schema = getSchema() as any
+      const cleaned = (await clean(schema, doc)) as any
       await validate(schema, cleaned)
       return cleaned
     },
