@@ -13,11 +13,21 @@ export default async function watchAndCompile(runner: Runner) {
   await cleanDirectory()
   watchDeletes()
   watchEnvFile(runner)
-  spawn('tsx', ['watch', 'app/index.ts'], {
+  const child = spawn('tsx', ['watch', 'app/index.ts'], {
     cwd: process.cwd(),
     env: process.env,
     gid: process.getgid(),
     uid: process.getuid(),
     stdio: 'inherit',
+  })
+
+  child.on('error', _ => {
+    process.exit(1)
+  })
+
+  child.on('exit', code => {
+    if (code !== 0) {
+      process.exit(code || 1)
+    }
   })
 }
