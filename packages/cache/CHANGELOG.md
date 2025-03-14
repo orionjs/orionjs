@@ -1,5 +1,12 @@
 # @orion-js/cache
 
+## 4.0.0-next.7
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/helpers@4.0.0-next.7
+
 ## 4.0.0-next.6
 
 ### Major Changes
