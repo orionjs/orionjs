@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.0-next.6
+
+### Major Changes
+
+- migrate to rambdax
+
 ## 4.0.0-next.5
 
 ### Major Changes

@@ -1,5 +1,20 @@
 # @orion-js/http
 
+## 4.0.0-next.6
+
+### Major Changes
+
+- migrate to rambdax
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/resolvers@4.0.0-next.6
+  - @orion-js/services@4.0.0-next.6
+  - @orion-js/helpers@4.0.0-next.6
+  - @orion-js/schema@4.0.0-next.6
+  - @orion-js/env@4.0.0-next.6
+
 ## 4.0.0-next.5
 
 ### Major Changes
