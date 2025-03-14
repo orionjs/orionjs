@@ -77,7 +77,7 @@ type AClass = abstract new (...args: any) => any
 export type InferSchemaType<TType> = TType extends {__isModel: true; type: infer U}
   ? InferSchemaTypeForSchema<U>
   : TType extends AClass
-    ? InstanceType<TType> // this line is wrong
+    ? InstanceType<TType>
     : IsPossiblyASchema<TType> extends true
       ? InferSchemaTypeForSchema<TType>
       : InferSchemaTypeForFieldType<TType>

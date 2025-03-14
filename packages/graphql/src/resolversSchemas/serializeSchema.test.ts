@@ -34,8 +34,7 @@ it('should serialize a typed model', async () => {
     name: string
   }
 
-  const result = await serializeSchema(Point)
-  console.log(result)
+  const result = await serializeSchema(Point as any)
   expect(result.name).toEqual({
     type: 'string',
     label: 'Name',

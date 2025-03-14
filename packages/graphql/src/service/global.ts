@@ -17,11 +17,9 @@ export function Resolvers() {
   }
 }
 
-export function Query<This, TParams, TReturns, TViewer, TInfo>(
-  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'> = {},
-) {
+export function Query<This>(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'> = {}) {
   return (
-    method: InternalGlobalResolverResolveAtDecorator<This, TParams, TReturns, TViewer, TInfo>,
+    method: InternalGlobalResolverResolveAtDecorator<This, any, any, any, any>,
     context: ClassMethodDecoratorContext<This, typeof method>,
   ) => {
     const propertyKey = String(context.name)

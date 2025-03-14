@@ -1,27 +1,29 @@
-import {resolver} from '@orion-js/resolvers'
-import {Schema} from '@orion-js/schema'
+import {createResolver} from '@orion-js/resolvers'
 import buildSchema from '..'
-import {describe, it, expect} from 'vitest'
+import {describe, it} from 'vitest'
+import {schemaWithName} from '../../schemaWithName'
 
 describe('Enum test', () => {
   it('Should create correctly types when using schemas (not models)', async () => {
-    const schemaInput: Schema = {
+    const schemaInput = schemaWithName('Input', {
       query: {
         type: 'string',
       },
-    } as const
+    })
 
-    const schemaResult: Schema = {
+    const schemaResult = schemaWithName('Result', {
       results: {
         type: ['string'],
       },
-    } as const
+    })
 
-    const globalResolver = resolver({
+    const globalResolver = createResolver({
       params: schemaInput,
       returns: schemaResult,
       async resolve(params) {
-        return params
+        return {
+          results: [params.query],
+        }
       },
     })
 

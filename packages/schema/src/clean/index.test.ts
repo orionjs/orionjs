@@ -130,8 +130,8 @@ test('runs autovalues with arrays', async () => {
   const schema: Schema = {
     texts: {
       type: [String],
-      autoValue(values: string[]) {
-        return values.map(val => val + ' world')
+      clean(values: string[]) {
+        return values.map(val => `${val} world`)
       },
     },
   }
@@ -148,7 +148,7 @@ test('run autovalue when field is not present', async () => {
   const schema = {
     text: {
       type: String,
-      autoValue() {
+      clean() {
         return 'a value'
       },
     },
@@ -163,7 +163,7 @@ test('returns the default values', async () => {
     text: {
       type: String,
       defaultValue: 'hello',
-      autoValue(value) {
+      clean(value) {
         return value + ' world'
       },
     },
@@ -199,7 +199,7 @@ test('run deep autovalues', async () => {
   const deep = {
     s: {
       type: String,
-      autoValue() {
+      clean() {
         return 'no'
       },
     },
@@ -207,13 +207,13 @@ test('run deep autovalues', async () => {
   const schema: Schema = {
     text: {
       type: deep,
-      autoValue(text) {
+      clean(text) {
         return {...text, type: 'text'}
       },
     },
     texts: {
       type: [deep],
-      autoValue(texts) {
+      clean(texts) {
         return [texts[0], 'yes']
       },
     },
@@ -309,7 +309,7 @@ test('Handle errors while cleaning', async () => {
   const schema = {
     name: {
       type: String,
-      async autoValue() {
+      async clean() {
         throw new Error('an error')
       },
     },
@@ -329,7 +329,7 @@ test('pass currentDoc cleaning arrays', async () => {
   const item: Schema = {
     name: {
       type: String,
-      async autoValue(name: string, {currentDoc}) {
+      async clean(name: string, {currentDoc}) {
         expect(currentDoc).toBe(aItem)
         return name
       },
@@ -339,7 +339,7 @@ test('pass currentDoc cleaning arrays', async () => {
   const schema: Schema = {
     items: {
       type: [item],
-      async autoValue(items, {currentDoc}) {
+      async clean(items, {currentDoc}) {
         expect(currentDoc).toBe(doc)
         return items
       },
@@ -381,7 +381,7 @@ test('passes extra arguments to clean', async () => {
   const schema = {
     name: {
       type: String,
-      autoValue(name, info, arg1, arg2) {
+      clean(name, info, arg1, arg2) {
         expect(arg1).toBe(1)
         expect(arg2).toBe(2)
         return name
@@ -397,7 +397,7 @@ test('throws error when cleaning field with no type', async () => {
   const schema = {
     name: {
       type: null,
-      autoValue() {
+      clean() {
         return 'Nicolás'
       },
     },
@@ -415,7 +415,7 @@ test('cleans when no argument is passed', async () => {
   const schema = {
     name: {
       type: String,
-      autoValue() {
+      clean() {
         return 'Nicolás'
       },
     },
@@ -434,7 +434,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
   const car: Schema = {
     brand: {
       type: String,
-      async autoValue(value, {currentDoc}) {
+      async clean(value, {currentDoc}) {
         expect(value).toEqual(aCar.brand)
         expect(currentDoc).toEqual(aCar)
         return value
@@ -450,7 +450,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
   const mom: Schema = {
     name: {
       type: String,
-      async autoValue(value, {currentDoc}) {
+      async clean(value, {currentDoc}) {
         expect(value).toEqual(aMom.name)
         expect(currentDoc).toEqual(aMom)
         return value
@@ -458,7 +458,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
     },
     car: {
       type: car,
-      async autoValue(value, {currentDoc}) {
+      async clean(value, {currentDoc}) {
         expect(value).toEqual(aMom.car)
         expect(currentDoc).toEqual(aMom)
         return value
@@ -469,7 +469,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
   const item: Schema = {
     name: {
       type: String,
-      async autoValue(value, {currentDoc}) {
+      async clean(value, {currentDoc}) {
         expect(value).toEqual(aItem.name)
         expect(currentDoc).toEqual(aItem)
         return value
@@ -477,7 +477,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
     },
     mom: {
       type: mom,
-      async autoValue(value, {currentDoc}) {
+      async clean(value, {currentDoc}) {
         expect(value).toEqual(aItem.mom)
         expect(currentDoc).toEqual(aItem)
         return value
@@ -488,7 +488,7 @@ test('pass currentDoc cleaning complex schemas', async () => {
   const schema: Schema = {
     items: {
       type: [item],
-      async autoValue(value, {currentDoc}) {
+      async clean(value, {currentDoc}) {
         expect(value).toEqual(doc.items)
         expect(currentDoc).toEqual(doc)
         return value

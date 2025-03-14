@@ -41,11 +41,11 @@ describe('Resolvers with service injection and middlewares', () => {
     class ExampleResolverService {
       @Query()
       @ResolverParams({name: {type: 'string'}})
-      @ResolverReturns(String)
-      // @UseMiddleware(exampleMiddleware)
-      // @CheckRoles(['admin'])
+      @ResolverReturns({name: {type: 'string'}})
+      @UseMiddleware(exampleMiddleware)
+      @CheckRoles(['admin'])
       async sayHi() {
-        return 'text'
+        return {name: 'text'}
       }
     }
 
@@ -54,7 +54,7 @@ describe('Resolvers with service injection and middlewares', () => {
     expect(resolvers.sayHi).toBeDefined()
 
     const result = await resolvers.sayHi.execute({params: {name: 'Orion'}})
-    expect(result).toBe(`intercepted`)
+    expect(result).toBe('intercepted')
   })
 
   it('show also work with model resolvers', async () => {
@@ -64,7 +64,7 @@ describe('Resolvers with service injection and middlewares', () => {
       name: string
     }
 
-    const NiceToMeetYou = UseMiddleware(async (executeOptions, next) => {
+    const NiceToMeetYou = UseMiddleware(async (_executeOptions, next) => {
       const result = await next()
       return `${result}, nice to meet you`
     })
@@ -83,7 +83,7 @@ describe('Resolvers with service injection and middlewares', () => {
 
     const item: Person = {name: 'Orion'}
     const result = await data.Person.getAge.execute({parent: item})
-    expect(result).toBe(`hello Orion, nice to meet you`)
+    expect(result).toBe('hello Orion, nice to meet you')
   })
 
   it('should pass the mutation name in the middleware', async () => {
@@ -99,7 +99,7 @@ describe('Resolvers with service injection and middlewares', () => {
       @Query()
       @ResolverReturns(String)
       @UseMiddleware(exampleMiddleware)
-      async sayHi(params) {
+      async sayHi() {
         return 'text'
       }
     }

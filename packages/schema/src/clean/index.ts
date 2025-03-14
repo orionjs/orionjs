@@ -1,5 +1,6 @@
 import {getSchemaFromTypedSchema} from '../getSchemaFromTypedSchema'
-import {Blackbox, CurrentNodeInfoOptions, Schema} from '../types/schema'
+import {InferSchemaType} from '../types'
+import {CurrentNodeInfoOptions, Schema} from '../types/schema'
 import recursiveClean from './recursiveClean'
 
 const defaultOptions = {
@@ -9,14 +10,14 @@ const defaultOptions = {
   removeEmptyStrings: false,
 }
 
-export default async function clean<TDoc = Blackbox>(
-  schema: Schema | Function,
-  doc: TDoc,
+export default async function clean<TSchema extends Schema = Schema>(
+  schema: TSchema | Function,
+  doc: InferSchemaType<TSchema>,
   opts: CurrentNodeInfoOptions = {},
   ...args
-): Promise<TDoc> {
+): Promise<InferSchemaType<TSchema>> {
   if (!doc) return doc
-  schema = getSchemaFromTypedSchema(schema)
+  schema = getSchemaFromTypedSchema(schema) as TSchema
 
   const options = {...defaultOptions, ...opts}
   const params = {
@@ -29,5 +30,5 @@ export default async function clean<TDoc = Blackbox>(
   }
 
   const cleanedResult = await recursiveClean(params)
-  return cleanedResult as TDoc
+  return cleanedResult
 }

@@ -184,7 +184,7 @@ it('dont add autovalue when updating', async () => {
     },
     count: {
       type: Number,
-      autoValue() {
+      clean() {
         return index++
       },
     },

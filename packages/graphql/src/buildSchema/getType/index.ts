@@ -1,12 +1,20 @@
 import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLObjectType} from 'graphql'
-import {getFieldType, getSchemaFromAnyOrionForm, isSchemaLike, Schema} from '@orion-js/schema'
+import {
+  getFieldType,
+  getSchemaWithMetadataFromAnyOrionForm,
+  isSchemaLike,
+  Schema,
+  SchemaFieldType,
+  SchemaWithMetadata,
+} from '@orion-js/schema'
 import getScalar from './getScalar'
 import getTypeAsResolver from './getTypeAsResolver'
 import {getStaticFields} from '../../resolversSchemas/getStaticFields'
 import {getDynamicFields} from '../../resolversSchemas/getDynamicFields'
 import {getModelLoadedResolvers} from '../../resolversSchemas/getModelLoadedResolvers'
 import {StartGraphQLOptions} from '../../types/startGraphQL'
+import {isEqual} from 'lodash'
 
 const createGraphQLObjectType = (modelName: string, schema: Schema, options: StartGraphQLOptions) =>
   new GraphQLObjectType({
@@ -60,28 +68,49 @@ const buildFields = (schema: Schema, options: StartGraphQLOptions) => {
   return fields
 }
 
-export default function getGraphQLType(type: Schema, options: StartGraphQLOptions) {
+// we'll save the list of models that have been registered
+// to avoid duplicate registration of models.
+// if two models have the same name, but are different,
+// it will throw an error.
+const registeredGraphQLTypes = new Map<
+  string,
+  {schema: SchemaWithMetadata; graphQLType: GraphQLObjectType}
+>()
+
+export default function getGraphQLType(type: SchemaFieldType, options: StartGraphQLOptions) {
   if (!type) throw new Error('Type is undefined')
 
   if (isArray(type)) {
     return new GraphQLList(getGraphQLType(type[0], options))
   }
 
-  if (!type.__isFieldType && isSchemaLike(type)) {
-    const schema = getSchemaFromAnyOrionForm(type)
+  if (isSchemaLike(type)) {
+    const schema = getSchemaWithMetadataFromAnyOrionForm(type)
     const modelName = schema.__modelName
 
     if (schema.__graphQLType) {
       return schema.__graphQLType
     }
 
-    console.log('getting type', {type, schema})
-
     if (!modelName) {
-      throw new Error('Schema model name is not defined')
+      throw new Error(
+        `Schema name is not defined. Register a name with schemaWithName. Schema: ${JSON.stringify(schema)}`,
+      )
     }
 
-    return createGraphQLObjectType(modelName, schema, options)
+    if (registeredGraphQLTypes.has(modelName)) {
+      const {graphQLType, schema: registeredSchema} = registeredGraphQLTypes.get(modelName)
+      if (isEqual(registeredSchema, schema)) {
+        return graphQLType
+      }
+      throw new Error(`Schema named "${modelName}" already registered`)
+    }
+
+    const graphQLType = createGraphQLObjectType(modelName, schema as Schema, options)
+
+    registeredGraphQLTypes.set(modelName, {schema, graphQLType})
+
+    return graphQLType
   }
 
   return getScalar(getFieldType(type))

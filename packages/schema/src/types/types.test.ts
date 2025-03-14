@@ -68,7 +68,7 @@ const _person: Person = {
   gender: 'male',
   // isAdmin: false,
   createdAt: new Date(),
-  tags: ['tag1', 'tag2'],
+  tags: ['tag1', 'tag2d'],
   address: {
     street: '123 Main St',
     city: 'Anytown',

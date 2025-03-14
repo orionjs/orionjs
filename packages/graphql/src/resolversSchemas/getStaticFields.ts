@@ -1,6 +1,6 @@
-import {Schema, SchemaNode} from '@orion-js/schema'
+import {Schema, SchemaNode, SchemaWithMetadata} from '@orion-js/schema'
 
-export function getStaticFields(schema: Schema): Array<SchemaNode> {
+export function getStaticFields(schema: Schema | SchemaWithMetadata): Array<SchemaNode> {
   if (!schema) return []
 
   // retrocompatibility with model
@@ -13,7 +13,7 @@ export function getStaticFields(schema: Schema): Array<SchemaNode> {
   return (
     keys
       .map((key): SchemaNode => {
-        const field = schema[key]
+        const field = schema[key] as SchemaNode
         return {
           ...field,
           key,

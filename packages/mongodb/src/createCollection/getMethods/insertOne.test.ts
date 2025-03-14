@@ -36,7 +36,7 @@ describe('InsertOne', () => {
     const now = new Date()
     const schema = {
       name: {type: String},
-      createdAt: {type: Date, autoValue: () => now},
+      createdAt: {type: Date, defaultValue: () => now},
     }
     const model = createModel({name: generateId(), schema})
     const Tests = createCollection({name: generateId(), schema: model})

@@ -1,16 +1,11 @@
 import getFieldType from '../getValidationErrors/getError/getFieldType'
 import isNil from 'lodash/isNil'
-import {
-  CurrentNodeInfo,
-  SchemaMetaFieldType,
-  SchemaNode,
-  SchemaRecursiveNodeType,
-} from '../types/schema'
+import {CurrentNodeInfo, SchemaFieldType, SchemaNode, SchemaMetadata} from '../types/schema'
 import {FieldValidatorType} from '../types/fieldValidators'
 import getObjectNode from './getObjectNode'
 
 export default async function cleanType(
-  type: SchemaMetaFieldType | FieldValidatorType,
+  type: SchemaFieldType | FieldValidatorType,
   fieldSchema: Partial<SchemaNode>,
   value: any,
   info: CurrentNodeInfo,
@@ -30,9 +25,9 @@ export default async function cleanType(
   let needReClean = false
 
   const objectTypeSchema = getObjectNode(fieldSchema, value)
-  if (objectTypeSchema && (objectTypeSchema.type as SchemaRecursiveNodeType).__clean) {
+  if (objectTypeSchema && (objectTypeSchema.type as SchemaMetadata).__clean) {
     needReClean = true
-    value = await (objectTypeSchema.type as SchemaRecursiveNodeType).__clean(value, info, ...args)
+    value = await (objectTypeSchema.type as SchemaMetadata).__clean(value, info, ...args)
   }
 
   const {defaultValue} = fieldSchema
@@ -43,12 +38,6 @@ export default async function cleanType(
     } else {
       value = defaultValue
     }
-  }
-
-  const {autoValue} = fieldSchema
-  if (autoValue) {
-    needReClean = true
-    value = await autoValue(value, info, ...args)
   }
 
   const {clean} = fieldSchema

@@ -1,26 +1,17 @@
-import isPlainObject from 'lodash/isPlainObject'
-import isArray from 'lodash/isArray'
-import {getFieldType} from '@orion-js/schema'
+import {
+  getFieldType,
+  getSchemaWithMetadataFromAnyOrionForm,
+  isSchemaLike,
+  SchemaNode,
+} from '@orion-js/schema'
 import omit from 'lodash/omit'
 import getScalar from '../buildSchema/getType/getScalar'
 import {getStaticFields} from './getStaticFields'
 
-// @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
-Symbol.metadata ??= Symbol('Symbol.metadata')
-
-export default async function getParams(field: any) {
+export default async function getParams(field: SchemaNode) {
   const {type} = field
 
-  if (type?.[Symbol.metadata]?._getModel) {
-    const model = type[Symbol.metadata]._getModel()
-    return await getParams({...field, type: model})
-  }
-
-  if (typeof type === 'function' && type.getModel && type.__schemaId) {
-    const model = type.getModel()
-    return await getParams({...field, type: model})
-  }
-  if (isArray(type)) {
+  if (Array.isArray(type)) {
     const serialized = await getParams({...field, type: type[0]})
     return {
       ...serialized,
@@ -28,22 +19,29 @@ export default async function getParams(field: any) {
       __graphQLType: `[${serialized.__graphQLType}]`,
     }
   }
-  if (!type.__isFieldType && (isPlainObject(type) || type.__isModel)) {
-    const model = type.__isModel ? type : type.__model
-    if (!model || !model.__isModel) throw new Error('Type is not a Model')
+
+  const isSchema = isSchemaLike(type)
+
+  if (isSchema) {
+    const schemaOfType = getSchemaWithMetadataFromAnyOrionForm(type)
+    const modelName = schemaOfType.__modelName
+    if (!modelName) {
+      throw new Error('The schema needs a model name to be serialized for GraphQL')
+    }
 
     const fields = {}
 
-    for (const field of getStaticFields(model)) {
+    for (const field of getStaticFields(schemaOfType)) {
       fields[field.key] = await getParams(field)
     }
 
     return {
       ...omit(field, 'key'),
       type: fields,
-      __graphQLType: `${model.name}Input`,
+      __graphQLType: `${modelName}Input`,
     }
   }
+
   const schemaType = getFieldType(type)
   const graphQLType = await getScalar(schemaType)
   return {

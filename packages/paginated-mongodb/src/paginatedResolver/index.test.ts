@@ -57,7 +57,7 @@ describe('Full example of paginated resolver', () => {
     const resolver = await createResolver()
     const result = (await resolver.resolve(
       {
-        filter: `Number 1`,
+        filter: 'Number 1',
       },
       {},
     )) as any

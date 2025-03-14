@@ -6,6 +6,7 @@ import {
   ModelResolver as ModelResolverType,
 } from '@orion-js/resolvers'
 import {InternalModelResolverResolveAtDecorator} from './types'
+import {getTargetMetadata} from './middlewares'
 
 export interface ModelResolversOptions {
   // the model name to add resolvers. If not specified, the model name will be the schema name
@@ -49,9 +50,9 @@ export function ModelResolver<This, TItem, TParams, TReturns, TViewer, TInfo>(
       const modelResolvers = modelResolversMetadata.get(this) || {}
 
       modelResolvers[propertyKey] = modelResolver({
-        //   params: getTargetMetadata(target, propertyKey, 'params'),
-        // returns: getTargetMetadata(target, propertyKey, 'returns'),
-        // middlewares: getTargetMetadata(target, propertyKey, 'middlewares'),
+        params: getTargetMetadata(method, propertyKey, 'params') || {},
+        returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+        middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
         ...options,
         resolve: this[propertyKey].bind(this),
       })

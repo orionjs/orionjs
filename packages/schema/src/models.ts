@@ -1,5 +1,5 @@
 import getFieldValidator from './getValidationErrors/getError/getFieldValidator'
-import {Schema} from './types'
+import {Schema, SchemaWithMetadata} from './types'
 
 // @ts-ignore polyfill for Symbol.metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
@@ -72,4 +72,8 @@ function objectHasSubObjectWithKey(object: any, key: string) {
   }
 
   return false
+}
+
+export function getSchemaWithMetadataFromAnyOrionForm(type: any): SchemaWithMetadata {
+  return getSchemaFromAnyOrionForm(type) as SchemaWithMetadata
 }

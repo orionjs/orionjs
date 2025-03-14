@@ -110,20 +110,6 @@ export interface Resolver<Resolve = Function, IsModel = undefined> extends Share
 
 export type ModelResolver<Resolve = Function> = Resolver<Resolve, true>
 
-export type CreateResolver = <TParams = any, TReturns = any, TViewer = any, TInfo = any>(
-  options: GlobalResolverOptions<TParams, TReturns, TViewer, TInfo>,
-) => Resolver<GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>>
-
-export type CreateModelResolver = <
-  TItem = any,
-  TParams = any,
-  TReturns = any,
-  TViewer = any,
-  TInfo = any,
->(
-  options: ModelResolverOptions<TItem, TParams, TReturns, TViewer, TInfo>,
-) => ModelResolver<ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>>
-
 export interface PermissionCheckerOptions {
   resolver: GlobalResolverOptions | ModelResolverOptions
   parent: any

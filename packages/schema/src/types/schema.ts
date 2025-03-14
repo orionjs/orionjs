@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 import {FieldType} from '../fieldType'
 import {InferSchemaType} from './fields'
 
@@ -18,8 +16,9 @@ export type FieldTypesList =
   | 'blackbox'
   | 'any'
 
-// export type TypedSchemaOnSchema = Function
-export type TypedSchemaOnSchema = never
+type AClass = abstract new (...args: any) => any
+// @deprecated No more usage of typedschema
+export type TypedSchemaOnSchema = AClass
 
 export type ConstructorsTypesList =
   | Constructor<String>
@@ -38,7 +37,7 @@ export type ConstructorsTypesList =
 export type SchemaMetaFieldTypeSingle =
   | FieldTypesList
   | ConstructorsTypesList
-  | SchemaNode
+  | Schema
   | FieldType
   | TypedSchemaOnSchema
 
@@ -58,18 +57,12 @@ export type CleanFunction<TType = any> = (
 ) => TType | Promise<TType>
 
 export type SchemaRecursiveNodeTypeExtras = {
-  /**
-   * The name of the model (to make it compatible with GraphQL)
-   */
-  __modelName?: string
   __isFieldType?: boolean
-  __clean?: CleanFunction
-  __validate?: ValidateFunction
   __GraphQLType?: any
   __skipChildValidation?: (value: any, info: CurrentNodeInfo) => Promise<boolean>
 }
 
-export type SchemaNode<TFieldType extends SchemaFieldType = any> = {
+export type SchemaNode<TFieldType extends SchemaFieldType = SchemaFieldType> = {
   /**
    * The type of the field. Used for type validations. Can also contain a subschema.
    */
@@ -186,6 +179,25 @@ export interface CurrentNodeInfo<TType extends SchemaFieldType = any> {
   addError?: (keys: string[], code: string | object) => void
 }
 
+export type SchemaMetadata = {
+  /**
+   * The name of the model (to make it compatible with GraphQL)
+   */
+  __modelName?: string
+  /**
+   * Cleans the whole schema
+   */
+  __clean?: CleanFunction
+  /**
+   * Validates the whole schema
+   */
+  __validate?: ValidateFunction
+}
+
 export type Schema = {
-  [key: string]: SchemaNode
-} & SchemaRecursiveNodeTypeExtras
+  [K: string]: SchemaNode
+}
+
+export type SchemaWithMetadata = {
+  [K: string]: SchemaNode | SchemaMetadata[keyof SchemaMetadata]
+} & SchemaMetadata
