@@ -1,3 +1,4 @@
+import {spawn} from 'node:child_process'
 import {Runner} from '../runner'
 import cleanDirectory from './cleanDirectory'
 import {ensureConfigComplies} from './ensureConfigComplies'
@@ -12,4 +13,11 @@ export default async function watchAndCompile(runner: Runner) {
   await cleanDirectory()
   watchDeletes()
   watchEnvFile(runner)
+  spawn('tsx', ['watch', 'app/index.ts'], {
+    cwd: process.cwd(),
+    env: process.env,
+    gid: process.getgid(),
+    uid: process.getuid(),
+    stdio: 'inherit',
+  })
 }
