@@ -1,8 +1,5 @@
 import {cleanKey, clean} from '@orion-js/schema'
-import isEmpty from 'lodash/isEmpty'
-import isNil from 'lodash/isNil'
-import isUndefined from 'lodash/isUndefined'
-import isEqual from 'lodash/isEqual'
+import {isEmpty, isNil, equals} from 'rambdax'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
 import {ModelClassBase} from '../../types'
@@ -60,7 +57,7 @@ export default async function cleanModifier<
         cleaned = !isNil(isPresent) ? '' : null
       }
 
-      if (!isUndefined(cleaned)) {
+      if (cleaned !== undefined) {
         cleanedModifier[operation][key] = cleaned
       }
     }
@@ -78,7 +75,7 @@ export default async function cleanModifier<
     }
   }
 
-  if (isEqual(cleanedModifier, {})) {
+  if (equals(cleanedModifier, {})) {
     throw new Error('After cleaning your modifier is empty')
   }
 

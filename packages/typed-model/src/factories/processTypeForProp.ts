@@ -1,5 +1,4 @@
 import {PropOptions} from '../decorators/prop'
-import isPlainObject from 'lodash/isPlainObject'
 
 export function getParamTypeForProp(type: PropOptions['type']) {
   if (Array.isArray(type)) {
@@ -15,7 +14,7 @@ export function getParamTypeForProp(type: PropOptions['type']) {
     return getParamTypeForProp(type.getSchema())
   }
 
-  if (isPlainObject(type)) {
+  if (type(type) === 'Object') {
     if (type.__isFieldType) {
       return type
     }

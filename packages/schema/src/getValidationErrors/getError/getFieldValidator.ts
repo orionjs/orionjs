@@ -1,17 +1,14 @@
-import isPlainObject from 'lodash/isPlainObject'
-import isArray from 'lodash/isArray'
-import isString from 'lodash/isString'
 import fieldTypes from '../../fieldTypes'
-import has from 'lodash/has'
 import {FieldValidatorType} from '../../types/fieldValidators'
 import {SchemaFieldType} from '../../types'
+import {isType} from 'rambdax'
 
 export default function getFieldValidator(type: SchemaFieldType): FieldValidatorType {
-  if (isPlainObject(type)) {
+  if (isType('Object', type)) {
     if ((type as any).__isFieldType) return 'custom'
     return 'plainObject'
   }
-  if (isArray(type)) return 'array'
+  if (Array.isArray(type)) return 'array'
 
   if (type === String) return 'string'
   if (typeof type === 'function' && type.name === 'Date') return 'date'
@@ -19,11 +16,11 @@ export default function getFieldValidator(type: SchemaFieldType): FieldValidator
   if (type === Boolean) return 'boolean'
   if (type === 'enum') return 'string'
 
-  if (!isString(type)) {
+  if (typeof type !== 'string') {
     throw new Error(`Field type is invalid. Pass a string or a custom field type. Got ${type}`)
   }
 
-  const exists = has(fieldTypes, type)
+  const exists = fieldTypes[type]
 
   if (!exists) {
     throw new Error('Field type does not exist')

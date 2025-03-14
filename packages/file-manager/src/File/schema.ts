@@ -1,7 +1,7 @@
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import resolvers from './resolvers'
 import {generateImageInfo} from '../resolvers/generateImageInfo'
-import {pick} from 'lodash'
+import {pick} from 'rambdax'
 import {getFileData} from './getFileData'
 
 @TypedSchema()
@@ -71,7 +71,7 @@ export class FileSchemaColorsData {
       'resizedData',
       'colorsData',
     ]
-    const data = pick(file, keys)
+    const data = pick(keys, file)
     return data
   },
 })

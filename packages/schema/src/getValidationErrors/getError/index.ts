@@ -1,9 +1,9 @@
-import isNil from 'lodash/isNil'
 import getFieldValidator from './getFieldValidator'
 import fieldTypes from '../../fieldTypes'
 import Errors from '../../Errors'
 import {CurrentNodeInfo, SchemaRecursiveNodeTypeExtras} from '../../types/schema'
 import {FieldType} from '../../fieldType'
+import {isNil} from 'rambdax'
 
 export default async function getValidationErrors(
   params: CurrentNodeInfo,

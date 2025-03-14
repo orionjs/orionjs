@@ -1,5 +1,3 @@
-import isPlainObject from 'lodash/isPlainObject'
-import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLInputObjectType} from 'graphql'
 import {getFieldType} from '@orion-js/schema'
 import getScalar from '../getType/getScalar'
@@ -52,9 +50,9 @@ const resolveType = type => {
     return resolveType(model)
   }
 
-  if (isArray(type)) return resolveArrayType(type)
+  if (Array.isArray(type)) return resolveArrayType(type)
 
-  if (!type.__isFieldType && (isPlainObject(type) || type.__isModel)) {
+  if (!type.__isFieldType && (type(type) === 'Object' || type.__isModel)) {
     return resolvePlainObjectOrModelType(type)
   }
 

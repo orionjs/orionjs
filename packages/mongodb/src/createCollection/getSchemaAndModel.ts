@@ -1,6 +1,6 @@
-import {Model} from '@orion-js/models'
 import {Schema} from '@orion-js/schema'
-import {cloneDeep, isPlainObject} from 'lodash'
+import {type} from 'rambdax'
+import {clone} from '@orion-js/helpers'
 import {CreateCollectionOptions} from '../types'
 
 // @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
@@ -31,11 +31,11 @@ export function getSchema(options: CreateCollectionOptions): Schema {
   // schema is a typed model
   if (options.schema.getModel) {
     const model = options.schema.getModel()
-    const schema = model ? cloneDeep(model.getSchema()) : {}
+    const schema = model ? clone(model.getSchema()) : {}
     return prepareShema(schema)
   }
 
-  if (isPlainObject(options.schema)) {
+  if (type(options.schema) === 'Object') {
     return prepareShema(options.schema)
   }
 }

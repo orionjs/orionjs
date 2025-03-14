@@ -1,7 +1,5 @@
 import fieldType, {FieldType} from '../fieldType'
-import isString from 'lodash/isString'
 import Errors from '../Errors'
-import includes from 'lodash/includes'
 
 export default function createEnum<const TValues extends readonly string[]>(
   name: string,
@@ -31,9 +29,9 @@ export default function createEnum<const TValues extends readonly string[]>(
         return global.GraphQLEnums[name]
       },
       validate(value: string, {currentSchema}) {
-        if (!isString(value)) return Errors.NOT_A_STRING
+        if (typeof value !== 'string') return Errors.NOT_A_STRING
 
-        if (!includes(values, value)) {
+        if (!values.includes(value)) {
           return Errors.NOT_AN_ALLOWED_VALUE
         }
 

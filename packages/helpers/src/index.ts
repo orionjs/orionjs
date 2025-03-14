@@ -4,6 +4,8 @@ import generateId from './generateId'
 import createMap from './createMap'
 import createMapArray from './createMapArray'
 
+export * from './clone'
+
 // Import all error-related exports from the Errors module
 import {
   OrionError,

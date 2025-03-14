@@ -1,6 +1,5 @@
 import fieldType from '../fieldType'
 import Errors from '../Errors'
-import toNumber from 'lodash/toNumber'
 
 export default fieldType<number>({
   name: 'number',
@@ -21,7 +20,7 @@ export default fieldType<number>({
   },
   clean(value, {options: {autoConvert}}) {
     if (typeof value === 'string' && autoConvert) {
-      value = toNumber(value)
+      value = Number(value)
     }
 
     return value

@@ -2,7 +2,7 @@ import {getApp} from './../start'
 import route from './route'
 import registerRoute from './registerRoute'
 import request from 'supertest'
-import range from 'lodash/range'
+import {range} from 'rambdax'
 import {sleep} from '@orion-js/helpers'
 import {describe, it} from 'vitest'
 
@@ -14,7 +14,7 @@ describe('Test streaming responses', () => {
       path: '/test-streaming',
       method: 'get',
       async resolve(_req, res) {
-        for (const i of range(5)) {
+        for (const i of range(0, 5)) {
           res.write(`data: ${JSON.stringify({count: i})}\n\n`) // "data:" is important here
           await sleep(100)
         }

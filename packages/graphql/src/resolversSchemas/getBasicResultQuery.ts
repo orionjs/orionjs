@@ -1,11 +1,10 @@
-import isArray from 'lodash/isArray'
 import {getStaticFields} from './getStaticFields'
 import {getSchemaFromAnyOrionForm, isSchemaLike, Schema, SchemaNode} from '@orion-js/schema'
 
 export default async function getBasicQuery(field: SchemaNode) {
   if (!field.type) return ''
 
-  if (isArray(field.type)) {
+  if (Array.isArray(field.type)) {
     return getBasicQuery({
       ...field,
       type: field.type[0],

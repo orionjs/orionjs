@@ -1,4 +1,4 @@
-import isPlainObject from 'lodash/isPlainObject'
+import {type} from 'rambdax'
 import {Filter} from 'mongodb'
 import {ModelClassBase, ModelToMongoSelector} from '../../types'
 
@@ -13,7 +13,7 @@ export default function getSelector<ModelClass extends ModelClassBase>(
     return {_id: selector} as Filter<ModelClass>
   }
 
-  if (isPlainObject(selector)) {
+  if (type(selector) === 'Object') {
     return selector as Filter<ModelClass>
   }
 

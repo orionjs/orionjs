@@ -1,5 +1,5 @@
 import {getSchemaFromAnyOrionForm, isSchemaLike, Schema} from '@orion-js/schema'
-import clone from 'lodash/clone'
+import {clone} from '@orion-js/helpers'
 
 function getType(type: any) {
   if (Array.isArray(type)) {

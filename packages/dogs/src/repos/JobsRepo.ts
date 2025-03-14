@@ -1,7 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {Collection, MongoDB, MongoCollection} from '@orion-js/mongodb'
-import {values} from 'lodash'
 import {ScheduleJobRecordOptions} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
@@ -168,7 +167,7 @@ export class JobsRepo {
     } catch (error) {
       if (
         error.isValidationError &&
-        values(error.validationErrors).includes('notUnique') &&
+        Object.values(error.validationErrors).includes('notUnique') &&
         options.uniqueIdentifier
       ) {
         logger.info(

@@ -42,7 +42,7 @@
     "@types/node": "^18.0.0",
     "@types/prompts": "^2.4.2",
     "tsup": "^8.0.1",
-    "vitest": "^1.1.0"
+    "vitest": "^3.0.8"
   },
   "type": "module",
   "module": "./dist/index.js",

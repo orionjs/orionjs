@@ -1,5 +1,5 @@
 import {Collection, MongoCollection, Repository, MongoDB} from '@orion-js/mongodb'
-import {omit} from 'lodash'
+import {omit} from 'rambdax'
 import {HistoryRecord, HistoryRecordSchema} from '../types/HistoryRecord'
 
 @Repository()
@@ -40,7 +40,7 @@ export class JobsHistoryRepo {
           status: record.status,
         },
         $set: {
-          ...omit(record, 'status'),
+          ...omit(['status'], record),
         },
       },
     )

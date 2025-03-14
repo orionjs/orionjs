@@ -1,5 +1,5 @@
 import {getDataLoader} from './getDataLoader'
-import flatten from 'lodash/flatten'
+import {flatten} from 'rambdax'
 import {hashObject} from '@orion-js/helpers'
 
 interface Options {

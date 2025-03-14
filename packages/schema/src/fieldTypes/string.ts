@@ -1,13 +1,10 @@
 import fieldType from '../fieldType'
-import isString from 'lodash/isString'
 import Errors from '../Errors'
-import includes from 'lodash/includes'
-import isArray from 'lodash/isArray'
 
 export default fieldType<string>({
   name: 'string',
   validate(value: string, {currentSchema}) {
-    if (!isString(value)) return Errors.NOT_A_STRING
+    if (typeof value !== 'string') return Errors.NOT_A_STRING
 
     if (Number.isFinite(currentSchema.min)) {
       if (value.length < currentSchema.min) {
@@ -21,8 +18,8 @@ export default fieldType<string>({
       }
     }
 
-    if (isArray(currentSchema.allowedValues)) {
-      if (!includes(currentSchema.allowedValues, value)) {
+    if (Array.isArray(currentSchema.allowedValues)) {
+      if (!currentSchema.allowedValues.includes(value)) {
         return Errors.NOT_AN_ALLOWED_VALUE
       }
     }

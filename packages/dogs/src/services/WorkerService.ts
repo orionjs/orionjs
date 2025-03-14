@@ -1,5 +1,5 @@
 import {Inject, Service} from '@orion-js/services'
-import {range} from 'lodash'
+import {range} from 'rambdax'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {StartWorkersConfig} from '../types/StartConfig'
@@ -123,7 +123,7 @@ export class WorkerService {
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
 
-    for (const _ of range(config.workersCount)) {
+    for (const _ of range(0, config.workersCount)) {
       this.startANewWorker(config, workersInstance)
     }
   }

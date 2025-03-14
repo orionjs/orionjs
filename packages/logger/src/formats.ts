@@ -1,6 +1,6 @@
 import {format, transports} from 'winston'
 import util from 'node:util'
-import {isEmpty} from 'lodash'
+import {isEmpty} from 'rambdax'
 import opentelemetry, {Span} from '@opentelemetry/api'
 
 const {metadata, timestamp, json, colorize, combine, printf} = format

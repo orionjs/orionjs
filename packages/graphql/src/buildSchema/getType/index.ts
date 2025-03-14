@@ -1,4 +1,3 @@
-import isArray from 'lodash/isArray'
 import {GraphQLList, GraphQLObjectType} from 'graphql'
 import {
   getFieldType,
@@ -8,13 +7,13 @@ import {
   SchemaFieldType,
   SchemaWithMetadata,
 } from '@orion-js/schema'
+import {equals} from 'rambdax'
 import getScalar from './getScalar'
 import getTypeAsResolver from './getTypeAsResolver'
 import {getStaticFields} from '../../resolversSchemas/getStaticFields'
 import {getDynamicFields} from '../../resolversSchemas/getDynamicFields'
 import {getModelLoadedResolvers} from '../../resolversSchemas/getModelLoadedResolvers'
 import {StartGraphQLOptions} from '../../types/startGraphQL'
-import {isEqual} from 'lodash'
 
 const createGraphQLObjectType = (modelName: string, schema: Schema, options: StartGraphQLOptions) =>
   new GraphQLObjectType({
@@ -80,7 +79,7 @@ const registeredGraphQLTypes = new Map<
 export default function getGraphQLType(type: SchemaFieldType, options: StartGraphQLOptions) {
   if (!type) throw new Error('Type is undefined')
 
-  if (isArray(type)) {
+  if (Array.isArray(type)) {
     return new GraphQLList(getGraphQLType(type[0], options))
   }
 
@@ -100,7 +99,7 @@ export default function getGraphQLType(type: SchemaFieldType, options: StartGrap
 
     if (registeredGraphQLTypes.has(modelName)) {
       const {graphQLType, schema: registeredSchema} = registeredGraphQLTypes.get(modelName)
-      if (isEqual(registeredSchema, schema)) {
+      if (equals(registeredSchema, schema)) {
         return graphQLType
       }
       throw new Error(`Schema named "${modelName}" already registered`)

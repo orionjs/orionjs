@@ -2,9 +2,7 @@ import {RouteType} from './../types'
 import {onError} from '../errors'
 import {getViewer} from './../viewer'
 import express from 'express'
-import isNil from 'lodash/isNil'
-import isPlainObject from 'lodash/isPlainObject'
-import random from 'lodash/random'
+import {isNil, type} from 'rambdax'
 import {internalGetEnv} from '@orion-js/env'
 import {sleep} from '@orion-js/helpers'
 
@@ -18,7 +16,9 @@ export async function executeRequest(
   if (simulateLatency) {
     const time = Number.parseInt(simulateLatency)
     if (time) {
-      await sleep(random(time * 0.9, time * 1.1))
+      const min = time * 0.9
+      const max = time * 1.1
+      await sleep(Math.floor(Math.random() * (max - min + 1)) + min)
     }
   }
 
@@ -41,7 +41,7 @@ export async function executeRequest(
 
     // add body to response
     if (!isNil(result.body)) {
-      if (isPlainObject(result.body)) {
+      if (type(result.body) === 'Object') {
         res.json(result.body)
       } else {
         res.send(result.body)

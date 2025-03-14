@@ -1,6 +1,4 @@
-import range from 'lodash/range'
-import random from 'lodash/random'
-import sortBy from 'lodash/sortBy'
+import {range, sort} from 'rambdax'
 import {generateId} from '@orion-js/helpers'
 import {createCollection} from '../../index'
 import {it, expect} from 'vitest'
@@ -62,10 +60,10 @@ it('should load many on many', async () => {
 it('should load sorted data', async () => {
   const Tests = createCollection({name: generateId()})
 
-  for (const _ of range(100)) {
-    await Tests.insertOne({index: random(100), websiteId: '1'})
-    await Tests.insertOne({index: random(100), websiteId: '2'})
-    await Tests.insertOne({index: random(100), websiteId: '3'})
+  for (const _ of range(1, 101)) {
+    await Tests.insertOne({index: Math.floor(Math.random() * 101), websiteId: '1'})
+    await Tests.insertOne({index: Math.floor(Math.random() * 101), websiteId: '2'})
+    await Tests.insertOne({index: Math.floor(Math.random() * 101), websiteId: '3'})
   }
   const [results1, results2, results3] = await Promise.all([
     Tests.loadMany({
@@ -89,7 +87,7 @@ it('should load sorted data', async () => {
   const indexes2 = results2.map(result => result.index)
   const indexes3 = results3.map(result => result.index)
 
-  expect(indexes1).toEqual(sortBy(indexes1))
-  expect(indexes2).toEqual(sortBy(indexes2))
-  expect(indexes3).toEqual(sortBy(indexes3))
+  expect(indexes1).toEqual(sort((a, b) => a - b, indexes1))
+  expect(indexes2).toEqual(sort((a, b) => a - b, indexes2))
+  expect(indexes3).toEqual(sort((a, b) => a - b, indexes3))
 })

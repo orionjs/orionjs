@@ -4,7 +4,7 @@ import {
   isSchemaLike,
   SchemaNode,
 } from '@orion-js/schema'
-import omit from 'lodash/omit'
+import {omit} from 'rambdax'
 import getScalar from '../buildSchema/getType/getScalar'
 import {getStaticFields} from './getStaticFields'
 

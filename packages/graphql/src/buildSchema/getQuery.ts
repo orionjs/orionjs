@@ -1,6 +1,6 @@
 import {GraphQLObjectType} from 'graphql'
 import getResolvers from './getResolvers'
-import isEmpty from 'lodash/isEmpty'
+import {isEmpty} from 'rambdax'
 import {StartGraphQLOptions} from '../types/startGraphQL'
 
 export default async function (options: StartGraphQLOptions) {

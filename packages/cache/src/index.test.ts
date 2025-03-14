@@ -7,6 +7,7 @@ const cache = createCache(defaultStore)
 it('should save data in local cache', async () => {
   await cache.set('key1', 'value1')
   const result = await cache.get('key1')
+  console.log(result)
   expect(result.value).toBe('value1')
 })
 

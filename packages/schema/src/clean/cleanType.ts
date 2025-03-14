@@ -1,5 +1,5 @@
 import getFieldType from '../getValidationErrors/getError/getFieldType'
-import isNil from 'lodash/isNil'
+import {isNil} from 'rambdax'
 import {CurrentNodeInfo, SchemaFieldType, SchemaNode, SchemaMetadata} from '../types/schema'
 import {FieldValidatorType} from '../types/fieldValidators'
 import getObjectNode from './getObjectNode'

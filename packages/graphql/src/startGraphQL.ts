@@ -1,7 +1,7 @@
 import startGraphiQL from './startGraphiQL'
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import {getApp, getServer, getViewer, onError, registerRoute, Request, route} from '@orion-js/http'
+import {getApp, getServer, registerRoute, route} from '@orion-js/http'
 import {StartGraphQLOptions} from './types/startGraphQL'
 import {ApolloServer} from '@apollo/server'
 import {expressMiddleware} from '@apollo/server/express4'
@@ -39,7 +39,7 @@ export default async function (options: StartGraphQLOptions) {
       method: 'all',
       path: '/graphql',
       bodyParser: 'json',
-      async resolve(req: Request, res, viewer) {
+      async resolve(req, res, viewer) {
         ;(req as any)._viewer = viewer
         return middleware(req, res, req.next)
       },

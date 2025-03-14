@@ -1,6 +1,5 @@
-import includes from 'lodash/includes'
 import {CreateModel, CloneOptions, CreateModelOptions, ModelResolversMap} from '../types'
-import cloneDeep from 'lodash/cloneDeep'
+import {clone as deepClone} from '@orion-js/helpers'
 import {Schema} from '@orion-js/schema'
 
 interface CloneInfo {
@@ -25,17 +24,17 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
       } as ModelResolversMap
     })(),
     schema: (() => {
-      const oldSchema = cloneDeep(getSchema())
+      const oldSchema = deepClone(getSchema())
       const newSchema = {}
 
       const keys = Object.keys(oldSchema)
         .filter(key => {
           if (!options.omitFields) return true
-          return !includes(options.omitFields, key)
+          return !options.omitFields.includes(key)
         })
         .filter(key => {
           if (!options.pickFields) return true
-          return includes(options.pickFields, key)
+          return options.pickFields.includes(key)
         })
 
       for (const key of keys) {

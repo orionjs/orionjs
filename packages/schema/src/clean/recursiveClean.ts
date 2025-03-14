@@ -1,7 +1,5 @@
-import isUndefined from 'lodash/isUndefined'
-import isArray from 'lodash/isArray'
+import {isNil} from 'rambdax'
 import cleanType from './cleanType'
-import isNil from 'lodash/isNil'
 import {CurrentNodeInfo, SchemaNode} from '../types/schema'
 import getObjectNode from './getObjectNode'
 import {convertTypedSchema} from '../getValidationErrors/convertTypedSchema'
@@ -26,7 +24,7 @@ const cleanObjectFields = async ({
         currentDoc: value,
       }
       const newValue = await clean(cleanOptions)
-      if (!isUndefined(newValue)) {
+      if (newValue !== undefined) {
         newDoc[key] = newValue
       }
     } catch (error) {
@@ -61,14 +59,14 @@ const cleanArrayItems = async ({
   })
 
   const result = await Promise.all(promises)
-  return result.filter(value => !isUndefined(value))
+  return result.filter(value => value !== undefined)
 }
 
 function getArrayNode(
   schema: Partial<SchemaNode>,
   value: any | Array<any>,
 ): SchemaNode | undefined {
-  if (isArray(schema.type) && !isNil(value)) {
+  if (Array.isArray(schema.type) && !isNil(value)) {
     const result = schema as SchemaNode
     return result
   }
@@ -99,7 +97,7 @@ const clean = async (info: CurrentNodeInfo): Promise<any> => {
 
   if (arraySchema) {
     let updatedValue = value
-    if (!isArray(value) && !Array.isArray(value)) {
+    if (!Array.isArray(value)) {
       updatedValue = [value]
     }
 

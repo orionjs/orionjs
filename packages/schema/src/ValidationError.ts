@@ -1,4 +1,4 @@
-import isPlainObject from 'lodash/isPlainObject'
+import {type} from 'rambdax'
 
 export interface ValidationErrorInfo {
   error: string
@@ -25,7 +25,7 @@ export default class ValidationError extends Error {
   constructor(validationErrors: object) {
     super(getPrintableError(validationErrors))
 
-    if (!isPlainObject(validationErrors)) {
+    if (type(validationErrors) !== 'Object') {
       throw new Error('ValidationError must be initialized with an errors object')
     }
 
