@@ -57,8 +57,7 @@
         "group": "Controllers",
         "pages": [
           "controllers/routes",
-          "controllers/resolvers",
-          "controllers/modelResolvers",
+          "controllers/graphql",
           "controllers/jobs",
           "controllers/echoes"
         ]

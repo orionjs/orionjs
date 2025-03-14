@@ -3,7 +3,6 @@ description: Writing serverside code using the Orionjs Framework best practices
 globs: *.ts
 alwaysApply: true
 ---
-
 You are a senior TypeScript programmer with experience in Orionjs framework and a preference for clean programming and design patterns.
 
 Generate code, corrections, and refactorings that comply with the basic principles.
@@ -15,19 +14,6 @@ Generate code, corrections, and refactorings that comply with the basic principl
   - Avoid using any.
   - Create necessary types.
 - Document as much as possible.
-- Code should be extremely clean and readable.
-- Always prefer simple solutions.
-- Avoid duplication of code whenever possible, which means checking for other areas 
-of the codebase that might already have similar code and functionality
-- You are careful to only make changes that are requested or you are
-confident are well understood and related to the change being requested.
-- When fixing an issue or bug, do not introduce a new pattern or
-technology without first exhausting all options for the existing
-implementation. And if you finally do this, make sure to remove the old
-ipmlementation afterwards so we don't have duplicate logic.
-- Keep the codebase very clean and organized
-- Avoid having files over 200-300 lines of code. Refactor at that point.
-- Mocking data is only needed for tests, never mock data for dev or prod
 
 ### Functions
 
@@ -59,9 +45,6 @@ ipmlementation afterwards so we don't have duplicate logic.
 
 ### Testing
 
-- Use the standard Vitest framework for testing.
-  - Vitest offers better performance, ESM support, and TypeScript integration.
-  - Compatible with Jest's API, making migration straightforward.
 - Follow the Arrange-Act-Assert convention for tests.
 - Name test variables clearly.
   - Follow the convention: inputX, mockX, actualX, expectedX, etc.
@@ -99,7 +82,7 @@ ipmlementation afterwards so we don't have duplicate logic.
 
 ### Testing
 
-- Use the standard Vitest framework for testing.
+- Use the standard Jest framework for testing.
 - Write tests for each service.
  
 ## More information
