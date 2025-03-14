@@ -8,7 +8,7 @@ import path from 'node:path'
  */
 function rimraf(dir_path: string) {
   if (fs.existsSync(dir_path)) {
-    fs.readdirSync(dir_path).forEach(entry => {
+    fs.readdirSync(dir_path).map(entry => {
       const entry_path = path.join(dir_path, entry)
       if (fs.lstatSync(entry_path).isDirectory()) {
         rimraf(entry_path)

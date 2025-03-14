@@ -44,6 +44,7 @@ program
   .option('--name [name]', 'Name of the project')
   .option('--kit [kit]', 'Which starter kit to use')
   .action(run(create))
+
 program.version(version, '-v --version')
 
 program.parse(process.argv)

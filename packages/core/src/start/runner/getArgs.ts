@@ -1,7 +1,8 @@
 import {RunnerOptions} from '.'
 
 export function getArgs(options: RunnerOptions) {
-  let startCommand = process.env.START_COMMAND || 'node'
+  let startCommand =
+    process.env.START_COMMAND || './node_modules/@orion-js/core/node_modules/.bin/tsx'
 
   const args = []
 
@@ -15,7 +16,7 @@ export function getArgs(options: RunnerOptions) {
     args.push('--inspect')
   }
 
-  args.push('.orion/build/index.js')
+  args.push('./app/index.ts')
 
   return {startCommand, args}
 }

@@ -1,11 +1,11 @@
-import chalk from 'chalk'
+import {getRunner, RunnerOptions} from './runner'
+import watchAndCompile from './watchAndCompile'
 import {copyCursorRule} from './copyCursorRule'
 import {copyMCP} from './copyMCP'
-import {RunnerOptions, getRunner} from './runner'
-import watchAndCompile from './watchAndCompile'
+import chalk from 'chalk'
 
 export default async function (options: RunnerOptions) {
-  console.log(chalk.bold(`\nOrionjs App ${chalk.green(chalk.bold('V4\n'))}`))
+  console.log(chalk.bold(`\nOrionjs App ${chalk.green(chalk.bold('V3\n'))}`))
 
   if (!options.omitCursorRule) {
     await copyCursorRule().catch(console.error)

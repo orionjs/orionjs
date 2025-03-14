@@ -14,7 +14,6 @@ export interface RunnerOptions {
 export interface Runner {
   restart: () => void
   stop: () => void
-  basePath: string
 }
 
 export function getRunner(options: RunnerOptions): Runner {
@@ -30,7 +29,6 @@ export function getRunner(options: RunnerOptions): Runner {
 
     appProcess.on('exit', (code: number, signal: string) => {
       if (!code || code === 143 || code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
-        // Normal termination
       } else {
         console.log(chalk.bold(`=> Error running app. Exit code: ${code}`))
       }
@@ -53,6 +51,5 @@ export function getRunner(options: RunnerOptions): Runner {
   return {
     restart,
     stop,
-    basePath: `${process.cwd()}/.orion/build`,
   }
 }

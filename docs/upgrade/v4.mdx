@@ -17,7 +17,9 @@ Orionjs v4 introduces some breaking changes that you need to be aware of.
   - We are not using `typedi` anymore, we created our own dependency injection system, very similar to `typedi`. So:
     - You cannot do `@Inject()` without a factory function. You must do `@Inject(() => SomeService)` instead.
 - `Schema` and all of the places it's used, are now type safe. Old code like `Model` and `TypedSchema()` will still work. If you have any TS error, you can set `as any` to fix it until you migrate to `Schema`.
-
+- `Model.initItem` was deprecated in v3 and removed in v4.
+  - `Collections` now can't accept a `model` option, only a `schema` option.
+  
 ### Recommended TypeScript Configuration
 
 Update your `tsconfig.json` to use modern ESM settings:
