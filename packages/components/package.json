@@ -19,6 +19,7 @@
     "@orion-js/helpers": "workspace:*",
     "@orion-js/http": "workspace:*",
     "@orion-js/models": "workspace:*",
+    "@orion-js/mongodb": "workspace:*",
     "@orion-js/services": "workspace:*"
   },
   "devDependencies": {

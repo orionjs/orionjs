@@ -5,9 +5,13 @@ export default defineConfig({
     target: 'es2022',
   },
   test: {
-    includeTaskLocation: true,
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    setupFiles: ['./setup-tests.ts'],
+    hookTimeout: 3000,
+    testTimeout: 3000,
+    fileParallelism: false,
+    maxConcurrency: 1,
   },
 })

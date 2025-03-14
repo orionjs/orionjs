@@ -59,6 +59,10 @@ importers:
         version: 1.6.1(@types/node@18.19.80)
 
   packages/components:
+    dependencies:
+      '@orion-js/mongodb':
+        specifier: workspace:*
+        version: link:../mongodb
     devDependencies:
       '@orion-js/dogs':
         specifier: workspace:*
@@ -833,9 +837,6 @@ importers:
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
-      type-level-regexp:
-        specifier: ^0.1.17
-        version: 0.1.17
       typescript:
         specifier: ^5.4.5
         version: 5.8.2
@@ -4402,9 +4403,6 @@ packages:
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
-
-  type-level-regexp@0.1.17:
-    resolution: {integrity: sha512-wTk4DH3cxwk196uGLK/E9pE45aLfeKJacKmcEgEOA/q5dnPGNxXt0cfYdFxb57L+sEpf1oJH4Dnx/pnRcku9jg==}
 
   typedi@0.10.0:
     resolution: {integrity: sha512-v3UJF8xm68BBj6AF4oQML3ikrfK2c9EmZUyLOfShpJuItAqVBHWP/KtpGinkSsIiP6EZyyb6Z3NXyW9dgS9X1w==}
@@ -8460,8 +8458,6 @@ snapshots:
     dependencies:
       media-typer: 0.3.0
       mime-types: 2.1.35
-
-  type-level-regexp@0.1.17: {}
 
   typedi@0.10.0: {}
 
