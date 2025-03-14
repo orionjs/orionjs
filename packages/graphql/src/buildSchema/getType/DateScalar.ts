@@ -1,5 +1,5 @@
 import {GraphQLScalarType} from 'graphql'
-import {GraphQLDateTime} from 'graphql-iso-date'
+import {GraphQLDateTime} from 'graphql-scalars'
 
 export default new GraphQLScalarType({
   name: 'Date',
