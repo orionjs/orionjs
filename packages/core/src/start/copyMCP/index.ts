@@ -54,11 +54,13 @@ export async function copyMCP() {
     await execute(`cd ${targetDir} && npm install`)
     console.log(chalk.bold('=> ✨ Successfully installed MCP dependencies'))
 
+    const relativePath = path.relative(process.cwd(), targetDir)
+    console.log(relativePath)
     const mcpServerConfig = {
       mcpServers: {
         'Orionjs documentation search': {
           command: 'node',
-          args: [path.join(targetDir, 'src', 'index.js')],
+          args: [`./${path.join(relativePath, 'src', 'index.js')}`],
         },
       },
     }

@@ -11,8 +11,6 @@ import {getStaticFields} from './getStaticFields'
 export default async function getParams(field: SchemaNode) {
   const {type} = field
 
-  console.log(type, 'getting parms')
-
   if (Array.isArray(type)) {
     const serialized = await getParams({...field, type: type[0]})
     return {

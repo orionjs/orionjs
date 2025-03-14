@@ -44,24 +44,26 @@ export async function copyCursorRule() {
     await fs.mkdir(targetDir, {recursive: true})
 
     // Process each rule file
-    for (const rule of rules) {
-      // Change extension from .mdx to .mdc
-      const targetFileName = rule.replace('.mdx', '.mdc')
-      const targetFile = path.join(targetDir, targetFileName)
+    await Promise.all(
+      rules.map(async rule => {
+        // Change extension from .mdx to .mdc
+        const targetFileName = rule.replace('.mdx', '.mdc')
+        const targetFile = path.join(targetDir, targetFileName)
 
-      // Construct source URL
-      const sourceUrl = `${baseUrl}/${rule}`
+        // Construct source URL
+        const sourceUrl = `${baseUrl}/${rule}`
 
-      // console.log(chalk.gray(`=> ✨ Downloading ${chalk.cyan(rule)} to ${chalk.cyan(targetFileName)}...`))
+        // console.log(chalk.gray(`=> ✨ Downloading ${chalk.cyan(rule)} to ${chalk.cyan(targetFileName)}...`))
 
-      // Download the file content
-      const content = await downloadFile(sourceUrl)
+        // Download the file content
+        const content = await downloadFile(sourceUrl)
 
-      // Write the content to the target file
-      await fs.writeFile(targetFile, content, 'utf8')
+        // Write the content to the target file
+        await fs.writeFile(targetFile, content, 'utf8')
 
-      console.log(chalk.bold(`=> ✨ Successfully downloaded ${chalk.cyan(targetFileName)}`))
-    }
+        console.log(chalk.bold(`=> ✨ Successfully downloaded ${chalk.cyan(targetFileName)}`))
+      }),
+    )
 
     console.log(chalk.bold('=> ✨ All rule files have been successfully copied'))
   } catch (error) {

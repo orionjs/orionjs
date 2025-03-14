@@ -12,7 +12,12 @@
     "groups": [
       {
         "group": "Get Started",
-        "pages": ["introduction", "quickstart", "project-structure", "deploying"]
+        "pages": [
+          "introduction",
+          "quickstart",
+          "project-structure",
+          "deploying"
+        ]
       },
       {
         "group": "Essentials",
@@ -68,6 +73,12 @@
           "other-modules/helpers",
           "other-modules/logger",
           "other-modules/migrations"
+        ]
+      },
+      {
+        "group": "Upgrade",
+        "pages": [
+          "upgrade/v4"
         ]
       }
     ],

@@ -1,0 +1,106 @@
+---
+title: 'Upgrade to v4'
+description: 'How to upgrade your Orionjs application to v4'
+---
+
+## Minimal migration guide
+
+Orionjs v4 introduces some breaking changes that you need to be aware of.
+
+- ESM is now the default module system. That breaks some old dependencies that were CommonJS only.
+  - If you use `lodash`, you must replace it with `lodash-es` for ESM compatibility.
+- Decorators were updated to draft v3. Which is not backwards compatible with v2. This means:
+  - You must disable `experimentalDecorators` in your `tsconfig.json`
+  - You must add `"type": "module"` to your package.json
+  - You can not use `reflect-metadata`.
+  - `@TypedSchema()` `@Prop()` now always need a type option.
+  - We are not using `typedi` anymore, we created our own dependency injection system, very similar to `typedi`. So:
+    - You cannot do `@Inject()` without a factory function. You must do `@Inject(() => SomeService)` instead.
+- `Schema` and all of the places it's used, are now type safe. Old code like `Model` and `TypedSchema()` will still work. If you have any TS error, you can set `as any` to fix it until you migrate to `Schema`.
+
+### Recommended TypeScript Configuration
+
+Update your `tsconfig.json` to use modern ESM settings:
+
+```json
+{
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "target": "ESNext",
+    "rootDir": "./app",
+    "moduleDetection": "force",
+    "module": "Preserve",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "baseUrl": "./"
+  }
+}
+```
+
+## New Schema Features
+
+As `TypedSchema()` now always needs a type option, it became less appealing. We always aim to only write code once.
+
+`@orion-js/schema` was rewritten to be much more powerful.
+
+Usage of `TypedSchema()` and `Model` is not recommended anymore and it's marked as deprecated.
+
+You can now `Infer` a type from a `Schema` definition.
+
+```ts
+// Before
+import {createEnum} from '@orion-js/schema'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+export const ExampleTypeEnum = createEnum('ExampleTypeEnum', ['type1', 'type2', 'type3'] as const)
+
+type ExampleId = `ex-${string}`
+
+@TypedSchema()
+export class ExampleSchema {
+  @Prop({type: String})
+  _id: ExampleId
+
+  @Prop({type: String})
+  name: string
+
+  @Prop({type: Date})
+  createdAt: Date
+
+  @Prop({optional: true, type: ExampleTypeEnum})
+  paymentMethod?: typeof ExampleTypeEnum.type
+}
+```
+
+```ts
+import {typedId} from '@orion-js/mongodb'
+import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
+
+export const PaymentMethodEnum = createEnum('PaymentMethodEnum', [
+  'type1',
+  'type2',
+  'type3',
+] as const)
+
+export const ExampleSchema = schemaWithName('ExampleSchema', {
+  _id: {type: typedId('ex')}, // @orion-js/mongodb will automatically add the prefix to document _ids
+  name: {type: String},
+  createdAt: {type: Date},
+  paymentMethod: {type: PaymentMethodEnum, optional: true},
+})
+
+export type ExampleSchemaType = InferSchemaType<typeof ExampleSchema>
+
+// type ExampleSchemaType = {
+//   _id: `ex-${string}`;
+//   name: string;
+//   createdAt: Date;
+//   paymentMethod?: "type1" | "type2" | "type3";
+// }
+
+```
+
+Note: You can define schemas without `schemaWithName()` but you won't be able to use them in GraphQL.
