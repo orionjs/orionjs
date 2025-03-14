@@ -10,8 +10,8 @@ const defaultOptions = {
   removeEmptyStrings: false,
 }
 
-export default async function clean<TSchema extends Schema = Schema>(
-  schema: TSchema | Function,
+export default async function clean<TSchema extends Schema = any>(
+  schema: TSchema,
   doc: InferSchemaType<TSchema>,
   opts: CurrentNodeInfoOptions = {},
   ...args

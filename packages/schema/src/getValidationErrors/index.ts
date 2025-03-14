@@ -1,4 +1,5 @@
-import {getSchemaFromTypedSchema} from '../getSchemaFromTypedSchema'
+import {getSchemaFromAnyOrionForm} from '../models'
+import {StrictInferSchemaType} from '../types'
 import {Schema} from '../types/schema'
 import doValidation from './doValidation'
 import getValidationErrorsObject from './getValidationErrorsObject'
@@ -7,13 +8,13 @@ const defaultOptions = {
   omitRequired: false,
 }
 
-export default async function getValidationErrors(
-  schema: Schema | Function,
-  doc: any,
+export default async function getValidationErrors<TSchema extends Schema>(
+  schema: TSchema,
+  doc: StrictInferSchemaType<TSchema>,
   passedOptions = {},
   ...args
 ) {
-  schema = getSchemaFromTypedSchema(schema)
+  schema = getSchemaFromAnyOrionForm(schema) as TSchema
 
   const options = {...defaultOptions, ...passedOptions}
   const errors: {key: string; code: string}[] = []

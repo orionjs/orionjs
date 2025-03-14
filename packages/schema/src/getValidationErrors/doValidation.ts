@@ -1,15 +1,27 @@
 import getError from './getError'
 import Errors from '../Errors'
-import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
+import {CurrentNodeInfo, Schema, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
 import {convertTypedSchema} from './convertTypedSchema'
 import {isNil, type} from 'rambdax'
 import {clone} from '../clone'
 
-export default async function doValidation(params: CurrentNodeInfo) {
+export default async function doValidation<TSchema extends Schema>(
+  params: CurrentNodeInfo<TSchema>,
+) {
   convertTypedSchema(params)
 
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
-  const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
+  const info = {
+    schema,
+    doc,
+    currentDoc,
+    value,
+    currentSchema,
+    keys,
+    options,
+    args,
+    addError,
+  } as CurrentNodeInfo<TSchema>
 
   const error = await getError(info)
   if (error) {
@@ -49,7 +61,7 @@ export default async function doValidation(params: CurrentNodeInfo) {
         value: itemValue,
         currentSchema: itemSchema,
         keys: keyItemKeys,
-      })
+      } as any)
     }
 
     const documentKeys = Object.keys(value)

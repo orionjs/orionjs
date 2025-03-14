@@ -1,9 +1,4 @@
-import {
-  GlobalResolverResolve,
-  ModelResolver,
-  ModelResolverResolve,
-  Resolver,
-} from '@orion-js/resolvers'
+import {GlobalResolver, ModelResolver} from '@orion-js/resolvers'
 import {Schema, SchemaFieldType, SchemaNode} from '@orion-js/schema'
 
 export interface ModelsSchemaNode extends Omit<SchemaNode, 'type'> {
@@ -47,11 +42,11 @@ export interface CreateModelOptions<TSchema extends Schema = any> {
 }
 
 export interface ModelResolversMap {
-  [key: string]: ModelResolver<ModelResolverResolve>
+  [key: string]: ModelResolver
 }
 
 export interface GlobalResolversMap {
-  [key: string]: Resolver<GlobalResolverResolve>
+  [key: string]: GlobalResolver
 }
 
 export interface CloneOptions {

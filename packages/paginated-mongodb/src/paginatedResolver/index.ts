@@ -4,7 +4,7 @@ import setOptions from './setOptions'
 import {getSchemaWithMetadataFromAnyOrionForm, InferSchemaType, Schema} from '@orion-js/schema'
 import {getPaginatedResolverResolvers, getPaginatedResolverReturnSchema} from './getModel'
 
-export interface PaginatedCursor<TReturns extends Schema = Schema> {
+export interface PaginatedCursor<TReturns extends Schema = any> {
   count?: () => Promise<number> | number
   toArray: () => Promise<InferSchemaType<TReturns>[]>
   limit?: (newLimit: number) => void
@@ -12,18 +12,18 @@ export interface PaginatedCursor<TReturns extends Schema = Schema> {
   sort?: (newSort: {[key: string]: 1 | -1}) => void
 }
 
-export type PaginatedResolverGetCursorResultWithCount<TReturns extends Schema = Schema> = {
+export type PaginatedResolverGetCursorResultWithCount<TReturns extends Schema = any> = {
   count: () => Promise<number> | number
   cursor: PaginatedCursor<TReturns>
 }
 
-export type PaginatedResolverGetCursorResult<TReturns extends Schema = Schema> =
+export type PaginatedResolverGetCursorResult<TReturns extends Schema = any> =
   | PaginatedCursor<TReturns>
   | PaginatedResolverGetCursorResultWithCount<TReturns>
 
 export interface PaginatedResolverOpts<
-  TParams extends Schema = Schema,
-  TReturns extends Schema = Schema,
+  TParams extends Schema = any,
+  TReturns extends Schema = any,
   TViewer = any,
 > {
   returns: TReturns
@@ -43,8 +43,8 @@ export interface PaginatedResolverOpts<
 }
 
 export function createPaginatedResolver<
-  TParams extends Schema = Schema,
-  TReturns extends Schema = Schema,
+  TParams extends Schema = any,
+  TReturns extends Schema = any,
   TViewer = any,
 >({
   returns,

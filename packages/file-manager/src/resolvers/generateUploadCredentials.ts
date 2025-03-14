@@ -4,9 +4,9 @@ import {createModel} from '@orion-js/models'
 import AWS from 'aws-sdk'
 import {getAWSCredentials} from '../credentials'
 import {Files} from '../Files'
-import type {Resolver} from '@orion-js/resolvers'
+import type {GlobalResolver} from '@orion-js/resolvers'
 
-export const generateUploadCredentials: Resolver<any, any> = resolver({
+export const generateUploadCredentials: GlobalResolver<any, any> = resolver({
   params: {
     name: {
       type: String,
@@ -89,7 +89,7 @@ export const generateUploadCredentials: Resolver<any, any> = resolver({
             'Cache-Control': 'public, max-age=31536000, immutable',
           },
         },
-        function (error, data) {
+        (error, data) => {
           if (error) reject(error)
           else resolve(data)
         },
