@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.0-next.7
+
+### Major Changes
+
+- new graphql scalar
+
 ## 4.0.0-next.6
 
 ### Major Changes
