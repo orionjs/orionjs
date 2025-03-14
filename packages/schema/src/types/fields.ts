@@ -50,11 +50,14 @@ type InferSchemaTypeForFieldType<T> =
 
 type SchemaKeysNotOfSchemaItems = keyof SchemaRecursiveNodeTypeExtras
 
-type NodeIsOptional<TNode> = TNode extends {optional: true}
-  ? true
-  : TNode extends {defaultValue: any}
-    ? true
-    : false
+type NodeIsOptional<TNode> = TNode extends {optional: true} ? true : false
+
+// esto hace que haya un infinity loopp
+// type NodeIsOptional<TNode> = TNode extends {optional: true}
+//   ? true
+//   : TNode extends {defaultValue: any}
+//     ? true
+//     : false
 
 type InferSchemaTypeForSchema<TSchema extends Record<string, any>> = Omit<
   {
