@@ -56,7 +56,7 @@ Generate code, corrections, and refactorings that comply with the basic principl
 
 ### Making scripts
 
-- prefer making scripts with typescript and run them using tsx (pnpx tsx)
+- prefer making scripts with typescript and run them using tsx (`pnpx tsx`)
 
 
 ### Installing dependencies
