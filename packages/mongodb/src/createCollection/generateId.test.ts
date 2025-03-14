@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from './index'
+import {createCollection} from './index'
 import {ObjectId} from 'bson'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {DistinctDocumentId} from '../types'

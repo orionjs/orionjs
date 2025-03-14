@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from '.'
+import {createCollection} from '.'
 import {allConnectionPromises} from '..'
 import {describe, it, expect, beforeEach} from 'vitest'
 

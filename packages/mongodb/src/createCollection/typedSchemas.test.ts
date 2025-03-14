@@ -18,7 +18,7 @@ it('Should correclty infer the document type from a passed schema', async () => 
   await collection.findOne({_id: 'item-32'})
   // await collection.findOne({_id: 'noitem-32'}) // should fail
 
-  expect(ItemSchema._id.type.name).toBe('typedId')
+  expect(ItemSchema._id.type.name).toBe('typedId:item')
 })
 
 it('Should generate collection items with the correct id prefix from the schema', async () => {

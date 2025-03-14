@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection, {createIndexesPromises} from '.'
+import {createCollection, createIndexesPromises} from '.'
 import {it, describe, expect, vi} from 'vitest'
 
 describe('Test indexes', () => {

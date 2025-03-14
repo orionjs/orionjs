@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
-import createCollection from '..'
+import {createCollection} from '..'
 import {it, expect} from 'vitest'
 
 it('update and finds the item and doesnt replaces the variable using updateAndFind', async () => {

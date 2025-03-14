@@ -1,6 +1,6 @@
 import createInsert from './insertOne'
 import {generateId} from '@orion-js/helpers'
-import createCollection from '..'
+import {createCollection} from '..'
 import {createModel} from '@orion-js/models'
 import {describe, it, expect} from 'vitest'
 

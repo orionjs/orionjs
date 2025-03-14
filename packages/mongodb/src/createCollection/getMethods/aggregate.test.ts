@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from '..'
+import {createCollection} from '..'
 import {it, expect} from 'vitest'
 
 it('ensuring the options are passed properly to the aggregate command', async () => {

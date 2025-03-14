@@ -108,7 +108,6 @@ describe('Collection as IOC', () => {
       userRepo: UserRepo
 
       async checkForTests() {
-        console.log('checkForTests', this.userRepo)
         await this.userRepo.createUser({name: 'Nico'})
         return await this.userRepo.getUserByName('Nico')
       }

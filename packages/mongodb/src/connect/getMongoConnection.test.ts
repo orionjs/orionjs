@@ -1,7 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {getMongoConnection} from '.'
-import {createCollection} from '..'
 import {describe, test, expect} from 'vitest'
+import {createCollection} from '../createCollection'
 
 describe('Get Mongo Connection', () => {
   test('Should get mongo connection for main connection', async () => {

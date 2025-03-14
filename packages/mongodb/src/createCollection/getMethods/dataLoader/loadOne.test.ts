@@ -1,6 +1,6 @@
-import createCollection from '../../index'
+import {createCollection} from '../../index'
 import {generateId} from '@orion-js/helpers'
-import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {it, expect} from 'vitest'
 
 it('should data load one not by id', async () => {

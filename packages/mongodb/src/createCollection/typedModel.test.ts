@@ -1,8 +1,7 @@
 import {ValidationError} from '@orion-js/schema'
-import createCollection from '.'
+import {createCollection} from '.'
 import {TypedSchema, Prop, getModelForClass} from '@orion-js/typed-model'
 import {generateId} from '@orion-js/helpers'
-import {modelResolver} from '@orion-js/resolvers'
 import {describe, it, expect} from 'vitest'
 
 describe('Collections with typed model', () => {

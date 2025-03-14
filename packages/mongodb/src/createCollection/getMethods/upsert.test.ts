@@ -1,6 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {createModel} from '@orion-js/models'
-import createCollection from '..'
+import {createCollection} from '..'
 import {it, expect} from 'vitest'
 import {Schema} from '@orion-js/schema'
 

@@ -2,7 +2,7 @@ import range from 'lodash/range'
 import random from 'lodash/random'
 import sortBy from 'lodash/sortBy'
 import {generateId} from '@orion-js/helpers'
-import createCollection from '../../index'
+import {createCollection} from '../../index'
 import {it, expect} from 'vitest'
 
 it('should data load many not by id', async () => {

@@ -1,5 +1,5 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from '../../index'
+import {createCollection} from '../../index'
 import {it, expect} from 'vitest'
 
 it('should data load by id', async () => {

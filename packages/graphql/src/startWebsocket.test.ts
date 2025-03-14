@@ -1,6 +1,6 @@
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import {resolver, addPermissionChecker} from '@orion-js/resolvers'
+import {addPermissionChecker, createResolver} from '@orion-js/resolvers'
 import {subscription} from '.'
 import {ApolloClient, InMemoryCache} from '@apollo/client/core'
 import gql from 'graphql-tag'
@@ -11,26 +11,25 @@ import {TypedSchema, Prop, getModelForClass} from '@orion-js/typed-model'
 import {GraphQLWsLink} from '@apollo/client/link/subscriptions'
 import {createClient} from 'graphql-ws'
 import ws, {WebSocketServer} from 'ws'
-import crypto from 'crypto'
-import {express, getServer} from '@orion-js/http'
-import WebSocket from 'ws'
-import http from 'http'
-import request from 'superwstest'
+import crypto from 'node:crypto'
+import {getServer} from '@orion-js/http'
 import {describe, it, expect} from 'vitest'
 
 const getStartServerOptions = async () => {
+  const helloWorld = createResolver({
+    params: {
+      name: {
+        type: 'string',
+      },
+    },
+    returns: 'string',
+    async resolve({name}) {
+      return `Hello ${name}`
+    },
+  })
+
   const resolvers = {
-    helloWorld: resolver({
-      params: {
-        name: {
-          type: 'string',
-        },
-      },
-      returns: 'string',
-      async resolve({name}) {
-        return `Hello ${name}`
-      },
-    }),
+    helloWorld,
   }
 
   const onNewGreeting = subscription<{name: string}, string>({
