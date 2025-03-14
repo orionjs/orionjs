@@ -3,7 +3,7 @@ import {execSync} from 'node:child_process'
 
 export function checkTs() {
   try {
-    execSync('tsc --noEmit', {
+    execSync('tsc --noEmit ./app/index.ts', {
       cwd: process.cwd(),
       env: {
         ...process.env,

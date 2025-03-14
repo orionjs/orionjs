@@ -7,22 +7,45 @@ description: 'How to upgrade your Orionjs application to v4'
 
 Orionjs v4 introduces some breaking changes that you need to be aware of.
 
-- ESM is now the default module system. That breaks some old dependencies that were CommonJS only.
-  - If you use `lodash`, you must replace it with `lodash-es` for ESM compatibility.
-- Decorators were updated to draft v3. Which is not backwards compatible with v2. This means:
-  - You must disable `experimentalDecorators` in your `tsconfig.json`
-  - You must add `"type": "module"` to your package.json
-  - You can not use `reflect-metadata`.
-  - `@TypedSchema()` `@Prop()` now always need a type option.
-  - We are not using `typedi` anymore, we created our own dependency injection system, very similar to `typedi`. So:
-    - You cannot do `@Inject()` without a factory function. You must do `@Inject(() => SomeService)` instead.
-- `Schema` and all of the places it's used, are now type safe. Old code like `Model` and `TypedSchema()` will still work. If you have any TS error, you can set `as any` to fix it until you migrate to `Schema`.
+#### ESM 
+
+ESM is now the default module system. That breaks some old dependencies that were CommonJS only.
+
+- If you use `lodash`, you must replace it with `lodash-es` for ESM compatibility.
+
+#### Reflect Metadata Decorators
+
+Decorators were updated to draft v3. Which is not backwards compatible with v2. This means:
+- You must disable `experimentalDecorators` in your `tsconfig.json`
+- You must add `"type": "module"` to your package.json
+- You can not use `reflect-metadata`.
+- `@TypedSchema()` `@Prop()` now always need a type option.
+
+#### Dependency Injection
+
+We are not using `typedi` anymore, we created our own dependency injection system, very similar to `typedi`. So:
+- You cannot do `@Inject()` without a factory function. You must do `@Inject(() => SomeService)` instead.
+
+#### Schema
+
+`Schema` and all of the places it's used, like `resolvers`, are now type safe. 
+
+- Old code like `Model` and `TypedSchema()` will still work. If you have any TS error, you can set `as any` to fix it until you migrate to `Schema`.
 - `Model.initItem` was deprecated in v3 and removed in v4.
   - `Collections` now can't accept a `model` option, only a `schema` option.
-  
-### Recommended TypeScript Configuration
 
-Update your `tsconfig.json` to use modern ESM settings:
+#### Orionjs CLI (`@orion-js/core`)
+
+Now we don't compile typescript code, we just run it with `tsx`.
+
+- `pnpm orion dev` to start in dev mode, it will watch for changes and automatically restart the server.
+- `pnpm orion prod` to start in prod mode, it will compile the code and then run it.
+  
+> You must have installed `@orion-js/core` in your project, you can't running using `npx` or `pnpx`.
+
+#### Recommended TypeScript Configuration
+
+Update your `tsconfig.json` to use modern settings:
 
 ```json
 {
@@ -37,7 +60,7 @@ Update your `tsconfig.json` to use modern ESM settings:
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "baseUrl": "./"
+    "baseUrl": "./",
   }
 }
 ```
