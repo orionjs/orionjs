@@ -1,5 +1,16 @@
 # @orion-js/crypto
 
+## 4.0.0-next.5
+
+### Major Changes
+
+- update exports in http
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/services@4.0.0-next.5
+
 ## 4.0.0-next.4
 
 ### Major Changes
