@@ -21,7 +21,6 @@
     "typedi": "^0.10.0"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.176",
     "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",

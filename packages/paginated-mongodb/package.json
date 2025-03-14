@@ -23,11 +23,9 @@
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
     "@orion-js/services": "workspace:*",
-    "@orion-js/typed-model": "workspace:*",
-    "lodash": "^4.17.21"
+    "@orion-js/typed-model": "workspace:*"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.176",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",

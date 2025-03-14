@@ -16,15 +16,14 @@
     "@orion-js/env": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
-    "lodash": "^4.17.21",
     "luxon": "^2.1.1",
     "nodemailer": "^6.7.1"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.4",
-    "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
+    "@types/nodemailer": "^6.4.4",
     "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
     "vitest": "^1.1.0"
   },
   "publishConfig": {

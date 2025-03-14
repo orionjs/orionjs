@@ -35,12 +35,10 @@
     "bson": "^6.10.3",
     "dataloader": "2.2.2",
     "dot-object": "2.1.4",
-    "lodash": "^4.17.21",
     "mongodb": "6.5.0"
   },
   "devDependencies": {
     "@types/dot-object": "^2.1.6",
-    "@types/lodash": "^4.17.16",
     "@types/node": "^18.0.0",
     "mongodb-memory-server": "^10.1.4",
     "tsup": "^8.0.1",

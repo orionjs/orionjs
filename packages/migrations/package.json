@@ -19,16 +19,15 @@
   "dependencies": {
     "@orion-js/dogs": "workspace:*",
     "@orion-js/helpers": "workspace:*",
+    "@orion-js/logger": "workspace:*",
     "@orion-js/mongodb": "workspace:*",
     "@orion-js/services": "workspace:*",
-    "@orion-js/typed-model": "workspace:*",
-    "@orion-js/logger": "workspace:*"
+    "@orion-js/typed-model": "workspace:*"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.195",
-    "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
     "vitest": "^1.1.0"
   },
   "publishConfig": {

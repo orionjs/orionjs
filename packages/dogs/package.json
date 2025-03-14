@@ -31,15 +31,13 @@
     "@orion-js/services": "workspace:*",
     "@orion-js/typed-model": "workspace:*",
     "dataloader": "2.2.2",
-    "dot-object": "^2.1.5",
-    "lodash": "^4.17.21"
+    "dot-object": "^2.1.5"
   },
   "peerDependencies": {
     "@orion-js/logger": "workspace:*"
   },
   "devDependencies": {
     "@orion-js/logger": "workspace:*",
-    "@types/lodash": "4.14.176",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",
     "vitest": "^1.1.0"

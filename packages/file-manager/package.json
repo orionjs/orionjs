@@ -22,15 +22,13 @@
     "@orion-js/typed-model": "workspace:*",
     "aws-sdk": "^2.1367.0",
     "escape-string-regexp": "^4.0.0",
-    "lodash": "^4.17.21",
     "luxon": "^2.1.1"
   },
   "devDependencies": {
     "@types/dot-object": "^2.1.2",
-    "@types/lodash": "4.14.181",
-    "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
     "vitest": "^1.1.0"
   },
   "publishConfig": {

@@ -27,8 +27,7 @@
     "@orion-js/models": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
-    "@orion-js/services": "workspace:*",
-    "lodash": "^4.17.21"
+    "@orion-js/services": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

@@ -19,15 +19,13 @@
   "dependencies": {
     "@orion-js/helpers": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
-    "@orion-js/schema": "workspace:*",
-    "lodash": "^4.17.21"
+    "@orion-js/schema": "workspace:*"
   },
   "peerDependencies": {
     "@orion-js/cache": "workspace:*"
   },
   "devDependencies": {
     "@orion-js/cache": "workspace:*",
-    "@types/lodash": "4.14.176",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",

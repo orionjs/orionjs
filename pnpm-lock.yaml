@@ -14,6 +14,9 @@ importers:
       '@orion-js/core':
         specifier: link:packages/core
         version: link:packages/core
+      rambdax:
+        specifier: ^11.3.1
+        version: 11.3.1
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -30,6 +33,9 @@ importers:
       oxc-transform:
         specifier: ^0.56.5
         version: 0.56.5
+      tsx:
+        specifier: ^4.19.3
+        version: 4.19.3
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
@@ -45,13 +51,7 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
-      '@types/lodash':
-        specifier: 4.14.176
-        version: 4.14.176
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -125,9 +125,6 @@ importers:
       dotenv:
         specifier: ^16.0.3
         version: 16.4.7
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
@@ -208,16 +205,10 @@ importers:
       dot-object:
         specifier: ^2.1.5
         version: 2.1.5
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
       '@orion-js/logger':
         specifier: workspace:*
         version: link:../logger
-      '@types/lodash':
-        specifier: 4.14.176
-        version: 4.14.176
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -254,9 +245,6 @@ importers:
       kafkajs:
         specifier: ^2.2.4
         version: 2.2.4
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       serialize-javascript:
         specifier: ^6.0.0
         version: 6.0.2
@@ -340,9 +328,6 @@ importers:
       escape-string-regexp:
         specifier: ^4.0.0
         version: 4.0.0
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       luxon:
         specifier: ^2.1.1
         version: 2.5.2
@@ -350,9 +335,6 @@ importers:
       '@types/dot-object':
         specifier: ^2.1.2
         version: 2.1.6
-      '@types/lodash':
-        specifier: 4.14.181
-        version: 4.14.181
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -410,9 +392,6 @@ importers:
       graphql-ws:
         specifier: ^5.11.2
         version: 5.16.2(graphql@16.10.0)
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       subscriptions-transport-ws:
         specifier: ^0.11.0
         version: 0.11.0(graphql@16.10.0)
@@ -423,9 +402,6 @@ importers:
       '@apollo/client':
         specifier: ^3.7.3
         version: 3.13.4(graphql-ws@5.16.2(graphql@16.10.0))(graphql@16.10.0)(subscriptions-transport-ws@0.11.0(graphql@16.10.0))
-      '@types/lodash':
-        specifier: 4.14.191
-        version: 4.14.191
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -499,9 +475,6 @@ importers:
       express:
         specifier: 4.21.2
         version: 4.21.2
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
       '@types/body-parser':
         specifier: ^1.19.1
@@ -509,9 +482,6 @@ importers:
       '@types/express':
         specifier: 5.0.0
         version: 5.0.0
-      '@types/lodash':
-        specifier: 4.17.16
-        version: 4.17.16
       '@types/node':
         specifier: ^22.13.10
         version: 22.13.10
@@ -542,9 +512,6 @@ importers:
       color:
         specifier: ^4.2.3
         version: 4.2.3
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       object-hash:
         specifier: ^2.2.0
         version: 2.2.0
@@ -555,9 +522,6 @@ importers:
         specifier: ^3.6.0
         version: 3.17.0
     devDependencies:
-      '@types/lodash':
-        specifier: ^4.14.182
-        version: 4.14.195
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -582,9 +546,6 @@ importers:
       '@orion-js/schema':
         specifier: workspace:*
         version: link:../schema
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       luxon:
         specifier: ^2.1.1
         version: 2.5.2
@@ -629,9 +590,6 @@ importers:
         specifier: workspace:*
         version: link:../typed-model
     devDependencies:
-      '@types/lodash':
-        specifier: 4.14.195
-        version: 4.14.195
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -656,16 +614,10 @@ importers:
       '@orion-js/schema':
         specifier: workspace:*
         version: link:../schema
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
       '@orion-js/cache':
         specifier: workspace:*
         version: link:../cache
-      '@types/lodash':
-        specifier: 4.14.176
-        version: 4.14.176
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -714,9 +666,6 @@ importers:
       dot-object:
         specifier: 2.1.4
         version: 2.1.4
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       mongodb:
         specifier: 6.5.0
         version: 6.5.0
@@ -724,9 +673,6 @@ importers:
       '@types/dot-object':
         specifier: ^2.1.6
         version: 2.1.6
-      '@types/lodash':
-        specifier: ^4.17.16
-        version: 4.17.16
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -766,13 +712,7 @@ importers:
       '@orion-js/typed-model':
         specifier: workspace:*
         version: link:../typed-model
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
-      '@types/lodash':
-        specifier: 4.14.176
-        version: 4.14.176
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -797,13 +737,7 @@ importers:
       '@orion-js/schema':
         specifier: workspace:*
         version: link:../schema
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
-      '@types/lodash':
-        specifier: 4.14.176
-        version: 4.14.176
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -822,16 +756,10 @@ importers:
       dot-object:
         specifier: ^2.1.4
         version: 2.1.4
-      lodash:
-        specifier: ^4.17.10
-        version: 4.17.21
     devDependencies:
       '@types/dot-object':
         specifier: ^2.1.2
         version: 2.1.6
-      '@types/lodash':
-        specifier: 4.14.181
-        version: 4.14.181
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -854,9 +782,6 @@ importers:
         specifier: ^0.10.0
         version: 0.10.0
     devDependencies:
-      '@types/lodash':
-        specifier: 4.14.176
-        version: 4.14.176
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80
@@ -912,9 +837,6 @@ importers:
       '@orion-js/services':
         specifier: workspace:*
         version: link:../services
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
       '@types/node':
         specifier: ^18.0.0
@@ -2221,21 +2143,6 @@ packages:
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
 
-  '@types/lodash@4.14.176':
-    resolution: {integrity: sha512-xZmuPTa3rlZoIbtDUyJKZQimJV3bxCmzMIO2c9Pz9afyDro6kr7R79GwcB6mRhuoPmV2p1Vb66WOJH7F886WKQ==}
-
-  '@types/lodash@4.14.181':
-    resolution: {integrity: sha512-n3tyKthHJbkiWhDZs3DkhkCzt2MexYHXlX0td5iMplyfwketaOeKboEVBqzceH7juqvEg3q5oUoBFxSLu7zFag==}
-
-  '@types/lodash@4.14.191':
-    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
-
-  '@types/lodash@4.14.195':
-    resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
-
-  '@types/lodash@4.17.16':
-    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
-
   '@types/long@4.0.2':
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
 
@@ -3277,9 +3184,6 @@ packages:
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
 
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-
   logform@2.7.0:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
     engines: {node: '>= 12.0.0'}
@@ -3757,6 +3661,9 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+
+  rambdax@11.3.1:
+    resolution: {integrity: sha512-ecsDpTQZuzZD16hPGpkja3klaho4I0tRp5IkjmUUrR7tNnw5RP9K/eiPfHev4HrRNr4OoUetIL/OOWFmeYls7A==}
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -5949,16 +5856,6 @@ snapshots:
 
   '@types/http-errors@2.0.4': {}
 
-  '@types/lodash@4.14.176': {}
-
-  '@types/lodash@4.14.181': {}
-
-  '@types/lodash@4.14.191': {}
-
-  '@types/lodash@4.14.195': {}
-
-  '@types/lodash@4.17.16': {}
-
   '@types/long@4.0.2': {}
 
   '@types/memcached@2.2.10':
@@ -7094,8 +6991,6 @@ snapshots:
 
   lodash.startcase@4.4.0: {}
 
-  lodash@4.17.21: {}
-
   logform@2.7.0:
     dependencies:
       '@colors/colors': 1.6.0
@@ -7495,6 +7390,8 @@ snapshots:
   querystring@0.2.0: {}
 
   queue-microtask@1.2.3: {}
+
+  rambdax@11.3.1: {}
 
   randombytes@2.1.0:
     dependencies:
