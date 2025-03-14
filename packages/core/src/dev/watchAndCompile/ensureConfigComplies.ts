@@ -5,7 +5,6 @@ import writeFile from '../../helpers/writeFile'
 // Define TypeScript config interface
 interface TSConfig {
   compilerOptions?: {
-    outDir?: string
     baseUrl?: string
     rootDir?: string
     rootDirs?: string[]
@@ -23,8 +22,8 @@ export function ensureConfigComplies(configPath: string) {
       ...config,
       compilerOptions: {
         ...config.compilerOptions,
-        outDir: './.orion/build/app',
         baseUrl: './',
+        noEmit: true,
       },
     }
 
