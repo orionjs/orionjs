@@ -129,7 +129,6 @@ export class JobsRepo {
   }
 
   async ensureJobRecord(job: JobDefinitionWithName) {
-    console.log(this.jobs)
     const result = await this.jobs.upsert(
       {
         jobName: job.name,
@@ -154,8 +153,6 @@ export class JobsRepo {
 
   async scheduleJob(options: ScheduleJobRecordOptions) {
     try {
-      console.log(this.jobs.schema)
-      console.log(this.jobs.getSchema(), {nextRunAt: options.nextRunAt})
       await this.jobs.insertOne({
         jobName: options.name,
         uniqueIdentifier: options.uniqueIdentifier,

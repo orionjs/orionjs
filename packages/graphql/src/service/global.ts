@@ -10,10 +10,7 @@ const resolversMetadata = new WeakMap<any, Record<string, any>>()
 export function Resolvers() {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
-
-    context.addInitializer(function (this) {
-      serviceMetadata.set(this, {_serviceType: 'resolvers'})
-    })
+    serviceMetadata.set(target, {_serviceType: 'resolvers'})
   }
 }
 
@@ -44,7 +41,7 @@ export function Query<This>(options: Omit<ResolverOptions<any>, 'resolve' | 'mut
 }
 
 export function Mutation<This, TParams, TReturns, TViewer, TInfo>(
-  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>,
+  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'> = {},
 ) {
   return (
     method: InternalGlobalResolverResolveAtDecorator<This, TParams, TReturns, TViewer, TInfo>,
@@ -77,13 +74,16 @@ export function getServiceResolvers(target: any): {
 } {
   const instance = getInstance(target)
 
+  const className = instance.constructor.name
+  const errorMessage = `You must pass a class decorated with @Resolvers to getServiceResolvers. Check the class ${className}`
+
   if (!serviceMetadata.has(instance.constructor)) {
-    throw new Error('You must pass a class decorated with @Resolvers to getServiceResolvers')
+    throw new Error(errorMessage)
   }
 
   const instanceMetadata = serviceMetadata.get(instance.constructor)
   if (instanceMetadata._serviceType !== 'resolvers') {
-    throw new Error('You must pass a class decorated with @Resolvers to getServiceResolvers')
+    throw new Error(`${errorMessage}. Got class type ${instanceMetadata._serviceType}`)
   }
 
   const resolversMap = resolversMetadata.get(instance) || {}

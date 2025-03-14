@@ -17,6 +17,12 @@ export function Service() {
 
 export function Inject<T>(getDependency: () => Token<T>) {
   return (_: undefined, context: ClassFieldDecoratorContext) => {
+    const propertyKey = String(context.name)
+    if (!getDependency) {
+      throw new Error(
+        `Since v4, Inject() requires a function that returns the dependency token. Check the @Inject() of ${propertyKey}`,
+      )
+    }
     context.addInitializer(function (this: any) {
       const metadata = injectionMetadata.get(this) || {}
       metadata[context.name] = getDependency

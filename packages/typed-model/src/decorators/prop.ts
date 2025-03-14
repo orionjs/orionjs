@@ -13,7 +13,7 @@ export function Prop(options: PropOptions) {
   return (_target: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    if (!options.type) {
+    if (!options?.type) {
       throw new CannotDetermineTypeError(propertyKey)
     }
 
