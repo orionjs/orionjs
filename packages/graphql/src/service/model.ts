@@ -16,21 +16,35 @@ export interface ModelResolversOptions {
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<
   any,
-  {_serviceType: string; options: ModelResolversOptions; _typedSchema: any; _modelName: string}
+  {_serviceType: string; options: ModelResolversOptions; _modelName: string}
 >()
 const modelResolversMetadata = new WeakMap<any, Record<string, any>>()
 
 export function ModelResolvers(typedSchema: any, options: ModelResolversOptions = {}) {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
+    const className = context.name
 
-    const modelName = options.modelName || typedSchema.name
+    const modelName = (() => {
+      if (options.modelName) {
+        return options.modelName
+      }
+
+      if (typeof typedSchema.name === 'string') {
+        return typedSchema.name
+      }
+
+      if (typedSchema.__modelName) {
+        return typedSchema.__modelName
+      }
+
+      throw new Error(`You must specify a model name for the model resolvers (at: ${className})`)
+    })()
 
     context.addInitializer(function (this) {
       serviceMetadata.set(this, {
         _serviceType: 'modelResolvers',
         options: options,
-        _typedSchema: typedSchema,
         _modelName: modelName,
       })
     })

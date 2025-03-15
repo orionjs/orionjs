@@ -14,7 +14,6 @@ export default async function cleanAndValidate({
     }
     const schema = getSchema(params)
     const cleaned = await clean(schema, callParams, options)
-    console.log('cleaned', {cleaned, schema, callParams})
     await validate(schema, cleaned, options)
     return cleaned
   }
