@@ -1,12 +1,12 @@
 import {getInstance, Service} from '@orion-js/services'
 import {
-  GlobalResolverResolve,
   ResolverOptions,
-  modelResolver,
+  createModelResolver as createModelResolverFromResolvers,
   ModelResolver as ModelResolverType,
 } from '@orion-js/resolvers'
-import {InternalModelResolverResolveAtDecorator} from './types'
 import {getTargetMetadata} from './middlewares'
+
+export const createModelResolver = createModelResolverFromResolvers
 
 export interface ModelResolversOptions {
   // the model name to add resolvers. If not specified, the model name will be the schema name
@@ -37,25 +37,30 @@ export function ModelResolvers(typedSchema: any, options: ModelResolversOptions 
   }
 }
 
-export function ModelResolver<This, TItem, TParams, TReturns, TViewer, TInfo>(
+export function ModelResolver(): (method: any, context: ClassFieldDecoratorContext) => any
+export function ModelResolver(
   options?: Omit<ResolverOptions<any>, 'resolve' | 'middlewares'>,
-) {
-  return (
-    method: InternalModelResolverResolveAtDecorator<This, TItem, TParams, TReturns, TViewer, TInfo>,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) => {
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function ModelResolver(options = {}) {
+  return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this: This) {
+    context.addInitializer(function (this) {
       const modelResolvers = modelResolversMetadata.get(this) || {}
 
-      modelResolvers[propertyKey] = modelResolver({
-        params: getTargetMetadata(method, propertyKey, 'params') || {},
-        returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
-        middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
-        ...options,
-        resolve: this[propertyKey].bind(this),
-      })
+      if (context.kind === 'method') {
+        modelResolvers[propertyKey] = createModelResolver({
+          params: getTargetMetadata(method, propertyKey, 'params') || {},
+          returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+          middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        modelResolvers[propertyKey] = this[propertyKey]
+      }
 
       modelResolversMetadata.set(this, modelResolvers)
     })
@@ -66,7 +71,7 @@ export function ModelResolver<This, TItem, TParams, TReturns, TViewer, TInfo>(
 
 export function getServiceModelResolvers(target: any): {
   [key: string]: {
-    [key: string]: ModelResolverType<GlobalResolverResolve>
+    [key: string]: ModelResolverType
   }
 } {
   const instance = getInstance(target)

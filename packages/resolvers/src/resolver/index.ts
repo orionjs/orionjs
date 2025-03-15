@@ -1,14 +1,7 @@
 import getExecute from './getExecute'
 import cleanParams from './cleanParams'
 import {generateId} from '@orion-js/helpers'
-import {
-  GlobalResolverOptions,
-  GlobalResolverResolve,
-  ModelResolver,
-  ModelResolverOptions,
-  ModelResolverResolve,
-  Resolver,
-} from './types'
+import {GlobalResolverOptions, ModelResolver, ModelResolverOptions, GlobalResolver} from './types'
 import {defaultCache} from '@orion-js/cache'
 import cleanReturns from './cleanReturns'
 import {getResolverArgs} from './getArgs'
@@ -47,25 +40,25 @@ function dynamicCreateResolver(options: any) {
 }
 
 const createResolver = <
-  TParams extends SchemaFieldType = SchemaFieldType,
-  TReturns extends SchemaFieldType = SchemaFieldType,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
   TViewer = any,
   TInfo = any,
 >(
   options: GlobalResolverOptions<TParams, TReturns, TViewer, TInfo>,
-): Resolver<GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>> => {
+): GlobalResolver<TParams, TReturns, TViewer, TInfo> => {
   return dynamicCreateResolver(options)
 }
 
 const createModelResolver = <
   TItem = any,
-  TParams extends SchemaFieldType = SchemaFieldType,
-  TReturns extends SchemaFieldType = SchemaFieldType,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
   TViewer = any,
   TInfo = any,
 >(
   options: ModelResolverOptions<TItem, TParams, TReturns, TViewer, TInfo>,
-): ModelResolver<ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>> => {
+): ModelResolver<TItem, TParams, TReturns, TViewer, TInfo> => {
   return dynamicCreateResolver(options)
 }
 

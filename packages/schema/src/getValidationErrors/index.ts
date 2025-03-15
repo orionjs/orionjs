@@ -26,6 +26,8 @@ export default async function getValidationErrors<TSchema extends Schema>(
     })
   }
 
+  console.log('getValidationErrors', {schema, doc, options, args})
+
   await doValidation({
     schema,
     doc,

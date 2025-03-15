@@ -1,5 +1,5 @@
 import {OrionCache} from '@orion-js/cache'
-import {Blackbox, InferSchemaType} from '@orion-js/schema'
+import {Blackbox, InferSchemaType, SchemaFieldType} from '@orion-js/schema'
 
 export type GlobalResolverResolve<TParams = any, TReturns = any, TViewer = any, TInfo = any> = (
   params?: InferSchemaType<TParams>,
@@ -9,8 +9,8 @@ export type GlobalResolverResolve<TParams = any, TReturns = any, TViewer = any, 
 
 export type ModelResolverResolve<
   TItem = any,
-  TParams = any,
-  TReturns = any,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
   TViewer = any,
   TInfo = any,
 > = (
@@ -57,7 +57,10 @@ export type Execute<Resolve = Function, IsModel = undefined> = (
   executeOptions: ExecuteParams<Resolve, IsModel>,
 ) => ReturnType<Resolve>
 
-export interface SharedResolverOptions<TParams = any, TReturns = any> {
+export interface SharedResolverOptions<
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
+> {
   resolverId?: string
   params?: TParams
   returns?: TReturns
@@ -72,8 +75,8 @@ export interface SharedResolverOptions<TParams = any, TReturns = any> {
 }
 
 export type GlobalResolverOptions<
-  TParams = any,
-  TReturns = any,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
   TViewer = any,
   TInfo = any,
 > = SharedResolverOptions<TParams, TReturns> & {
@@ -82,8 +85,8 @@ export type GlobalResolverOptions<
 
 export type ModelResolverOptions<
   TItem = any,
-  TParams = any,
-  TReturns = any,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
   TViewer = any,
   TInfo = any,
 > = SharedResolverOptions<TParams, TReturns> & {
@@ -91,8 +94,8 @@ export type ModelResolverOptions<
 }
 
 export type ResolverOptions<
-  TParams = any,
-  TReturns = any,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
   TViewer = any,
   TInfo = any,
   TItem = any,
@@ -102,13 +105,27 @@ export type ResolverOptions<
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never
 
-export interface Resolver<Resolve = Function, IsModel = undefined> extends SharedResolverOptions {
-  execute: Execute<Resolve, IsModel>
-  resolve: Resolve
-  modelResolve: IsModel extends undefined ? undefined : OmitFirstArg<Resolve>
+export type GlobalResolver<
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
+  TViewer = any,
+  TInfo = any,
+> = SharedResolverOptions & {
+  execute: Execute<GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>, false>
+  resolve: GlobalResolverResolve<TParams, TReturns, TViewer, TInfo>
 }
 
-export type ModelResolver<Resolve = Function> = Resolver<Resolve, true>
+export type ModelResolver<
+  TItem = any,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
+  TViewer = any,
+  TInfo = any,
+> = SharedResolverOptions & {
+  execute: Execute<ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>, true>
+  resolve: ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>
+  modelResolve: OmitFirstArg<ModelResolverResolve<TItem, TParams, TReturns, TViewer, TInfo>>
+}
 
 export interface PermissionCheckerOptions {
   resolver: GlobalResolverOptions | ModelResolverOptions

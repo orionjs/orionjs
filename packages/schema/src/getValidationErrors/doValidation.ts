@@ -5,9 +5,7 @@ import {convertTypedSchema} from './convertTypedSchema'
 import {isNil, type} from 'rambdax'
 import {clone} from '../clone'
 
-export default async function doValidation<TSchema extends Schema>(
-  params: CurrentNodeInfo<TSchema>,
-) {
+export default async function doValidation<TSchema extends Schema>(params: CurrentNodeInfo) {
   convertTypedSchema(params)
 
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params

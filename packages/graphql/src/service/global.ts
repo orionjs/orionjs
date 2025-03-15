@@ -1,7 +1,11 @@
 import {getInstance, Service} from '@orion-js/services'
-import {GlobalResolverResolve, ResolverOptions, resolver, Resolver} from '@orion-js/resolvers'
+import {ResolverOptions, createResolver, GlobalResolver} from '@orion-js/resolvers'
 import {getTargetMetadata} from './middlewares'
-import {InternalGlobalResolverResolveAtDecorator} from './types'
+
+export {createResolver}
+
+export const createQuery = createResolver
+export const createMutation = createResolver
 
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
@@ -14,24 +18,31 @@ export function Resolvers() {
   }
 }
 
-export function Query<This>(options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'> = {}) {
-  return (
-    method: InternalGlobalResolverResolveAtDecorator<This, any, any, any, any>,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) => {
+export function Query(): (method: any, context: ClassFieldDecoratorContext) => any
+export function Query(
+  options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function Query(options = {}) {
+  return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this: This) {
+    context.addInitializer(function (this) {
       const resolvers = resolversMetadata.get(this) || {}
 
-      resolvers[propertyKey] = resolver({
-        resolverId: propertyKey,
-        params: getTargetMetadata(method, propertyKey, 'params') || {},
-        returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
-        middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
-        ...options,
-        resolve: this[propertyKey].bind(this),
-      })
+      if (context.kind === 'method') {
+        resolvers[propertyKey] = createResolver({
+          resolverId: propertyKey,
+          params: getTargetMetadata(method, propertyKey, 'params') || {},
+          returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+          middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        resolvers[propertyKey] = this[propertyKey]
+      }
 
       resolversMetadata.set(this, resolvers)
     })
@@ -40,28 +51,32 @@ export function Query<This>(options: Omit<ResolverOptions<any>, 'resolve' | 'mut
   }
 }
 
-export function Mutation<This, TParams, TReturns, TViewer, TInfo>(
-  options: Omit<ResolverOptions<any>, 'resolve' | 'mutation'> = {},
-) {
-  return (
-    method: InternalGlobalResolverResolveAtDecorator<This, TParams, TReturns, TViewer, TInfo>,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) => {
+export function Mutation(): (method: any, context: ClassFieldDecoratorContext) => any
+export function Mutation(
+  options?: Omit<ResolverOptions<any>, 'resolve' | 'mutation'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function Mutation(options = {}) {
+  return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this: This) {
+    context.addInitializer(function (this) {
       const resolvers = resolversMetadata.get(this) || {}
 
-      resolvers[propertyKey] = resolver({
-        resolverId: propertyKey,
-        params: getTargetMetadata(method, propertyKey, 'params') || {},
-        returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
-        middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
-        ...options,
-        mutation: true,
-        resolve: this[propertyKey].bind(this),
-      })
-
+      if (context.kind === 'method') {
+        resolvers[propertyKey] = createResolver({
+          resolverId: propertyKey,
+          params: getTargetMetadata(method, propertyKey, 'params') || {},
+          returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+          middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
+          ...options,
+          mutation: true,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+      if (context.kind === 'field') {
+        this[propertyKey].mutation = true
+        resolvers[propertyKey] = this[propertyKey]
+      }
       resolversMetadata.set(this, resolvers)
     })
 
@@ -70,7 +85,7 @@ export function Mutation<This, TParams, TReturns, TViewer, TInfo>(
 }
 
 export function getServiceResolvers(target: any): {
-  [key: string]: Resolver<GlobalResolverResolve>
+  [key: string]: GlobalResolver<any, any, any, any>
 } {
   const instance = getInstance(target)
 

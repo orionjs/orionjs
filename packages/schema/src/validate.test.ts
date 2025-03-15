@@ -26,3 +26,9 @@ test('throws validation error when object is invalid', async () => {
     expect(error.code).toBe('validationError')
   }
 })
+
+test('passes on empty schemas', async () => {
+  const errors = await validate({}, {})
+  console.log('errors', errors)
+  expect(errors).toBeUndefined()
+})

@@ -41,6 +41,8 @@ describe('Service with graphql models', () => {
 
     const data = getServiceModelResolvers(PersonResolvers)
 
+    console.log(data.Person.getAge)
+
     const item: Person = {name: 'Orion'}
     const result = await data.Person.getAge.execute({parent: item})
     expect(result).toBe('Orion is 100 years old')

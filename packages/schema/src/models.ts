@@ -58,7 +58,7 @@ export function getSchemaFromAnyOrionForm(type: any): Schema {
 
   if (objectHasSubObjectWithKey(type, 'type')) return type // ya es un schema
 
-  return null
+  return {}
 }
 
 function objectHasSubObjectWithKey(object: any, key: string) {

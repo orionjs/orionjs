@@ -1,5 +1,5 @@
 import {createResolver, createModelResolver} from './index'
-import {Schema} from '@orion-js/schema'
+import {Schema, schemaWithName} from '@orion-js/schema'
 import {sleep} from '@orion-js/helpers'
 import {it, expect} from 'vitest'
 
@@ -21,6 +21,25 @@ it('should return a function with a resolver id', () => {
   expect(typeof resolver.resolve).toBe('function')
   expect(typeof resolver.execute).toBe('function')
   expect(typeof resolver.resolverId).toBe('string')
+})
+
+it('shoud pass types to params and returns', async () => {
+  const params = schemaWithName('ExampleParams', {
+    name: {type: 'string'},
+  })
+  const returns = schemaWithName('ExampleReturns', {
+    name: {type: 'string'},
+  })
+
+  createResolver({
+    params,
+    returns,
+    resolve: async params => {
+      return {
+        name: `Name: ${params.name}`,
+      }
+    },
+  })
 })
 
 it('should execute the function', async () => {

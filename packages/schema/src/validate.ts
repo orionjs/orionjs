@@ -9,6 +9,7 @@ export default async function validate<TSchema extends Schema = any>(
   passedOptions = {},
   ...args
 ) {
+  console.log('getting validation errors', {schema, doc, passedOptions, args})
   const validationErrors = await getValidationErrors(schema, doc, passedOptions, ...args)
   if (validationErrors) {
     throw new ValidationError(validationErrors)

@@ -5,6 +5,10 @@ import {getResultWithMiddlewares} from './getResultWithMiddlewares'
 
 export default function getExecute(options: ResolverOptions) {
   const execute: Execute = async executeParams => {
+    console.log('executeParams', {
+      params: options.params,
+      callParams: executeParams.params,
+    })
     const executeOptions: ExecuteOptions = {
       params: await cleanAndValidate({
         params: options.params,

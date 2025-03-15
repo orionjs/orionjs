@@ -16,6 +16,7 @@ export default async function getValidationErrors(
       return Errors.REQUIRED
     }
   } else {
+    console.log('getting validation errors', {params})
     const validatorKey = getFieldValidator(currentSchema.type)
     const validator =
       validatorKey === 'custom' ? (currentSchema.type as FieldType) : fieldTypes[validatorKey]

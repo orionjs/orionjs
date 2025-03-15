@@ -48,6 +48,11 @@ test('returns null when object is valid', async () => {
   expect(errors).toBeNull()
 })
 
+test('passes on empty schemas', async () => {
+  const errors = await getValidationErrors({}, {})
+  expect(errors).toBeNull()
+})
+
 test('returns an array with the respective errors', async () => {
   const errors = await getValidationErrors(schema, {
     lastName: 'López',
