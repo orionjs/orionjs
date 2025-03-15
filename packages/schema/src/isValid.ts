@@ -1,10 +1,10 @@
 import getValidationErrors from './getValidationErrors'
-import {StrictInferSchemaType} from './types'
+import {InferSchemaType} from './types'
 import {Schema} from './types/schema'
 
 export default async function isValid<TSchema extends Schema>(
   schema: TSchema,
-  doc: StrictInferSchemaType<TSchema>,
+  doc: InferSchemaType<TSchema>,
   passedOptions = {},
   ...args
 ) {

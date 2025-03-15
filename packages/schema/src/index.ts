@@ -26,5 +26,6 @@ export {
 
 export * from './types'
 export * from './models'
+export * from './cleanAndValidate'
 export * from './fieldType'
 export * from './schemaWithName'

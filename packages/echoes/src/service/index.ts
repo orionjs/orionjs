@@ -1,16 +1,16 @@
-import echo from '../echo'
+import {createEchoEvent, createEchoRequest} from '../echo'
 import {EchoConfig, EchoesMap} from '../types'
 import {getInstance, Service} from '@orion-js/services'
 
 export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
-  value?: EchoConfig['resolve']
+  value?: EchoConfig<any, any>['resolve']
 }
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const echoesMetadata = new WeakMap<any, Record<string, any>>()
 
 export function Echoes() {
-  return function (target: any, context: ClassDecoratorContext<any>) {
+  return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
 
     context.addInitializer(function (this) {
@@ -19,25 +19,30 @@ export function Echoes() {
   }
 }
 
-export function EchoEvent<
-  This,
-  TArgs extends Parameters<EchoConfig['resolve']>,
-  TReturn extends ReturnType<EchoConfig['resolve']>,
->(options: Omit<EchoConfig, 'resolve' | 'type'> = {}) {
-  return function (
-    method: (this: This, ...args: TArgs) => TReturn,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+export function EchoEvent(): (
+  method: any,
+  context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
+) => any
+export function EchoEvent(
+  options?: Omit<EchoConfig<any, any>, 'resolve' | 'type'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function EchoEvent(options = {}) {
+  return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this: This) {
+    context.addInitializer(function (this) {
       const echoes = echoesMetadata.get(this) || {}
 
-      echoes[propertyKey] = echo({
-        ...options,
-        type: 'event',
-        resolve: this[propertyKey].bind(this),
-      })
+      if (context.kind === 'method') {
+        echoes[propertyKey] = createEchoEvent({
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        echoes[propertyKey] = this[propertyKey]
+      }
 
       echoesMetadata.set(this, echoes)
     })
@@ -46,25 +51,30 @@ export function EchoEvent<
   }
 }
 
-export function EchoRequest<
-  This,
-  TArgs extends Parameters<EchoConfig['resolve']>,
-  TReturn extends ReturnType<EchoConfig['resolve']>,
->(options: Omit<EchoConfig, 'resolve' | 'type'> = {}) {
-  return function (
-    method: (this: This, ...args: TArgs) => TReturn,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) {
+export function EchoRequest(): (
+  method: any,
+  context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
+) => any
+export function EchoRequest(
+  options?: Omit<EchoConfig<any, any>, 'resolve' | 'type'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function EchoRequest(options = {}) {
+  return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this: This) {
+    context.addInitializer(function (this) {
       const echoes = echoesMetadata.get(this) || {}
 
-      echoes[propertyKey] = echo({
-        ...options,
-        type: 'request',
-        resolve: this[propertyKey].bind(this),
-      })
+      if (context.kind === 'method') {
+        echoes[propertyKey] = createEchoRequest({
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        echoes[propertyKey] = this[propertyKey]
+      }
 
       echoesMetadata.set(this, echoes)
     })

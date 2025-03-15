@@ -4,7 +4,6 @@ import {SchemaFieldType} from '../../types'
 import {isType} from 'rambdax'
 
 export default function getFieldValidator(type: SchemaFieldType): FieldValidatorType {
-  console.log('getFieldValidator', {type})
   if (isType('Object', type)) {
     if ((type as any).__isFieldType) return 'custom'
     return 'plainObject'

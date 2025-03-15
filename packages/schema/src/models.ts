@@ -1,5 +1,5 @@
 import getFieldValidator from './getValidationErrors/getError/getFieldValidator'
-import {Schema, SchemaWithMetadata} from './types'
+import {Schema, SchemaFieldType, SchemaFieldTypeNonSchema, SchemaWithMetadata} from './types'
 
 // @ts-ignore polyfill for Symbol.metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
@@ -16,6 +16,13 @@ export function isSchemaLike(type: any): boolean {
   if (type.__modelName) return true
 
   return false
+}
+
+export function isStrictSchemaLike<TType extends Schema | SchemaFieldTypeNonSchema>(
+  type: TType,
+): TType extends Schema ? true : false {
+  if (isSchemaLike(type)) return true as any
+  return false as any
 }
 
 export function isSchemaOrFieldLike(type: any): boolean {
@@ -42,7 +49,7 @@ export function getSchemaModelName(type: any): string | null {
   return null
 }
 
-export function getSchemaFromAnyOrionForm(type: any): Schema {
+export function getSchemaFromAnyOrionForm(type: any): SchemaFieldType {
   if (type?.[Symbol.metadata]?._getModel) {
     return type?.[Symbol.metadata]?._getModel().getSchema()
   }
@@ -58,7 +65,7 @@ export function getSchemaFromAnyOrionForm(type: any): Schema {
 
   if (objectHasSubObjectWithKey(type, 'type')) return type // ya es un schema
 
-  return {}
+  return type
 }
 
 function objectHasSubObjectWithKey(object: any, key: string) {

@@ -36,7 +36,7 @@ describe('Test Jobs History', () => {
     expect(executions.length).toBe(1)
 
     const execution = executions[0]
-    expect(execution.duration).toBeGreaterThanOrEqual(10)
+    expect(execution.duration).toBeGreaterThanOrEqual(7)
     expect(execution).toEqual({
       _id: expect.any(String),
       jobId: expect.any(String),

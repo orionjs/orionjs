@@ -1,15 +1,14 @@
 import ValidationError from './ValidationError'
 import getValidationErrors from './getValidationErrors'
-import {StrictInferSchemaType} from './types/fields'
-import {Schema} from './types/schema'
+import {InferSchemaType} from './types/fields'
+import {SchemaFieldType} from './types/schema'
 
-export default async function validate<TSchema extends Schema = any>(
+export default async function validate<TSchema extends SchemaFieldType>(
   schema: TSchema,
-  doc: StrictInferSchemaType<TSchema>,
+  doc: InferSchemaType<TSchema>,
   passedOptions = {},
   ...args
 ) {
-  console.log('getting validation errors', {schema, doc, passedOptions, args})
   const validationErrors = await getValidationErrors(schema, doc, passedOptions, ...args)
   if (validationErrors) {
     throw new ValidationError(validationErrors)

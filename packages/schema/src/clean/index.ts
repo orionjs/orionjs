@@ -1,6 +1,6 @@
-import {getSchemaFromTypedSchema} from '../getSchemaFromTypedSchema'
+import {getSchemaFromAnyOrionForm} from '../models'
 import {InferSchemaType} from '../types'
-import {CurrentNodeInfoOptions, Schema} from '../types/schema'
+import {CurrentNodeInfoOptions, SchemaFieldType} from '../types/schema'
 import recursiveClean from './recursiveClean'
 
 const defaultOptions = {
@@ -10,14 +10,14 @@ const defaultOptions = {
   removeEmptyStrings: false,
 }
 
-export default async function clean<TSchema extends Schema = any>(
+export default async function clean<TSchema extends SchemaFieldType>(
   schema: TSchema,
   doc: InferSchemaType<TSchema>,
   opts: CurrentNodeInfoOptions = {},
   ...args
 ): Promise<InferSchemaType<TSchema>> {
   if (!doc) return doc
-  schema = getSchemaFromTypedSchema(schema) as TSchema
+  schema = getSchemaFromAnyOrionForm(schema) as TSchema
 
   const options = {...defaultOptions, ...opts}
   const params = {
@@ -29,6 +29,6 @@ export default async function clean<TSchema extends Schema = any>(
     args,
   }
 
-  const cleanedResult = await recursiveClean(params)
+  const cleanedResult = await recursiveClean(params as any)
   return cleanedResult
 }

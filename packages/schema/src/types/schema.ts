@@ -34,14 +34,18 @@ export type ConstructorsTypesList =
   | Boolean
   | Date
 
-export type SchemaMetaFieldTypeSingle =
+export type SchemaMetaFieldTypeSingleNonSchema =
   | FieldTypesList
   | ConstructorsTypesList
-  | Schema
   | FieldType
   | TypedSchemaOnSchema
 
+export type SchemaMetaFieldTypeSingle = SchemaMetaFieldTypeSingleNonSchema | Schema
+
 export type SchemaFieldType = SchemaMetaFieldTypeSingle | SchemaMetaFieldTypeSingle[]
+export type SchemaFieldTypeNonSchema =
+  | SchemaMetaFieldTypeSingleNonSchema
+  | SchemaMetaFieldTypeSingleNonSchema[]
 
 export type ValidateFunction<TType = any> = (
   value: TType,
@@ -157,23 +161,23 @@ export interface CurrentNodeInfoOptions {
   omitRequired?: boolean
 }
 
-export interface CurrentNodeInfo<TType extends SchemaFieldType = any> {
+export interface CurrentNodeInfo {
   /**
    * The global schema, prefaced by {type: {...}} to be compatible with subschemas
    * Sometimes it's given without {type: {...}}. TODO: Normalize this.
    */
-  schema?: SchemaNode | Schema
+  schema?: SchemaFieldType
   /**
    * The current node subschema
    */
-  currentSchema?: Partial<SchemaNode<TType>>
+  currentSchema?: Partial<SchemaNode<SchemaFieldType>>
 
-  value: TType
+  value: InferSchemaType<SchemaFieldType>
   doc?: any
   currentDoc?: any
   options?: CurrentNodeInfoOptions
   args?: any[]
-  type?: TType
+  type?: SchemaFieldType
   keys?: string[]
 
   addError?: (keys: string[], code: string | object) => void
