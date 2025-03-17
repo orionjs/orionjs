@@ -33,5 +33,5 @@ export default new GraphQLScalarType({
       }
     }
     return null
-  }
+  },
 })

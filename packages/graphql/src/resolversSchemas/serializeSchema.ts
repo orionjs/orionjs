@@ -1,21 +1,23 @@
-import {Schema} from '@orion-js/schema'
+import {Schema, SchemaWithMetadata, getSchemaFromAnyOrionForm} from '@orion-js/schema'
 import getField from './getField'
 
-export default async function serializeSchema(params): Promise<Schema> {
+export default async function serializeSchema(params: Schema): Promise<SchemaWithMetadata> {
   if (!params) return
 
-  if (typeof params === 'function' && params.getModel && params.__schemaId) {
-    params = params.getModel().getCleanSchema() // typed model
-  }
+  const schema = getSchemaFromAnyOrionForm(params) as Schema
 
-  if (Object.keys(params).length === 0) return
+  if (Object.keys(schema).length === 0) return
 
   const fields = {}
 
-  for (const key of Object.keys(params)) {
-    const field = params[key]
+  console.log(schema, 'schema')
+  for (const key of Object.keys(schema).filter(key => !key.startsWith('__'))) {
+    const field = schema[key]
     fields[key] = await getField(field)
+    console.log(fields[key], field)
   }
+
+  console.log(fields, 'fields')
 
   return fields
 }

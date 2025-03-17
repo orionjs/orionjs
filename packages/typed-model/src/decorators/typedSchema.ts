@@ -1,11 +1,29 @@
-import {getModelForClass} from '..'
-import {MetadataStorage, TypedModelOptions} from '../storage/metadataStorage'
+import {omit} from 'rambdax'
+import {internal_getModelForClassFromMetadata} from '../factories'
+import {TypedSchemaOptions} from '../storage/metadataStorage'
+import {Model} from '@orion-js/models'
+import {PropOptions} from './prop'
 
-export function TypedSchema(options: TypedModelOptions = {}): ClassDecorator {
-  return target => {
-    MetadataStorage.addSchemaMetadata({target, options})
-
-    // @ts-expect-error this is a trick to make it work in resolvers without having to call getModelForClass
-    target.getModel = () => getModelForClass(target)
+/**
+ * @deprecated use schema with InferSchemaType<schema as const> instead
+ */
+export function TypedSchema(options: TypedSchemaOptions = {}) {
+  return (_target: any, context: ClassDecoratorContext<any>) => {
+    context.metadata._isTypedSchema = true
+    context.metadata._modelName = options.name || context.name
+    context.metadata._modelOptions = omit('name', options)
+    context.metadata._getModel = () => {
+      return internal_getModelForClassFromMetadata(
+        context.metadata as SchemaFromTypedSchemaMetadata,
+      )
+    }
   }
+}
+
+export type SchemaFromTypedSchemaMetadata = {
+  _isTypedSchema: true
+  _modelName: string
+  _modelOptions: TypedSchemaOptions
+  _getModel: () => Model
+  [key: `_prop:${string}`]: PropOptions
 }

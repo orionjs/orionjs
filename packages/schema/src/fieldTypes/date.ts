@@ -1,26 +1,23 @@
 import fieldType from '../fieldType'
-import isDate from 'lodash/isDate'
 import Errors from '../Errors'
-import isString from 'lodash/isString'
-import isNumber from 'lodash/isNumber'
 
-export default fieldType({
+export default fieldType<Date>({
   name: 'date',
   validate(value) {
-    if (!isDate(value)) return Errors.NOT_A_DATE
+    if (!(value instanceof Date)) return Errors.NOT_A_DATE
   },
   clean(value: Date, {options}) {
     if (options.autoConvert) {
-      if (isString(value)) {
+      if (typeof value === 'string') {
         const result = new Date(value)
-        if (isNaN(result.getTime())) {
+        if (Number.isNaN(result.getTime())) {
           return value
         }
 
         value = result
-      } else if (isNumber(value)) {
+      } else if (typeof value === 'number') {
         const result = new Date(value)
-        if (isNaN(result.getTime())) {
+        if (Number.isNaN(result.getTime())) {
           return value
         }
 
@@ -29,5 +26,5 @@ export default fieldType({
     }
 
     return value
-  }
+  },
 })

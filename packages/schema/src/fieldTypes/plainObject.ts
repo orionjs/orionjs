@@ -1,25 +1,25 @@
 import fieldType from '../fieldType'
-import isPlainObject from 'lodash/isPlainObject'
+import {type} from 'rambdax'
 import Errors from '../Errors'
-import difference from 'lodash/difference'
+import {Blackbox} from '../types'
 
-export default fieldType({
+export default fieldType<Blackbox>({
   name: 'plainObject',
   validate(value: object) {
-    if (!isPlainObject(value)) return Errors.NOT_AN_OBJECT
+    if (type(value) !== 'Object') return Errors.NOT_AN_OBJECT
   },
-  clean(value, {type, options}) {
-    if (!isPlainObject(value)) return value
+  clean(value, {type: typeObj, options}) {
+    if (type(value) !== 'Object') return value
 
     if (options.filter) {
       const documentKeys = Object.keys(value)
-      const schemaKeys = Object.keys(type)
-      const notInSchemaKeys = difference(documentKeys, schemaKeys)
+      const schemaKeys = Object.keys(typeObj)
+      const notInSchemaKeys = documentKeys.filter(key => !schemaKeys.includes(key))
       for (const key of notInSchemaKeys) {
         delete value[key]
       }
     }
 
     return value
-  }
+  },
 })

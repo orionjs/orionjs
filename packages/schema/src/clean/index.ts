@@ -1,22 +1,23 @@
-import {getSchemaFromTypedModel} from '../getSchemaFromTypedModel'
-import {Blackbox, CurrentNodeInfoOptions, Schema} from '../types/schema'
+import {getSchemaFromAnyOrionForm} from '../models'
+import {InferSchemaType} from '../types'
+import {CurrentNodeInfoOptions, SchemaFieldType} from '../types/schema'
 import recursiveClean from './recursiveClean'
 
 const defaultOptions = {
   autoConvert: true,
   filter: true,
   trimStrings: true,
-  removeEmptyStrings: false
+  removeEmptyStrings: false,
 }
 
-export default async function clean<TDoc = Blackbox>(
-  schema: Schema | Function,
-  doc: TDoc,
+export default async function clean<TSchema extends SchemaFieldType>(
+  schema: TSchema,
+  doc: InferSchemaType<TSchema>,
   opts: CurrentNodeInfoOptions = {},
   ...args
-): Promise<TDoc> {
+): Promise<InferSchemaType<TSchema>> {
   if (!doc) return doc
-  schema = getSchemaFromTypedModel(schema)
+  schema = getSchemaFromAnyOrionForm(schema) as TSchema
 
   const options = {...defaultOptions, ...opts}
   const params = {
@@ -25,8 +26,9 @@ export default async function clean<TDoc = Blackbox>(
     doc: options.forceDoc || doc,
     currentDoc: doc,
     options,
-    args
+    args,
   }
-  const cleanedResult = await recursiveClean(params)
-  return cleanedResult as TDoc
+
+  const cleanedResult = await recursiveClean(params as any)
+  return cleanedResult
 }

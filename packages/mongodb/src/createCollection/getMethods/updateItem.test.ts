@@ -1,18 +1,19 @@
 import {generateId} from '@orion-js/helpers'
-import {Prop, TypedModel, TypedSchema} from '@orion-js/typed-model'
-import createCollection from '..'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {createCollection} from '..'
+import {it, expect} from 'vitest'
 
 it('updates the item variable using updateItem', async () => {
   @TypedSchema()
   class Item {
-    @Prop()
+    @Prop({type: String})
     _id: string
 
-    @Prop()
+    @Prop({type: String})
     text: string
   }
 
-  const Tests = createCollection<Item>({name: generateId(), model: Item})
+  const Tests = createCollection<Item>({name: generateId(), schema: Item})
 
   await Tests.insertOne({text: 'hello'})
 

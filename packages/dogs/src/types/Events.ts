@@ -1,28 +1,31 @@
-import {PlainObject} from './HistoryRecord'
+import {Blackbox, InferSchemaType, SchemaInAnyOrionForm} from '@orion-js/schema'
 
-export interface ScheduleJobOptionsBase {
+export type ScheduleJobOptionsBase<TParamsSchema extends SchemaInAnyOrionForm> = {
   name: string
-  params?: PlainObject
   priority?: number
   uniqueIdentifier?: string
-}
+} & (TParamsSchema extends undefined
+  ? {params?: Blackbox}
+  : {params: InferSchemaType<TParamsSchema>})
 
-export type ScheduleJobOptionsRunIn = ScheduleJobOptionsBase & {
-  runIn: number
-}
+export type ScheduleJobOptionsRunIn<TParamsSchema extends SchemaInAnyOrionForm> =
+  ScheduleJobOptionsBase<TParamsSchema> & {
+    runIn: number
+  }
 
-export type ScheduleJobOptionsRunAt = ScheduleJobOptionsBase & {
-  runAt: Date
-}
+export type ScheduleJobOptionsRunAt<TParamsSchema extends SchemaInAnyOrionForm> =
+  ScheduleJobOptionsBase<TParamsSchema> & {
+    runAt: Date
+  }
 
-export type ScheduleJobOptions =
-  | ScheduleJobOptionsRunIn
-  | ScheduleJobOptionsRunAt
-  | ScheduleJobOptionsBase
+export type ScheduleJobOptions<TParamsSchema extends SchemaInAnyOrionForm = any> =
+  | ScheduleJobOptionsRunIn<TParamsSchema>
+  | ScheduleJobOptionsRunAt<TParamsSchema>
+  | ScheduleJobOptionsBase<TParamsSchema>
 
 export interface ScheduleJobRecordOptions {
   name: string
-  params: PlainObject
+  params: Blackbox
   nextRunAt: Date
   priority: number
   uniqueIdentifier?: string

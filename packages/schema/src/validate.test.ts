@@ -1,13 +1,14 @@
 import validate from './validate'
+import {test, expect} from 'vitest'
 
 const schema = {
   firstName: {
-    type: String
+    type: String,
   },
   lastName: {
     type: String,
-    optional: true
-  }
+    optional: true,
+  },
 }
 
 const validObject = {firstName: 'Nicolás', lastName: 'López'}
@@ -24,4 +25,10 @@ test('throws validation error when object is invalid', async () => {
   } catch (error) {
     expect(error.code).toBe('validationError')
   }
+})
+
+test('passes on empty schemas', async () => {
+  const errors = await validate({}, {})
+  console.log('errors', errors)
+  expect(errors).toBeUndefined()
 })

@@ -1,19 +1,17 @@
-import isUndefined from 'lodash/isUndefined'
-import isArray from 'lodash/isArray'
+import {isNil} from 'rambdax'
 import cleanType from './cleanType'
-import isNil from 'lodash/isNil'
 import {CurrentNodeInfo, SchemaNode} from '../types/schema'
 import getObjectNode from './getObjectNode'
-import {convertTypedModel} from '../getValidationErrors/convertTypedModel'
+import {convertTypedSchema} from '../getValidationErrors/convertTypedSchema'
 
-const cleanObjectFields = async function ({
+const cleanObjectFields = async ({
   schema,
   value,
   ...other
 }: {
   schema: SchemaNode
   value: object
-}): Promise<any> {
+}): Promise<any> => {
   const keys = Object.keys(schema.type).filter(key => !key.startsWith('__'))
   const newDoc: object = {}
 
@@ -23,10 +21,10 @@ const cleanObjectFields = async function ({
         ...other,
         schema: schema.type[key],
         value: value[key],
-        currentDoc: value
+        currentDoc: value,
       }
       const newValue = await clean(cleanOptions)
-      if (!isUndefined(newValue)) {
+      if (newValue !== undefined) {
         newDoc[key] = newValue
       }
     } catch (error) {
@@ -36,36 +34,39 @@ const cleanObjectFields = async function ({
   return newDoc
 }
 
-const cleanArrayItems = async function ({
+const cleanArrayItems = async ({
   schema,
   value,
   ...other
 }: {
   schema: Partial<SchemaNode>
   value: any
-}): Promise<any> {
+}): Promise<any> => {
   // clean array items
 
   const schemaType = schema.type[0]
 
-  const promises = value.map(async (item, index) => {
+  const promises = value.map(async (item: any) => {
     const newValue = await clean({
       ...other,
       schema: {
-        type: schemaType
+        type: schemaType,
       },
       value: item,
-      currentDoc: value
+      currentDoc: value,
     })
     return newValue
   })
 
   const result = await Promise.all(promises)
-  return result.filter(value => !isUndefined(value))
+  return result.filter(value => value !== undefined)
 }
 
-function getArrayNode(schema: Partial<SchemaNode>, value: any | Array<any>): SchemaNode | void {
-  if (isArray(schema.type) && !isNil(value)) {
+function getArrayNode(
+  schema: Partial<SchemaNode>,
+  value: any | Array<any>,
+): SchemaNode | undefined {
+  if (Array.isArray(schema.type) && !isNil(value)) {
     const result = schema as SchemaNode
     return result
   }
@@ -73,10 +74,10 @@ function getArrayNode(schema: Partial<SchemaNode>, value: any | Array<any>): Sch
   return null
 }
 
-const clean = async function (info: CurrentNodeInfo): Promise<any> {
-  convertTypedModel(info)
+const clean = async (info: CurrentNodeInfo): Promise<any> => {
+  convertTypedSchema(info)
 
-  let {schema, args = [], value} = info
+  const {schema, args = [], value} = info
 
   const currSchema: SchemaNode =
     schema.type === undefined ? ({type: schema} as SchemaNode) : (schema as SchemaNode)
@@ -86,7 +87,7 @@ const clean = async function (info: CurrentNodeInfo): Promise<any> {
     const newDoc = await cleanObjectFields({
       ...info,
       schema: objectSchema,
-      value: value as object
+      value: value as object,
     })
     const result = await cleanType('plainObject', objectSchema, newDoc, info, ...args)
     return result
@@ -96,14 +97,14 @@ const clean = async function (info: CurrentNodeInfo): Promise<any> {
 
   if (arraySchema) {
     let updatedValue = value
-    if (!isArray(value) && !Array.isArray(value)) {
+    if (!Array.isArray(value)) {
       updatedValue = [value]
     }
 
     const newDoc = await cleanArrayItems({
       ...info,
       schema: arraySchema,
-      value: updatedValue
+      value: updatedValue,
     })
     const result = await cleanType('array', arraySchema, newDoc, info, ...args)
     return result

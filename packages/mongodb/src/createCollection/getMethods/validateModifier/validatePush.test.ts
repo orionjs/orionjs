@@ -1,14 +1,15 @@
 import validateOperator from './validateOperator'
+import {it, expect} from 'vitest'
 
 it('validate $push operations', async () => {
   const friend = {
-    name: {type: String}
+    name: {type: String},
   }
   const person = {
-    friends: {type: [friend]}
+    friends: {type: [friend]},
   }
   const schema = {
-    person: {type: person}
+    person: {type: person},
   }
 
   const operation = '$push'
@@ -16,7 +17,7 @@ it('validate $push operations', async () => {
   await validateOperator({
     schema,
     operationDoc: {'person.friends': {name: 'Roberto'}},
-    operation
+    operation,
   })
 
   expect.assertions(1)
@@ -24,7 +25,7 @@ it('validate $push operations', async () => {
     await validateOperator({
       schema,
       operationDoc: {friends: 'Roberto'},
-      operation
+      operation,
     })
   } catch (error) {
     expect(error.code).toBe('validationError')
@@ -33,13 +34,13 @@ it('validate $push operations', async () => {
 
 it('validate $push operations with deep array', async () => {
   const friend = {
-    name: {type: String}
+    name: {type: String},
   }
   const person = {
-    friends: {type: [friend]}
+    friends: {type: [friend]},
   }
   const schema = {
-    persons: {type: [person]}
+    persons: {type: [person]},
   }
 
   const operation = '$push'
@@ -47,16 +48,16 @@ it('validate $push operations with deep array', async () => {
   await validateOperator({
     schema,
     operationDoc: {'persons.1.friends': {name: 'Roberto'}},
-    operation
+    operation,
   })
 })
 
 it('validate $push with $each operations', async () => {
   const friend = {
-    name: {type: String}
+    name: {type: String},
   }
   const schema = {
-    friends: {type: [friend]}
+    friends: {type: [friend]},
   }
 
   const operation = '$push'
@@ -64,7 +65,7 @@ it('validate $push with $each operations', async () => {
   await validateOperator({
     schema,
     operationDoc: {friends: {$each: [{name: 'Roberto'}, {name: 'Joaquín'}]}},
-    operation
+    operation,
   })
 
   expect.assertions(1)
@@ -72,7 +73,7 @@ it('validate $push with $each operations', async () => {
     await validateOperator({
       schema,
       operationDoc: {friends: {$each: [{name: 'Joaquín'}, 'Roberto']}},
-      operation
+      operation,
     })
   } catch (error) {
     expect(error.code).toBe('validationError')
@@ -81,10 +82,10 @@ it('validate $push with $each operations', async () => {
 
 it('validate $addToSet', async () => {
   const friend = {
-    name: {type: String}
+    name: {type: String},
   }
   const schema = {
-    friends: {type: [friend]}
+    friends: {type: [friend]},
   }
 
   const operation = '$addToSet'
@@ -92,6 +93,6 @@ it('validate $addToSet', async () => {
   await validateOperator({
     schema,
     operationDoc: {friends: {$each: [{name: 'Roberto'}, {name: 'Joaquín'}]}},
-    operation
+    operation,
   })
 })

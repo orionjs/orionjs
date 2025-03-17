@@ -1,17 +1,18 @@
 import {cleanKey, clean} from '@orion-js/schema'
-import isEmpty from 'lodash/isEmpty'
-import isNil from 'lodash/isNil'
-import isUndefined from 'lodash/isUndefined'
-import isEqual from 'lodash/isEqual'
+import {isEmpty, isNil, equals} from 'rambdax'
 import * as MongoDB from 'mongodb'
 import fromDot from '../../helpers/fromDot'
+import {ModelClassBase} from '../../types'
 
-const shouldCheck = function (key) {
+const shouldCheck = key => {
   if (key === '$pushAll') throw new Error('$pushAll is not supported; use $push + $each')
   return ['$pull', '$pullAll', '$pop', '$slice'].indexOf(key) === -1
 }
 
-export default async function cleanModifier(schema, modifier, {isUpsert} = {isUpsert: false}) {
+export default async function cleanModifier<
+  ModelClass extends ModelClassBase,
+  TFilter extends MongoDB.UpdateFilter<ModelClass>,
+>(schema, modifier: TFilter, {isUpsert} = {isUpsert: false}) {
   const cleanedModifier: MongoDB.UpdateFilter<MongoDB.Document> = {}
   for (const operation of Object.keys(modifier)) {
     const operationDoc = modifier[operation]
@@ -56,7 +57,7 @@ export default async function cleanModifier(schema, modifier, {isUpsert} = {isUp
         cleaned = !isNil(isPresent) ? '' : null
       }
 
-      if (!isUndefined(cleaned)) {
+      if (cleaned !== undefined) {
         cleanedModifier[operation][key] = cleaned
       }
     }
@@ -74,9 +75,9 @@ export default async function cleanModifier(schema, modifier, {isUpsert} = {isUp
     }
   }
 
-  if (isEqual(cleanedModifier, {})) {
+  if (equals(cleanedModifier, {})) {
     throw new Error('After cleaning your modifier is empty')
   }
 
-  return cleanedModifier
+  return cleanedModifier as TFilter
 }

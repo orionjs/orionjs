@@ -1,142 +1,124 @@
 import paramsResolver from './params'
 import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
-import {resolver} from '@orion-js/resolvers'
-import {createModel} from '@orion-js/models'
-
+import {createResolver, resolver} from '@orion-js/resolvers'
+import {describe, it, expect} from 'vitest'
+import {schemaWithName} from '@orion-js/schema'
 describe('Get params tests', () => {
   it('Should return the correct information for a resolver that returns a string array', async () => {
-    resolversStore.aResolver = resolver({
+    resolversStore.aResolver = createResolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: [String],
       async resolve() {
         return ['a', 'b']
-      }
+      },
     })
 
-    const response = (await paramsResolver.execute({
+    const response = await paramsResolver.execute({
       params: {
         name: 'aResolver',
-        mutation: false
-      }
-    })) as any
+        mutation: false,
+      },
+    })
 
-    const params = await response.params()
-    const result = await response.result()
-    const basicResultQuery = await response.basicResultQuery()
+    console.log(response, 'executed')
 
     expect(response.name).toEqual('aResolver')
-    expect(params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
-    expect(result).toEqual(undefined)
-    expect(basicResultQuery).toEqual('')
+    expect(response.params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
+    expect(response.result).toEqual(undefined)
+    expect(response.basicResultQuery).toEqual('')
   })
 
   it('Should return the correct information for a resolver that returns a string', async () => {
     resolversStore.aaResolver = resolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: [String],
       async resolve() {
-        return 'a'
-      }
+        return ['a']
+      },
     })
 
-    const response = (await paramsResolver.execute({
+    const response = await paramsResolver.execute({
       params: {
         name: 'aaResolver',
-        mutation: false
-      }
-    })) as any
-
-    const params = await response.params()
-    const result = await response.result()
-    const basicResultQuery = await response.basicResultQuery()
+        mutation: false,
+      },
+    })
 
     expect(response.name).toEqual('aaResolver')
-    expect(params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
-    expect(result).toEqual(undefined)
-    expect(basicResultQuery).toEqual('')
+    expect(response.params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
+    expect(response.result).toEqual(undefined)
+    expect(response.basicResultQuery).toEqual('')
   })
 
   it('Should return the correct information for a resolver that returns a array of a model', async () => {
-    const model = createModel({
-      name: 'Item',
-      schema: {
-        name: {
-          type: String
-        }
-      }
+    const model = schemaWithName('Item', {
+      name: {
+        type: String,
+      },
     })
 
-    resolversStore.bResolver = resolver({
+    resolversStore.bResolver = createResolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: [model],
       async resolve() {
         return [{name: 'Nico'}]
-      }
+      },
     })
 
-    const response = (await paramsResolver.execute({
+    const response = await paramsResolver.execute({
       params: {
         name: 'bResolver',
-        mutation: false
-      }
-    })) as any
+        mutation: false,
+      },
+    })
 
-    const params = await response.params()
-    const result = await response.result()
-    const basicResultQuery = await response.basicResultQuery()
     expect(response.name).toEqual('bResolver')
-    expect(params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
-    expect(result).toEqual('Item')
-    expect(basicResultQuery).toEqual('{ name }')
+    expect(response.params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
+    expect(response.result).toEqual('Item')
+    expect(response.basicResultQuery).toEqual('{ name }')
   })
 
   it('Should return the correct information for a resolver that returns a model', async () => {
-    const model2 = createModel({
-      name: 'Item2',
-      schema: {
-        name: {
-          type: String
-        }
-      }
+    const model2 = schemaWithName('Item2', {
+      name: {
+        type: String,
+      },
     })
 
-    resolversStore.cResolver = resolver({
+    resolversStore.cResolver = createResolver({
       params: {
         aParam: {
-          type: String
-        }
+          type: String,
+        },
       },
       returns: model2,
       async resolve() {
-        return [{name: 'Nico'}]
-      }
+        return {name: 'Nico'}
+      },
     })
 
-    const response = (await paramsResolver.execute({
+    const response = await paramsResolver.execute({
       params: {
         name: 'cResolver',
-        mutation: false
-      }
-    })) as any
+        mutation: false,
+      },
+    })
 
-    const params = await response.params()
-    const result = await response.result()
-    const basicResultQuery = await response.basicResultQuery()
     expect(response.name).toEqual('cResolver')
-    expect(params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
-    expect(result).toEqual('Item2')
-    expect(basicResultQuery).toEqual('{ name }')
+    expect(response.params).toEqual({aParam: {type: 'string', __graphQLType: 'String'}})
+    expect(response.result).toEqual('Item2')
+    expect(response.basicResultQuery).toEqual('{ name }')
   })
 })

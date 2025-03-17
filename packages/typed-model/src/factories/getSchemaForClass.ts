@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import {Schema} from '@orion-js/schema'
-import {Constructor} from '../utils/interfaces'
-import {getSchemaForClassRecursive} from './helpers/processSchemaForProp'
+import {getModelForClass} from './getModelForClass'
 
-export function getSchemaForClass<TClass>(target: Constructor<TClass>): Schema {
-  return getSchemaForClassRecursive(target)
+export function getSchemaForClass(target: any): Schema {
+  return getModelForClass(target).getSchema()
 }

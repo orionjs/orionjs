@@ -1,54 +1,101 @@
-import {getInstance, Service} from '@orion-js/services'
-import echo from '../echo'
+import {createEchoEvent, createEchoRequest} from '../echo'
 import {EchoConfig, EchoesMap} from '../types'
-
-export function Echoes(): ClassDecorator {
-  return function (target: any) {
-    Service()(target)
-    target.prototype.service = target
-  }
-}
+import {getInstance, Service} from '@orion-js/services'
 
 export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
-  value?: EchoConfig['resolve']
+  value?: EchoConfig<any, any>['resolve']
 }
+// Define metadata storage using WeakMaps
+const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
+const echoesMetadata = new WeakMap<any, Record<string, any>>()
 
-export function EchoRequest(options: Omit<EchoConfig, 'resolve' | 'type'> = {}) {
-  return function (target: any, propertyKey: string, descriptor: EchoesPropertyDescriptor) {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
+export function Echoes() {
+  return (target: any, context: ClassDecoratorContext<any>) => {
+    Service()(target, context)
 
-    target.echoes = target.echoes || {}
-    target.echoes[propertyKey] = echo({
-      ...options,
-      type: 'request',
-      resolve: async (params, viewer) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
-      }
+    context.addInitializer(function (this) {
+      serviceMetadata.set(this, {_serviceType: 'echoes'})
     })
   }
 }
 
-export function EchoEvent(options: Omit<EchoConfig, 'resolve' | 'type'> = {}) {
-  return function (target: any, propertyKey: string, descriptor: EchoesPropertyDescriptor) {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
+export function EchoEvent(): (
+  method: any,
+  context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
+) => any
+export function EchoEvent(
+  options?: Omit<EchoConfig<any, any>, 'resolve' | 'type'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function EchoEvent(options = {}) {
+  return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
+    const propertyKey = String(context.name)
 
-    target.echoes = target.echoes || {}
-    target.echoes[propertyKey] = echo({
-      ...options,
-      type: 'event',
-      resolve: async (params, viewer) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
+    context.addInitializer(function (this) {
+      const echoes = echoesMetadata.get(this) || {}
+
+      if (context.kind === 'method') {
+        echoes[propertyKey] = createEchoEvent({
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
       }
+
+      if (context.kind === 'field') {
+        echoes[propertyKey] = this[propertyKey]
+      }
+
+      echoesMetadata.set(this, echoes)
     })
+
+    return method
+  }
+}
+
+export function EchoRequest(): (
+  method: any,
+  context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
+) => any
+export function EchoRequest(
+  options?: Omit<EchoConfig<any, any>, 'resolve' | 'type'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function EchoRequest(options = {}) {
+  return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
+    const propertyKey = String(context.name)
+
+    context.addInitializer(function (this) {
+      const echoes = echoesMetadata.get(this) || {}
+
+      if (context.kind === 'method') {
+        echoes[propertyKey] = createEchoRequest({
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        echoes[propertyKey] = this[propertyKey]
+      }
+
+      echoesMetadata.set(this, echoes)
+    })
+
+    return method
   }
 }
 
 export function getServiceEchoes(target: any): EchoesMap {
-  if (!target.prototype) {
-    throw new Error('You must pass a class to getServiceRoutes')
+  const instance = getInstance(target)
+
+  if (!serviceMetadata.has(instance.constructor)) {
+    throw new Error('You must pass a class decorated with @Echoes to getServiceEchoes')
   }
 
-  return target.prototype.echoes || {}
+  const instanceMetadata = serviceMetadata.get(instance.constructor)
+  if (instanceMetadata._serviceType !== 'echoes') {
+    throw new Error('You must pass a class decorated with @Echoes to getServiceEchoes')
+  }
+
+  const echoesMap = echoesMetadata.get(instance) || {}
+
+  return echoesMap
 }

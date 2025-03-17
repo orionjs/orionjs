@@ -1,4 +1,4 @@
-import {MongoExpiredSessionError} from 'mongodb'
+import {MongoExpiredSessionError, MongoNotConnectedError} from 'mongodb'
 import {Collection, ModelClassBase} from '..'
 
 function matchingDefinition(defIndex, curIndex) {
@@ -10,8 +10,10 @@ function matchingDefinition(defIndex, curIndex) {
 }
 
 export async function checkIndexes<DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) {
+  await collection.connectionPromise
+
   let currentIndexes = []
   try {
     currentIndexes = await collection.rawCollection.indexes()
@@ -23,7 +25,7 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
     ? currentIndexes.filter(
         index =>
           index.name !== '_id_' &&
-          !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index))
+          !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index)),
       )
     : currentIndexes
 
@@ -33,32 +35,37 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
         collection.name
       }": ${indexesToDelete
         .map(i => i.name)
-        .join(', ')} | Delete the index or fix the collection definition`
+        .join(', ')} | Delete the index or fix the collection definition`,
     )
   }
 }
 export async function loadIndexes<DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ): Promise<string[]> {
   if (!collection.indexes) return
   if (!collection.indexes.length) return
 
-  await collection.client.connectionPromise
+  await collection.connectionPromise
 
   const results = Promise.all(
     collection.indexes.map(async ({keys, options}) => {
       try {
         return await collection.rawCollection.createIndex(keys, options)
       } catch (error) {
-        if (error.code === 85) {
+        if (error.code === 85 || error.code === 86) {
           console.info('Will delete index to create the new version')
-          const indexName = error.message.split('name: ')[1].split(' ')[0]
+          const indexName = (() => {
+            const message = error.errorResponse.errmsg
+            const indexName = message.split('name: "')[1].split('"')[0]
+            return indexName
+          })()
           await collection.rawCollection.dropIndex(indexName)
           console.info('Index was deleted, creating new index')
           const result = await collection.rawCollection.createIndex(keys, options)
           console.info('Index updated correctly')
           return result
-        } else if (error instanceof MongoExpiredSessionError) {
+        }
+        if (error instanceof MongoExpiredSessionError || error instanceof MongoNotConnectedError) {
           // this errors is thrown when we are on tests environment
           // but it's not a problem never, index will be created on the next connection
         } else {
@@ -67,7 +74,7 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
           return error.message
         }
       }
-    })
+    }),
   )
 
   await checkIndexes(collection)

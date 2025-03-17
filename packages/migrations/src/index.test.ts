@@ -1,11 +1,11 @@
-import {Inject, getInstance} from '@orion-js/services'
 import {loadMigrations} from './loadMigrations'
 import {MigrationService} from './service'
 import {MigrationsService} from './MigrationsService'
-import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
-import {generateId} from '../../helpers/lib'
 import {MigrationsRepo} from './Repo'
 import {ExecutionContext} from '@orion-js/dogs'
+import {describe, it, expect} from 'vitest'
+import {generateId} from '@orion-js/helpers'
+import {getInstance} from '@orion-js/services'
 
 describe('Migrations end to end', () => {
   it('should create a migration service', async () => {
@@ -13,7 +13,7 @@ describe('Migrations end to end', () => {
 
     @MigrationService({
       name: generateId(),
-      useMongoTransactions: false
+      useMongoTransactions: false,
     })
     class MoveUsersMigrationService {
       async runMigration() {
@@ -40,7 +40,7 @@ describe('Migrations end to end', () => {
 
     @MigrationService({
       name: migrationName,
-      useMongoTransactions: false
+      useMongoTransactions: false,
     })
     class MoveUsersMigrationService {
       async runMigration() {

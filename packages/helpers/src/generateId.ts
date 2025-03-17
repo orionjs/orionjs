@@ -45,7 +45,7 @@ const randomString = function (charsCount, alphabet) {
  */
 export default function generateId(
   charsCount?: number,
-  chars: string = UNMISTAKABLE_CHARS
+  chars: string = UNMISTAKABLE_CHARS,
 ): string {
   if (!charsCount) {
     charsCount = 17

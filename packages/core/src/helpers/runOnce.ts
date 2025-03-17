@@ -1,6 +1,6 @@
 export default function (func) {
   let running = false
-  return async function (...args) {
+  return async (...args) => {
     if (running) return
     running = true
     const result = await func(...args)

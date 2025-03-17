@@ -1,5 +1,5 @@
 import {getDataLoader} from './getDataLoader'
-import flatten from 'lodash/flatten'
+import {flatten} from 'rambdax'
 import {hashObject} from '@orion-js/helpers'
 
 interface Options {
@@ -14,7 +14,7 @@ const dataLoad = async (options: Options) => {
   const dataLoader = getDataLoader({
     key: hashObject(options.loaderKey),
     func: options.load,
-    timeout: options.timeout || 5
+    timeout: options.timeout || 5,
   })
 
   if (options.ids) {

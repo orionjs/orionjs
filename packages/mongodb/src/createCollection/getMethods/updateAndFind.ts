@@ -3,12 +3,12 @@ import getSelector from './getSelector'
 import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const updateAndFind: UpdateAndFind<DocumentType> = async function (
     selector,
     modifier,
-    options = {}
+    options = {},
   ) {
     await collection.connectionPromise
     return await wrapErrors(async () => {
@@ -16,8 +16,8 @@ export default <DocumentType extends ModelClassBase>(
         ...options,
         mongoOptions: {
           ...options.mongoOptions,
-          returnDocument: 'after'
-        }
+          returnDocument: 'after',
+        },
       })
     })
   }

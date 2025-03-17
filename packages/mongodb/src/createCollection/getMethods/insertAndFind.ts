@@ -1,16 +1,16 @@
-import isPlainObject from 'lodash/isPlainObject'
+import {type} from 'rambdax'
 import {Collection, InsertAndFind, ModelClassBase} from '../../types'
 import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
 import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const insertAndFind: InsertAndFind<DocumentType> = async (insertDoc, options = {}) => {
     await collection.connectionPromise
     let doc = insertDoc as any
-    if (!doc || !isPlainObject(doc)) {
+    if (!doc || type(doc) !== 'Object') {
       throw new Error('Insert must receive a document')
     }
 

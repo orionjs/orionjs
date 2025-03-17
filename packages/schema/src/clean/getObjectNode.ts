@@ -1,9 +1,9 @@
-import isPlainObject from 'lodash/isPlainObject'
+import {type} from 'rambdax'
 import {SchemaNode} from '../types/schema'
 
-export default function getObjectNode(schema: Partial<SchemaNode>, value: any): SchemaNode | void {
-  if (isPlainObject(schema.type) && isPlainObject(value)) {
-    const result = schema as SchemaNode
+export default function getObjectNode(schema: Partial<SchemaNode>, value: any): SchemaNode {
+  if (type(schema.type) === 'Object' && type(value) === 'Object') {
+    const result = schema as any
     return result
   }
 

@@ -1,5 +1,4 @@
 import config from '../config'
-import types from '../echo/types'
 
 export default function (method: string) {
   const echo = config.echoes[method]
@@ -8,7 +7,7 @@ export default function (method: string) {
     throw new Error(`Echo named ${method} not found in this service`)
   }
 
-  if (echo.type !== types.request) {
+  if (echo.type !== 'request') {
     throw new Error(`Echo named ${method} is not of type request`)
   }
 

@@ -1,10 +1,11 @@
 import ValidationError from './ValidationError'
 import getValidationErrors from './getValidationErrors'
-import {Schema} from './types/schema'
+import {InferSchemaType} from './types/fields'
+import {SchemaFieldType} from './types/schema'
 
-export default async function validate(
-  schema: Schema | Function,
-  doc: any,
+export default async function validate<TSchema extends SchemaFieldType>(
+  schema: TSchema,
+  doc: InferSchemaType<TSchema>,
   passedOptions = {},
   ...args
 ) {

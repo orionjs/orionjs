@@ -1,6 +1,5 @@
-import isPlainObject from 'lodash/isPlainObject'
-import isNil from 'lodash/isNil'
 import {Schema, SchemaNode} from '..'
+import {isType, isNil} from 'rambdax'
 
 const dotGet = function dotGet(object: SchemaNode, path: string) {
   if (path === '') return object
@@ -13,7 +12,9 @@ const dotGet = function dotGet(object: SchemaNode, path: string) {
 
   if (first === '$' || /^[0-9]+$/.test(first)) {
     return dotGet({type: levelObject[0]}, remainingPath)
-  } else if (isPlainObject(levelObject[first])) {
+  }
+
+  if (isType('Object', levelObject[first])) {
     return dotGet(levelObject[first], remainingPath)
   }
 

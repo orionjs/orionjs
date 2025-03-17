@@ -4,7 +4,7 @@ import Errors from '../Errors'
 import {CurrentNodeInfoOptions, Schema} from '..'
 
 const defaultOptions = {
-  filter: false
+  filter: false,
 }
 
 export default async function (
@@ -20,9 +20,8 @@ export default async function (
   if (!keySchema) {
     if (options.filter) {
       return Errors.NOT_IN_SCHEMA
-    } else {
-      return null
     }
+    return null
   }
 
   if (keySchema.isBlackboxChild) {
@@ -30,10 +29,10 @@ export default async function (
   }
 
   const result = await getValidationErrors(
-    {validate: keySchema},
+    {validate: keySchema as any},
     {validate: value},
     options,
-    ...args
+    ...args,
   )
 
   if (!result) return null

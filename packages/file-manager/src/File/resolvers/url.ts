@@ -13,5 +13,5 @@ export default modelResolver({
   returns: String,
   async resolve(file) {
     return getFileURL(file)
-  }
+  },
 })

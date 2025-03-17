@@ -1,8 +1,9 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from './index'
+import {createCollection} from './index'
 import {ObjectId} from 'bson'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {DistinctDocumentId} from '../types'
+import {expect, it} from 'vitest'
 
 it('generates a usable mongo objectId as string', async () => {
   const Tests = createCollection({name: generateId()})
@@ -10,7 +11,7 @@ it('generates a usable mongo objectId as string', async () => {
   const now = new Date()
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
 
   const objectId = ObjectId.createFromHexString(userId)
@@ -27,21 +28,21 @@ it('generates a ids with uuidv4', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop()
+    @Prop({type: 'string'})
     _id: DocId
 
-    @Prop()
+    @Prop({type: 'string'})
     name: string
   }
 
   const Tests = createCollection<Schema>({
     name: generateId(),
     schema: Schema,
-    idPrefix: 'prefix-'
+    idPrefix: 'prefix-',
   })
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
 
   expect(userId).toMatch(/^prefix\-/)
@@ -52,10 +53,10 @@ it('generates a ids with a prefix', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop()
+    @Prop({type: 'string'})
     _id: DocId
 
-    @Prop()
+    @Prop({type: 'string'})
     name: string
   }
 
@@ -63,11 +64,11 @@ it('generates a ids with a prefix', async () => {
     name: generateId(),
     schema: Schema,
     idGeneration: 'random',
-    idPrefix: 'pref_'
+    idPrefix: 'pref_',
   })
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
 
   const item = await Tests.findOne(userId)
@@ -82,20 +83,20 @@ it('generates a ids with a distinct type', async () => {
 
   @TypedSchema()
   class Schema {
-    @Prop()
+    @Prop({type: 'string'})
     _id: DocId
 
-    @Prop()
+    @Prop({type: 'string'})
     name: string
   }
 
   const Tests = createCollection<Schema>({
     name: generateId(),
-    schema: Schema
+    schema: Schema,
   })
 
   const userId = await Tests.insertOne({
-    name: 'Nico'
+    name: 'Nico',
   })
   await Tests.findOne(userId)
 

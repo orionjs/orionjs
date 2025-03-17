@@ -1,15 +1,18 @@
-import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {TypedId, typedId} from '@orion-js/mongodb'
+import {InferSchemaType, schemaWithName} from '@orion-js/schema'
 
-export type MigrationId = `scnmg-${string}`
+export type MigrationId = TypedId<'scnmg'>
 
-@TypedSchema()
-export class MigrationSchema {
-  @Prop()
-  _id: MigrationId
+export const MigrationSchema = schemaWithName('Migration', {
+  _id: {
+    type: typedId('scnmg'),
+  },
+  name: {
+    type: String,
+  },
+  completedAt: {
+    type: Date,
+  },
+})
 
-  @Prop()
-  name: string
-
-  @Prop()
-  completedAt: Date
-}
+export type MigrationType = InferSchemaType<typeof MigrationSchema>

@@ -1,9 +1,9 @@
 import validateModifier from './index'
 import {validate} from '@orion-js/schema'
-import omit from 'lodash/omit'
+import {omit} from 'rambdax'
 import fromDot from '../../../helpers/fromDot'
 
-const getPushSimulation = function ($push) {
+const getPushSimulation = $push => {
   if (!$push) return {}
   const simulation = {}
   for (const key of Object.keys($push)) {
@@ -17,23 +17,22 @@ const getPushSimulation = function ($push) {
   return simulation
 }
 
-const simulateNewDoc = function (selector, modifier) {
-  return fromDot({
+const simulateNewDoc = (selector, modifier) =>
+  fromDot({
     ...selector,
     ...modifier.$set,
     ...modifier.$inc,
     ...getPushSimulation(modifier.$push),
     ...getPushSimulation(modifier.$addToSet),
-    ...modifier.$setOnInsert
+    ...modifier.$setOnInsert,
   })
-}
 
-const validateNewDoc = async function (schema, selector, modifier) {
+const validateNewDoc = async (schema, selector, modifier) => {
   const doc = simulateNewDoc(selector, modifier)
   await validate(schema, doc)
 }
 
 export default async function (schema, selector, modifier) {
   await validateNewDoc(schema, selector, modifier)
-  await validateModifier(schema, omit(modifier, '$setOnInsert'))
+  await validateModifier(schema, omit(['$setOnInsert'], modifier))
 }

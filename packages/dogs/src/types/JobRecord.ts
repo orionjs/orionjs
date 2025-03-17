@@ -1,35 +1,16 @@
-import {Prop, TypedModel} from '@orion-js/typed-model'
-import {PlainObject} from './HistoryRecord'
+import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
 
-@TypedModel()
-export class JobRecord {
-  @Prop()
-  _id: string
+export const JobRecordSchema = schemaWithName('JobRecord', {
+  _id: {type: 'string'},
+  jobName: {type: 'string'},
+  type: {type: createEnum('JobType', ['recurrent', 'event'])},
+  priority: {type: 'number'},
+  uniqueIdentifier: {type: 'string', optional: true},
+  nextRunAt: {type: 'date'},
+  lastRunAt: {type: 'date', optional: true},
+  lockedUntil: {type: 'date', optional: true},
+  tries: {type: 'number', optional: true},
+  params: {type: 'blackbox', optional: true},
+})
 
-  @Prop()
-  jobName: string
-
-  @Prop()
-  type: 'recurrent' | 'event'
-
-  @Prop()
-  priority: number
-
-  @Prop({optional: true})
-  uniqueIdentifier?: string
-
-  @Prop()
-  nextRunAt: Date
-
-  @Prop({optional: true})
-  lastRunAt?: Date
-
-  @Prop({optional: true})
-  lockedUntil?: Date
-
-  @Prop({optional: true})
-  tries?: number
-
-  @Prop({type: 'blackbox', optional: true})
-  params?: PlainObject
-}
+export type JobRecord = InferSchemaType<typeof JobRecordSchema>

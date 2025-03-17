@@ -1,36 +1,40 @@
 {
   "name": "@orion-js/services",
-  "version": "3.13.1",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "version": "4.0.0-next.8",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
   "files": [
-    "/lib"
+    "dist"
   ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "test": "vitest run",
+    "prepare": "pnpm build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.13.1",
+    "@orion-js/helpers": "workspace:*",
     "typedi": "^0.10.0"
   },
   "devDependencies": {
-    "@types/jest": "^27.0.2",
-    "@types/lodash": "4.14.176",
-    "@types/node": "16.11.7",
-    "jest": "27.3.1",
-    "reflect-metadata": "^0.1.13",
-    "ts-jest": "27.0.7",
-    "typescript": "^4.4.4"
+    "typescript": "^5.4.5",
+    "@types/node": "^18.0.0",
+    "tsup": "^8.0.1",
+    "vitest": "^3.0.8"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9d85ab24776533db109843c277324e42c65ddedd"
+  "gitHead": "9fd28b6f6b348cebc9f0dc207805647969277372",
+  "type": "module",
+  "module": "./dist/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  }
 }

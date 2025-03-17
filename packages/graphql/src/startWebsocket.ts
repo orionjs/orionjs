@@ -13,7 +13,7 @@ export default function (
   /**
    * For testing purposes
    */
-  wsServer?: any
+  wsServer?: any,
 ) {
   if (!options.subscriptions) {
     return []
@@ -26,7 +26,7 @@ export default function (
   if (!wsServer) {
     wsServer = new WebSocketServer({
       server: getServer(),
-      path: '/subscriptions'
+      path: '/subscriptions',
     })
   }
 
@@ -38,9 +38,9 @@ export default function (
       context: async (ctx, msg, args) => {
         // This will be run every time the client sends a subscription request
         return getWebsockerViewer(ctx.connectionParams)
-      }
+      },
     },
-    wsServer
+    wsServer,
   )
   return [
     // Proper shutdown for the WebSocket server.
@@ -49,9 +49,9 @@ export default function (
         return {
           async drainServer() {
             await serverCleanup.dispose()
-          }
+          },
         }
-      }
-    }
+      },
+    },
   ]
 }

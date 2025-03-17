@@ -28,7 +28,7 @@ export default async function (options: StartGraphQLOptions, mutation: boolean) 
     fields[name] = {
       type,
       args,
-      async resolve(root, params, context, info) {
+      async resolve(_root, params, context, info) {
         try {
           const result = await resolver.resolve(params, context, info)
           return result

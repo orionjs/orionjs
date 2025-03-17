@@ -1,12 +1,13 @@
 import hashObject from './hashObject'
+import {it, expect} from 'vitest'
 
 it('should create a string hash of an object', async () => {
   const object = {
     hello: 'world',
     date: new Date(),
     subObject: {
-      name: 'Nicolás'
-    }
+      name: 'Nicolás',
+    },
   }
 
   const hash = hashObject(object)
@@ -17,12 +18,12 @@ it('should create a string hash of an object', async () => {
 it('object with different key orders should return same hash', async () => {
   const object1 = {
     one: '1',
-    two: '2'
+    two: '2',
   }
 
   const object2 = {
     two: '2',
-    one: '1'
+    one: '1',
   }
 
   const hash1 = hashObject(object1)

@@ -1,11 +1,40 @@
 import {EachMessagePayload} from 'kafkajs'
-import {EchoType, EchoConfig} from '../types'
+import {EchoType, EchoConfig, EchoRequestConfig, EchoEventConfig} from '../types'
 import deserialize from './deserialize'
-import types from './types'
+import {clean, cleanAndValidate, InferSchemaType} from '@orion-js/schema'
+import {SchemaFieldType} from '@orion-js/schema'
 
-const echo = function createNewEcho(options: EchoConfig): EchoType {
+/**
+ * @deprecated Use createEchoRequest and createEchoEvent instead
+ */
+const echo = function createNewEcho<
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+  TEchoType extends 'event' | 'request',
+>(
+  options: EchoConfig<TParamsSchema, TReturnsSchema, TEchoType>,
+): EchoType<TParamsSchema, TReturnsSchema, TEchoType> {
+  const resolve = async (params: InferSchemaType<TParamsSchema>, context: any) => {
+    const cleaned = options.params
+      ? await cleanAndValidate(options.params, params)
+      : (params ?? ({} as InferSchemaType<TParamsSchema>))
+
+    const result = await options.resolve(cleaned, context)
+
+    if (options.returns) {
+      return await clean(options.returns, result)
+    }
+
+    return result
+  }
+
   return {
-    ...options,
+    type: options.type,
+    params: options.params,
+    returns: options.returns,
+    attemptsBeforeDeadLetter:
+      options.type === 'event' ? options.attemptsBeforeDeadLetter : undefined,
+    resolve,
     onMessage: async (messageData: EachMessagePayload) => {
       const {message} = messageData
 
@@ -13,20 +42,35 @@ const echo = function createNewEcho(options: EchoConfig): EchoType {
 
       const context = {
         ...messageData,
-        data
+        data,
       }
 
-      await options.resolve(data.params || {}, context)
+      await resolve(data.params, context)
     },
     onRequest: async (serializedParams: string) => {
       const context = {}
       const params = deserialize(serializedParams)
-      const result = await options.resolve(params || {}, context)
-      return result
-    }
+
+      return await resolve(params, context)
+    },
   }
 }
 
-echo.types = types
+export function createEchoRequest<
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+>(
+  options: EchoRequestConfig<TParamsSchema, TReturnsSchema>,
+): EchoType<TParamsSchema, TReturnsSchema, 'request'> {
+  return echo({...options, type: 'request'})
+}
+export function createEchoEvent<
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+>(
+  options: EchoEventConfig<TParamsSchema, TReturnsSchema>,
+): EchoType<TParamsSchema, TReturnsSchema, 'event'> {
+  return echo({...options, type: 'event' as any})
+}
 
-export default echo
+export {echo}

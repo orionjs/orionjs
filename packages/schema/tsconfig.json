@@ -1,16 +1,26 @@
 {
   "compilerOptions": {
-    "strict": false,
-    "outDir": "./lib",
-    "rootDir": "./src",
-    "module": "commonjs",
-    "target": "es2020",
-    "moduleResolution": "node",
-    "lib": ["es2020"],
-    "declaration": true,
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
 
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    // required for typed models
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+
+    // Best practices
+    "strict": false,
+    "noFallthroughCasesInSwitch": true
   }
 }

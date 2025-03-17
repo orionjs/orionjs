@@ -1,5 +1,6 @@
 import ValidationError from './ValidationError'
 import Errors from './Errors'
+import {test, expect} from 'vitest'
 
 test("don't allow to create a ValidationError with no error", () => {
   expect(() => {
@@ -29,7 +30,7 @@ test('getInfo to return error information in correct format', () => {
   const info = {
     error: 'validationError',
     message: 'Validation Error',
-    validationErrors: {name: Errors.REQUIRED}
+    validationErrors: {name: Errors.REQUIRED},
   }
   expect(error.getInfo()).toEqual(info)
 })

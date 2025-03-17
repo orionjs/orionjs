@@ -1,28 +1,30 @@
-import {resolver} from '@orion-js/resolvers'
-import {TypedModel, Prop} from '@orion-js/typed-model'
+import {createResolver} from '@orion-js/resolvers'
+import {TypedSchema, Prop} from '@orion-js/typed-model'
 import getResolvers from './index'
+import {describe, it, expect} from 'vitest'
 
 describe('Test get resolvers schema', () => {
   it('Should correctly build a resolvers schema using typed models', async () => {
-    @TypedModel()
+    @TypedSchema()
     class TestParams {
-      @Prop()
+      @Prop({type: String})
       userId: string
     }
 
-    @TypedModel()
+    @TypedSchema()
     class TestModel {
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       age: number
     }
 
-    const globalResolver = resolver({
+    const globalResolver = createResolver({
       params: TestParams,
       returns: TestModel,
-      async resolve(params: TestParams) {
+      async resolve(params) {
+        params.userId
         return {
           userId: params.userId,
           name: 'test',
@@ -34,12 +36,11 @@ describe('Test get resolvers schema', () => {
     const resolvers = {globalResolver}
     const mutation = false
     const options = {resolvers}
-    const schema: any = await getResolvers(options, mutation)
+    const schema = await getResolvers(options, mutation)
 
     expect(schema.globalResolver.type.toString()).toEqual('TestModel')
     expect(schema.globalResolver.args).toHaveProperty('userId')
-    expect(await schema.globalResolver.resolve(null, {userId: '1'})).toEqual({
-      userId: '1',
+    expect(await schema.globalResolver.resolve(null, {userId: '1'}, {}, {} as any)).toEqual({
       name: 'test',
       age: 10,
     })

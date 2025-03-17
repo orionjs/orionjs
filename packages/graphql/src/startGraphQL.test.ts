@@ -1,12 +1,13 @@
 import {startGraphQL} from '.'
-import {resolver} from '@orion-js/resolvers'
+import {createResolver, resolver} from '@orion-js/resolvers'
 import {express} from '@orion-js/http'
 import request from 'supertest'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {cleanResolvers} from './cleanResolvers'
-import {createModel} from '@orion-js/models'
 import {UserError} from '@orion-js/helpers'
 import {GraphQLResolveInfo} from 'graphql'
+import {expect, it, describe, beforeEach} from 'vitest'
+import {schemaWithName} from '@orion-js/schema'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {
@@ -188,9 +189,9 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({name}) {
+        async resolve() {
           throw new UserError('code', 'message')
-          return `Hello ${name}`
+          // return `Hello ${name}`
         },
       }),
     }
@@ -252,9 +253,9 @@ describe('Test GraphQL Server', () => {
           },
         },
         returns: 'string',
-        async resolve({name}) {
+        async resolve() {
           throw new Error('message')
-          return `Hello ${name}`
+          // return `Hello ${name}`
         },
       }),
     }
@@ -308,16 +309,16 @@ describe('Test GraphQL Server', () => {
   it('Should make requests to schemas with typed models', async () => {
     @TypedSchema()
     class Params {
-      @Prop()
+      @Prop({type: String})
       userId: string
     }
 
     @TypedSchema()
     class User {
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       age: number
     }
 
@@ -329,24 +330,31 @@ describe('Test GraphQL Server', () => {
       }
     }
 
-    const user = resolver({
+    const user = createResolver({
       params: Params,
       returns: User,
       resolve,
     })
 
-    const model = createModel({
-      name: 'Model',
-      schema: {
-        user: {type: User},
-      },
+    const model = schemaWithName('Model', {
+      user: {type: User},
     })
 
-    const modelMutation = resolver({
+    const modelMutation = createResolver({
       params: Params,
       returns: [model],
       mutation: true,
-      resolve,
+      resolve: async ({userId}) => {
+        if (userId !== '1') return null
+        return [
+          {
+            user: {
+              name: 'Nico',
+              age: 20,
+            },
+          },
+        ]
+      },
     })
 
     const resolvers = {user, modelMutation}
@@ -382,10 +390,10 @@ describe('Test GraphQL Server', () => {
   it('Should pass graphql request info in fourth param', async () => {
     @TypedSchema()
     class User {
-      @Prop()
+      @Prop({type: String})
       name: string
 
-      @Prop()
+      @Prop({type: Number})
       age: number
     }
 

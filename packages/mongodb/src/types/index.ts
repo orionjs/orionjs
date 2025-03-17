@@ -1,40 +1,37 @@
 import * as MongoDB from 'mongodb'
-import {Model} from '@orion-js/models'
-import {Blackbox, Schema} from '@orion-js/schema'
+import {
+  FieldType,
+  fieldTypes,
+  InferSchemaType,
+  Schema,
+  SchemaInAnyOrionForm,
+  StrictInferSchemaType,
+  TypedSchemaOnSchema,
+} from '@orion-js/schema'
 import {OrionMongoClient} from '../connect/connections'
+import {EnhancedOmit} from 'mongodb'
 
-type RemoveFunctions<T extends ModelClassBase> = Pick<
-  T,
-  {[Key in keyof T]-?: T[Key] extends Function ? never : Key}[keyof T]
-> & {_id: ModelClassBase['_id']}
+export {MongoDB}
 
-export type ModelClassBase = {
-  _id: string
-} & Blackbox
+export declare type InferIdType<TSchema> = TSchema extends {
+  _id: infer IdType
+}
+  ? Record<any, never> extends IdType
+    ? never
+    : IdType
+  : TSchema extends {
+        _id?: infer IdType
+      }
+    ? unknown extends IdType
+      ? string
+      : IdType
+    : string
 
-export type DocumentWithIdOptional<T extends ModelClassBase> = Omit<T, '_id'> & {
-  /**
-   * The ID of the document
-   */
-  _id?: T['_id']
+export type DocumentWithId<TSchema> = EnhancedOmit<TSchema, '_id'> & {
+  _id: InferIdType<TSchema>
 }
 
-export type DocumentWithoutId<T> = Omit<T, '_id'>
-
-export type ModelToDocumentType<ModelClass extends ModelClassBase> = RemoveFunctions<ModelClass>
-export type ModelToDocumentTypeWithId<ModelClass extends ModelClassBase> =
-  RemoveFunctions<ModelClass>
-export type ModelToDocumentTypeWithoutId<ModelClass extends ModelClassBase> = DocumentWithoutId<
-  ModelToDocumentType<ModelClass>
->
-export type ModelToDocumentTypeWithIdOptional<ModelClass extends ModelClassBase> =
-  DocumentWithIdOptional<ModelToDocumentType<ModelClass>>
-export type ModelToMongoSelector<ModelClass extends ModelClassBase> = MongoSelector<
-  ModelToDocumentType<ModelClass>
->
-export type ModelToUpdateFilter<ModelClass extends ModelClassBase> =
-  | MongoDB.UpdateFilter<ModelToDocumentTypeWithoutId<ModelClass>>
-  | Partial<ModelToDocumentTypeWithoutId<ModelClass>>
+export type ModelClassBase = DocumentWithId<MongoDB.Document>
 
 export interface CollectionIndex {
   keys: MongoDB.IndexSpecification
@@ -63,21 +60,21 @@ export namespace DataLoader {
   }
 
   export type LoadData<ModelClass extends ModelClassBase> = (
-    options: LoadDataOptions<ModelClass>
+    options: LoadDataOptions<ModelClass>,
   ) => Promise<Array<ModelClass>>
   export type LoadOne<ModelClass extends ModelClassBase> = (
-    options: LoadOneOptions<ModelClass>
+    options: LoadOneOptions<ModelClass>,
   ) => Promise<ModelClass>
   export type LoadMany<ModelClass extends ModelClassBase> = (
-    options: LoadDataOptions<ModelClass>
+    options: LoadDataOptions<ModelClass>,
   ) => Promise<Array<ModelClass>>
   export type LoadById<ModelClass extends ModelClassBase> = (
-    id: ModelClass['_id']
+    id: ModelClass['_id'],
   ) => Promise<ModelClass>
 }
 
 export type MongoFilter<ModelClass extends ModelClassBase = ModelClassBase> =
-  MongoDB.Filter<ModelClass> & ({_id?: ModelClass['_id']} | {_id?: {$in: ModelClass['_id'][]}})
+  MongoDB.Filter<ModelClass>
 
 export type MongoSelector<ModelClass extends ModelClassBase = ModelClassBase> =
   | ModelClass['_id']
@@ -107,75 +104,83 @@ export interface InsertOptions {
 
 export type InitItem<ModelClass extends ModelClassBase> = (doc: any) => ModelClass
 
+export type ModelToMongoSelector<ModelClass extends ModelClassBase> =
+  | MongoDB.Filter<ModelClass>
+  | DocumentWithId<ModelClass>['_id']
+
 export type FindOne<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.FindOptions
+  options?: MongoDB.FindOptions<ModelClass>,
 ) => Promise<ModelClass>
 
 export type Find<ModelClass extends ModelClassBase> = (
   selector?: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.FindOptions
+  options?: MongoDB.FindOptions<ModelClass>,
 ) => FindCursor<ModelClass>
 
-export type FindOneAndUpdate<ModelClass extends ModelClassBase> = (
-  selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions
-) => Promise<ModelClass>
+export type FindOneAndUpdate<ModelClass extends ModelClassBase> = <
+  TSelector extends ModelToMongoSelector<ModelClass>,
+  TFilter extends MongoDB.UpdateFilter<ModelClass>,
+  TOptions extends FindOneAndUpdateUpdateOptions,
+>(
+  selector: TSelector,
+  modifier: TFilter,
+  options?: TOptions,
+) => ReturnType<MongoDB.Collection<ModelClass>['findOneAndUpdate']>
 
 export type UpdateAndFind<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions
+  modifier: MongoDB.UpdateFilter<ModelClass>,
+  options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<ModelClass>
 
 export type UpdateItem<ModelClass extends ModelClassBase> = (
   item: ModelClass,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: FindOneAndUpdateUpdateOptions
+  modifier: MongoDB.UpdateFilter<ModelClass>,
+  options?: FindOneAndUpdateUpdateOptions,
 ) => Promise<void>
 
 export type InsertOne<ModelClass extends ModelClassBase> = (
-  doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
-  options?: InsertOptions
+  doc: MongoDB.OptionalId<ModelClass>,
+  options?: InsertOptions,
 ) => Promise<ModelClass['_id']>
 
 export type InsertMany<ModelClass extends ModelClassBase> = (
-  doc: Array<ModelToDocumentTypeWithIdOptional<ModelClass>>,
-  options?: InsertOptions
+  doc: Array<MongoDB.OptionalId<ModelClass>>,
+  options?: InsertOptions,
 ) => Promise<Array<ModelClass['_id']>>
 
 export type InsertAndFind<ModelClass extends ModelClassBase> = (
-  doc: ModelToDocumentTypeWithIdOptional<ModelClass>,
-  options?: InsertOptions
+  doc: MongoDB.OptionalId<ModelClass>,
+  options?: InsertOptions,
 ) => Promise<ModelClass>
 
 export type DeleteMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.DeleteOptions
+  options?: MongoDB.DeleteOptions,
 ) => Promise<MongoDB.DeleteResult>
 
 export type DeleteOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.DeleteOptions
+  options?: MongoDB.DeleteOptions,
 ) => Promise<MongoDB.DeleteResult>
 
 export type UpdateOne<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: UpdateOptions
+  modifier: MongoDB.UpdateFilter<ModelClass>,
+  options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult>
 
 export type UpdateMany<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: UpdateOptions
+  modifier: MongoDB.UpdateFilter<ModelClass>,
+  options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult | MongoDB.Document>
 
 export type Upsert<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  modifier: ModelToUpdateFilter<ModelClass>,
-  options?: UpdateOptions
+  modifier: MongoDB.UpdateFilter<ModelClass>,
+  options?: UpdateOptions,
 ) => Promise<MongoDB.UpdateResult>
 
 export interface CreateCollectionOptions<ModelClass extends ModelClassBase = ModelClassBase> {
@@ -192,11 +197,7 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
   /**
    * The schema used for cleaning and validation of the documents
    */
-  schema?: any
-  /**
-   * @deprecated Use schema instead. If you use model, all items will be initialized with the model to add resolvers (which are also deprecated)
-   */
-  model?: any
+  schema?: SchemaInAnyOrionForm
   /**
    * The indexes to use
    */
@@ -211,27 +212,35 @@ export interface CreateCollectionOptions<ModelClass extends ModelClassBase = Mod
   idPrefix?: ModelClass['_id']
 }
 
-export type EstimatedDocumentCount<ModelClass extends ModelClassBase> = (
-  options?: MongoDB.EstimatedDocumentCountOptions
+export type EstimatedDocumentCount<_ModelClass extends ModelClassBase> = (
+  options?: MongoDB.EstimatedDocumentCountOptions,
 ) => Promise<number>
 
 export type CountDocuments<ModelClass extends ModelClassBase> = (
   selector: ModelToMongoSelector<ModelClass>,
-  options?: MongoDB.CountDocumentsOptions
+  options?: MongoDB.CountDocumentsOptions,
 ) => Promise<number>
 
-export type CreateCollection = <ModelClass extends ModelClassBase = any>(
-  options: CreateCollectionOptions<ModelClass>
-) => Collection<ModelClass>
+export type SchemaWithRequiredId = Schema & {_id: {type: any}}
 
-export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> {
+export type InferSchemaTypeWithId<TSchema extends SchemaWithRequiredId> = DocumentWithId<
+  StrictInferSchemaType<TSchema>
+>
+
+export type CreateCollectionOptionsWithSchemaType<T extends SchemaWithRequiredId> = {
+  schema: T
+} & Omit<CreateCollectionOptions<InferSchemaTypeWithId<T>>, 'schema'>
+
+export type CreateCollectionOptionsWithTypedSchema<
+  T extends TypedSchemaOnSchema & {prototype: {_id: string}},
+> = {
+  schema: T
+} & Omit<CreateCollectionOptions<InferSchemaType<T>>, 'schema'>
+
+export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
   connectionName?: string
   schema?: Schema
-  /**
-   * @deprecated Use schema instead. If you use model, all items will be initialized with the model to add resolvers (which are also deprecated)
-   */
-  model?: Model
   indexes: Array<CollectionIndex>
   generateId: () => ModelClass['_id']
   getSchema: () => Schema
@@ -239,7 +248,6 @@ export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> 
   db: MongoDB.Db
   client: OrionMongoClient
   rawCollection: MongoDB.Collection<ModelClass>
-  initItem: InitItem<ModelClass>
 
   findOne: FindOne<ModelClass>
   find: Find<ModelClass>
@@ -268,11 +276,11 @@ export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> 
 
   aggregate: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
-    options?: MongoDB.AggregateOptions
+    options?: MongoDB.AggregateOptions,
   ) => MongoDB.AggregationCursor<T>
   watch: <T = MongoDB.Document>(
     pipeline?: MongoDB.Document[],
-    options?: MongoDB.ChangeStreamOptions
+    options?: MongoDB.ChangeStreamOptions,
   ) => MongoDB.ChangeStream<T>
 
   loadData: DataLoader.LoadData<ModelClass>
@@ -288,8 +296,36 @@ export interface Collection<ModelClass extends ModelClassBase = ModelClassBase> 
   createIndexes: () => Promise<string[]>
   createIndexesPromise: Promise<string[]>
   connectionPromise: Promise<MongoDB.MongoClient>
+  startConnection: () => Promise<MongoDB.MongoClient>
 }
 
 export type DistinctDocumentId<DistinctId extends string> = string & {
   __TYPE__: `DistinctDocumentId<${DistinctId}>`
+}
+
+export type TypedId<TPrefix extends string> = `${TPrefix}-${string}`
+
+/**
+ * Use this function to create unique types for the ids of mongodb documents.
+ * You should set it as the type of the _id field in your schema.
+ *
+ * @example
+ * ```ts
+ * type UserId = TypedId<'user'>
+ *
+ * const userSchema = {
+ *   _id: {
+ *     type: TypedId('user'),
+ *   },
+ * }
+ *
+ * ```
+ */
+export function typedId<const TPrefix extends string>(
+  prefix: TPrefix,
+): FieldType<TypedId<TPrefix>> {
+  return {
+    ...fieldTypes.string,
+    name: `typedId:${prefix}`,
+  } as any
 }

@@ -1,10 +1,4 @@
 // Declare a type.
-interface ViewerNodeGlobal extends NodeJS.Global {
-  getWebsocketViewerRef: (connectionParams: any) => Promise<any>
-  // You can declare anything you need.
-}
-
-declare const global: ViewerNodeGlobal
 
 global.getWebsocketViewerRef = () => null
 

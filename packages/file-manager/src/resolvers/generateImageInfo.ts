@@ -1,4 +1,4 @@
-import {isEmpty} from 'lodash'
+import {isEmpty} from 'rambdax'
 import {getFileManagerOptions} from '../credentials'
 import {isImage} from '../File/resolvers/isImage'
 import {FileSchema} from '../File/schema'

@@ -10,7 +10,7 @@ export interface StartOrionOptions {
 
 export const startServer = (
   port: number = Number(internalGetEnv('http_port', 'PORT')),
-  otherOptions: StartOrionOptions = {}
+  otherOptions: StartOrionOptions = {},
 ) => {
   const app = getApp()
 

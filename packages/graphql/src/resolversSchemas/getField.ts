@@ -1,45 +1,55 @@
-import isPlainObject from 'lodash/isPlainObject'
-import isArray from 'lodash/isArray'
-import {getFieldType} from '@orion-js/schema'
-import omit from 'lodash/omit'
+import {
+  getFieldType,
+  getSchemaWithMetadataFromAnyOrionForm,
+  isSchemaLike,
+  SchemaNode,
+} from '@orion-js/schema'
+import {isType, omit} from 'rambdax'
 import getScalar from '../buildSchema/getType/getScalar'
 import {getStaticFields} from './getStaticFields'
 
-export default async function getParams(field) {
-  let {type} = field
+export default async function getParams(field: SchemaNode) {
+  const {type} = field
 
-  if (typeof type === 'function' && type.getModel && type.__schemaId) {
-    const model = type.getModel()
-    return await getParams({...field, type: model})
-  } else if (isArray(type)) {
+  if (Array.isArray(type)) {
     const serialized = await getParams({...field, type: type[0]})
     return {
       ...serialized,
       type: [serialized.type],
-      __graphQLType: `[${serialized.__graphQLType}]`
+      __graphQLType: `[${serialized.__graphQLType}]`,
     }
-  } else if (!type._isFieldType && (isPlainObject(type) || type.__isModel)) {
-    const model = type.__isModel ? type : type.__model
-    if (!model || !model.__isModel) throw new Error('Type is not a Model')
+  }
+
+  const isSchema = isSchemaLike(type)
+
+  if (isSchema) {
+    const schemaOfType = getSchemaWithMetadataFromAnyOrionForm(type)
+    const modelName = schemaOfType.__modelName
+    if (!modelName) {
+      throw new Error('The schema needs a model name to be serialized for GraphQL')
+    }
 
     const fields = {}
 
-    for (const field of getStaticFields(model)) {
+    for (const field of getStaticFields(schemaOfType)) {
       fields[field.key] = await getParams(field)
     }
 
     return {
-      ...omit(field, 'key'),
+      ...omit(['key'], field),
       type: fields,
-      __graphQLType: model.name + 'Input'
+      __graphQLType: `${modelName}Input`,
     }
-  } else {
-    const schemaType = await getFieldType(type)
-    const graphQLType = await getScalar(schemaType)
-    return {
-      ...omit(field, 'key'),
-      type: schemaType.name,
-      __graphQLType: graphQLType.name
-    }
+  }
+
+  const schemaType = getFieldType(type)
+  const graphQLType = await getScalar(schemaType)
+
+  const withoutKey = isType('Object', field) ? omit(['key'], field) : ({} as any)
+
+  return {
+    ...withoutKey,
+    type: schemaType.name,
+    __graphQLType: graphQLType.name,
   }
 }

@@ -1,41 +1,57 @@
+import {getSchemaFromAnyOrionForm, SchemaFieldType} from '@orion-js/schema'
 import {getPubsub} from '../pubsub'
-import {CreateOrionSubscriptionFunction, OrionSubscription} from '../types/subscription'
-import getChannelName from './getChannelName'
 import {
-  checkPermissions as checkResolverPermissions,
-  cleanParams,
-  cleanReturns,
-  ResolverOptions
-} from '@orion-js/resolvers'
+  CreateOrionSubscriptionFunction,
+  OrionSubscription,
+  OrionSubscriptionOptions,
+} from '../types/subscription'
+import getChannelName from './getChannelName'
 
-const createSubscription: CreateOrionSubscriptionFunction = function (options) {
-  const subscription = {
-    name: options.name
-  } as OrionSubscription
+const createSubscription: CreateOrionSubscriptionFunction = <
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+  TViewer = any,
+>(
+  options: OrionSubscriptionOptions<TParamsSchema, TReturnsSchema, TViewer>,
+) => {
+  const subscription = {} as OrionSubscription<TParamsSchema, TReturnsSchema>
+
+  const getSubscriptionName = () => {
+    if (!subscription.name) {
+      throw new Error('This subscription is not yet initialized in GraphQL')
+    }
+
+    return subscription.name
+  }
 
   // the publish function
   subscription.publish = async (params, data) => {
     const pubsub = getPubsub()
-    const channelName = getChannelName(subscription.name, params)
-    await pubsub.publish(channelName, {[subscription.name]: data})
+    const channelName = getChannelName(getSubscriptionName(), params)
+    await pubsub.publish(channelName, {[getSubscriptionName()]: data})
   }
 
   subscription.subscribe = async (params, viewer) => {
     const pubsub = getPubsub()
     try {
-      await checkResolverPermissions({params, viewer, options: null}, options as ResolverOptions)
+      if (options.canSubscribe) {
+        const canSubscribe = await options.canSubscribe(params, viewer)
+        if (!canSubscribe) {
+          return pubsub.asyncIterator('unauthorized')
+        }
+      }
 
-      const channelName = getChannelName(subscription.name, params)
+      const channelName = getChannelName(getSubscriptionName(), params)
       return pubsub.asyncIterator(channelName)
-    } catch (error) {
+    } catch (_error) {
       return pubsub.asyncIterator('unauthorized')
     }
   }
 
-  subscription.params = cleanParams(options.params)
-  subscription.returns = cleanReturns(options.returns)
+  subscription.params = (getSchemaFromAnyOrionForm(options.params) ?? {}) as TParamsSchema
+  subscription.returns = getSchemaFromAnyOrionForm(options.returns) as TReturnsSchema
 
-  return subscription
+  return subscription as OrionSubscription<TParamsSchema, TReturnsSchema>
 }
 
 export default createSubscription

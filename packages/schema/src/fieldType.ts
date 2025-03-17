@@ -1,23 +1,24 @@
 import {CleanFunction, ValidateFunction} from './types/schema'
 
-export interface FieldTypeOpts {
+export interface FieldTypeOpts<TType = any> {
   name: string
-  validate?: ValidateFunction
-  clean?: CleanFunction
+  validate?: ValidateFunction<TType>
+  clean?: CleanFunction<TType>
   toGraphQLType?: (GraphQL: any) => any
   meta?: any
 }
 
-export interface FieldType {
+export interface FieldType<TType = any> {
   name: string
   validate: ValidateFunction
   clean: CleanFunction
   meta?: any
   toGraphQLType?: (GraphQL: any) => any
-  _isFieldType: boolean
+  __tsFieldType: TType
+  __isFieldType: boolean
 }
 
-export default function fieldType(opts: FieldTypeOpts): FieldType {
+export default function fieldType<TType>(opts: FieldTypeOpts<TType>): FieldType<TType> {
   const {name, validate, clean, ...otherFields} = opts
   const overwrittenValidate: ValidateFunction = (value, info = {}) => {
     if (!info.currentSchema) {
@@ -42,6 +43,7 @@ export default function fieldType(opts: FieldTypeOpts): FieldType {
     name,
     validate: overwrittenValidate,
     clean: overwrittenClean,
-    _isFieldType: true
+    __isFieldType: true,
+    __tsFieldType: null,
   }
 }

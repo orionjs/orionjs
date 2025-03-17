@@ -1,15 +1,13 @@
 import fieldType from '../fieldType'
-import isString from 'lodash/isString'
-import isInteger from 'lodash/isInteger'
 import Errors from '../Errors'
 
-export default fieldType({
+export default fieldType<string>({
   name: 'ID',
   validate(value: string) {
-    if (!isString(value) && !isInteger(value)) return Errors.NOT_AN_ID
+    if (typeof value !== 'string' && !Number.isInteger(value)) return Errors.NOT_AN_ID
   },
   clean(value: string, {options}) {
-    if (!isString(value) && !isInteger(value)) return value
+    if (typeof value !== 'string' && !Number.isInteger(value)) return value
     const {trimStrings, removeEmptyStrings} = options
 
     value = String(value)
@@ -23,5 +21,5 @@ export default fieldType({
     }
 
     return value
-  }
+  },
 })

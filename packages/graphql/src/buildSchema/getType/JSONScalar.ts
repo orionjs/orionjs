@@ -41,5 +41,5 @@ export default new GraphQLScalarType({
     'publications/files/ECMA-ST/ECMA-404.pdf).',
   serialize: identity,
   parseValue: identity,
-  parseLiteral
+  parseLiteral,
 })

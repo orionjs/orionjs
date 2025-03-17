@@ -1,14 +1,16 @@
 import createModel from './index'
-import {resolver} from '@orion-js/resolvers'
+import {createResolver} from '@orion-js/resolvers'
+import {schemaWithName} from '@orion-js/schema'
+import {it, expect} from 'vitest'
 
 it('should validate a schema', async () => {
   const model = createModel({
     name: 'AModel',
     schema: {
       name: {
-        type: String
-      }
-    }
+        type: String,
+      },
+    },
   })
 
   await model.validate({name: 'String'})
@@ -19,21 +21,21 @@ it('should allow deep model validation', async () => {
     name: 'AModel',
     schema: {
       firstName: {
-        type: String
+        type: String,
       },
       lastName: {
-        type: String
-      }
-    }
+        type: String,
+      },
+    },
   })
 
   const model1 = createModel({
     name: 'AModel2',
     schema: {
       data: {
-        type: model2
-      }
-    }
+        type: model2,
+      },
+    },
   })
 
   await model1.validate({data: {firstName: 'Nicolás', lastName: 'López'}})
@@ -47,30 +49,27 @@ it('should allow deep model validation', async () => {
 })
 
 it('[regression test]: should allow correct doc cleaning for resolver params', async () => {
-  const Point = createModel({
-    name: 'Point',
-    schema: {
-      latitude: {
-        type: Number
-      },
-      longitude: {
-        type: Number
-      }
-    }
+  const Point = schemaWithName('Point', {
+    latitude: {
+      type: Number,
+    },
+    longitude: {
+      type: Number,
+    },
   })
 
-  const resolver1 = resolver({
+  const resolver1 = createResolver({
     params: {
       point: {
-        type: Point
-      }
+        type: Point,
+      },
     },
     async resolve({point}) {
       return point
-    }
+    },
   })
 
-  const doc = await resolver1.resolve({point: {latitude: '11', longitude: '12'}})
+  const doc = await resolver1.resolve({point: {latitude: '11', longitude: '12'} as any})
 
   expect(doc).toEqual({latitude: 11, longitude: 12})
 })

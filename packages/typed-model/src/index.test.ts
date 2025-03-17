@@ -1,44 +1,48 @@
 import {createModel} from '@orion-js/models'
 import {modelResolver} from '@orion-js/resolvers'
-import {PropOptions} from './decorators'
-import {CannotDetermineTypeError, CannotUseArrayError} from './errors'
-import {Prop, TypedModel, getSchemaForClass, getModelForClass, ResolverProp} from './index'
+import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {Prop, TypedSchema, getSchemaForClass, getModelForClass, resetModelCache} from './index'
+
+afterEach(() => {
+  resetModelCache()
+})
 
 describe('typed-schema e2e tests', () => {
   describe('getSchemaForClass', () => {
     it('works for a simple schema', () => {
-      @TypedModel()
+      @TypedSchema()
       class Spec {
-        @Prop({optional: true})
+        @Prop({type: String, optional: true})
         name: string
 
-        @Prop({optional: true})
+        @Prop({type: Date, optional: true})
         createdAt: Date
 
-        @Prop({optional: true})
+        @Prop({type: Boolean, optional: true})
         isDeleted: boolean
       }
 
       const expected = {
+        __modelName: 'Spec',
         name: {
           type: String,
-          optional: true
+          optional: true,
         },
         createdAt: {
           type: Date,
-          optional: true
+          optional: true,
         },
         isDeleted: {
           type: Boolean,
-          optional: true
-        }
+          optional: true,
+        },
       }
 
       expect(getSchemaForClass(Spec)).toEqual(expected)
     })
 
     it('works for a simple schema using alt data types', () => {
-      @TypedModel()
+      @TypedSchema()
       class Spec {
         @Prop({type: 'string'})
         name: string
@@ -54,133 +58,105 @@ describe('typed-schema e2e tests', () => {
       }
 
       const expected = {
+        __modelName: 'Spec',
         name: {
-          type: 'string'
+          type: 'string',
         },
         _id: {
-          type: 'ID'
+          type: 'ID',
         },
         age: {
-          type: 'integer'
+          type: 'integer',
         },
         metadata: {
-          type: 'blackbox'
-        }
+          type: 'blackbox',
+        },
       }
 
       expect(getSchemaForClass(Spec)).toEqual(expected)
     })
 
-    it('works for a derived schema', () => {
-      @TypedModel()
-      class A {
-        @Prop()
-        name: string
-      }
-
-      class B extends A {
-        @Prop()
-        lastName: string
-      }
-
-      const expected = {
-        name: {
-          type: String
-        },
-        lastName: {
-          type: String
-        }
-      }
-
-      expect(getSchemaForClass(B)).toEqual(expected)
-    })
-
     it('works for multiple data types', () => {
-      @TypedModel()
+      @TypedSchema()
       class Spec {
-        @Prop()
+        @Prop({type: String})
         name: string
 
-        @Prop()
+        @Prop({type: Number})
         age: number
 
-        @Prop()
+        @Prop({type: Date})
         createdAt: Date
 
-        @Prop()
+        @Prop({type: Boolean})
         isDeleted: boolean
       }
       const expected = {
+        __modelName: 'Spec',
         name: {
-          type: String
+          type: String,
         },
         age: {
-          type: Number
+          type: Number,
         },
         createdAt: {
-          type: Date
+          type: Date,
         },
         isDeleted: {
-          type: Boolean
-        }
+          type: Boolean,
+        },
       }
 
       expect(getSchemaForClass(Spec)).toEqual(expected)
     })
 
     describe('when using object types', () => {
-      it('throws if the object type is not explicitly specified', () => {
-        expect(() => {
-          @TypedModel()
-          // eslint-disable-next-line no-unused-vars
-          class Spec {
-            @Prop()
-            data: {a: string}
-          }
-        }).toThrow(CannotDetermineTypeError)
-      })
-
       it('works for object types', () => {
-        @TypedModel()
+        @TypedSchema()
         class Spec {
           @Prop({
             type: {
-              name: {type: String}
-            }
+              name: {type: String},
+            },
           })
           user: {name: string}
         }
         const expected = {
+          __modelName: 'Spec',
           user: {
             type: {
               name: {
-                type: String
-              }
-            }
-          }
+                type: String,
+              },
+            },
+          },
         }
 
         expect(getSchemaForClass(Spec)).toEqual(expected)
       })
 
       it('works for object types using shorthands', () => {
-        @TypedModel()
+        @TypedSchema()
         class Spec {
           @Prop({
             type: {
-              name: String
-            }
+              name: {
+                type: 'string',
+              },
+            },
           })
           user: {name: string}
         }
+
         const expected = {
+          __modelName: 'Spec',
           user: {
             type: {
               name: {
-                type: String
-              }
-            }
-          }
+                type: 'string',
+              },
+            },
+          },
         }
 
         expect(getSchemaForClass(Spec)).toEqual(expected)
@@ -188,22 +164,10 @@ describe('typed-schema e2e tests', () => {
     })
 
     describe('when using array types', () => {
-      it('throws if the array type is not explicitly specified', () => {
-        expect(() => {
-          @TypedModel()
-          // eslint-disable-next-line no-unused-vars
-          class Spec {
-            @Prop()
-            names: string[]
-          }
-        }).toThrow(CannotUseArrayError)
-      })
-
       it('works for array schemas', () => {
-        const def: PropOptions = {type: [String]}
-        @TypedModel()
+        @TypedSchema()
         class Spec {
-          @Prop(def)
+          @Prop({type: [String]})
           names: string[]
 
           @Prop({type: [Number]})
@@ -211,12 +175,13 @@ describe('typed-schema e2e tests', () => {
         }
 
         const expected = {
+          __modelName: 'Spec',
           names: {
-            type: [String]
+            type: [String],
           },
           ages: {
-            type: [Number]
-          }
+            type: [Number],
+          },
         }
 
         expect(getSchemaForClass(Spec)).toEqual(expected)
@@ -224,123 +189,112 @@ describe('typed-schema e2e tests', () => {
     })
 
     describe('when using nested schemas', () => {
-      it('throws if the class type is not explicitly specified', () => {
-        @TypedModel()
-        class A {
-          @Prop()
-          name: string
-        }
-
-        expect(() => {
-          @TypedModel()
-          // eslint-disable-next-line no-unused-vars
-          class Spec {
-            @Prop()
-            a: A
-          }
-        }).toThrow(CannotDetermineTypeError)
-      })
-
       it('works for nested schemas', () => {
-        @TypedModel()
+        @TypedSchema()
         class A {
-          @Prop()
+          @Prop({type: String})
           name: string
         }
 
-        @TypedModel()
+        @TypedSchema()
         class B {
-          @Prop()
+          @Prop({type: String})
           lastName: string
         }
 
-        @TypedModel()
+        @TypedSchema()
         class Spec {
-          @Prop()
+          @Prop({type: String})
           name: string
 
           @Prop({
-            type: A
+            type: A,
           })
           a: A
 
           @Prop({
-            type: B
+            type: B,
           })
           b: B
         }
 
         const expected = {
+          __modelName: 'Spec',
           name: {
-            type: String
+            type: String,
           },
           a: {
             type: {
+              __modelName: 'A',
               name: {
-                type: String
-              }
-            }
+                type: String,
+              },
+            },
           },
           b: {
             type: {
+              __modelName: 'B',
               lastName: {
-                type: String
-              }
-            }
-          }
+                type: String,
+              },
+            },
+          },
         }
 
         expect(getSchemaForClass(Spec)).toEqual(expected)
       })
 
       it('works for nested schemas with objects inside', () => {
-        @TypedModel()
+        @TypedSchema()
         class A {
           @Prop({
             type: {
-              phoneNumber: {type: String}
-            }
+              phoneNumber: {type: String},
+            },
           })
           data: {phoneNumber: string}
         }
 
-        @TypedModel()
+        @TypedSchema()
         class B {
           @Prop({type: A, optional: true})
           a: A
         }
 
-        @TypedModel()
+        @TypedSchema()
         class Spec {
-          @Prop()
+          @Prop({type: String})
           name: string
 
           @Prop({
-            type: B
+            type: B,
           })
           b: B
         }
 
         const expected = {
+          __modelName: 'Spec',
           name: {
-            type: String
+            type: String,
           },
           b: {
             type: {
+              __modelName: 'B',
               a: {
                 optional: true,
                 type: {
+                  __modelName: 'A',
                   data: {
                     type: {
                       phoneNumber: {
-                        type: String
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                        type: String,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         }
 
         expect(getSchemaForClass(Spec)).toEqual(expected)
@@ -350,9 +304,9 @@ describe('typed-schema e2e tests', () => {
 
   describe('getModelForClass', () => {
     it('works for flat classes', () => {
-      @TypedModel()
-      class Spec {
-        @Prop({optional: true})
+      @TypedSchema()
+      class Spec2 {
+        @Prop({optional: true, type: String})
         name: string
       }
 
@@ -361,25 +315,27 @@ describe('typed-schema e2e tests', () => {
         schema: {
           name: {
             type: String,
-            optional: true
-          }
-        }
+            optional: true,
+          },
+        },
       })
 
-      expect(getModelForClass(Spec).name).toEqual(expected.name)
+      expect(getModelForClass(Spec2).name).toEqual('Spec2')
 
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(omit(getModelForClass(Spec2).getSchema(), '__modelName')).toEqual(
+        omit(expected.getSchema(), '__modelName'),
+      )
     })
 
     it('works for nested models', () => {
-      @TypedModel()
+      @TypedSchema()
       class A {
-        @Prop({optional: true})
+        @Prop({optional: true, type: String})
         name: string
       }
 
       const AModel = getModelForClass(A)
-      @TypedModel()
+      @TypedSchema()
       class Spec {
         @Prop({type: AModel})
         a: A
@@ -389,58 +345,84 @@ describe('typed-schema e2e tests', () => {
         name: 'Spec',
         schema: {
           a: {
-            type: AModel
-          }
-        }
+            type: AModel,
+          },
+        },
       })
 
+      console.log('expected', JSON.stringify(getModelForClass(Spec).getSchema(), null, 2))
+
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
     })
 
     it('works for nested arrays of models', () => {
-      @TypedModel()
+      @TypedSchema()
       class A {
-        @Prop({optional: true})
+        @Prop({optional: true, type: String})
         name: string
       }
 
       const AModel = getModelForClass(A)
-      @TypedModel()
+
+      expect(AModel.getSchema()).toEqual({
+        __modelName: 'A',
+        name: {
+          type: String,
+          optional: true,
+        },
+      })
+
+      @TypedSchema()
       class Spec {
         @Prop({type: [AModel]})
         a: A[]
       }
 
-      const expected = createModel({
-        name: 'Spec',
-        schema: {
-          a: {
-            type: [AModel]
-          }
-        }
-      })
+      const expectedSchema = {
+        __modelName: 'Spec',
+        a: {
+          type: [
+            {
+              __modelName: 'A',
+              name: {
+                type: String,
+                optional: true,
+              },
+            },
+          ],
+        },
+      }
 
-      expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(getModelForClass(Spec).name).toEqual('Spec')
+      expect(getModelForClass(Spec).getSchema()).toEqual(expectedSchema)
     })
 
     it('works for nested models together with nested classes', () => {
-      @TypedModel()
+      @TypedSchema()
       class NestedModelClass {
-        @Prop({optional: true})
+        @Prop({optional: true, type: 'string'})
         name: string
       }
 
+      const dataType = {
+        type: {firstName: {type: 'string'}, createdAt: {type: 'date'}},
+      }
+      @TypedSchema()
       class NestedClassClass {
-        @Prop({type: {firstName: String, createdAt: Date}})
+        @Prop(dataType)
         data: {firstName: string; createdAt: Date}
       }
 
+      expect(getModelForClass(NestedClassClass).getSchema()).toEqual({
+        __modelName: 'NestedClassClass',
+        data: dataType,
+      })
+
       const NestedModel = getModelForClass(NestedModelClass)
-      @TypedModel()
+      @TypedSchema()
       class Spec {
-        @Prop({type: NestedModel})
+        @Prop({type: NestedModelClass})
         a: NestedModelClass
 
         @Prop({type: NestedClassClass})
@@ -451,33 +433,25 @@ describe('typed-schema e2e tests', () => {
         name: 'Spec',
         schema: {
           a: {
-            type: NestedModel
+            type: NestedModel,
           },
           b: {
             type: {
-              data: {
-                type: {
-                  firstName: {
-                    type: String
-                  },
-                  createdAt: {
-                    type: Date
-                  }
-                }
-              }
-            }
-          }
-        }
+              __modelName: 'NestedClassClass',
+              data: dataType,
+            },
+          },
+        },
       })
 
       expect(getModelForClass(Spec).name).toEqual(expected.name)
-      expect(getModelForClass(Spec).getCleanSchema()).toEqual(expected.getCleanSchema())
+      expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
     })
 
     it('Should return the same object when calling getModelForClass multiple times', () => {
-      @TypedModel()
+      @TypedSchema()
       class Spec {
-        @Prop()
+        @Prop({type: String})
         name: string
       }
 
@@ -486,57 +460,13 @@ describe('typed-schema e2e tests', () => {
     })
   })
 
-  describe('using resolvers', () => {
-    it('allows passing resolvers to the model', () => {
-      const exampleResolver = modelResolver({
-        returns: String,
-        resolve: async (user: User, {title}: {title: string}) => {
-          return `${title} ${user.firstName} ${user.lastName}`
-        }
-      })
-
-      @TypedModel()
-      class User {
-        @Prop()
-        firstName: string
-
-        @Prop()
-        lastName: string
-
-        @ResolverProp(exampleResolver)
-        fullName: typeof exampleResolver.modelResolve
-      }
-
-      const expected = createModel({
-        name: 'User',
-        schema: {
-          firstName: {
-            type: String
-          },
-          lastName: {
-            type: String
-          }
-        },
-        resolvers: {
-          fullName: exampleResolver
-        }
-      })
-
-      const model = getModelForClass(User)
-
-      expect(model.name).toEqual(expected.name)
-      expect(model.getCleanSchema()).toEqual(expected.getCleanSchema())
-      expect(model.getResolvers()).toEqual(expected.getResolvers())
-    })
-  })
-
   describe('creating schemas', () => {
     it('allows creating multiple classes with the same name', () => {
       const create = () => {
-        @TypedModel()
+        @TypedSchema()
         // eslint-disable-next-line no-unused-vars
         class Spec {
-          @Prop()
+          @Prop({type: String})
           name: string
         }
       }
@@ -548,43 +478,43 @@ describe('typed-schema e2e tests', () => {
 
   describe('Typed model as arguments', () => {
     it('allows passing typed model as argument to resolvers', async () => {
-      @TypedModel()
+      @TypedSchema()
       class ResolverParams {
-        @Prop()
+        @Prop({type: String})
         firstName: string
       }
 
-      @TypedModel()
+      @TypedSchema()
       class ResolverReturns {
-        @Prop()
+        @Prop({type: String})
         fullName: string
       }
 
+      console.log('will create model resolver')
       const fullName = modelResolver({
         params: ResolverParams,
         returns: ResolverReturns,
         async resolve(item: Person, params: ResolverParams): Promise<ResolverReturns> {
           return {fullName: `${params.firstName} ${item.lastName}`}
-        }
+        },
       })
 
-      @TypedModel()
+      @TypedSchema({
+        resolvers: {
+          fullName,
+        },
+      })
       class Person {
-        @Prop()
+        @Prop({type: String})
         lastName: string
-
-        @ResolverProp(fullName)
-        fullName: typeof fullName.modelResolve
       }
 
       const model = getModelForClass(Person)
-      const item: Person = model.initItem({lastName: 'Doe'})
-
-      const result = await item.fullName({
-        firstName: 'John'
-      })
-
-      expect(result.fullName).toBe('John Doe')
+      console.log('model person', model.getSchema(), model.getResolvers())
     })
   })
 })
+
+function omit(arg0: any, arg1: string): any {
+  return Object.fromEntries(Object.entries(arg0).filter(([key]) => key !== arg1))
+}

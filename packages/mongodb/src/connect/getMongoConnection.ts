@@ -1,5 +1,6 @@
 import {MongoClient} from 'mongodb'
-import {OrionMongoClient, connections} from './connections'
+import {connections} from './connections'
+import type {OrionMongoClient} from './connections'
 import getDBName from './getDBName'
 import {getMongoURLFromEnv} from './getMongoURLFromEnv'
 import {logger} from '@orion-js/logger'
@@ -27,11 +28,32 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
   if (connections[name]) return connections[name]
 
   const client = new MongoClient(uri, {
-    retryReads: true
+    retryReads: true,
   })
 
-  const connectionPromise = connect(client)
-  allConnectionPromises.push(connectionPromise)
+  let resolveConnected: (value: MongoClient) => void
+  const connectionPromise = new Promise<MongoClient>(resolve => {
+    resolveConnected = resolve
+  })
+  let internalConnectionPromise: Promise<MongoClient>
+
+  /**
+   * This function will start the connection to the database
+   * and return the promise of the connection
+   */
+  const startConnection = async () => {
+    if (internalConnectionPromise) {
+      return await internalConnectionPromise
+    }
+
+    internalConnectionPromise = connect(client)
+    allConnectionPromises.push(internalConnectionPromise)
+    internalConnectionPromise.then(client => {
+      resolveConnected(client)
+    })
+
+    return await internalConnectionPromise
+  }
 
   const dbName = getDBName(uri)
   const db = client.db(dbName)
@@ -40,9 +62,10 @@ export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongo
     uri,
     client,
     connectionPromise,
+    startConnection,
     dbName,
     db,
-    connectionName: name
+    connectionName: name,
   }
 
   connections[name] = mongoClient

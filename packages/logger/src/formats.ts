@@ -1,6 +1,6 @@
 import {format, transports} from 'winston'
 import util from 'node:util'
-import {isEmpty} from 'lodash'
+import {isEmpty} from 'rambdax'
 import opentelemetry, {Span} from '@opentelemetry/api'
 
 const {metadata, timestamp, json, colorize, combine, printf} = format
@@ -22,7 +22,7 @@ const opentelemetryContext = format(info => {
   return info
 })
 
-const metaError = format(info => {
+const metaError = format((info: any) => {
   if (info?.metadata?.value?.error instanceof Error) {
     info.stack = info?.metadata?.value?.error.stack
     info.errorMessage = info?.metadata?.value?.error.message
@@ -38,7 +38,7 @@ const metaError = format(info => {
   return info
 })
 
-export const sentryFormat = format(info => {
+export const sentryFormat: any = format(info => {
   const {path, label, ...extra} = info
   return {
     ...extra,
@@ -58,13 +58,13 @@ function getMetadataText(metadata: any) {
   return `${util.inspect(value)} ${util.inspect(rest)}`
 }
 
-export const textConsoleFormat = combine(
+export const textConsoleFormat: any = combine(
   colorize(),
   metadata({fillExcept: ['fileName', 'level', 'message', 'stack']}),
   opentelemetryContext(),
   metaError(),
   timestamp(),
-  printf(info => {
+  printf((info: any) => {
     // console.log(info)
 
     const date = new Date(info.timestamp)
@@ -86,7 +86,7 @@ export const textConsoleTransport = new transports.Console({
   format: textConsoleFormat,
 })
 
-export const jsonConsoleFormat = combine(
+export const jsonConsoleFormat: any = combine(
   metadata({fillExcept: ['fileName', 'level', 'message']}),
   opentelemetryContext(),
   metaError(),

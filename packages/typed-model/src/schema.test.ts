@@ -1,22 +1,23 @@
 import {createModel} from '@orion-js/models'
-import {clean, Schema, validate} from '@orion-js/schema'
-import {Prop, TypedModel} from '.'
+import {clean, InferSchemaType, validate} from '@orion-js/schema'
+import {getModelForClass, Prop, TypedSchema} from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Test typed model with Schema', () => {
   it('Should allow passing a typed model to schema', async () => {
-    @TypedModel()
+    @TypedSchema()
     class Point {
-      @Prop()
+      @Prop({type: Number})
       latitude: number
 
-      @Prop()
+      @Prop({type: Number})
       longitude: number
     }
 
     const schema = {
       points: {
-        type: [Point]
-      }
+        type: [Point],
+      },
     }
 
     const result = await clean(schema, {points: [{latitude: '1', longitude: 2}]})
@@ -26,13 +27,13 @@ describe('Test typed model with Schema', () => {
     await validate(schema, {points: [{latitude: 1, longitude: 2}]})
   })
 
-  it('Should allow passing a typed model to a model', async () => {
-    @TypedModel()
+  it('Should allow passing a typed model to a model using getModelForClass', async () => {
+    @TypedSchema()
     class Point {
-      @Prop()
+      @Prop({type: Number})
       latitude: number
 
-      @Prop()
+      @Prop({type: Number})
       longitude: number
     }
 
@@ -40,9 +41,9 @@ describe('Test typed model with Schema', () => {
       name: 'Item',
       schema: {
         points: {
-          type: [Point]
-        }
-      }
+          type: [getModelForClass(Point)],
+        },
+      },
     })
 
     const result = await Item.clean({points: [{latitude: '1', longitude: 2}]})
@@ -59,12 +60,12 @@ describe('Test typed model with Schema', () => {
   })
 
   it('Should allow cleaning and validating just the typed model', async () => {
-    @TypedModel()
+    @TypedSchema()
     class Point {
-      @Prop()
+      @Prop({type: Number})
       latitude: number
 
-      @Prop()
+      @Prop({type: Number})
       longitude: number
     }
 
@@ -79,3 +80,20 @@ describe('Test typed model with Schema', () => {
     }
   })
 })
+
+// infer type
+@TypedSchema()
+class Point {
+  @Prop({type: Number})
+  latitude: number
+
+  @Prop({type: Number, optional: true})
+  longitude?: number
+}
+
+type PointType = InferSchemaType<typeof Point>
+
+const _point: PointType = {
+  latitude: 1,
+  // longitude: 2,
+}

@@ -1,5 +1,4 @@
 import {validate} from '@orion-js/schema'
-import mapKeys from 'lodash/mapKeys'
 import fromDot from '../../../helpers/fromDot'
 import toDot from '../../../helpers/toDot'
 
@@ -8,8 +7,14 @@ import toDot from '../../../helpers/toDot'
  */
 export default async function ({schema, operationDoc}) {
   let cleaned = toDot(operationDoc)
-  cleaned = mapKeys(cleaned, (value, key) => key.replace('$.', '0.'))
-  cleaned = fromDot(cleaned)
+
+  const transformedObj = {}
+  Object.keys(cleaned).map(key => {
+    const newKey = key.replace('$.', '0.')
+    transformedObj[newKey] = cleaned[key]
+  })
+
+  cleaned = fromDot(transformedObj)
 
   await validate(schema, cleaned, {omitRequired: true})
 }

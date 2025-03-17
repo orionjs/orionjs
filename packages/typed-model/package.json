@@ -1,45 +1,42 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "3.13.1",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "version": "4.0.0-next.8",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
   "files": [
-    "/lib"
+    "dist"
   ],
   "author": "dmerrill6",
   "license": "MIT",
   "scripts": {
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive",
-    "test": "jest --config jest.config.js"
+    "test": "vitest run",
+    "prepare": "pnpm build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "^3.13.1",
-    "@orion-js/models": "^3.13.1",
-    "@orion-js/resolvers": "^3.13.1",
-    "@orion-js/schema": "^3.13.1",
-    "@orion-js/services": "^3.13.1",
-    "lodash": "^4.17.21",
-    "reflect-metadata": "0.1.13"
+    "@orion-js/models": "workspace:*",
+    "@orion-js/resolvers": "workspace:*",
+    "@orion-js/schema": "workspace:*",
+    "@orion-js/services": "workspace:*"
   },
   "devDependencies": {
-    "@types/eslint": "^7.29.0",
-    "@types/jest": "27.0.2",
-    "@types/node": "16.11.7",
-    "@typescript-eslint/eslint-plugin": "5.3.1",
-    "@typescript-eslint/parser": "5.3.1",
-    "eslint": "8.2.0",
-    "eslint-plugin-import": "2.25.3",
-    "jest": "27.3.1",
-    "kafkajs": "^1.16.0",
-    "ts-jest": "27.0.7",
-    "typescript": "^4.4.4"
+    "@types/node": "^18.0.0",
+    "typescript": "^5.4.5",
+    "tsup": "^8.0.1",
+    "vitest": "^3.0.8"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9d85ab24776533db109843c277324e42c65ddedd"
+  "gitHead": "a485b1fe6a1840ee6cb58fd69d6de62585f1ed10"
 }

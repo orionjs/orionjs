@@ -1,14 +1,15 @@
 import {Prop, TypedSchema} from '..'
 import {cloneSchemaClass} from './cloneSchemaClass'
+import {describe, it, expect} from 'vitest'
 
 describe('cloneSchemaClass', () => {
   it('should clone a schema class', async () => {
     @TypedSchema()
     class SchemaName {
-      @Prop()
+      @Prop({type: String})
       _id: string
 
-      @Prop()
+      @Prop({type: String})
       name: string
     }
 
@@ -18,7 +19,7 @@ describe('cloneSchemaClass', () => {
 
     const ClonedSchema = cloneSchemaClass(SchemaName, {
       name: 'Test',
-      pickFields: ['name'] as const
+      pickFields: ['name'] as const,
     })
 
     type ClonedType = typeof ClonedSchema.type

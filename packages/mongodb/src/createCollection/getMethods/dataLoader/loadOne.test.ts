@@ -1,26 +1,27 @@
-import createCollection from '../../index'
+import {createCollection} from '../../index'
 import {generateId} from '@orion-js/helpers'
-import {getModelForClass, Prop, TypedModel} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {it, expect} from 'vitest'
 
 it('should data load one not by id', async () => {
-  @TypedModel()
+  @TypedSchema()
   class LoadOneTestModel {
-    @Prop()
+    @Prop({type: String})
     _id: string
 
-    @Prop()
+    @Prop({type: String})
     name: string
 
-    @Prop()
+    @Prop({type: String})
     websiteId: string
 
-    @Prop({optional: true})
+    @Prop({type: Date, optional: true})
     deletedAt?: Date
   }
 
   const Tests = createCollection<LoadOneTestModel>({
     name: generateId(),
-    model: getModelForClass(LoadOneTestModel)
+    schema: LoadOneTestModel,
   })
 
   const id1 = await Tests.insertOne({name: 'one', websiteId: '1', deletedAt: null})
@@ -31,18 +32,18 @@ it('should data load one not by id', async () => {
     Tests.loadOne({
       key: 'websiteId',
       value: '1',
-      match: {deletedAt: null}
+      match: {deletedAt: null},
     }),
     Tests.loadOne({
       key: 'websiteId',
       value: '1',
-      match: {deletedAt: null}
+      match: {deletedAt: null},
     }),
     Tests.loadOne({
       key: 'websiteId',
       value: '2',
-      match: {deletedAt: null}
-    })
+      match: {deletedAt: null},
+    }),
   ])
   expect([id1, id2]).toContain(loaded1._id)
   expect([id1, id2]).toContain(loaded2._id)
@@ -55,7 +56,7 @@ it('handles undefined', async () => {
   const result = await Tests.loadOne({
     key: 'websiteId',
     value: '1',
-    match: {deletedAt: null}
+    match: {deletedAt: null},
   })
 
   expect(result).toBeUndefined()

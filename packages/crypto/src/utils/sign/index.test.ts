@@ -1,4 +1,5 @@
 import {sign} from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Sign', () => {
   it('Should create digests', () => {

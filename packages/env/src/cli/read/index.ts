@@ -1,5 +1,5 @@
-import { getVariables } from '../../environment/getVariables'
-import { getConfig } from '../add/getConfig'
+import {getVariables} from '../../environment/getVariables'
+import {getConfig} from '../add/getConfig'
 
 export default async function envRead({path, key, secret}) {
   if (!path) {

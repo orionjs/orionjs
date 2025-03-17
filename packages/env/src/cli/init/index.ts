@@ -15,7 +15,7 @@ export default async function envInit({path}) {
     publicKey: keypair.encryptKey,
     cleanKeys: {},
     encryptedKeys: {},
-    readFromSecret: {}
+    readFromSecret: {},
   }
 
   const text = YAML.stringify(envFile)
@@ -25,7 +25,7 @@ export default async function envInit({path}) {
   console.log('')
 
   console.log(
-    `Environment file created. You need to use the following key to decrypt the environment variables:`
+    `Environment file created. You need to use the following key to decrypt the environment variables:`,
   )
 
   console.log('')

@@ -1,5 +1,6 @@
 import UserError from './UserError'
-import { OrionError } from './OrionError'
+import {OrionError} from './OrionError'
+import {describe, it, expect} from 'vitest'
 
 describe('UserError', () => {
   it('should extend OrionError', () => {
@@ -27,21 +28,21 @@ describe('UserError', () => {
   })
 
   it('should support extra data', () => {
-    const extraData = { field: 'username', constraint: 'required' }
+    const extraData = {field: 'username', constraint: 'required'}
     const error = new UserError('validation_error', 'Validation failed', extraData)
 
     expect(error.extra).toEqual(extraData)
   })
 
   it('should have a getInfo method that returns the correct structure', () => {
-    const extraData = { field: 'email', constraint: 'format' }
+    const extraData = {field: 'email', constraint: 'format'}
     const error = new UserError('invalid_email', 'Invalid email format', extraData)
 
     const info = error.getInfo()
     expect(info).toEqual({
       error: 'invalid_email',
       message: 'Invalid email format',
-      extra: extraData
+      extra: extraData,
     })
   })
 
@@ -50,4 +51,4 @@ describe('UserError', () => {
     expect(error.stack).toBeDefined()
     expect(error.stack.includes('UserError.test.ts')).toBe(true)
   })
-}) 
+})

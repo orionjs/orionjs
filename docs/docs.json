@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "maple",
+  "theme": "mint",
   "name": "Orionjs",
   "colors": {
     "primary": "#005bbc",
@@ -9,69 +9,81 @@
   },
   "favicon": "/logo/light.svg",
   "navigation": {
-    "groups": [
+    "tabs": [
       {
-        "group": "Get Started",
-        "pages": [
-          "introduction",
-          "quickstart",
-          "project-structure",
-          "deploying"
-        ]
-      },
-      {
-        "group": "Essentials",
-        "pages": [
-          "essentials/services",
-          "essentials/repositories",
-          "essentials/controllers",
+        "tab": "Overview",
+        "groups": [
           {
-            "group": "Schemas",
+            "group": "Get Started",
             "pages": [
-              "essentials/schema/intro",
-              "essentials/schema/properties",
-              "essentials/schema/validation",
-              "essentials/schema/advanced",
-              "essentials/schema/serialization",
-              "essentials/schema/types",
-              "essentials/schema/graphql",
-              "essentials/schema/mongodb"
+              "overview/introduction",
+              "overview/quickstart",
+              "overview/project-structure",
+              "overview/deploying"
             ]
           },
           {
-            "group": "Mongodb",
+            "group": "Essentials",
             "pages": [
-              "essentials/mongodb/intro",
-              "essentials/mongodb/collections",
-              "essentials/mongodb/operations",
-              "essentials/mongodb/dataloader",
-              "essentials/mongodb/indexes",
-              "essentials/mongodb/transactions",
-              "essentials/mongodb/connections",
-              "essentials/mongodb/searchTokens"
+              "overview/essentials/services",
+              "overview/essentials/repositories",
+              "overview/essentials/controllers",
+              {
+                "group": "Schemas",
+                "pages": [
+                  "overview/essentials/schema/intro",
+                  "overview/essentials/schema/properties",
+                  "overview/essentials/schema/validation",
+                  "overview/essentials/schema/advanced",
+                  "overview/essentials/schema/serialization",
+                  "overview/essentials/schema/types",
+                  "overview/essentials/schema/graphql",
+                  "overview/essentials/schema/mongodb"
+                ]
+              },
+              {
+                "group": "Mongodb",
+                "pages": [
+                  "overview/essentials/mongodb/intro",
+                  "overview/essentials/mongodb/collections",
+                  "overview/essentials/mongodb/operations",
+                  "overview/essentials/mongodb/dataloader",
+                  "overview/essentials/mongodb/indexes",
+                  "overview/essentials/mongodb/transactions",
+                  "overview/essentials/mongodb/connections",
+                  "overview/essentials/mongodb/searchTokens"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Controllers",
+            "pages": [
+              "overview/controllers/routes",
+              "overview/controllers/resolvers",
+              "overview/controllers/modelResolvers",
+              "overview/controllers/jobs",
+              "overview/controllers/echoes"
+            ]
+          },
+          {
+            "group": "Other Modules",
+            "pages": [
+              "overview/other-modules/cli",
+              "overview/other-modules/env",
+              "overview/other-modules/crypto",
+              "overview/other-modules/file-manager",
+              "overview/other-modules/helpers",
+              "overview/other-modules/logger",
+              "overview/other-modules/migrations"
             ]
           }
         ]
       },
       {
-        "group": "Controllers",
+        "tab": "Guides",
         "pages": [
-          "controllers/routes",
-          "controllers/graphql",
-          "controllers/jobs",
-          "controllers/echoes"
-        ]
-      },
-      {
-        "group": "Other Modules",
-        "pages": [
-          "other-modules/cli",
-          "other-modules/env",
-          "other-modules/crypto",
-          "other-modules/file-manager",
-          "other-modules/helpers",
-          "other-modules/logger",
-          "other-modules/migrations"
+          "guides/v4"
         ]
       }
     ],

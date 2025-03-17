@@ -1,13 +1,14 @@
 import isValid from './isValid'
+import {test, expect} from 'vitest'
 
 const schema = {
   firstName: {
-    type: String
+    type: String,
   },
   lastName: {
     type: String,
-    optional: true
-  }
+    optional: true,
+  },
 }
 
 const validObject = {firstName: 'Nicolás', lastName: 'López'}
