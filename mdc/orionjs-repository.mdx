@@ -22,8 +22,8 @@ Repositories in Orionjs handle data access operations, separating data access lo
 - Avoid business logic in repositories (use services instead)
 - Add proper typing for all parameters and return values.
 - Put the repository in `app/exampleComponent/repos/{EntityNameInPlural}Repo/index.ts`
-- Always use `idPrefix` in the collection definition.
-- Put the exported `@TypedSchema` in a file beside the repository `index.ts`.
+- Always use `typedId()` in schema definitions for document IDs
+- Use `InferSchemaType` to derive types from schemas
 - In `getSearchTokens` pass all text like fields to texts array and the category-like fields to the second argument.
 
 ## Example
@@ -33,17 +33,17 @@ In this example we have a `Card` entity and a `CardsRepo` repository.
 It's always a good idea to create at list all the methods that are in this example, but you can add more methods if you need to.
 
 ```typescript
-import {createCollection, MongoFilter, Repository} from '@orion-js/mongodb'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {createCollection, MongoFilter, Repository, OptionalId} from '@orion-js/mongodb'
+import {InferSchemaType} from '@orion-js/schema'
 import {CardSchema, CardType, CardId} from '../schemas/Card'
 import {CardsListQueryParamsType} from './ListQueryParams'
-import {isEqual} from 'lodash'
+import {isEqual} from 'lodash-es'
 import {logger} from '@orion-js/logger'
 import {getSearchTokens, shortenMongoId} from '@orion-js/helpers'
 
 @Repository()
 export class CardsRepo {
-  private collection: createCollection({
+  private collection = createCollection({
     name: 'cards',
     schema: CardSchema,
     indexes: [
@@ -63,10 +63,9 @@ export class CardsRepo {
   }
 
   async createCard(doc: Omit<CardType, '_id'>) {
-    const id = `crd-${generateUUID()}` as CardId
-    doc._id = id
+    // typedId in schema will automatically create prefixed IDs
     doc.searchTokens = this.getSearchTokens(doc as CardType)
-    return await this.collection.insertAndFind(doc)
+    return await this.collection.insertAndFind(doc as OptionalId<CardType>)
   }
 
   async getCardById(docId: CardId) {
@@ -82,7 +81,7 @@ export class CardsRepo {
           $set: {searchTokens},
         })
         .catch(error => {
-          logger.error('Error updating search tokens', {error, docId, searchTokens})
+          logger.error('Error updating search tokens', {error, docId: card._id, searchTokens})
         })
     }
   }
@@ -97,7 +96,7 @@ export class CardsRepo {
     await this.collection.updateOne(docId, {$set: {deletedAt: new Date()}})
   }
 
-  private async getCardsListQuery(params: CardsListQueryParams) {
+  private async getCardsListQuery(params: CardsListQueryParamsType) {
     const queries: MongoFilter<CardType>[] = []
 
     const searchTokensParams: Record<string, string> = {}
@@ -132,29 +131,35 @@ export class CardsRepo {
 }
 
 // at ListQueryParams.ts
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
 export const CardsListQueryParamsSchema = schemaWithName('CardsListQueryParams', {
   filter: {type: String, optional: true},
   status: {type: String, optional: true},
 })
 
 export type CardsListQueryParamsType = InferSchemaType<typeof CardsListQueryParamsSchema>
-
 ```
 
-For this example, this could be the schema. Note the `_id` property is defined as a `CardId` type.
+For this example, this could be the schema. Note the `_id` property uses `typedId` for automatic ID prefixing.
 
 ```typescript 
-import {schemaWithName, InferSchemaType, TypedId, typedId} from '@orion-js/schema'
-
-export type CardId = TypedId<{prefix: 'crd'}>
+import {schemaWithName, InferSchemaType, typedId} from '@orion-js/schema'
 
 export const CardSchema = schemaWithName('CardSchema', {
-  _id: {type: typedId('card')},
+  _id: {type: typedId('crd')},
   name: {type: String},
   // ... other properties
 })
 
 export type CardType = InferSchemaType<typeof CardSchema>
+
+// The type will be inferred as:
+// type CardType = {
+//   _id: `crd-${string}`;
+//   name: string;
+//   ...
+// }
 ```
 
 ## Integration with Services
@@ -162,6 +167,10 @@ export type CardType = InferSchemaType<typeof CardSchema>
 Services should inject repositories for data access:
 
 ```typescript
+import {Service, Inject} from '@orion-js/services'
+import {UserRepository} from '../repos/UsersRepo'
+import {UserId} from '../schemas/User'
+
 @Service()
 export class UserService {
   @Inject(() => UserRepository)

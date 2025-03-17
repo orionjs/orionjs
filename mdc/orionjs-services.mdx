@@ -22,7 +22,7 @@ Services in Orionjs encapsulate business logic, following the dependency injecti
 - Don't create services for simple repository interactions - in that case call repositories directly from controllers or services
 - Services should contain meaningful business logic, not just pass-through to repositories
 - Use repositories for database operations
-- Use dependency injection for service dependencies
+- Use dependency injection for service dependencies with `@Inject(() => ServiceName)`
 - Add proper typing for all parameters and return values
 - Put services in `app/exampleComponent/services/{Action}{Entity}/index.ts`
 - Handle validation and error cases appropriately
@@ -36,19 +36,19 @@ Here's an example of a `CreateCardService` that implements a single business ope
 ```typescript
 import {Service, Inject} from '@orion-js/services'
 import {CardsRepo} from '../repos/CardsRepo'
-import {Card, CardId} from '../schemas/Card'
+import {CardType, CardId} from '../schemas/Card'
 import {BadRequestError} from '@orion-js/http'
 import {NotificationsRepo} from '../repos/NotificationsRepo'
 
 @Service()
 export class CreateCardService {
-  @Inject()
+  @Inject(() => CardsRepo)
   private cardsRepo: CardsRepo
 
-  @Inject()
+  @Inject(() => NotificationsRepo)
   private notificationsRepo: NotificationsRepo
 
-  async execute(data: Omit<Card, '_id'>, userId: string) {
+  async execute(data: Omit<CardType, '_id'>, userId: string) {
     // Complex business logic before creating a card
     if (data.name.toLowerCase().includes('invalid')) {
       throw new BadRequestError('invalidCardName')
@@ -82,7 +82,7 @@ export class CreateCardService {
     }
   }
   
-  private determineInitialStatus(data: Omit<Card, '_id'>) {
+  private determineInitialStatus(data: Omit<CardType, '_id'>) {
     // Business logic to determine initial status
     if (data.dueDate && new Date(data.dueDate) < new Date()) {
       return 'urgent'
@@ -90,7 +90,7 @@ export class CreateCardService {
     return 'draft'
   }
   
-  private calculatePriority(data: Omit<Card, '_id'>) {
+  private calculatePriority(data: Omit<CardType, '_id'>) {
     // Complex business logic to calculate priority
     let priority = 0
     
@@ -113,13 +113,13 @@ export class CreateCardService {
 
 @Service()
 export class ProcessCardPaymentService {
-  @Inject()
+  @Inject(() => CardsRepo)
   private cardsRepo: CardsRepo
   
-  @Inject()
+  @Inject(() => PaymentGatewayService)
   private paymentGatewayService: PaymentGatewayService
   
-  @Inject()
+  @Inject(() => EmailService)
   private emailService: EmailService
 
   async execute(cardId: CardId, paymentDetails: PaymentDetails) {
@@ -183,13 +183,13 @@ Services can be injected into other services or controllers:
 ```typescript
 @Service()
 export class AuthenticateUserService {
-  @Inject()
+  @Inject(() => UsersRepo)
   private usersRepo: UsersRepo
   
-  @Inject()
+  @Inject(() => GenerateAuthTokenService)
   private tokenService: GenerateAuthTokenService
   
-  @Inject()
+  @Inject(() => SecurityService)
   private securityService: SecurityService
 
   async execute(email: string, password: string) {

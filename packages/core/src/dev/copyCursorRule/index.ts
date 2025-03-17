@@ -10,6 +10,7 @@ const rules = [
   'orionjs-schema.mdx',
   'orionjs-services.mdx',
   'orionjs-resolvers.mdx',
+  'orionjs-tov4.mdx',
 ]
 
 // Function to download the file content

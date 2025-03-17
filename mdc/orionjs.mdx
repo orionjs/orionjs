@@ -43,13 +43,11 @@ affected by code changes
 
 ### Testing
 
-- Use the standard Jest framework for testing.
-  - Jest offers better performance, ESM support, and TypeScript integration.
-  - Compatible with Jest's API, making migration straightforward.
+- Use vitest for testing.
 - Follow the Arrange-Act-Assert convention for tests.
 - Name test variables clearly.
   - Follow the convention: inputX, mockX, actualX, expectedX, etc.
-- Write unit tests for each public function.
+- Write unit tests for each service function.
   - Use test doubles to simulate dependencies.
     - Except for third-party dependencies that are not expensive to execute.
 - Write acceptance tests for each module.
@@ -76,7 +74,6 @@ affected by code changes
   - Keep repositories focused on data access only.
   - Follow naming convention: `{EntityNameInPlural}Repo`.
   - Separate data access from business logic.
-- Add proper typing for all parameters and return values.
 - Handle validation and error cases appropriately.
   - Prefer throwing `ValidationError` when validation of data fails.
   - Prefer throwing `UserError` when the error is not a system error.

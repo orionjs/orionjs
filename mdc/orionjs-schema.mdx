@@ -10,33 +10,30 @@ alwaysApply: false
 Schemas in Orionjs define the structure, validation rules, and behavior of your data models. They provide type safety and automatic integration with MongoDB and GraphQL.
 
 ## Structure
-- Use `@TypedSchema()` decorator from `@orion-js/typed-model`
-- Define properties with `@Prop()` decorator 
-- Follow clear naming conventions: `{EntityName}Schema`
+- Use `schemaWithName()` function from `@orion-js/schema`
+- Define schema as a plain object with properties and their types
+- Follow clear naming conventions: `{EntityName}Schema` and `{EntityName}Type`
 - Keep schemas focused on a single entity or concept
 
 ## Best Practices
 - Define proper types for all properties
 - Use appropriate validation rules (min, max, etc.)
-- Make fields optional with the `optional: true` option or `?` in TypeScript
+- Make fields optional with the `optional: true` option
 - Use descriptive labels for better UI generation
 - Organize related schemas in a dedicated directory
 - Put schemas in `app/exampleComponent/schemas/{EntityName}/index.ts`
-- Use inheritance for common fields across schemas
 - Prefer `createEnum` for enum types
-- Avoid big entities, if needed split them into smaller ones and use composition.
-- `_id` should only be used for entities that are stored in the database.
-- `_id` should always be typed as `{EntityName}Id`
-- `{EntityName}Id` should be `export type {EntityName}Id = `{prefix}-${string}. Prefix should be a 4 letter code to identity the entity type.
-- Schema validation errors should be camelCase.
+- Avoid big entities, if needed split them into smaller ones and use composition
+- Use `typedId()` for MongoDB document IDs
+- Schema validation errors should be camelCase
 
 ## Example
 
 Here's a complete example of a `Product` schema with various property types and configurations:
 
 ```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-import {createEnum} from '@orion-js/schema'
+import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
+import {typedId} from '@orion-js/mongodb'
 
 // Create a type-safe enum for product status
 export const ProductStatusEnum = createEnum('ProductStatusEnum', [
@@ -46,74 +43,80 @@ export const ProductStatusEnum = createEnum('ProductStatusEnum', [
 ] as const)
 
 // Create a nested schema for product variants
-@TypedSchema()
-export class ProductVariantSchema {
-  @Prop({label: 'Variant Name', min: 2})
-  name: string
+export const ProductVariantSchema = schemaWithName('ProductVariantSchema', {
+  name: {
+    type: String,
+    label: 'Variant Name',
+    min: 2
+  },
+  price: {
+    type: Number,
+    min: 0
+  },
+  sku: {
+    type: String,
+    optional: true
+  }
+})
 
-  @Prop({min: 0})
-  price: number
+export type ProductVariantType = InferSchemaType<typeof ProductVariantSchema>
 
-  @Prop({optional: true})
-  sku?: string
-}
-
-// Prefix type for strongly typed IDs
-export type ProductId = `prd-${string}`
-
-@TypedSchema()
-export class ProductSchema {
-  @Prop()
-  _id: ProductId
-
-  @Prop({
+export const ProductSchema = schemaWithName('ProductSchema', {
+  _id: {
+    type: typedId('prd')
+  },
+  name: {
+    type: String,
     label: 'Product Name',
     min: 3,
     max: 100
-  })
-  name: string
-
-  @Prop({
+  },
+  description: {
+    type: String,
     label: 'Product Description',
     optional: true
-  })
-  description?: string
-
-  @Prop({
+  },
+  status: {
     type: ProductStatusEnum,
     defaultValue: 'draft'
-  })
-  status: typeof ProductStatusEnum.type
-
-  @Prop({
+  },
+  tags: {
     type: [String],
     optional: true
-  })
-  tags?: string[]
-
-  @Prop({
-    type: [getModelForClass(ProductVariantSchema)],
+  },
+  variants: {
+    type: [ProductVariantSchema],
     optional: true
-  })
-  variants?: ProductVariantSchema[]
-
-  @Prop({
+  },
+  price: {
+    type: Number,
     validate: (value) => {
       if (value < 0) return 'priceMustBePositive'
     }
-  })
-  price: number
-
-  @Prop({
+  },
+  createdAt: {
+    type: Date,
     defaultValue: () => new Date()
-  })
-  createdAt: Date
-
-  @Prop({
+  },
+  updatedAt: {
+    type: Date,
     optional: true
-  })
-  updatedAt?: Date
-}
+  }
+})
+
+export type ProductType = InferSchemaType<typeof ProductSchema>
+// The type will be inferred as:
+// type ProductType = {
+//   _id: `prd-${string}`;
+//   name: string;
+//   description?: string;
+//   status: "draft" | "active" | "discontinued";
+//   tags?: string[];
+//   variants?: ProductVariantType[];
+//   price: number;
+//   createdAt: Date;
+//   updatedAt?: Date;
+// }
 ```
 
 ## Common Schema Types
@@ -121,33 +124,34 @@ export class ProductSchema {
 Orionjs supports the following common types:
 
 ```typescript
-@TypedSchema()
-export class TypeExamplesSchema {
-  @Prop()
-  stringField: string         // Text values
+export const TypeExamplesSchema = schemaWithName('TypeExamplesSchema', {
+  stringField: {
+    type: String         // Text values
+  },
+  numberField: {
+    type: Number         // Numeric values (integers or floats)
+  },
+  integerField: {
+    type: 'integer'      // Force whole numbers only
+  },
+  booleanField: {
+    type: Boolean        // true/false values
+  },
+  dateField: {
+    type: Date           // Date and time values
+  },
+  emailField: {
+    type: 'email'        // Email with automatic validation
+  },
+  dynamicField: {
+    type: 'blackbox'     // Any object without specific schema
+  },
+  stringArrayField: {
+    type: [String]       // Array of strings
+  }
+})
 
-
-  @Prop()
-  numberField: number         // Numeric values (integers or floats)
-
-  @Prop({type: 'integer'})    // Force whole numbers only
-  integerField: number
-
-  @Prop()
-  booleanField: boolean       // true/false values
-
-  @Prop()
-  dateField: Date             // Date and time values
-
-  @Prop({type: 'email'})      // Email with automatic validation
-  emailField: string
-
-  @Prop({type: 'blackbox'})   // Any object without specific schema
-  dynamicField: Blackbox
-
-  @Prop({type: [String]}) // string array should have a type
-  stringArrayField: string[]
-}
+export type TypeExamplesType = InferSchemaType<typeof TypeExamplesSchema>
 ```
 
 ## Property Options
@@ -155,8 +159,9 @@ export class TypeExamplesSchema {
 Properties can be configured with the following options:
 
 ```typescript
-@Prop({
+{
   // Core options
+  type: String,                           // Required type definition
   label: 'Human-readable label',          // For UI and error messages
   description: 'Field description',       // For documentation
   optional: true,                         // Make field optional (default: false)
@@ -176,7 +181,7 @@ Properties can be configured with the following options:
   validate: (value) => {
     if (someCondition) return 'error-code'
   }
-})
+}
 ```
 
 ## More information
