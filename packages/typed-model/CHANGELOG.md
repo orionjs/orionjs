@@ -1,5 +1,37 @@
 # @orion-js/typed-model
 
+## 4.0.0
+
+### Major Changes
+
+- 6df4331: update exports in http
+- 6df4331: Orion v4 passing all tests
+- 6df4331: Update to pnpm
+- 6df4331: Initial release of version 4. Modernize bundilng of libraries
+- 6df4331: republish
+- 6df4331: Update pnpm
+- V4
+- 6df4331: Update orionjs core
+- 6df4331: update all to v8
+- 6df4331: migrate to rambdax
+
+### Patch Changes
+
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+- Updated dependencies
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+- Updated dependencies [6df4331]
+  - @orion-js/resolvers@4.0.0
+  - @orion-js/services@4.0.0
+  - @orion-js/models@4.0.0
+  - @orion-js/schema@4.0.0
+
 ## 4.0.0-next.8
 
 ### Major Changes

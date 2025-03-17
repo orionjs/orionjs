@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/services",
-  "version": "4.0.0-next.8",
+  "version": "4.0.0",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
