@@ -23,7 +23,6 @@
     "@orion-js/schema": "workspace:*",
     "@orion-js/services": "workspace:*",
     "@orion-js/typed-model": "workspace:*",
-    "graphql-iso-date": "^3.6.1",
     "graphql-scalars": "^1.24.1",
     "graphql-subscriptions": "2.0.0",
     "graphql-tag": "^2.12.6",
