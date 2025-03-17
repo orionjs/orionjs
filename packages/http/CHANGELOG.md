@@ -1,5 +1,11 @@
 # @orion-js/http
 
+## 4.0.2
+
+### Patch Changes
+
+- add default type undefined to route response
+
 ## 4.0.1
 
 ### Patch Changes

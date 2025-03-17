@@ -1,5 +1,14 @@
 # @orion-js/components
 
+## 4.0.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/http@4.0.2
+  - @orion-js/echoes@4.0.2
+  - @orion-js/graphql@4.0.3
+
 ## 4.0.3
 
 ### Patch Changes
