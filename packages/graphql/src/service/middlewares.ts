@@ -1,5 +1,4 @@
 import {ResolverMiddleware} from '@orion-js/resolvers'
-import {InternalDynamicResolverResolveAtDecorator} from './types'
 import {SchemaInAnyOrionForm} from '@orion-js/schema'
 
 const resolversMetadata = new WeakMap<any, Record<string, any>>()
@@ -30,10 +29,7 @@ export function getTargetMetadata(target: any, propertyKey: string, metadataKey:
 }
 
 export function UseMiddleware<TMiddleware extends ResolverMiddleware, This>(params: TMiddleware) {
-  return (
-    method: InternalDynamicResolverResolveAtDecorator<This, any, any, any, any, any>,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) => {
+  return (method: any, context: ClassMethodDecoratorContext<This, typeof method>) => {
     const propertyKey = String(context.name)
     addTargetMetadata(method, propertyKey, 'middlewares', params, true)
     return method
@@ -41,10 +37,7 @@ export function UseMiddleware<TMiddleware extends ResolverMiddleware, This>(para
 }
 
 export function ResolverParams<TParams extends SchemaInAnyOrionForm, This>(params: TParams) {
-  return (
-    method: InternalDynamicResolverResolveAtDecorator<This, TParams, any, any, any, any>,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) => {
+  return (method: any, context: ClassMethodDecoratorContext<This, typeof method>) => {
     const propertyKey = String(context.name)
     addTargetMetadata(method, propertyKey, 'params', params, false)
     return method
@@ -52,10 +45,7 @@ export function ResolverParams<TParams extends SchemaInAnyOrionForm, This>(param
 }
 
 export function ResolverReturns<This>(returns: any) {
-  return (
-    method: InternalDynamicResolverResolveAtDecorator<This, any, any, any, any, any>,
-    context: ClassMethodDecoratorContext<This, typeof method>,
-  ) => {
+  return (method: any, context: ClassMethodDecoratorContext<This, typeof method>) => {
     const propertyKey = String(context.name)
     addTargetMetadata(method, propertyKey, 'returns', returns, false)
     return method
