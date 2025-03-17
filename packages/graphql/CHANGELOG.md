@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.2
+
+### Patch Changes
+
+- 34e455b: remove iso date dependency
+
 ## 4.0.1
 
 ### Patch Changes

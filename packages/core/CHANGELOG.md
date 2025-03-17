@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.2
+
+### Patch Changes
+
+- 41f66e6: update cursor rules
+
 ## 4.0.1
 
 ### Patch Changes
