@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.5
+
+### Patch Changes
+
+- refactor middleware decorators to remove specific type dependencies
+
 ## 4.0.4
 
 ### Patch Changes

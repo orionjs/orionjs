@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/paginated-mongodb",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
