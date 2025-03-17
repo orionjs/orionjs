@@ -1,5 +1,11 @@
 # @orion-js/env
 
+## 4.0.1
+
+### Patch Changes
+
+- Fixes the build of the cli
+
 ## 4.0.0
 
 ### Major Changes

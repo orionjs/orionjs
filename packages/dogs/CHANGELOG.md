@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.0.1
+
+### Patch Changes
+
+- @orion-js/mongodb@4.0.1
+
 ## 4.0.0
 
 ### Major Changes
