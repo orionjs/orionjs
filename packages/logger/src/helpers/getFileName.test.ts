@@ -15,4 +15,11 @@ describe('GetFileName', () => {
     const improvedFileName = improveFileName(fileName)
     expect(improvedFileName).toBe('dogs')
   })
+
+  it('Should clean simple package in node modules', () => {
+    const fileName =
+      '/Users/nicolaslopezj/Code/Projects/justo/drivers/server/node_modules/.pnpm/@orion-js+dogs@4.0.1_@orion-js+logger@4.0.0'
+    const improvedFileName = improveFileName(fileName)
+    expect(improvedFileName).toBe('@orion-js/dogs')
+  })
 })
