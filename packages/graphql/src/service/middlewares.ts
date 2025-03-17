@@ -1,6 +1,6 @@
 import {ResolverMiddleware} from '@orion-js/resolvers'
 import {InternalDynamicResolverResolveAtDecorator} from './types'
-import {SchemaFieldType} from '@orion-js/schema'
+import {SchemaInAnyOrionForm} from '@orion-js/schema'
 
 const resolversMetadata = new WeakMap<any, Record<string, any>>()
 
@@ -40,7 +40,7 @@ export function UseMiddleware<TMiddleware extends ResolverMiddleware, This>(para
   }
 }
 
-export function ResolverParams<TParams extends SchemaFieldType, This>(params: TParams) {
+export function ResolverParams<TParams extends SchemaInAnyOrionForm, This>(params: TParams) {
   return (
     method: InternalDynamicResolverResolveAtDecorator<This, TParams, any, any, any, any>,
     context: ClassMethodDecoratorContext<This, typeof method>,
