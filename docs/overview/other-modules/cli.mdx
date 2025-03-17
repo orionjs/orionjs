@@ -10,25 +10,19 @@ The Orionjs CLI is a command-line tool that helps you develop and build Orionjs 
 The CLI is part of the `@orion-js/core` package. You can install it globally:
 
 ```bash
-npm install -g @orion-js/core
-```
-
-Or using yarn:
-
-```bash
-yarn global add @orion-js/core
+pnpm add -g @orion-js/core --ignore-scripts
 ```
 
 ## Available Commands
 
 Orionjs CLI provides essential commands to help you with your development workflow.
 
-### orion start
+### orion dev
 
 Runs your Orionjs application in development mode with hot reloading.
 
 ```bash
-orion start [options]
+orion dev [options]
 ```
 
 **Options:**
@@ -39,7 +33,7 @@ orion start [options]
 **Example:**
 
 ```bash
-orion start --clean
+orion dev --clean
 ```
 
 This command will:
@@ -47,28 +41,13 @@ This command will:
 2. Watch for changes in your files
 3. Automatically restart the server when changes are detected
 
-### orion build
+### orion prod
 
-Compiles an Orionjs app and exports it to a simple Node.js application for production deployment.
-
-```bash
-orion build [options]
-```
-
-**Options:**
-
-- `-o, --output [output]`: Output directory (defaults to './build')
-
-**Example:**
+Starts an Orionjs application as a production Node.js application.
 
 ```bash
-orion build --output ./dist
+orion prod [options]
 ```
-
-This command will:
-1. Clean the output directory
-2. Compile your application
-3. Create a production-ready build in the specified output directory
 
 ## Environment Variables Integration
 
