@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.3
+
+### Patch Changes
+
+- tsx as peer dep
+
 ## 4.0.2
 
 ### Patch Changes
