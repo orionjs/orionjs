@@ -5,12 +5,12 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "bin": {
-    "orion-env": "./lib/cli/index.js"
+    "orion-env": "./dist-cli/index.js"
   },
   "scripts": {
     "test": "vitest run",
     "clean": "rm -rf ./dist",
-    "build": "tsup",
+    "build": "tsup --config tsup.config.ts && tsup --config cli.tsup.config.ts",
     "dev": "tsup --watch"
   },
   "dependencies": {
