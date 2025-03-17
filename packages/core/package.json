@@ -27,9 +27,11 @@
     "comment-json": "^4.2.3",
     "dotenv": "^16.0.3",
     "prompts": "^2.4.2",
-    "tsx": "^4.19.3",
     "typescript": "^5.4.5",
     "yaml": "^2.2.1"
+  },
+  "peerDependencies": {
+    "tsx": "*"
   },
   "publishConfig": {
     "access": "public"

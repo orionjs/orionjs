@@ -1,8 +1,7 @@
 import {RunnerOptions} from '.'
 
 export function getArgs(options: RunnerOptions) {
-  let startCommand =
-    process.env.START_COMMAND || './node_modules/@orion-js/core/node_modules/.bin/tsx'
+  let startCommand = process.env.START_COMMAND || 'tsx'
 
   const args = []
 
