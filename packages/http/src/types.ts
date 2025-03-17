@@ -2,7 +2,9 @@ import express from 'express'
 import {OptionsJson, OptionsText, OptionsUrlencoded} from 'body-parser'
 import {InferSchemaType, Schema, SchemaFieldType} from '@orion-js/schema'
 
-export interface RouteResponseObject<TReturnsSchema extends SchemaFieldType | undefined> {
+export interface RouteResponseObject<
+  TReturnsSchema extends SchemaFieldType | undefined = undefined,
+> {
   statusCode?: number
   headers?: {[key: string]: string}
   body: TReturnsSchema extends undefined ? string | object : InferSchemaType<TReturnsSchema>
