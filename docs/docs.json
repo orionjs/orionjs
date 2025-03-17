@@ -79,6 +79,12 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Guides",
+        "pages": [
+          "guides/v4"
+        ]
       }
     ],
     "global": {
