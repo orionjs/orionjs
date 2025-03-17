@@ -10,39 +10,55 @@ Orionjs provides a clean and type-safe way to define HTTP routes through the `@R
 A routes controller is a class decorated with `@Routes()` that contains methods decorated with `@Route()` to define individual endpoints:
 
 ```typescript
-import {Request, Response, Route, RouteResponse, Routes} from '@orion-js/http'
-import {Inject} from '@orion-js/services'
-import {ExampleService} from '../services/ExampleService'
+import { Route, Routes, createRoute } from '@orion-js/http'
+import { Inject } from '@orion-js/services'
+import { ExampleService } from '../services/ExampleService'
 
 @Routes()
 export default class ExampleRoutes {
-  @Inject()
+  @Inject(() => ExampleService)
   private exampleService: ExampleService
 
-  @Route({
+  @Route()
+  example = createRoute({
     path: '/example/:exampleId',
-    method: 'get'
-  })
-  async example(req: Request): RouteResponse {
-    const {exampleId} = req.params
-    return {
-      body: await this.exampleService.getAExample(exampleId)
+    method: 'get',
+    resolve: async (req) => {
+      const { exampleId } = req.params
+      return {
+        body: await this.exampleService.getAExample(exampleId)
+      }
     }
-  }
+  })
 }
 ```
 
-## Route Decorator Options
+## Route Definition Options
 
-The `@Route()` decorator accepts the following options:
+The `createRoute()` function accepts the following options:
 
 ```typescript
-@Route({
+@Route()
+exampleRoute = createRoute({
   path: '/api/users',           // Path of the endpoint
   method: 'post',               // HTTP method (get, post, put, delete, all)
-  bodyParser: 'json',           // Body parser to use (optional)
-  bodyParserOptions: {},        // Options for the body parser (optional)
-  middlewares: [authMiddleware] // Express middlewares to apply (optional)
+  bodyParams: {                 // Schema for body parameters (optional)
+    name: { type: String },
+    email: { type: String }
+  },
+  queryParams: {                // Schema for query parameters (optional)
+    limit: { type: Number }
+  },
+  returns: {                    // Schema for return value (optional)
+    userId: { type: String }
+  },
+  middlewares: [authMiddleware], // Express middlewares to apply (optional)
+  resolve: async (req) => {
+    // Route implementation
+    return {
+      body: { result: 'success' }
+    }
+  }
 })
 ```
 
@@ -52,39 +68,41 @@ The `@Route()` decorator accepts the following options:
 | ------ | ---- | ----------- |
 | `path` | `string` | URL path pattern for the route (supports Express path parameters) |
 | `method` | `'get'` \| `'post'` \| `'put'` \| `'delete'` \| `'all'` | HTTP method to handle |
-| `bodyParser` | `'json'` \| `'text'` \| `'urlencoded'` | The body parser to use for this route |
-| `bodyParserOptions` | `object` | Options to pass to the body parser |
+| `bodyParams` | `Object` \| `Schema` | Schema for validating request body |
+| `queryParams` | `Object` \| `Schema` | Schema for validating query parameters |
+| `returns` | `Object` \| `Schema` | Schema for validating response body |
 | `middlewares` | `Array<RequestHandler>` | Express middlewares to apply to this route |
+| `resolve` | `Function` | Function that handles the request and returns a response |
 | `app` | `express.Application` | Optional custom Express app instance |
 
-## Route Methods
+## Route Handlers
 
-Route methods handle incoming HTTP requests and can interact with injected services:
+Route handlers (the `resolve` function) receive the request object and any middleware-injected properties:
 
 ```typescript
-@Route({
+@Route()
+getUsers = createRoute({
   path: '/users',
-  method: 'get'
-})
-async getUsers(req: Request): RouteResponse {
-  const users = await this.userService.getUsers()
-  return {
-    body: users
+  method: 'get',
+  resolve: async (req) => {
+    const users = await this.userService.getUsers()
+    return {
+      body: users
+    }
   }
-}
+})
 ```
 
-### Method Parameters
+### Handler Parameters
 
-Route methods can receive the following parameters:
+Route handlers typically receive:
 
-- `req`: Express Request object
-- `res`: Express Response object (optional)
-- `viewer`: Authenticated user context (optional, automatically injected)
+- `req`: Express Request object with params, query, and body
+- Any context injected by middleware (like viewer, authenticated user)
 
 ### Return Values
 
-Route methods should return a `RouteResponse` which can contain:
+Route handlers should return an object with:
 
 ```typescript
 return {
@@ -94,101 +112,126 @@ return {
 }
 ```
 
-Alternatively, you can use `res` for more direct control:
+You can also access the Express response object through the request:
 
 ```typescript
-async downloadFile(req: Request, res: Response): RouteResponse {
-  res.setHeader('Content-Type', 'application/pdf')
-  res.setHeader('Content-Disposition', 'attachment; filename="report.pdf"')
-  
-  const fileStream = await this.fileService.getFileStream(req.params.id)
-  fileStream.pipe(res)
-  
-  // No return value needed when using res directly
-}
+@Route()
+downloadFile = createRoute({
+  path: '/download/:fileId',
+  method: 'get',
+  resolve: async (req) => {
+    const res = req.res
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename="report.pdf"')
+    
+    const fileStream = await this.fileService.getFileStream(req.params.fileId)
+    fileStream.pipe(res)
+    
+    // No body needed when using res directly
+    return {}
+  }
+})
 ```
 
 ## Route Parameters
 
-You can access route parameters through the request object:
+You can access route parameters through the request object, and they will be type-safe if you specify the path with parameter placeholders:
 
 ```typescript
 // Route defined as: /users/:userId/posts/:postId
-@Route({
+@Route()
+getPost = createRoute({
   path: '/users/:userId/posts/:postId',
-  method: 'get'
-})
-async getPost(req: Request): RouteResponse {
-  const {userId, postId} = req.params
-  const post = await this.postService.getPost(userId, postId)
-  
-  return {
-    body: post
+  method: 'get',
+  resolve: async (req) => {
+    const {userId, postId} = req.params
+    const post = await this.postService.getPost(userId, postId)
+    
+    return {
+      body: post
+    }
   }
-}
+})
 ```
 
 ## Query Parameters
 
-Access query parameters through `req.query`:
+You can define and validate query parameters using the `queryParams` option:
 
 ```typescript
 // GET /search?term=example&limit=10
-@Route({
+@Route()
+search = createRoute({
   path: '/search',
-  method: 'get'
-})
-async search(req: Request): RouteResponse {
-  const {term, limit} = req.query
-  const results = await this.searchService.search(term, Number(limit) || 10)
-  
-  return {
-    body: results
+  method: 'get',
+  queryParams: {
+    term: { type: String },
+    limit: { type: Number, optional: true }
+  },
+  resolve: async (req) => {
+    // req.query will be validated and typed according to schema
+    const {term, limit} = req.query
+    const results = await this.searchService.search(term, limit || 10)
+    
+    return {
+      body: results
+    }
   }
-}
+})
 ```
 
 ## Request Body
 
-For routes with a body parser, access the parsed body with `req.body`:
+You can define and validate request body parameters using the `bodyParams` option:
 
 ```typescript
-@Route({
+@Route()
+createUser = createRoute({
   path: '/users',
   method: 'post',
-  bodyParser: 'json'
-})
-async createUser(req: Request): RouteResponse {
-  const userData = req.body
-  const newUser = await this.userService.createUser(userData)
-  
-  return {
-    statusCode: 201,
-    body: newUser
+  bodyParams: {
+    name: { type: String },
+    email: { type: String },
+    age: { type: Number, optional: true }
+  },
+  returns: {
+    userId: { type: String },
+    createdAt: { type: Date }
+  },
+  resolve: async (req) => {
+    // req.body will be validated and typed according to schema
+    const userData = req.body
+    const newUser = await this.userService.createUser(userData)
+    
+    return {
+      statusCode: 201,
+      body: newUser // Response will be validated against returns schema
+    }
   }
-}
+})
 ```
 
 ## Error Handling
 
-Orionjs automatically handles errors thrown in route methods:
+Orionjs automatically handles errors thrown in route handlers:
 
 ```typescript
-@Route({
+@Route()
+getProtectedResource = createRoute({
   path: '/protected-resource',
-  method: 'get'
+  method: 'get',
+  resolve: async (req) => {
+    if (!req.headers.authorization) {
+      throw new Error('Unauthorized')
+      // Or use a custom error class
+      // throw new AuthenticationError('Missing authentication')
+    }
+    
+    return {
+      body: await this.resourceService.getResource()
+    }
+  }
 })
-async getProtectedResource(req: Request): RouteResponse {
-  if (!req.headers.authorization) {
-    throw new Error('Unauthorized')
-    // Or use a custom error class
-    // throw new AuthenticationError('Missing authentication')
-  }
-  
-  return {
-    body: await this.resourceService.getResource()
-  }
-}
 ```
 
 ## Example: File Uploads
@@ -202,23 +245,24 @@ const upload = multer({ dest: 'uploads/' })
 
 @Routes()
 export class FileRoutes {
-  @Inject()
+  @Inject(() => FileService)
   private fileService: FileService
 
-  @Route({
+  @Route()
+  uploadFile = createRoute({
     path: '/upload',
     method: 'post',
-    middlewares: [upload.single('file')]
-  })
-  async uploadFile(req: Request): RouteResponse {
-    // Access the file via req.file
-    const fileInfo = await this.fileService.saveFile(req.file)
-    
-    return {
-      statusCode: 201,
-      body: fileInfo
+    middlewares: [upload.single('file')],
+    resolve: async (req) => {
+      // Access the file via req.file
+      const fileInfo = await this.fileService.saveFile(req.file)
+      
+      return {
+        statusCode: 201,
+        body: fileInfo
+      }
     }
-  }
+  })
 }
 ```
 
@@ -235,7 +279,8 @@ import cors from 'cors'
 
 @Routes()
 export class ApiRoutes {
-  @Route({
+  @Route()
+  getData = createRoute({
     path: '/api/data',
     method: 'get',
     middlewares: [
@@ -244,74 +289,135 @@ export class ApiRoutes {
         methods: ['GET'],
         allowedHeaders: ['Content-Type', 'Authorization']
       })
-    ]
-  })
-  async getData(req: Request): RouteResponse {
-    return {
-      body: await this.dataService.getData()
+    ],
+    resolve: async (req) => {
+      return {
+        body: await this.dataService.getData()
+      }
     }
-  }
+  })
 }
 ```
 
-### 2. Global Middleware (Applied to All Routes)
+### 2. Global Middleware
 
-To apply middleware to all routes in your application, use the `getApp()` function to access the Express app instance:
+Apply middleware to all routes using the HTTP app:
 
 ```typescript
-import cors from 'cors'
+import {app} from '@orion-js/http'
 import helmet from 'helmet'
-import {getApp} from '@orion-js/http'
+import cors from 'cors'
 
-// Apply CORS middleware to all routes
-getApp().use(cors())
+// Apply security headers
+app.use(helmet())
 
-// Apply security headers to all routes
-getApp().use(helmet())
-
-// Apply rate limiting to all routes
-getApp().use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests, please try again later'
-  })
-)
+// Apply CORS for all routes
+app.use(cors({
+  origin: ['https://example.com', 'https://admin.example.com'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 ```
 
-This approach is recommended for cross-cutting concerns like CORS, security headers, request logging, and rate limiting that should apply across your entire API.
+## Custom Response Types
 
-## Error Response Format
+You can define custom response formats for non-JSON responses:
 
-When an error is thrown, Orionjs formats the response using a standardized format:
+```typescript
+@Route()
+getXML = createRoute({
+  path: '/data.xml',
+  method: 'get',
+  resolve: async (req) => {
+    const xml = await this.xmlService.generateXML()
+    
+    return {
+      headers: {
+        'Content-Type': 'application/xml'
+      },
+      body: xml
+    }
+  }
+})
+```
 
-```json
-{
-  "error": {
-    "message": "Unauthorized",
-    "code": "UNAUTHORIZED"
+## Authentication and Authorization
+
+You can implement authentication and authorization using middleware:
+
+```typescript
+// Auth middleware
+const authMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]
+  
+  if (!token) {
+    return res.status(401).json({error: 'No token provided'})
+  }
+  
+  try {
+    const user = await verifyToken(token)
+    req.user = user // Attach user to request
+    next()
+  } catch (error) {
+    return res.status(401).json({error: 'Invalid token'})
   }
 }
+
+@Routes()
+export class UserRoutes {
+  @Inject(() => UserService)
+  private userService: UserService
+
+  @Route()
+  getProfile = createRoute({
+    path: '/profile',
+    method: 'get',
+    middlewares: [authMiddleware],
+    resolve: async (req) => {
+      // req.user is guaranteed to exist from the authMiddleware
+      return {
+        body: await this.userService.getUserProfile(req.user._id)
+      }
+    }
+  })
+}
+```
+
+## Starting the HTTP Server
+
+To start the HTTP server:
+
+```typescript
+import {startServer} from '@orion-js/http'
+
+// Start HTTP server
+startServer({
+  port: 3000,
+  path: '/',
+  onStart: () => {
+    console.log('Server started on port 3000')
+  }
+})
 ```
 
 ## Best Practices
 
-1. **Group related routes**: Keep related routes in the same controller class.
+1. **Organize by Domain**: Group related routes in the same controller class.
 
-2. **Use dependency injection**: Leverage `@Inject()` to access services.
+2. **Use Parameter Validation**: Define schema for query, body, and response parameters.
 
-3. **Keep route methods focused**: Each route method should handle one specific endpoint.
+3. **Keep Route Handlers Simple**: Focus on request handling logic, move business logic to services.
 
-4. **Validate input**: Always validate request parameters, query strings, and body content.
+4. **Leverage Dependency Injection**: Use `@Inject(() => Service)` for clean service integration.
 
-5. **Use proper HTTP status codes**: Return appropriate status codes based on the outcome.
+5. **Implement Proper Error Handling**: Catch and handle expected errors appropriately.
 
-6. **Handle errors gracefully**: Use try-catch blocks for specific error handling when needed.
+6. **Apply Security Middleware**: Use middleware for authentication, CSRF protection, etc.
 
-7. **Document your APIs**: Consider using a tool like Swagger to document your routes.
+7. **Clear Status Codes**: Use appropriate HTTP status codes for different responses.
 
-8. **Use path parameters for resources**: Follow REST principles with nested resources using path parameters.
+8. **Document Your API**: Add clear descriptions for each endpoint and its parameters.
 
-9. **Add rate limiting**: For public APIs, implement rate limiting to protect against abuse.
+9. **Follow RESTful Principles**: Use appropriate HTTP methods for different operations.
 
-10. **Log requests and responses**: Add logging middleware for debugging and monitoring.
+10. **Implement Rate Limiting**: Protect against abuse with rate limiting middleware.

@@ -10,58 +10,92 @@ Echoes in Orionjs provide a structured way to implement event-driven architectur
 An echoes controller is a class decorated with `@Echoes()` that contains methods decorated with `@EchoRequest()` or `@EchoEvent()`:
 
 ```typescript
-import { EchoRequest, Echoes } from '@orion-js/echoes'
+import { EchoRequest, EchoEvent, Echoes, createEchoRequest, createEchoEvent } from '@orion-js/echoes'
 import { Inject } from '@orion-js/services'
 import { ExampleRepository } from '../repos/ExampleRepository'
-import { ExampleSchema } from '../schemas/ExampleSchema'
+import { schemaWithName, InferSchemaType } from '@orion-js/schema'
+
+// Define schema for parameters and return type
+export const ExampleSchema = schemaWithName('ExampleSchema', {
+  _id: { type: String },
+  name: { type: String },
+  createdAt: { type: Date }
+})
+
+// Infer TypeScript type from schema
+export type ExampleType = InferSchemaType<typeof ExampleSchema>
 
 @Echoes()
 export class GetDataEchoes {
-  @Inject()
+  @Inject(() => ExampleRepository)
   private exampleRepository: ExampleRepository
 
   @EchoRequest()
-  async getDataById(params: { exampleId: string }): Promise<ExampleSchema> {
-    return await this.exampleRepository.getExampleById(params.exampleId)
-  }
+  getDataById = createEchoRequest({
+    params: {
+      exampleId: { type: String }
+    },
+    returns: ExampleSchema,
+    resolve: async (params) => {
+      return await this.exampleRepository.getExampleById(params.exampleId)
+    }
+  })
 }
 ```
 
 ## Echo Request Handlers
 
-Use the `@EchoRequest()` decorator to define methods that handle synchronous requests from other services:
+Use the `@EchoRequest()` decorator with the `createEchoRequest()` function to define methods that handle synchronous requests from other services:
 
 ```typescript
 @EchoRequest()
-async getUserById(params: { userId: string }): Promise<UserSchema> {
-  return await this.userRepository.findById(params.userId)
-}
+getUserById = createEchoRequest({
+  params: {
+    userId: { type: String }
+  },
+  returns: UserSchema,
+  resolve: async (params) => {
+    return await this.userRepository.findById(params.userId)
+  }
+})
 ```
 
 ## Echo Event Handlers
 
-Use the `@EchoEvent()` decorator to define methods that process asynchronous events:
+Use the `@EchoEvent()` decorator with the `createEchoEvent()` function to define methods that process asynchronous events:
 
 ```typescript
 @Echoes()
 export class UserEventsEchoes {
-  @Inject()
+  @Inject(() => EmailService)
   private emailService: EmailService
 
   @EchoEvent()
-  async userRegistered(params: { user: UserSchema }): Promise<void> {
-    await this.emailService.sendWelcomeEmail(params.user.email)
-  }
+  userRegistered = createEchoEvent({
+    params: {
+      user: { type: UserSchema }
+    },
+    resolve: async (params) => {
+      await this.emailService.sendWelcomeEmail(params.user.email)
+    }
+  })
 }
 ```
 
 ### Event Decorator Options
 
-The `@EchoEvent()` decorator accepts the same options as `@EchoRequest()`:
+The `createEchoEvent()` function accepts options similar to `createEchoRequest()`:
 
 ```typescript
-@EchoEvent({
+@EchoEvent()
+processSomething = createEchoEvent({
   attemptsBeforeDeadLetter: 5,
+  params: {
+    // schema definition
+  },
+  resolve: async (params) => {
+    // implementation
+  }
 })
 ```
 
@@ -145,16 +179,20 @@ Echoes automatically handles errors in request and event handlers:
 
 ```typescript
 @EchoRequest()
-async processPayment(params: PaymentParams): Promise<PaymentResult> {
-  try {
-    const result = await this.paymentService.processPayment(params)
-    return result
-  } catch (error) {
-    // Errors are automatically propagated back to the requester
-    // with proper error classification (UserError, ValidationError, etc.)
-    throw new Error(`Payment processing failed: ${error.message}`)
+processPayment = createEchoRequest({
+  params: { type: PaymentParamsSchema },
+  returns: PaymentResultSchema,
+  resolve: async (params) => {
+    try {
+      const result = await this.paymentService.processPayment(params)
+      return result
+    } catch (error) {
+      // Errors are automatically propagated back to the requester
+      // with proper error classification (UserError, ValidationError, etc.)
+      throw new Error(`Payment processing failed: ${error.message}`)
+    }
   }
-}
+})
 ```
 
 ### Custom Error Types
@@ -169,57 +207,73 @@ import { UserError } from '@orion-js/helpers'
 import { ValidationError } from '@orion-js/schema'
 
 @EchoRequest()
-async validateUser(params: { userId: string }): Promise<void> {
-  const user = await this.userRepository.findById(params.userId)
-  
-  if (!user) {
-    throw new UserError('USER_NOT_FOUND', 'User was not found')
+validateUser = createEchoRequest({
+  params: {
+    userId: { type: String }
+  },
+  resolve: async (params) => {
+    const user = await this.userRepository.findById(params.userId)
+    
+    if (!user) {
+      throw new UserError('USER_NOT_FOUND', 'User was not found')
+    }
+    
+    if (!user.isActive) {
+      throw new ValidationError({
+        status: 'User account is inactive'
+      })
+    }
   }
-  
-  if (!user.isActive) {
-    throw new ValidationError({
-      status: 'User account is inactive'
-    })
-  }
-}
+})
 ```
 
 Those errors will be automatically propagated back to the requester.
 
 ## Type Safety
 
-Using TypeScript, you can ensure type safety for your echo handlers:
+Using TypeScript with schema inference, you can ensure type safety for your echo handlers:
 
 ```typescript
-interface CreateOrderParams {
-  customerId: string
-  items: Array<{
-    productId: string
-    quantity: number
-  }>
-}
+// Define schemas for strong typing
+const CreateOrderParamsSchema = schemaWithName('CreateOrderParams', {
+  customerId: { type: String },
+  items: {
+    type: [{ 
+      productId: { type: String },
+      quantity: { type: Number }
+    }]
+  }
+})
 
-interface OrderResult {
-  orderId: string
-  total: number
-  status: 'pending' | 'completed'
-}
+const OrderResultSchema = schemaWithName('OrderResult', {
+  orderId: { type: String },
+  total: { type: Number },
+  status: { type: String, allowedValues: ['pending', 'completed'] }
+})
+
+// Infer types from schemas
+type CreateOrderParamsType = InferSchemaType<typeof CreateOrderParamsSchema>
+type OrderResultType = InferSchemaType<typeof OrderResultSchema>
 
 @EchoRequest()
-async createOrder(params: CreateOrderParams): Promise<OrderResult> {
-  // Implementation with full type safety
-}
+createOrder = createEchoRequest({
+  params: CreateOrderParamsSchema,
+  returns: OrderResultSchema,
+  resolve: async (params: CreateOrderParamsType): Promise<OrderResultType> => {
+    // Implementation with full type safety
+  }
+})
 ```
 
 ## Best Practices
 
 1. **Organize by Domain**: Group related echo handlers in the same controller class.
 
-2. **Leverage Dependency Injection**: Use `@Inject()` to access repositories and services.
+2. **Leverage Dependency Injection**: Use `@Inject(() => Service)` to access repositories and services.
 
 3. **Keep Methods Focused**: Each echo handler should have a clear, single responsibility.
 
-4. **Use Strong Typing**: Define parameter and return types for clarity and safety.
+4. **Use Strong Typing**: Define parameter and return types with schemas and infer TypeScript types.
 
 5. **Handle Errors Gracefully**: Catch and properly categorize errors.
 

@@ -10,26 +10,45 @@ Model resolvers in Orionjs provide a way to define computed fields and relations
 A model resolver controller is a class decorated with `@ModelResolvers()` that specifies the GraphQL type to extend, and contains methods decorated with `@ModelResolver()` to define fields on that type:
 
 ```typescript
-import { ModelResolver, ModelResolvers, ResolverReturns } from '@orion-js/graphql'
+import { ModelResolver, ModelResolvers, createModelResolver } from '@orion-js/graphql'
 import { Inject } from '@orion-js/services'
-import { UserSchema } from '../schemas/UserSchema'
-import { PostSchema } from '../schemas/PostSchema'
+import { schemaWithName, InferSchemaType } from '@orion-js/schema'
 import { PostService } from '../services/PostService'
+
+// Define schemas using schemaWithName
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: { type: String },
+  name: { type: String },
+  email: { type: String }
+})
+
+export const PostSchema = schemaWithName('PostSchema', {
+  _id: { type: String },
+  title: { type: String },
+  content: { type: String },
+  authorId: { type: String }
+})
+
+// Infer types from schemas
+export type UserType = InferSchemaType<typeof UserSchema>
+export type PostType = InferSchemaType<typeof PostSchema>
 
 @ModelResolvers(UserSchema)
 export default class UserResolvers {
-  @Inject()
+  @Inject(() => PostService)
   private postService: PostService
 
   @ModelResolver()
-  @ResolverReturns([PostSchema])
-  async posts(user: UserSchema): Promise<PostSchema[]> {
-    return await this.postService.getUserPosts(user._id)
-  }
+  posts = createModelResolver<UserType>({
+    returns: [PostSchema],
+    resolve: async (user) => {
+      return await this.postService.getUserPosts(user._id)
+    }
+  })
 }
 ```
 
-The `@ModelResolvers()` decorator takes the schema class that represents your GraphQL type. Each method decorated with `@ModelResolver()` adds a new field to that type.
+The `@ModelResolvers()` decorator takes the schema that represents your GraphQL type. Each method decorated with `@ModelResolver()` adds a new field to that type.
 
 ## Model Resolver Methods
 
@@ -37,18 +56,20 @@ Model resolver methods receive the parent object as their first parameter, follo
 
 ```typescript
 @ModelResolver()
-@ResolverParams(PostFiltersParams)
-@ResolverReturns([PostSchema])
-async posts(user: UserSchema, params: PostFiltersParams, viewer, info): Promise<PostSchema[]> {
-  const { limit, sortBy } = params
-  return await this.postService.getUserPosts(user._id, { limit, sortBy })
-}
+posts = createModelResolver<UserType>({
+  params: PostFiltersParams,
+  returns: [PostSchema],
+  resolve: async (user, params, viewer, info) => {
+    const { limit, sortBy } = params
+    return await this.postService.getUserPosts(user._id, { limit, sortBy })
+  }
+})
 ```
 
 ### Method Parameters
 
 1. **Parent Object**: The first parameter is always the parent object (the instance of the type you're adding the field to)
-2. **Params**: If you specify `@ResolverParams()`, this will be the parameters passed to the field
+2. **Params**: If you specify `params`, this will be the parameters passed to the field
 3. **Viewer**: The viewer object (contains authentication context)
 4. **Info**: The GraphQL info object for query optimization
 
@@ -72,56 +93,63 @@ The `@ModelResolver()` decorator accepts options to customize the field:
 
 ## Configuring Return Types
 
-Just like with regular resolvers, use the `@ResolverReturns()` decorator to specify the return type:
+Specify the return type in the `returns` property of `createModelResolver`:
 
 ```typescript
 // Return a single item
-@ResolverReturns(PostSchema)
-async latestPost(user): Promise<PostSchema> {
-  return await this.postService.getLatestUserPost(user._id)
-}
+@ModelResolver()
+latestPost = createModelResolver<UserType>({
+  returns: PostSchema,
+  resolve: async (user) => {
+    return await this.postService.getLatestUserPost(user._id)
+  }
+})
 
 // Return an array
-@ResolverReturns([PostSchema])
-async posts(user): Promise<PostSchema[]> {
-  return await this.postService.getUserPosts(user._id)
-}
+@ModelResolver()
+posts = createModelResolver<UserType>({
+  returns: [PostSchema],
+  resolve: async (user) => {
+    return await this.postService.getUserPosts(user._id)
+  }
+})
 
 // Return scalar types
-@ResolverReturns(Number)
-async postCount(user): Promise<number> {
-  return await this.postService.countUserPosts(user._id)
-}
+@ModelResolver()
+postCount = createModelResolver<UserType>({
+  returns: Number,
+  resolve: async (user) => {
+    return await this.postService.countUserPosts(user._id)
+  }
+})
 ```
 
 ## Field Parameters
 
-You can define parameters for your model resolver fields using `@ResolverParams()`:
+You can define parameters for your model resolver fields:
 
 ```typescript
-@TypedSchema()
-export class PostFiltersParams {
-  @Prop()
-  limit: number
-  
-  @Prop()
-  offset: number
-  
-  @Prop()
-  sortBy: string
-}
+export const PostFiltersParams = schemaWithName('PostFiltersParams', {
+  limit: { type: Number },
+  offset: { type: Number },
+  sortBy: { type: String }
+})
+
+export type PostFiltersParamsType = InferSchemaType<typeof PostFiltersParams>
 
 @ModelResolver()
-@ResolverParams(PostFiltersParams)
-@ResolverReturns([PostSchema])
-async posts(user, params): Promise<PostSchema[]> {
-  return await this.postService.getUserPosts(
-    user._id,
-    params.limit || 10,
-    params.offset || 0,
-    params.sortBy || 'createdAt'
-  )
-}
+posts = createModelResolver<UserType>({
+  params: PostFiltersParams,
+  returns: [PostSchema],
+  resolve: async (user, params) => {
+    return await this.postService.getUserPosts(
+      user._id,
+      params.limit || 10,
+      params.offset || 0,
+      params.sortBy || 'createdAt'
+    )
+  }
+})
 ```
 
 ## Field Middleware
@@ -131,11 +159,13 @@ You can apply middleware to model resolvers using `@UseMiddleware()`:
 ```typescript
 @ModelResolver()
 @UseMiddleware(authMiddleware)
-@ResolverReturns([PrivatePostSchema])
-async privatePosts(user, params, viewer): Promise<PrivatePostSchema[]> {
-  // Only accessible if middleware passes
-  return await this.postService.getUserPrivatePosts(user._id)
-}
+privatePosts = createModelResolver<UserType>({
+  returns: [PrivatePostSchema],
+  resolve: async (user, params, viewer) => {
+    // Only accessible if middleware passes
+    return await this.postService.getUserPrivatePosts(user._id)
+  }
+})
 ```
 
 ## Custom Model Names
@@ -158,22 +188,26 @@ Model resolvers are ideal for handling relationships between your GraphQL types:
 ```typescript
 // On the User type
 @ModelResolver()
-@ResolverReturns([PostSchema])
-async posts(user): Promise<PostSchema[]> {
-  return await this.postService.getUserPosts(user._id)
-}
+posts = createModelResolver<UserType>({
+  returns: [PostSchema],
+  resolve: async (user) => {
+    return await this.postService.getUserPosts(user._id)
+  }
+})
 
 // On the Post type
 @ModelResolvers(PostSchema)
 export default class PostResolvers {
-  @Inject()
+  @Inject(() => UserService)
   private userService: UserService
   
   @ModelResolver()
-  @ResolverReturns(UserSchema)
-  async author(post): Promise<UserSchema> {
-    return await this.userService.getUser(post.authorId)
-  }
+  author = createModelResolver<PostType>({
+    returns: UserSchema,
+    resolve: async (post) => {
+      return await this.userService.getUser(post.authorId)
+    }
+  })
 }
 ```
 
@@ -182,26 +216,30 @@ export default class PostResolvers {
 ```typescript
 @ModelResolvers(UserSchema)
 export class UserResolvers {
-  @Inject()
+  @Inject(() => GroupService)
   private groupService: GroupService
   
   @ModelResolver()
-  @ResolverReturns([GroupSchema])
-  async groups(user): Promise<GroupSchema[]> {
-    return await this.groupService.getUserGroups(user._id)
-  }
+  groups = createModelResolver<UserType>({
+    returns: [GroupSchema],
+    resolve: async (user) => {
+      return await this.groupService.getUserGroups(user._id)
+    }
+  })
 }
 
 @ModelResolvers(GroupSchema)
 export class GroupResolvers {
-  @Inject()
+  @Inject(() => UserService)
   private userService: UserService
   
   @ModelResolver()
-  @ResolverReturns([UserSchema])
-  async members(group): Promise<UserSchema[]> {
-    return await this.userService.getGroupMembers(group._id)
-  }
+  members = createModelResolver<GroupType>({
+    returns: [UserSchema],
+    resolve: async (group) => {
+      return await this.userService.getGroupMembers(group._id)
+    }
+  })
 }
 ```
 
@@ -212,15 +250,17 @@ For optimal performance, use DataLoader with your model resolvers to batch and c
 ```typescript
 @ModelResolvers(PostSchema)
 export default class PostResolvers {
-  @Inject()
+  @Inject(() => UserService)
   private userService: UserService
   
   @ModelResolver()
-  @ResolverReturns(UserSchema)
-  async author(post): Promise<UserSchema> {
-    // Using DataLoader, this will batch requests for multiple posts with the same author
-    return await this.userService.loadUserById(post.authorId)
-  }
+  author = createModelResolver<PostType>({
+    returns: UserSchema,
+    resolve: async (post) => {
+      // Using DataLoader, this will batch requests for multiple posts with the same author
+      return await this.userService.loadUserById(post.authorId)
+    }
+  })
 }
 ```
 

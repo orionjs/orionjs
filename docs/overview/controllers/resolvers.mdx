@@ -10,56 +10,72 @@ Orionjs provides a clean, decorator-based approach to define GraphQL resolvers. 
 A resolvers controller is a class decorated with `@Resolvers()` that contains methods decorated with `@Query()` or `@Mutation()` to define GraphQL operations:
 
 ```typescript
-import { Mutation, Query, ResolverParams, ResolverReturns, Resolvers } from '@orion-js/graphql'
+import { Mutation, Query, Resolvers, createQuery, createMutation } from '@orion-js/graphql'
 import { Inject } from '@orion-js/services'
-import { Prop, TypedSchema } from '@orion-js/typed-model'
-import { ExampleSchema } from '../schemas/ExampleSchema'
+import { schemaWithName, InferSchemaType } from '@orion-js/schema'
 import { ExampleService } from '../services/ExampleService'
 
-@TypedSchema()
-export class ExampleParams {
-  @Prop()
-  exampleId: string
-}
+// Define schemas with schemaWithName
+export const ExampleParams = schemaWithName('ExampleParams', {
+  exampleId: { type: String }
+})
+
+export const ExampleSchema = schemaWithName('ExampleSchema', {
+  _id: { type: String },
+  name: { type: String },
+  createdAt: { type: Date }
+})
+
+// Infer types from schemas
+export type ExampleParamsType = InferSchemaType<typeof ExampleParams>
+export type ExampleSchemaType = InferSchemaType<typeof ExampleSchema>
 
 @Resolvers()
 export default class ExampleResolvers {
-  @Inject()
+  @Inject(() => ExampleService)
   private exampleService: ExampleService
 
   @Query()
-  @ResolverParams(ExampleParams)
-  @ResolverReturns(ExampleSchema)
-  async example(params: ExampleParams): Promise<ExampleSchema> {
-    return await this.exampleService.getAExample(params.exampleId)
-  }
+  example = createQuery({
+    params: ExampleParams,
+    returns: ExampleSchema,
+    resolve: async (params: ExampleParamsType) => {
+      return await this.exampleService.getAExample(params.exampleId)
+    }
+  })
 
   @Query()
-  @ResolverReturns([ExampleSchema])
-  async examples(): Promise<ExampleSchema[]> {
-    return await this.exampleService.getExamples()
-  }
+  examples = createQuery({
+    returns: [ExampleSchema],
+    resolve: async () => {
+      return await this.exampleService.getExamples()
+    }
+  })
 
   @Mutation()
-  @ResolverReturns(String)
-  async createExample(): Promise<string> {
-    await this.exampleService.makeExample()
-    return 'Created example'
-  }
+  createExample = createMutation({
+    returns: String,
+    resolve: async () => {
+      await this.exampleService.makeExample()
+      return 'Created example'
+    }
+  })
 }
 ```
 
 ## Query Resolvers
 
-Use the `@Query()` decorator to define GraphQL query operations:
+Use the `@Query()` decorator with the `createQuery()` function to define GraphQL query operations:
 
 ```typescript
 @Query()
-@ResolverParams(UserParams)
-@ResolverReturns(UserSchema)
-async user(params: UserParams): Promise<UserSchema> {
-  return await this.userService.getUser(params.userId)
-}
+user = createQuery({
+  params: UserParams,
+  returns: UserSchema,
+  resolve: async (params) => {
+    return await this.userService.getUser(params.userId)
+  }
+})
 ```
 
 ### Query Decorator Options
@@ -75,15 +91,17 @@ The `@Query()` decorator accepts the following options:
 
 ## Mutation Resolvers
 
-Use the `@Mutation()` decorator to define GraphQL mutation operations:
+Use the `@Mutation()` decorator with the `createMutation()` function to define GraphQL mutation operations:
 
 ```typescript
 @Mutation()
-@ResolverParams(CreateUserParams)
-@ResolverReturns(UserSchema)
-async createUser(params: CreateUserParams): Promise<UserSchema> {
-  return await this.userService.createUser(params)
-}
+createUser = createMutation({
+  params: CreateUserParams,
+  returns: UserSchema,
+  resolve: async (params) => {
+    return await this.userService.createUser(params)
+  }
+})
 ```
 
 ### Mutation Decorator Options
@@ -99,21 +117,23 @@ The `@Mutation()` decorator accepts the same options as `@Query()`:
 
 ## Defining Parameters
 
-Use the `@ResolverParams()` decorator to define the input parameters for your resolvers:
+Define parameters using the `schemaWithName` function:
 
 ```typescript
-@TypedSchema()
-export class UserParams {
-  @Prop({ required: true })
-  userId: string
-}
+export const UserParams = schemaWithName('UserParams', {
+  userId: { type: String, required: true }
+})
+
+export type UserParamsType = InferSchemaType<typeof UserParams>
 
 @Query()
-@ResolverParams(UserParams)
-@ResolverReturns(UserSchema)
-async user(params: UserParams): Promise<UserSchema> {
-  return await this.userService.getUser(params.userId)
-}
+user = createQuery({
+  params: UserParams,
+  returns: UserSchema,
+  resolve: async (params: UserParamsType) => {
+    return await this.userService.getUser(params.userId)
+  }
+})
 ```
 
 ### Nested Parameters
@@ -121,63 +141,67 @@ async user(params: UserParams): Promise<UserSchema> {
 You can create complex parameter structures:
 
 ```typescript
-@TypedSchema()
-export class AddressInput {
-  @Prop({ required: true })
-  street: string
+export const AddressInput = schemaWithName('AddressInput', {
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  zipCode: { type: String, required: true }
+})
 
-  @Prop({ required: true })
-  city: string
-
-  @Prop({ required: true })
-  zipCode: string
-}
-
-@TypedSchema()
-export class CreateUserParams {
-  @Prop({ required: true })
-  name: string
-
-  @Prop({ required: true })
-  email: string
-
-  @Prop()
-  address: AddressInput
-}
+export const CreateUserParams = schemaWithName('CreateUserParams', {
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  address: { type: AddressInput }
+})
 ```
 
 ## Defining Return Types
 
-Use the `@ResolverReturns()` decorator to define the return type of your resolvers:
+Specify the return type in the `returns` property of `createQuery` or `createMutation`:
 
 ```typescript
 // Return a single item
-@ResolverReturns(UserSchema)
-async user(params): Promise<UserSchema> {
-  // ...
-}
+@Query()
+user = createQuery({
+  params: UserParams,
+  returns: UserSchema,
+  resolve: async (params) => {
+    // ...
+  }
+})
 
 // Return an array of items
-@ResolverReturns([UserSchema])
-async users(): Promise<UserSchema[]> {
-  // ...
-}
+@Query()
+users = createQuery({
+  returns: [UserSchema],
+  resolve: async () => {
+    // ...
+  }
+})
 
 // Return primitive types
-@ResolverReturns(String)
-async getMessage(): Promise<string> {
-  // ...
-}
+@Query()
+getMessage = createQuery({
+  returns: String,
+  resolve: async () => {
+    // ...
+  }
+})
 
-@ResolverReturns(Boolean)
-async checkAvailability(): Promise<boolean> {
-  // ...
-}
+@Query()
+checkAvailability = createQuery({
+  returns: Boolean,
+  resolve: async () => {
+    // ...
+  }
+})
 
-@ResolverReturns(Number)
-async countUsers(): Promise<number> {
-  // ...
-}
+@Query()
+countUsers = createQuery({
+  returns: Number,
+  resolve: async () => {
+    // ...
+  }
+})
 ```
 
 ## Middleware
@@ -190,11 +214,13 @@ import { authMiddleware } from '../middleware/auth'
 
 @Query()
 @UseMiddleware(authMiddleware)
-@ResolverReturns(UserSchema)
-async me(params, viewer): Promise<UserSchema> {
-  // viewer.user is available because of authMiddleware
-  return viewer.user
-}
+me = createQuery({
+  returns: UserSchema,
+  resolve: async (_, viewer) => {
+    // viewer.user is available because of authMiddleware
+    return viewer.user
+  }
+})
 ```
 
 ### Middleware Chaining
@@ -206,9 +232,9 @@ You can apply multiple middlewares to a resolver:
 @UseMiddleware(authMiddleware)
 @UseMiddleware(logMiddleware)
 @UseMiddleware(rateLimit(100))
-async protectedResource() {
+protectedResource = createQuery({
   // ...
-}
+})
 ```
 
 ## Model Resolvers
@@ -220,27 +246,25 @@ For defining field resolvers on specific GraphQL types, see the [Model Resolvers
 For real-time functionality, use the `@Subscriptions()` and `@Subscription()` decorators:
 
 ```typescript
-import { Subscription, Subscriptions } from '@orion-js/graphql'
+import { Subscription, Subscriptions, createSubscription } from '@orion-js/graphql'
 import { Inject } from '@orion-js/services'
 import { UserService } from '../services/UserService'
 
 @Subscriptions()
 export default class UserSubscriptions {
-  @Inject()
+  @Inject(() => UserService)
   private userService: UserService
 
-  @Subscription({
+  @Subscription()
+  userCreated = createSubscription({
+    params: ParamsSchema,
+    returns: UserSchema,
     description: 'Triggers when a user is created',
-    filter: (payload, variables, context) => {
-      // Optional filter to determine who receives the subscription
+    async canSubscribe(params) {
+      // Check if subscription is allowed
       return true
     }
   })
-  userCreated() {
-    return {
-      subscribe: () => this.userService.onUserCreated()
-    }
-  }
 }
 ```
 
@@ -250,15 +274,18 @@ Orionjs automatically handles errors in resolvers and formats them appropriately
 
 ```typescript
 @Query()
-async riskyOperation(): Promise<string> {
-  try {
-    const result = await this.someService.performOperation()
-    return result
-  } catch (error) {
-    // Custom error handling
-    throw new Error(`Operation failed: ${error.message}`)
+riskyOperation = createQuery({
+  returns: String,
+  resolve: async () => {
+    try {
+      const result = await this.someService.performOperation()
+      return result
+    } catch (error) {
+      // Custom error handling
+      throw new Error(`Operation failed: ${error.message}`)
+    }
   }
-}
+})
 ```
 
 ## Context and Viewer
@@ -267,14 +294,17 @@ All resolver methods receive the viewer object as the second parameter, which co
 
 ```typescript
 @Query()
-async userProfile(params, viewer): Promise<UserProfile> {
-  // Check if user is authenticated
-  if (!viewer.user) {
-    throw new Error('Unauthorized')
+userProfile = createQuery({
+  returns: UserProfile,
+  resolve: async (_, viewer) => {
+    // Check if user is authenticated
+    if (!viewer.user) {
+      throw new Error('Unauthorized')
+    }
+    
+    return await this.userService.getProfile(viewer.user._id)
   }
-  
-  return await this.userService.getProfile(viewer.user._id)
-}
+})
 ```
 
 ## GraphQL Info
@@ -283,13 +313,16 @@ You can access the GraphQL info object to optimize your queries:
 
 ```typescript
 @Query()
-async complexData(params, viewer, info): Promise<ComplexData> {
-  // Use info to determine which fields were requested
-  const requestedFields = extractFieldsFromInfo(info)
-  
-  // Only fetch the data that was requested
-  return await this.dataService.getOptimizedData(requestedFields)
-}
+complexData = createQuery({
+  returns: ComplexData,
+  resolve: async (params, viewer, info) => {
+    // Use info to determine which fields were requested
+    const requestedFields = extractFieldsFromInfo(info)
+    
+    // Only fetch the data that was requested
+    return await this.dataService.getOptimizedData(requestedFields)
+  }
+})
 ```
 
 ## Starting GraphQL Server
@@ -316,13 +349,13 @@ startGraphiQL({
 
 1. **Organize by Domain**: Group related resolvers in the same controller class.
 
-2. **Leverage Dependency Injection**: Use `@Inject()` to access services.
+2. **Leverage Dependency Injection**: Use `@Inject(() => Service)` to access services.
 
 3. **Keep Resolvers Focused**: Each resolver method should handle one specific GraphQL operation.
 
-4. **Use Strong Typing**: Define parameter and return types using `@TypedSchema()` and decorators.
+4. **Use Strong Typing**: Define parameter and return types using schema and `InferSchemaType`.
 
-5. **Validate Input**: The TypedSchema system automatically validates input.
+5. **Validate Input**: The schema system automatically validates input.
 
 6. **Implement Authorization**: Use middleware for authentication and authorization.
 

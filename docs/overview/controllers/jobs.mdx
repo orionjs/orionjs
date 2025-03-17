@@ -16,32 +16,39 @@ npm install @orion-js/dogs
 The recommended way to define jobs in Orionjs is to use the `@Jobs()` decorator on a class and the job-specific decorators on methods:
 
 ```typescript
-import {Jobs, RecurrentJob, EventJob} from '@orion-js/dogs'
+import {Jobs, RecurrentJob, EventJob, createEventJob, createRecurrentJob} from '@orion-js/dogs'
 import {logger} from '@orion-js/logger'
 import {Inject} from '@orion-js/services'
 import {ExampleService} from '../services/ExampleService'
 
 @Jobs()
 export default class ExampleJobs {
-  @Inject()
+  @Inject(() => ExampleService)
   private exampleService: ExampleService
 
   // Define a recurrent job using the method decorator
-  @RecurrentJob({
-    runEvery: 1000 * 60, // Run every minute
+  @RecurrentJob()
+  createExamples = createRecurrentJob({
+    runEvery: '1m', // Run every minute
+    resolve: async () => {
+      logger.info('Creating example...')
+      await this.exampleService.makeExample()
+    }
   })
-  async createExamples() {
-    logger.info('Creating example...')
-    await this.exampleService.makeExample()
-  }
 
   // Define an event job using the method decorator
   @EventJob()
-  async sendWelcomeEmail(params) {
-    const {email, name} = params
-    logger.info('Sending welcome email...', {email})
-    await this.exampleService.sendWelcomeEmail(email, name)
-  }
+  sendWelcomeEmail = createEventJob({
+    params: {
+      email: { type: String },
+      name: { type: String }
+    },
+    resolve: async (params) => {
+      const {email, name} = params
+      logger.info('Sending welcome email...', {email})
+      await this.exampleService.sendWelcomeEmail(email, name)
+    }
+  })
 
   // Regular method to schedule an event job
   async registerUser(userData) {
@@ -49,8 +56,7 @@ export default class ExampleJobs {
     const user = await this.exampleService.createUser(userData)
 
     // Schedule welcome email job
-    await scheduleJob({
-      name: 'sendWelcomeEmail',
+    await this.sendWelcomeEmail.schedule({
       params: {
         email: user.email,
         name: user.name
@@ -64,9 +70,9 @@ export default class ExampleJobs {
 
 With this approach:
 - The class is decorated with `@Jobs()` to mark it as a job controller
-- Each job is defined as a class method with its specific decorator (`@RecurrentJob` or `@EventJob`)
-- Job parameters are received directly as method arguments
-- You can use dependency injection with `@Inject()`
+- Each job is defined as a class property using `createRecurrentJob` or `createEventJob` with its specific decorator (`@RecurrentJob` or `@EventJob`)
+- Job parameters are validated based on the schema provided in the `params` option
+- You can use dependency injection with `@Inject(() => Service)`
 - The class can also include regular methods that aren't jobs
 
 ## Types of Jobs
@@ -80,12 +86,13 @@ Jobs that run at specified intervals or on a schedule:
 ```typescript
 @Jobs()
 export default class MaintenanceJobs {
-  @Inject()
+  @Inject(() => DatabaseService)
   private databaseService: DatabaseService
 
-  @RecurrentJob({
+  @RecurrentJob()
+  dailyCleanup = createRecurrentJob({
     // Run every 24 hours
-    runEvery: 24 * 60 * 60 * 1000,
+    runEvery: '24h',
     // Job priority (higher is more important, default: 100)
     priority: 100,
     // Optional: specify error handling
@@ -95,16 +102,17 @@ export default class MaintenanceJobs {
         return {action: 'retry', runIn: 60000} // Retry in 1 minute
       }
       return {action: 'dismiss'}
+    },
+    resolve: async () => {
+      // Your job logic here
+      await this.databaseService.cleanupOldRecords()
+      return {status: 'success'}
     }
   })
-  async dailyCleanup() {
-    // Your job logic here
-    await this.databaseService.cleanupOldRecords()
-    return {status: 'success'}
-  }
 
   // Alternative: use getNextRun instead of runEvery
-  @RecurrentJob({
+  @RecurrentJob()
+  nightlyBackup = createRecurrentJob({
     getNextRun: () => {
       const nextRun = new Date()
       nextRun.setHours(3, 0, 0, 0) // Run at 3:00 AM
@@ -112,11 +120,11 @@ export default class MaintenanceJobs {
         nextRun.setDate(nextRun.getDate() + 1) // Tomorrow if already past 3 AM
       }
       return nextRun
+    },
+    resolve: async () => {
+      // Backup logic
     }
   })
-  async nightlyBackup() {
-    // Backup logic
-  }
 }
 ```
 
@@ -127,10 +135,16 @@ Jobs that run on-demand when triggered by an event:
 ```typescript
 @Jobs()
 export default class NotificationJobs {
-  @Inject()
+  @Inject(() => EmailService)
   private emailService: EmailService
 
-  @EventJob({
+  @EventJob()
+  sendEmail = createEventJob({
+    params: {
+      to: { type: String },
+      subject: { type: String },
+      body: { type: String }
+    },
     // Optional: configure error handling
     onError: async function(error, params, context) {
       if (context.tries < 3) {
@@ -144,39 +158,42 @@ export default class NotificationJobs {
     // Optional: configure stale job handling
     onStale: async function(params, context) {
       logger.warn('Email send job became stale', {params})
+    },
+    resolve: async (params) => {
+      const {to, subject, body} = params
+      
+      // Use injected services
+      await this.emailService.send(to, subject, body)
+      
+      return {sent: true}
     }
   })
-  async sendEmail(params) {
-    const {to, subject, body} = params
-    
-    // Use injected services
-    await this.emailService.send(to, subject, body)
-    
-    return {sent: true}
-  }
 }
 ```
 
-## Job Decorator Options
+## Job Creation Options
 
 ### RecurrentJob Options
 
 | Option | Type | Description |
 | ------ | ---- | ----------- |
-| `runEvery` | `number` | Milliseconds between runs. Ignored if `getNextRun` is provided. |
+| `runEvery` | `number \| string` | Milliseconds between runs or a string like '1d', '4h', etc. Ignored if `getNextRun` is provided. |
 | `getNextRun` | `Function` | Function returning a Date for the next execution. Takes precedence over `runEvery`. |
 | `priority` | `number` | Job priority. Higher numbers get executed first (default: 100). |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
 | `saveExecutionsFor` | `number` | Time in milliseconds to keep job execution history (default: 1 week). Set to 0 to disable. |
+| `resolve` | `Function` | The function that contains the job's logic. |
 
 ### EventJob Options
 
 | Option | Type | Description |
 | ------ | ---- | ----------- |
+| `params` | `Object \| Schema` | Schema for validating job parameters. |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
 | `saveExecutionsFor` | `number` | Time in milliseconds to keep job execution history (default: 1 week). Set to 0 to disable. |
+| `resolve` | `Function` | The function that contains the job's logic and receives validated params. |
 
 ## Starting Workers
 
@@ -185,16 +202,8 @@ In your application setup (typically in your main file), you start workers to pr
 ```typescript
 import {startWorkers} from '@orion-js/dogs'
 
-// Define all your jobs
-const jobs = {
-  dailyCleanup: dailyCleanupJob,
-  sendEmail: sendEmailJob,
-  // Add more jobs here
-}
-
-// Start workers
+// Workers will automatically discover jobs defined using the @Jobs() decorator
 const workersInstance = startWorkers({
-  jobs,
   workersCount: 2, // Number of concurrent workers (default: 1)
   pollInterval: 3000, // Milliseconds between polling for new jobs (default: 3000)
   cooldownPeriod: 100, // Milliseconds to wait after job execution (default: 100)
@@ -213,11 +222,21 @@ process.on('SIGTERM', async () => {
 Trigger an event job to run:
 
 ```typescript
-import {scheduleJob} from '@orion-js/dogs'
+// Assuming you have this job defined
+@EventJob()
+sendEmail = createEventJob({
+  params: {
+    to: { type: String },
+    subject: { type: String },
+    body: { type: String }
+  },
+  resolve: async (params) => {
+    // Job logic
+  }
+})
 
 // Run immediately
-await scheduleJob({
-  name: 'sendEmail', // The method name in the jobs controller
+await this.sendEmail.schedule({
   params: {
     to: 'user@example.com',
     subject: 'Welcome!',
@@ -226,8 +245,7 @@ await scheduleJob({
 })
 
 // Run after 5 minutes
-await scheduleJob({
-  name: 'sendEmail',
+await this.sendEmail.schedule({
   params: {
     to: 'user@example.com',
     subject: 'Reminder',
@@ -237,8 +255,7 @@ await scheduleJob({
 })
 
 // Run at a specific time
-await scheduleJob({
-  name: 'sendEmail',
+await this.sendEmail.schedule({
   params: {
     to: 'user@example.com',
     subject: 'Scheduled Announcement',
@@ -247,184 +264,106 @@ await scheduleJob({
   runAt: new Date('2023-12-31T00:00:00')
 })
 
-// Ensure uniqueness (won't schedule if a job with same name and uniqueIdentifier exists)
-await scheduleJob({
-  name: 'sendEmail',
+// Ensure uniqueness
+await this.sendEmail.schedule({
   params: {
     to: 'user@example.com',
-    subject: 'Daily Summary',
-    body: 'Here\'s your daily summary.'
+    subject: 'Daily Update',
+    body: 'Daily update content'
   },
-  uniqueIdentifier: 'daily-summary-user123'
+  uniqueIdentifier: 'daily-update-user123', // Won't schedule duplicates with this identifier
+  replace: true // Replace existing job with this identifier if it exists
 })
 ```
 
-## Error Handling and Retries
+## Job Execution Context
 
-You can implement retry logic by defining an `onError` handler in the job decorator:
-
-```typescript
-@Jobs()
-export default class ImportJobs {
-  @Inject()
-  private importService: ImportService
-
-  @EventJob({
-    onError: async function(error, params, context) {
-      // Log the error
-      logger.error('Import failed', {error: error.message, tries: context.tries})
-      
-      if (context.tries < 3) {
-        // Retry after increasing delay (exponential backoff)
-        const delayMs = Math.pow(2, context.tries) * 1000
-        return {
-          action: 'retry',
-          runIn: delayMs
-        }
-      } else {
-        // Give up after 3 tries
-        return {action: 'dismiss'}
-      }
-    }
-  })
-  async importData(params) {
-    // Attempt to import data
-    await this.importService.importExternalData(params.source)
-  }
-}
-```
-
-## Handling Long-Running Jobs
-
-For jobs that might exceed the default lock time (30 seconds), you can extend the lock:
+The job's `resolve` function receives additional parameters:
 
 ```typescript
-@Jobs()
-export default class ProcessingJobs {
-  @Inject()
-  private processingService: ProcessingService
-
-  @EventJob({
-    onStale: async function(params, context) {
-      // This is called if the lock time expires before the job completes or extends it
-      logger.warn('Job became stale', {jobId: context.record.jobId})
-      // You might want to log this or take recovery actions
-    }
-  })
-  async processLargeDataset(params, context) {
-    // Start processing
-    const batches = this.generateBatches(params.data)
+@RecurrentJob()
+exampleJob = createRecurrentJob({
+  runEvery: '1h',
+  resolve: async (_, context) => {
+    // context contains information about the job execution
+    console.log('Job ID:', context.jobId)
+    console.log('Execution attempt:', context.tries)
+    console.log('Scheduled at:', context.createdAt)
     
-    for (const batch of batches) {
-      // Extend lock time before it expires
-      await context.extendLockTime(30000) // Add 30 more seconds
-      
-      // Process batch
-      await this.processingService.processBatch(batch)
-    }
+    // Your job logic here
   }
-
-  private generateBatches(data) {
-    // Helper method to generate batches
-    return [...Array(Math.ceil(data.length / 100))].map((_, i) => 
-      data.slice(i * 100, (i + 1) * 100)
-    )
-  }
-}
+})
 ```
 
-## Execution Context
+## Error Handling
 
-Job methods receive a context object as their second parameter with useful information and utilities:
+Jobs support sophisticated error handling:
 
 ```typescript
 @EventJob()
-async processItem(params, context) {
-  // Available context properties and methods:
-  context.record      // Complete job record including ID, parameters, etc.
-  context.tries       // Number of times this job has been attempted
-  context.logger      // Logger instance for the job
-  context.extendLockTime(ms)  // Extend the job's lock time
-  context.clearStaleTimeout() // Remove the stale timeout (advanced usage)
-}
-```
-
-| Property | Type | Description |
-| -------- | ---- | ----------- |
-| `record` | `Object` | Complete job record including ID, parameters, etc. |
-| `tries` | `number` | Number of times this job has been attempted. |
-| `logger` | `OrionLogger` | Logger instance for the job. |
-| `extendLockTime` | `Function` | Call to extend the job's lock time (prevent it from being marked as stale). |
-| `clearStaleTimeout` | `Function` | Call to remove the stale timeout (advanced usage). |
-| `definition` | `JobDefinition` | The job definition object. |
-
-## History and Monitoring
-
-Job executions are stored in a MongoDB collection, allowing you to monitor and audit job activity:
-
-```typescript
-import {jobsHistoryRepo} from '@orion-js/dogs'
-
-// Get recent job executions
-const recentJobs = await jobsHistoryRepo.find({
-  finishedAt: {$gt: new Date(Date.now() - 24 * 60 * 60 * 1000)}
-}).sort({startedAt: -1}).toArray()
-
-// Count failed jobs
-const failedCount = await jobsHistoryRepo.countDocuments({
-  success: false,
-  finishedAt: {$gt: new Date(Date.now() - 24 * 60 * 60 * 1000)}
-})
-```
-
-## Low-Level API
-
-For advanced use cases, you can also use the low-level API directly:
-
-```typescript
-import {defineJob, startWorkers, scheduleJob} from '@orion-js/dogs'
-
-// Define a job
-const myJob = defineJob({
-  type: 'event',
-  async resolve(params, context) {
-    // Job logic
-  }
-})
-
-// Start workers
-const workersInstance = startWorkers({
-  jobs: {
-    myJob
-  },
-  workersCount: 2
-})
-
-// Schedule job
-await scheduleJob({
-  name: 'myJob',
+riskyJob = createEventJob({
   params: {
-    // Job parameters
+    userId: { type: String }
+  },
+  onError: async (error, params, context) => {
+    logger.error('Job failed', {
+      error: error.message,
+      userId: params.userId,
+      attempt: context.tries
+    })
+    
+    if (context.tries < 3) {
+      // Retry with exponential backoff
+      return {
+        action: 'retry',
+        runIn: Math.pow(2, context.tries) * 1000
+      }
+    }
+    
+    // After 3 failed attempts, send an alert and dismiss the job
+    await sendAlertToAdmin(`Job failed for user ${params.userId}: ${error.message}`)
+    return { action: 'dismiss' }
+  },
+  resolve: async (params) => {
+    // Job implementation
   }
 })
+```
+
+## Monitoring Jobs
+
+You can monitor job status and history:
+
+```typescript
+import {getJobStatus, getJobHistory} from '@orion-js/dogs'
+
+// Get status of all jobs
+const status = await getJobStatus()
+console.log('Active jobs:', status.active)
+console.log('Scheduled jobs:', status.scheduled)
+
+// Get history of a specific job
+const history = await getJobHistory('sendEmail')
+console.log('Recent executions:', history.executions)
+console.log('Success rate:', history.stats.successRate)
 ```
 
 ## Best Practices
 
-1. **Use method decorators**: Define jobs using `@RecurrentJob()` and `@EventJob()` decorators for cleaner code.
+1. **Keep Jobs Idempotent**: Design jobs so they can be safely re-executed without side effects.
 
-2. **Use dependency injection**: Leverage `@Inject()` to access services in your job controllers.
+2. **Use Parameters Validation**: Define schemas for job parameters to ensure they're valid.
 
-3. **Keep jobs idempotent**: Jobs should be designed to handle being run multiple times without adverse effects.
+3. **Handle Errors Properly**: Implement robust error handling with appropriate retry strategies.
 
-4. **Use appropriate timeouts**: Set realistic `lockTime` values based on expected job duration.
+4. **Set Realistic Lock Times**: Ensure the lockTime is longer than a job's expected execution time.
 
-5. **Add proper error handling**: Always implement `onError` handlers for critical jobs.
+5. **Monitor Job Performance**: Keep track of job durations to optimize processing.
 
-6. **Monitor job performance**: Regularly check job execution history to identify issues.
+6. **Organize by Domain**: Group related jobs in domain-specific controller classes.
 
-7. **Use uniqueIdentifier**: Prevent duplicate job scheduling for operations that should only happen once.
+7. **Test Jobs Thoroughly**: Write unit tests for job logic to ensure reliability.
 
-8. **Graceful shutdown**: Always implement proper shutdown logic when your application terminates to allow running jobs to complete.
+8. **Check Job Status**: Implement health checks to monitor job processing.
 
 
