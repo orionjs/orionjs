@@ -17,7 +17,7 @@ export class UserService {
     return user
   }
 
-  async create(userData) {
+  async create(userData: {name: string; email: string}) {
     // Implementation...
     return newUser
   }
@@ -26,7 +26,7 @@ export class UserService {
 
 ## Dependency Injection
 
-Services can be injected into other services or controllers:
+Services can be injected into other services or controllers. In v4, you must use the factory function pattern for dependency injection:
 
 ```typescript
 import {Service, Inject} from '@orion-js/services'
@@ -34,7 +34,8 @@ import {UserService} from './UserService'
 
 @Service()
 export class AuthService {
-  @Inject()
+  // Use factory function for dependency injection
+  @Inject(() => UserService)
   private userService: UserService
 
   async login(email: string, password: string) {
@@ -48,7 +49,7 @@ export class AuthService {
 
 ## Circular Dependencies
 
-For circular dependencies, use the factory function pattern:
+The factory function pattern used in v4 automatically handles circular dependencies:
 
 ```typescript
 import {Service, Inject} from '@orion-js/services'
@@ -56,7 +57,6 @@ import {AuthService} from './AuthService'
 
 @Service()
 export class TokenService {
-  // Use factory function to avoid circular dependency
   @Inject(() => AuthService)
   private authService: AuthService
 

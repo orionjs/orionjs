@@ -11,18 +11,39 @@ Repositories use the `@Repository` decorator, which is a semantic distinction fr
 
 ```typescript
 import {Repository} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+import {createCollection, typedId} from '@orion-js/mongodb'
+
+// Define your schema with types
+const UserSchema = schemaWithName('User', {
+  _id: {
+    type: typedId('user')
+  },
+  name: {
+    type: String
+  },
+  email: {
+    type: String
+  }
+})
+
+// Infer the type from the schema
+type UserType = InferSchemaType<typeof UserSchema>
 
 @Repository()
 export class UserRepository {
-  // Methods for data access operations
-  async findById(id: string) {
-    // Implementation...
-    return user
+  // Define your collection
+  private users = createCollection({
+    name: 'users',
+    schema: UserSchema
+  })
+
+  async findById(id: string): Promise<UserType | null> {
+    return await this.users.findOne({_id: id})
   }
 
-  async create(userData) {
-    // Implementation...
-    return newUser
+  async create(userData: Omit<UserType, '_id'>) {
+    return await this.users.insertAndFind(userData)
   }
 }
 ```
@@ -42,7 +63,7 @@ This separation of concerns leads to:
 
 ## Dependency Injection
 
-Like services, repositories can be injected into other components:
+Like services, repositories can be injected into other components using the factory function pattern:
 
 ```typescript
 import {Service, Inject} from '@orion-js/services'
@@ -50,10 +71,10 @@ import {UserRepository} from './UserRepository'
 
 @Service()
 export class UserService {
-  @Inject()
+  @Inject(() => UserRepository)
   private userRepository: UserRepository
 
-  async validateAndCreateUser(userData) {
+  async validateAndCreateUser(userData: {name: string; email: string}) {
     // Business logic and validation here
     
     // Use repository for data operations
