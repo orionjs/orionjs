@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.4
+
+### Patch Changes
+
+- update import for SchemaFieldType to SchemaInAnyOrionForm in middlewares.ts
+
 ## 4.0.3
 
 ### Patch Changes
