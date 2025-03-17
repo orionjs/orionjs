@@ -7,8 +7,8 @@ This guide will help you set up a new Orionjs project quickly by using our examp
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v16 or later)
-- [Yarn](https://yarnpkg.com/) or npm package manager
+- [Node.js](https://nodejs.org/) (v22 or later)
+- [pnpm](https://pnpm.io/) package manager
 - [MongoDB](https://www.mongodb.com/) (local instance or connection string)
 - Basic knowledge of TypeScript and Node.js
 
@@ -16,28 +16,16 @@ This guide will help you set up a new Orionjs project quickly by using our examp
 
 The fastest way to get started with Orionjs is to use our example project. It provides a fully functioning application that demonstrates the core features and best practices.
 
-### Option 1: Clone the Repository
-
 ```bash
 # Clone the entire Orionjs repository
-git clone https://github.com/orionjs/orionjs.git
+git clone https://github.com/orionjs/orionjs-services-starter
 
 # Navigate to the example directory
-cd orionjs/example
+cd orionjs-services-starter
 
 # Install dependencies
-yarn install
-# or if you're using npm
-# npm install
+pnpm install
 ```
-
-### Option 2: Download the Example Directory
-
-You can also download just the example directory from our GitHub repository:
-
-1. Visit [https://github.com/orionjs/orionjs](https://github.com/orionjs/orionjs)
-2. Navigate to the `example` directory
-3. Download the files or use GitHub's download option
 
 ## Project Structure
 
@@ -56,7 +44,7 @@ example/
 └── tsconfig.json       # TypeScript configuration
 ```
 
-For a more detailed explanation of the project structure, check out our [Project Structure](/project-structure) guide.
+For a more detailed explanation of the project structure, check out our [Project Structure](/overview/project-structure) guide.
 
 ## Running the Application
 
@@ -72,7 +60,7 @@ You can start the application in development mode using:
 export ORION_ENV_SECRET_KEY=pk+uJ3wTEZxuDWKF6zdeypUzQQNkKE3i+bnfHe6g+RU=
 export ORION_ENV_FILE_PATH=.env.local.yml
 export PORT=3010
-yarn dev
+pnpm orion dev
 ```
 
 The application will start, and you can access it at `http://localhost:3010`.
@@ -110,10 +98,10 @@ After getting the example running, you can start customizing it:
 
 After exploring the example project, check out our other documentation sections to learn more about specific aspects of Orionjs:
 
-- [Controllers](/controllers/overview)
-- [Models and Schemas](/essentials/schemas)
-- [Services](/essentials/services)
-- [GraphQL](/essentials/graphql)
+- [Controllers](/overview/controllers/overview)
+- [Models and Schemas](/overview/essentials/schemas)
+- [Services](/overview/essentials/services)
+- [GraphQL](/overview/essentials/graphql)
 
 Happy coding with Orionjs!
 

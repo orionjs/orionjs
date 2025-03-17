@@ -3,7 +3,7 @@ title: 'Deploying'
 description: 'How to deploy your Orionjs application'
 ---
 
-Orionjs compiles to a standard Node.js project, allowing you to deploy it to any server that can run Node.js.
+Orionjs comes with a built-in CLI tool that helps you start your application in production mode.
 
 ## Deployment Steps
 
@@ -11,20 +11,14 @@ The deployment process for an Orionjs application follows a standard Node.js dep
 
 1. **Install dependencies**
    ```bash
-   yarn install
+   pnpm install
    ```
 
-2. **Build the project**
+2. **Start the server**
    ```bash
-   yarn orion build
+   pnpm orion prod
    ```
-   This will compile the project to a standard Node.js application and place the output in the `build` folder.
-
-3. **Start the server**
-   ```bash
-   node build/index.js
-   ```
-   This will start the Node.js server using the entry point at `build/index.js`.
+   This will start the Node.js server using the entry point at `app/index.ts`.
 
 ## Environment Variables
 
