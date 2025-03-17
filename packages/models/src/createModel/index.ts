@@ -1,92 +1,53 @@
-import initItem from './initItem'
-import {CreateModel, CloneOptions, Model, CreateModelOptions} from '../types'
-import resolveParam from './resolveParam'
-import {validate, clean} from '@orion-js/schema'
+import {CloneOptions, Model, CreateModelOptions, ModelResolversMap} from '../types'
+import {validate, clean, Schema} from '@orion-js/schema'
 import clone from './clone'
-import {modelToSchemaClean, modelToSchemaWithModel} from './modelToSchema'
+import {modelToSchema} from './modelToSchema'
 
-interface GetSchemaOptions {
-  omitModel?: boolean
-}
-
-export default function createModel<TSchema = any>(
-  modelOptions: CreateModelOptions
+export default function createModel<TSchema extends Schema>(
+  modelOptions: CreateModelOptions<TSchema>,
 ): Model<TSchema> {
   const name = modelOptions.name
-  let resolvedSchema = null
-  let resolvedCleanSchema = null
-  let resolvedResolvers = null
 
+  let resolvedSchema: Schema
   const getSchema = () => {
     if (!modelOptions.schema) return {}
-
-    if (resolvedSchema) return resolvedSchema
-    const schema = resolveParam(modelOptions.schema)
-
-    resolvedSchema = modelToSchemaWithModel(schema, model)
-
-    if (modelOptions.clean) {
-      resolvedSchema.__clean = modelOptions.clean
+    if (!resolvedSchema) {
+      resolvedSchema = modelToSchema({
+        modelSchema: modelOptions.schema,
+        modelName: model.name,
+        cleanOptions: modelOptions.clean,
+        validateOptions: modelOptions.validate,
+      })
     }
-
-    if (modelOptions.validate) {
-      resolvedSchema.__clean = modelOptions.validate
-    }
-
     return resolvedSchema
   }
 
-  const getCleanSchema = () => {
-    if (!modelOptions.schema) return {}
-
-    if (resolvedCleanSchema) return resolvedCleanSchema
-    const schema = resolveParam(modelOptions.schema)
-
-    resolvedCleanSchema = modelToSchemaClean(schema)
-
-    if (modelOptions.clean) {
-      resolvedCleanSchema.__clean = modelOptions.clean
-    }
-
-    if (modelOptions.validate) {
-      resolvedCleanSchema.__clean = modelOptions.validate
-    }
-
-    return resolvedCleanSchema
-  }
-
+  let resolvedResolvers: ModelResolversMap
   const getResolvers = () => {
     if (!modelOptions.resolvers) return {}
-
-    if (resolvedResolvers) return resolvedResolvers
-    resolvedResolvers = resolveParam(modelOptions.resolvers)
+    if (!resolvedResolvers) {
+      resolvedResolvers = modelOptions.resolvers
+    }
     return resolvedResolvers
-  }
-
-  const modelInitItem = (item: any): any => {
-    const schema = getSchema()
-    const resolvers = getResolvers()
-    return initItem({schema, resolvers, name}, item)
   }
 
   const model: Model<TSchema> = {
     __isModel: true,
+    __modelName: name,
     name,
     getSchema,
-    getCleanSchema,
     getResolvers,
-    initItem: modelInitItem,
     validate: async doc => {
-      const schema = getSchema()
+      const schema = getSchema() as any
       return await validate(schema, doc)
     },
     clean: async doc => {
-      const schema = getSchema()
+      const schema = getSchema() as any
       return await clean(schema, doc)
     },
     cleanAndValidate: async doc => {
-      const schema = getSchema()
-      const cleaned = await clean(schema, doc)
+      const schema = getSchema() as any
+      const cleaned = (await clean(schema, doc)) as any
       await validate(schema, cleaned)
       return cleaned
     },
@@ -96,12 +57,12 @@ export default function createModel<TSchema = any>(
           createModel,
           getSchema,
           getResolvers,
-          modelOptions
+          modelOptions,
         },
-        cloneOptions
+        cloneOptions,
       )
     },
-    type: null
+    type: null,
   }
 
   return model

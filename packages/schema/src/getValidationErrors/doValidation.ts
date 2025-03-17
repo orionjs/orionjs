@@ -1,18 +1,25 @@
 import getError from './getError'
-import isPlainObject from 'lodash/isPlainObject'
-import isArray from 'lodash/isArray'
-import clone from 'lodash/clone'
-import isNil from 'lodash/isNil'
-import difference from 'lodash/difference'
 import Errors from '../Errors'
 import {CurrentNodeInfo, SchemaNode, SchemaRecursiveNodeTypeExtras} from '../types/schema'
-import {convertTypedModel} from './convertTypedModel'
+import {convertTypedSchema} from './convertTypedSchema'
+import {isNil, type} from 'rambdax'
+import {clone} from '../clone'
 
 export default async function doValidation(params: CurrentNodeInfo) {
-  convertTypedModel(params)
+  convertTypedSchema(params)
 
   const {schema, doc, currentDoc, value, currentSchema, keys = [], addError, options, args} = params
-  const info = {schema, doc, currentDoc, value, currentSchema, keys, options, args, addError}
+  const info = {
+    schema,
+    doc,
+    currentDoc,
+    value,
+    currentSchema,
+    keys,
+    options,
+    args,
+    addError,
+  }
 
   const error = await getError(info)
   if (error) {
@@ -25,11 +32,11 @@ export default async function doValidation(params: CurrentNodeInfo) {
   /**
    * Deep validation
    */
-  if (isPlainObject(currentSchema.type)) {
+  if (type(currentSchema.type) === 'Object') {
     const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
 
     if (type) {
-      if (type._isFieldType) {
+      if (type.__isFieldType) {
         return
       }
 
@@ -51,18 +58,18 @@ export default async function doValidation(params: CurrentNodeInfo) {
         currentDoc: value,
         value: itemValue,
         currentSchema: itemSchema,
-        keys: keyItemKeys
-      })
+        keys: keyItemKeys,
+      } as any)
     }
 
     const documentKeys = Object.keys(value)
-    const notInSchemaKeys = difference(documentKeys, schemaKeys)
+    const notInSchemaKeys = documentKeys.filter(key => !schemaKeys.includes(key))
     for (const key of notInSchemaKeys) {
       const keyItemKeys = clone(keys)
       keyItemKeys.push(key)
       addError(keyItemKeys, Errors.NOT_IN_SCHEMA)
     }
-  } else if (isArray(currentSchema.type)) {
+  } else if (Array.isArray(currentSchema.type)) {
     const itemSchema = currentSchema.type[0]
     for (let i = 0; i < value.length; i++) {
       const itemValue = value[i]
@@ -73,7 +80,7 @@ export default async function doValidation(params: CurrentNodeInfo) {
         currentDoc: value,
         value: itemValue,
         currentSchema: {type: itemSchema},
-        keys: keyItemKeys
+        keys: keyItemKeys,
       })
     }
   }

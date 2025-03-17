@@ -1,5 +1,5 @@
 import {Inject, Service} from '@orion-js/services'
-import {range} from 'lodash'
+import {range} from 'rambdax'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {StartWorkersConfig} from '../types/StartConfig'
@@ -10,9 +10,10 @@ import {logger} from '@orion-js/logger'
 
 @Service()
 export class WorkerService {
-  @Inject()
+  @Inject(() => JobsRepo)
   private jobsRepo: JobsRepo
-  @Inject()
+
+  @Inject(() => Executor)
   private executor: Executor
 
   getJobNames(jobs: JobsDefinition) {
@@ -23,7 +24,7 @@ export class WorkerService {
     return Object.keys(jobs).map(name => {
       return {
         name,
-        ...jobs[name]
+        ...jobs[name],
       }
     })
   }
@@ -31,7 +32,7 @@ export class WorkerService {
   async runWorkerLoop(config: StartWorkersConfig, workerInstance: WorkerInstance) {
     const names = this.getJobNames(config.jobs)
     logger.debug(
-      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`
+      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
     )
     const jobToRun = await this.jobsRepo.getJobAndLock(names, config.lockTime)
     if (!jobToRun) {
@@ -57,7 +58,7 @@ export class WorkerService {
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
-        logger.error(`Error in job runner.`, error)
+        logger.error('Error in job runner.', error)
         await sleep(config.pollInterval)
       }
     }
@@ -69,11 +70,11 @@ export class WorkerService {
       workersCount: config.workersCount,
       workers: [],
       stop: async () => {
-        logger.debug('Stopping workers...', workersInstance.workers)
+        logger.info('Stopping workers...')
         workersInstance.running = false
         const stopingPromises = workersInstance.workers.map(worker => worker.stop())
         await Promise.all(stopingPromises)
-      }
+      },
     }
 
     return workersInstance
@@ -88,7 +89,7 @@ export class WorkerService {
         .map(async job => {
           logger.debug(`Ensuring records for job "${job.name}"...`)
           await this.jobsRepo.ensureJobRecord(job)
-        })
+        }),
     )
   }
 
@@ -109,7 +110,7 @@ export class WorkerService {
         logger.info(`Respawning worker [w${workerIndex}]...`)
         workerInstance.stop()
         await this.startANewWorker(config, workersInstance)
-      }
+      },
     }
 
     const workerPromise = this.startWorker(config, workerInstance)
@@ -122,7 +123,7 @@ export class WorkerService {
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
 
-    for (const workerIndex of range(config.workersCount)) {
+    for (const _ of range(0, config.workersCount)) {
       this.startANewWorker(config, workersInstance)
     }
   }
@@ -133,13 +134,15 @@ export class WorkerService {
       cooldownPeriod: 100,
       pollInterval: 3000,
       workersCount: 4,
-      lockTime: 30 * 1000
+      lockTime: 30 * 1000,
     }
 
     const config = {
       ...defaultConfig,
-      ...userConfig
+      ...userConfig,
     }
+
+    setNameToJobs(config.jobs)
 
     const workersInstance = this.createWorkersInstanceDefinition(config)
     logger.debug('Starting workers', config)
@@ -148,4 +151,10 @@ export class WorkerService {
 
     return workersInstance
   }
+}
+
+function setNameToJobs(jobs: JobsDefinition) {
+  return Object.keys(jobs).map(name => {
+    jobs[name].jobName = name
+  })
 }

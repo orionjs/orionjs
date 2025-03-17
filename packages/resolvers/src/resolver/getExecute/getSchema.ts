@@ -1,19 +1,26 @@
-import {Schema} from '@orion-js/schema'
-import clone from 'lodash/clone'
-import isArray from 'lodash/isArray'
+import {getSchemaFromAnyOrionForm, isSchemaLike, Schema} from '@orion-js/schema'
+import {clone} from '@orion-js/helpers'
 
-export default function (resolverParams: any) {
+function getType(type: any) {
+  if (Array.isArray(type)) {
+    return [getType(type[0])]
+  }
+
+  if (isSchemaLike(type)) {
+    return getSchemaFromAnyOrionForm(type)
+  }
+
+  return type
+}
+
+export default function getSchema(resolverParams: any) {
   const schema: Schema = {}
 
   for (const key of Object.keys(resolverParams)) {
     const field = clone(resolverParams[key])
-    const isArrayOfModel = isArray(field.type) && field.type[0].__isModel
+    if (!field) continue
 
-    if (isArrayOfModel) {
-      field.type = [field.type[0].getSchema()]
-    } else if (field.type.__isModel) {
-      field.type = field.type.getSchema()
-    }
+    field.type = getType(field.type)
 
     schema[key] = field
   }

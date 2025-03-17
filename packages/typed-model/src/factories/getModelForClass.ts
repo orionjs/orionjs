@@ -1,80 +1,60 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import {createModel, Model, ModelSchema, ModelResolversMap} from '@orion-js/models'
-import {FieldType} from '@orion-js/schema/lib/fieldType'
-import {PropOptions} from '..'
-import {MetadataStorage} from '../storage/metadataStorage'
-import {Constructor} from '../utils/interfaces'
-import {processSchemaForProp} from './helpers/processSchemaForProp'
+import {createModel, Model} from '@orion-js/models'
+import {SchemaFromTypedSchemaMetadata} from '..'
+import {getParamTypeForProp} from './processTypeForProp'
+import {Schema} from '@orion-js/schema'
 
-const modelCache = new Map<Constructor<any>, Model>()
+// @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
+Symbol.metadata ??= Symbol('Symbol.metadata')
 
-function processModelSchemaForProp(prop: PropOptions) {
-  if ((prop.type as Model)?.__isModel === true) {
-    return prop
-  }
+const modelCache = new Map<string, Model>()
 
-  if ((prop.type as FieldType)?._isFieldType === true) {
-    return prop
-  }
-
-  return processSchemaForProp(prop)
+export function resetModelCache() {
+  modelCache.clear()
 }
 
-export function getModelForClass<TClass>(target: Constructor<TClass>): Model {
+export function getModelForClass(target: any): Model {
   const targetAsModel = target as any as Model
   if (targetAsModel.__isModel) {
     return targetAsModel
   }
 
-  let modelResolvers = null
+  const metadata = target[Symbol.metadata] as SchemaFromTypedSchemaMetadata
 
-  if (target.prototype.typedModel) {
-    modelResolvers = target.prototype.resolvers || {}
-    target = target.prototype.typedModel
+  if (!metadata) {
+    return targetAsModel
   }
 
-  const schemaId = (target as any).__schemaId
+  return internal_getModelForClassFromMetadata(metadata)
+}
 
-  if (modelCache.has(schemaId)) {
-    return modelCache.get(schemaId)
+export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedSchemaMetadata) {
+  const modelName = metadata._modelName
+  if (modelCache.has(modelName)) {
+    return modelCache.get(modelName)
   }
 
-  const schema: ModelSchema = {}
-  const resolverMap: ModelResolversMap = {}
+  const schema: Schema = {}
+  const keys = Object.keys(metadata ?? {})
+  const injectionKeys = keys.filter(key => key.startsWith('_prop:'))
 
-  let parent: Function = target
+  for (const key of injectionKeys) {
+    const prop = metadata[key] as Schema
+    const schemaProp = key.replace('_prop:', '')
 
-  while (parent.prototype) {
-    if (parent === Function.prototype) {
-      break
+    schema[schemaProp] = {
+      ...prop,
+      type: getParamTypeForProp(prop.type as any),
     }
-
-    const props = MetadataStorage.getSchemaProps(parent) ?? {}
-
-    Object.keys(props).forEach(key => {
-      schema[key] = processModelSchemaForProp(props[key])
-    })
-
-    const resolvers = MetadataStorage.getSchemaResolvers(parent) ?? {}
-    Object.keys(resolvers).forEach(key => {
-      resolverMap[key] = resolvers[key]
-    })
-
-    parent = Object.getPrototypeOf(parent)
   }
 
   const model = createModel({
-    name: targetAsModel.name,
+    ...metadata._modelOptions,
+    name: modelName,
     schema,
-    clean: targetAsModel.clean,
-    validate: targetAsModel.validate,
-    resolvers: {
-      ...resolverMap,
-      ...modelResolvers
-    }
   })
 
-  modelCache.set(schemaId, model)
+  modelCache.set(modelName, model)
 
   return model
 }

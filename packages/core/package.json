@@ -1,34 +1,35 @@
 {
   "name": "@orion-js/core",
-  "version": "3.13.1",
-  "main": "index.js",
+  "version": "4.0.0-next.7",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "bin": {
-    "orion": "./lib/index.js"
+    "orion": "./dist/index.js"
   },
   "scripts": {
-    "test": "exit 0",
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "test": "vitest run",
+    "prepare": "pnpm build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/env": "^3.13.1",
+    "@orion-js/env": "workspace:*",
+    "chalk": "^4.1.2",
     "chokidar": "3.5.3",
-    "colors": "^1.4.0",
     "commander": "^9.4.1",
     "comment-json": "^4.2.3",
     "dotenv": "^16.0.3",
-    "lodash": "^4.17.21",
     "prompts": "^2.4.2",
-    "reflect-metadata": "^0.1.13",
+    "tsx": "^4.19.3",
+    "typescript": "^5.4.5",
     "yaml": "^2.2.1"
-  },
-  "peerDependencies": {
-    "typescript": "*"
   },
   "publishConfig": {
     "access": "public"
@@ -38,8 +39,16 @@
   },
   "gitHead": "9d85ab24776533db109843c277324e42c65ddedd",
   "devDependencies": {
-    "@shelf/jest-mongodb": "^2.1.0",
+    "@types/node": "^18.0.0",
     "@types/prompts": "^2.4.2",
-    "typescript": "^4.9.4"
+    "tsup": "^8.0.1",
+    "vitest": "^3.0.8"
+  },
+  "type": "module",
+  "module": "./dist/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
   }
 }

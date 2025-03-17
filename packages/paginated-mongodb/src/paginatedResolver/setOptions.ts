@@ -13,12 +13,12 @@ export default function ({page, limit, sortBy, sortType}, cursor: PaginatedCurso
 
   if (sortBy && sortType && cursor.sort) {
     cursor.sort({
-      [`${sortBy}`]: sortType === 'asc' ? 1 : -1
+      [`${sortBy}`]: sortType === 'asc' ? 1 : -1,
     })
   }
 
   return {
     skip,
-    limit
+    limit,
   }
 }

@@ -4,16 +4,11 @@ import cleanModifier from './cleanModifier'
 import {Collection, FindOneAndUpdate, ModelClassBase} from '../../types'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
-  const findOneAndUpdate: FindOneAndUpdate<DocumentType> = async function (
-    selectorArg,
-    modifierArg,
-    options = {}
-  ) {
+  const findOneAndUpdate: FindOneAndUpdate<DocumentType> = async (selector, modifier, options) => {
     await collection.connectionPromise
-    let modifier = modifierArg as any
-    const selector = getSelector(arguments)
+    const finalSelector = getSelector<DocumentType>([selector])
 
     if (!modifier) {
       throw new Error('Modifier is required when making an update')
@@ -26,13 +21,13 @@ export default <DocumentType extends ModelClassBase>(
     }
 
     const result = await collection.rawCollection.findOneAndUpdate(
-      selector,
+      finalSelector,
       modifier,
-      options.mongoOptions
+      options.mongoOptions,
     )
 
     if (!result) return null
-    return collection.initItem(result)
+    return result
   }
 
   return findOneAndUpdate

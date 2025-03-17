@@ -1,25 +1,26 @@
 import validateModifier from './index'
+import {it, expect} from 'vitest'
 
 it('validate $unset operations', async () => {
   const mom = {
-    name: {type: String, optional: true}
+    name: {type: String, optional: true},
   }
   const schema = {
     name: {type: String},
     age: {type: String, optional: true},
-    mom: {type: mom}
+    mom: {type: mom},
   }
 
   await validateModifier(schema, {
     $unset: {
-      age: ''
-    }
+      age: '',
+    },
   })
 
   await validateModifier(schema, {
     $unset: {
-      'mom.name': ''
-    }
+      'mom.name': '',
+    },
   })
 
   expect.assertions(2)
@@ -27,8 +28,8 @@ it('validate $unset operations', async () => {
     await validateModifier(schema, {
       $unset: {
         name: '',
-        age: ''
-      }
+        age: '',
+      },
     })
   } catch (error) {
     expect(error.code).toBe('validationError')
@@ -37,8 +38,8 @@ it('validate $unset operations', async () => {
   try {
     await validateModifier(schema, {
       $unset: {
-        mom: ''
-      }
+        mom: '',
+      },
     })
   } catch (error) {
     expect(error.code).toBe('validationError')
@@ -48,22 +49,22 @@ it('validate $unset operations', async () => {
 it('should allow an $unset operation on a children of a required blackbox', async () => {
   const schema = {
     data: {
-      type: 'blackbox'
-    }
+      type: 'blackbox',
+    },
   }
 
   await validateModifier(schema, {
     $unset: {
-      'data.items': ''
-    }
+      'data.items': '',
+    },
   })
 
   expect.assertions(1)
   try {
     await validateModifier(schema, {
       $unset: {
-        data: ''
-      }
+        data: '',
+      },
     })
   } catch (error) {
     expect(error.code).toBe('validationError')

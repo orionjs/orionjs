@@ -1,32 +1,58 @@
-import {resolver} from '@orion-js/resolvers'
+import {createResolver} from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
 import ResolverParams from './ResolverParamsInfo'
 import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
+import serializeSchema from './serializeSchema'
+import {getSchemaFromAnyOrionForm, isSchemaLike, Schema, SchemaFieldType} from '@orion-js/schema'
+import getBasicResultQuery from './getBasicResultQuery'
 
-declare const global: any
+function getResultTypeName(type: SchemaFieldType) {
+  const returns = Array.isArray(type) ? type[0] : type
+  const schema = getSchemaFromAnyOrionForm(returns)
+  if (schema?.__modelName) return schema.__modelName
+  return
+}
 
-export default resolver({
+async function getInternalBasicResultQuery(type: SchemaFieldType) {
+  const returns = Array.isArray(type) ? type[0] : type
+
+  if (isSchemaLike(returns)) {
+    const schema = getSchemaFromAnyOrionForm(returns) as Schema
+    return await getBasicResultQuery({
+      type: schema,
+    })
+  }
+  return ''
+}
+
+export default createResolver({
   params: {
     name: {
-      type: 'ID'
+      type: 'ID',
     },
     mutation: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
   returns: ResolverParams,
   mutation: false,
-  resolve: async function ({mutation, name}, viewer) {
+  async resolve({mutation, name}) {
     const resolver = resolversStore[name]
     if (!resolver) {
       throw new UserError(
         'notFound',
-        `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`
+        `${mutation ? 'Mutation' : 'Query'} named "${name}" not found`,
       )
     }
     if (!!resolver.mutation !== !!mutation) {
       throw new UserError('incorrectType', `"${name}" is ${mutation ? 'not' : ''} a mutation`)
     }
-    return {resolver, name}
-  }
+
+    return {
+      name,
+      basicResultQuery: await getInternalBasicResultQuery(resolver.returns),
+      params: await serializeSchema(resolver.params),
+      result: getResultTypeName(resolver.returns),
+    }
+  },
 })

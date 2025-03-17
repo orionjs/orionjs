@@ -1,15 +1,19 @@
-import colors from 'colors'
+import chalk from 'chalk'
+
+interface ErrorWithCodeFrame extends Error {
+  codeFrame?: string
+}
 
 process
-  .on('unhandledRejection', (error: any) => {
+  .on('unhandledRejection', (error: ErrorWithCodeFrame) => {
     if (error.codeFrame) {
-      console.error(colors.red(error.message))
+      console.error(chalk.red(error.message))
       console.log(error.codeFrame)
     } else {
-      console.error(colors.red(error.message), colors.red('Unhandled promise rejection'))
+      console.error(chalk.red(error.message), chalk.red('Unhandled promise rejection'))
     }
   })
-  .on('uncaughtException', error => {
-    console.error(colors.red(error.message))
+  .on('uncaughtException', (error: Error) => {
+    console.error(chalk.red(error.message))
     process.exit(1)
   })

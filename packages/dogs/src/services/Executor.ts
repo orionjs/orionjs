@@ -2,18 +2,18 @@ import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
 import {JobsHistoryRepo} from '../repos/JobsHistoryRepo'
 import {JobsRepo} from '../repos/JobsRepo'
-import {PlainObject} from '../types/HistoryRecord'
 import {JobDefinition, JobsDefinition} from '../types/JobsDefinition'
 import {ExecutionContext, JobToRun} from '../types/Worker'
 import {getNextRunDate} from './getNextRunDate'
 import {trace, SpanStatusCode} from '@opentelemetry/api'
+import {Blackbox} from '@orion-js/schema'
 
 @Service()
 export class Executor {
-  @Inject()
+  @Inject(() => JobsRepo)
   private readonly jobsRepo: JobsRepo
 
-  @Inject()
+  @Inject(() => JobsHistoryRepo)
   private readonly jobsHistoryRepo: JobsHistoryRepo
 
   getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {
@@ -88,7 +88,7 @@ export class Executor {
     startedAt: Date
     status: 'stale' | 'error' | 'success'
     errorMessage?: string
-    result?: PlainObject
+    result?: Blackbox
     job: JobDefinition
     jobToRun: JobToRun
   }) {

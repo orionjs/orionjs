@@ -1,59 +1,73 @@
-import isArray from 'lodash/isArray'
-import {Model, ModelSchema} from '..'
-import {Schema, SchemaMetaFieldType, SchemaNode, validate} from '@orion-js/schema'
-import {lowerFirst} from 'lodash'
+import {
+  getSchemaFromAnyOrionForm,
+  getSchemaModelName,
+  isSchemaLike,
+  Schema,
+  SchemaMetaFieldTypeSingle,
+  SchemaNode,
+  SchemaWithMetadata,
+} from '@orion-js/schema'
 
-function isModelSchema(type: Model | [Model] | SchemaMetaFieldType): type is Model {
-  return type && typeof type === 'object' && '__isModel' in type
-}
+export function processModelSchemaKey(schemaNode: SchemaNode): SchemaNode {
+  if (!schemaNode) return null
 
-function isModelArraySchema(type: Model | [Model] | SchemaMetaFieldType): type is [Model] {
-  return type && isArray(type) && typeof type[0] === 'object' && '__isModel' in type[0]
-}
+  if (Array.isArray(schemaNode.type)) {
+    console.log('processing array', schemaNode.type)
+    const processedItem = processModelSchemaKey({
+      ...schemaNode,
+      type: schemaNode.type[0],
+    })
 
-export function modelToSchema(modelSchema: ModelSchema, {cleanSchema = true} = {}): Schema {
-  const compiledSchema: Schema = {}
+    const type = processedItem.type as SchemaMetaFieldTypeSingle
 
-  for (const key in modelSchema) {
-    if (key.startsWith('__')) continue
-
-    const fieldSchema = modelSchema[key]
-    let currNode: SchemaNode
-
-    if (isModelSchema(fieldSchema.type)) {
-      currNode = {
-        ...fieldSchema,
-        type: cleanSchema ? fieldSchema.type.getCleanSchema() : fieldSchema.type.getSchema()
-      }
-    } else if (isModelArraySchema(fieldSchema.type)) {
-      currNode = {
-        ...fieldSchema,
-        type: cleanSchema
-          ? [fieldSchema.type[0].getCleanSchema()]
-          : [fieldSchema.type[0].getSchema()]
-      }
-    } else {
-      currNode = {...fieldSchema, type: fieldSchema.type}
+    return {
+      ...processedItem,
+      type: [type],
     }
-
-    compiledSchema[key] = currNode
   }
 
-  return compiledSchema
-}
-
-export function modelToSchemaWithModel(modelSchema: ModelSchema, model?: Model) {
-  const schema = modelToSchema(modelSchema, {cleanSchema: !model})
-
-  if (!model) return schema
-
-  return {
-    ...schema,
-    __model: model
+  if (isSchemaLike(schemaNode.type)) {
+    return {
+      ...schemaNode,
+      type: modelToSchema({
+        modelSchema: getSchemaFromAnyOrionForm(schemaNode.type) as Schema,
+        modelName: getSchemaModelName(schemaNode.type),
+      }),
+    }
   }
+
+  return schemaNode
 }
 
-export function modelToSchemaClean(modelSchema: ModelSchema) {
-  const schema = modelToSchema(modelSchema, {cleanSchema: true})
-  return schema
+interface ModelToSchemaOptions {
+  modelSchema: Schema
+  modelName?: string
+  cleanOptions?: any
+  validateOptions?: any
+}
+
+export function modelToSchema(options: ModelToSchemaOptions): Schema {
+  const compiledSchema: SchemaWithMetadata = {}
+
+  if (options.modelName) {
+    compiledSchema.__modelName = options.modelName
+  }
+
+  if (options.cleanOptions) {
+    compiledSchema.__clean = options.cleanOptions
+  }
+
+  if (options.validateOptions) {
+    compiledSchema.__validate = options.validateOptions
+  }
+
+  for (const key in options.modelSchema) {
+    if (key.startsWith('__')) {
+      compiledSchema[key] = options.modelSchema[key]
+      continue
+    }
+    compiledSchema[key] = processModelSchemaKey(options.modelSchema[key])
+  }
+
+  return compiledSchema as Schema
 }

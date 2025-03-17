@@ -1,0 +1,462 @@
+---
+title: 'Orion v4'
+description: "What's new in Orion v4 and how to upgrade your project"
+---
+
+## ESM 
+
+ESM is now the default module system. That breaks some old dependencies that were CommonJS only.
+
+- If you use `lodash`, you must replace it with `lodash-es` for ESM compatibility.
+
+## Reflect Metadata Decorators
+
+Decorators were updated to draft v3. Which is not backwards compatible with v2. This means:
+- You must disable `experimentalDecorators` in your `tsconfig.json`
+- You must add `"type": "module"` to your package.json
+- You can not use `reflect-metadata`.
+- `@TypedSchema()` `@Prop()` now always need a type option.
+
+## Dependency Injection
+
+We are not using `typedi` anymore, we created our own dependency injection system, very similar to `typedi`. So:
+
+```ts
+import { Service, Inject } from '@orion-js/services'
+
+@Service()
+class SomeService {
+  // before
+  @Inject()
+  private someDependency: SomeDependency
+
+  // after
+  @Inject(() => SomeDependency)
+  private someDependency: SomeDependency
+}
+```
+
+## V4 Syntax
+
+Now without reflect metadata and better type inference with schema, we recommend a new syntax on how to define jobs, echoes, resolvers, routes, etc.
+This new syntax is less verbose and more type safe.
+V3 syntax will still work, but it's not recommended to use it.
+
+Each section will have a V4 syntax example.
+
+## Schema
+
+`@orion-js/schema` was rewritten to be much more powerful.
+
+`Schema` and all of the places it's used, like `resolvers`, are now type safe. 
+
+### InferSchemaType
+
+You can now `Infer` a typescript type from a `Schema` definition.
+
+
+### Enum
+
+Enum now don't provide the `type` property, you must use `typeof Enum.__tsFieldType` to get the type.
+
+### Depreaction notice of `@TypedSchema()` and `Model`
+
+Old code like `Model` and `TypedSchema()` will still work. If you have any TS error, you can set `as any` to fix it until you migrate to `Schema`.
+
+> `Model.initItem` was deprecated in v3 and removed in v4, so `Collections` now can't accept a `model` option, only a `schema` option.
+
+As `TypedSchema()` now always needs a type option, it became less appealing. We always aim to only write code once.
+
+Usage of `TypedSchema()` and `Model` is not recommended anymore and it's marked as deprecated.
+
+
+### V4 Syntax
+
+```ts
+// Before
+import {createEnum} from '@orion-js/schema'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+export const ExampleTypeEnum = createEnum('ExampleTypeEnum', ['type1', 'type2', 'type3'] as const)
+
+type ExampleId = `ex-${string}`
+
+@TypedSchema()
+export class ExampleSchema {
+  @Prop({type: String})
+  _id: ExampleId
+
+  @Prop({type: String})
+  name: string
+
+  @Prop({type: Date})
+  createdAt: Date
+
+  @Prop({optional: true, type: ExampleTypeEnum})
+  paymentMethod?: typeof ExampleTypeEnum.type
+}
+```
+
+```ts
+// After
+import {typedId} from '@orion-js/mongodb'
+import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
+
+export const PaymentMethodEnum = createEnum('PaymentMethodEnum', [
+  'type1',
+  'type2',
+  'type3',
+] as const)
+
+export const ExampleSchema = schemaWithName('ExampleSchema', {
+  _id: {type: typedId('ex')}, // @orion-js/mongodb will automatically add the prefix to document _ids
+  name: {type: String},
+  createdAt: {type: Date},
+  paymentMethod: {type: PaymentMethodEnum, optional: true},
+})
+
+export type ExampleSchemaType = InferSchemaType<typeof ExampleSchema>
+
+// type ExampleSchemaType = {
+//   _id: `ex-${string}`;
+//   name: string;
+//   createdAt: Date;
+//   paymentMethod?: "type1" | "type2" | "type3";
+// }
+
+```
+
+Note: You can define schemas without `schemaWithName()` but you won't be able to use them in GraphQL.
+
+## Dogs
+
+- You should now use `createEventJob` and `createRecurrentJob` instead of `defineJob`.
+- You can now you can pass a params schema to clean and validate params of event jobs.
+
+```ts
+job1 = createEventJob({
+  params: {
+    age: {
+      type: 'number',
+    },
+  },
+  resolve: async params => {
+    eventJobResult = params.age // params is of type { age: number }
+  },
+})
+```
+
+- To schedule a event job you must call it from the event job definition instad of global `scheduleJob`.
+
+```ts
+job1 = createEventJob({
+  ...
+})
+
+job1.schedule({})
+```
+
+- `runEvery` in `createRecurrentJob` now accepts [`ms`](https://github.com/vercel/ms) string.
+
+```ts
+createRecurrentJob({
+  runEvery: '1d',
+})
+```
+
+### V4 Syntax
+
+```ts
+@Jobs()
+class ExampleJobsService {
+  @EventJob()
+  job1 = createEventJob({
+    params: {
+      age: {
+        type: 'number',
+      },
+    },
+    resolve: async params => {
+      eventJobResult = params.age
+    },
+  })
+
+  @RecurrentJob()
+  job2 = createRecurrentJob({
+    runEvery: 10,
+    resolve: async () => {
+      didExecute2 = true
+    },
+  })
+}
+```
+
+## Echoes
+
+- You can now pass a params schema to clean and validate params of echoes.
+- You should use `createEchoEvent` and `createEchoRequest` instead of `echo`.
+
+```ts
+const echo1 = createEchoEvent({
+  params: {age: {type: 'number'}},
+})
+```
+
+### V4 Syntax
+
+```ts
+@Echoes()
+class ExampleEchoesService {
+  @EchoRequest()
+  echo = createEchoRequest({
+    params: {
+      name: {
+        type: 'string',
+      },
+    },
+    returns: String,
+    resolve: async params => {
+      return params.name
+    },
+  })
+
+  @EchoEvent()
+  echoEvent = createEchoEvent({
+    params: 'string',
+    returns: String,
+    resolve: async params => {
+      return params
+    },
+  })
+}
+```
+
+## GraphQL
+
+- You should use `createQuery` and `createMutation` instead `createResolver`.
+- `schemaWithName` is preferred over `Model` and `TypedSchema()`.
+- You cannot pass just a `Schema` to params and returns because `GraphQL` needs a name.
+- V3 syntax in subscriptions is not supported anymore.
+- In GraphQL subscriptions you must you `canSubscribe` option to check permissions instead of `checkPermission`.
+
+
+### V4 Syntax
+
+Global resolvers:
+
+```ts
+@Resolvers()
+class ExampleResolvers {
+  @Inject(() => DataService)
+  private dataService: DataService
+
+  @Query()
+  example = createQuery({
+    params,
+    returns,
+    resolve: async params => {
+      return {
+        name: `${params.name} ${this.dataService.getLastName()}`,
+      }
+    },
+  })
+
+  @Mutation()
+  example2 = createMutation({
+    params,
+    returns,
+    resolve: async params => {
+      return await this.example.resolve(params)
+    },
+  })
+}
+```
+
+Model resolvers:
+
+```ts
+@ModelResolvers(PersonSchema)
+class PersonResolvers {
+  @ModelResolver()
+  sayHi = createModelResolver<PersonType>({
+    returns: String,
+    resolve: async person => {
+      return `My name is ${person.name}`
+    },
+  })
+}
+```
+
+Subscriptions:
+
+```ts
+@Subscriptions()
+class ExampleSubscriptionsService {
+  @Subscription()
+  onUserCreated = createSubscription({
+    params: ParamsSchema,
+    returns: UserSchema,
+    async canSubscribe(params) {
+      return params.name === 'test'
+    },
+  })
+}
+```
+
+## HTTP / Routes
+
+- Route path is now type safe.
+- You can pass `bodyParams` to clean and validate body params.
+- You can pass `queryParams` to clean and validate query params.
+- You can pass `returns` to clean the return value.
+
+### V4 Syntax
+
+```ts
+@Routes()
+class RoutesService {
+  @Route()
+  route1 = createRoute({
+    method: 'post',
+    path: '/route-service-test/:age',
+    bodyParams: {
+      name: {
+        type: 'string',
+      },
+    },
+    returns: {
+      name: {
+        type: 'string',
+      },
+      age: {
+        type: 'number',
+      },
+    },
+    resolve: async req => {
+      return {
+        statusCode: 200,
+        body: {
+          name: req.body.name,
+          age: req.params.age,
+        },
+      }
+    },
+  })
+}
+```
+
+## MongoDB
+
+- `model` param in model was removed, and objects are never "initialized" anymore. This pattern was deprecated in v3 and removed in v4.
+- Connections are not started until you call any method in the collection or you call `collection.startConnection`.
+- The library will automatically detect `typedId` from the schema and use it to create prefixed ids.
+
+### V4 Syntax
+
+```ts
+const UserSchema = schemaWithName('User', {
+  _id: {
+    type: typedId('user'),
+  },
+  name: {
+    type: 'string',
+  },
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
+
+@Repository()
+class UserRepo {
+  users = createCollection({
+    name: generateId(),
+    schema: UserSchema,
+  })
+
+  async createUser(user: OptionalId<UserType>) {
+    return await this.users.insertOne(user)
+  }
+
+  async getUserByName(name: string) {
+    return await this.users.findOne({name})
+  }
+}
+```
+
+## Paginated MongoDB
+
+### V4 Syntax
+
+```ts
+@Resolvers()
+class ExampleResolvers {
+  @PaginatedQuery()
+  paginated = createPaginatedResolver({
+    returns: ItemSchema,
+    params: Params,
+    allowedSorts: ['index'],
+    async getCursor(params) {
+      ...
+      return {
+        cursor: this.repo.find(query),
+        count: () => this.repo.countDocuments(query),
+      }
+    },
+  })
+}
+```
+
+## CLI (`@orion-js/core`)
+
+Now we are using `tsx` to run the app. It's done under the hood.
+
+- `pnpm orion dev` to start in dev mode, it will watch for changes and automatically restart the server.
+- `pnpm orion prod` to start in prod mode, it will compile the code and then run it.
+
+You don't need to build the app for production anymore.
+  
+> You must have installed `@orion-js/core` in your project, you can't running using `npx` or `pnpx`.
+
+### Recommended TypeScript Configuration
+
+Update your `tsconfig.json` to use modern settings:
+
+```json
+{
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "target": "ESNext",
+    "rootDir": "./app",
+    "moduleDetection": "force",
+    "module": "Preserve",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "baseUrl": "./",
+    "noEmit": true
+  }
+}
+```
+
+## Removed functionalities and packages
+
+### `@orion-js/mailing`
+
+Mailing package was removed. Just use nodemailer directly.
+
+
+### `@orion-js/cache`
+
+`@orion-js/cache` it's not longer going to be maintained. We are not using it in any package.
+If you need a cache system, we recommend using `lru-cache`.
+
+`getCacheKey` and `cacheProvider` were removed from the options of `createResolver` and `createModelResolver`.
+
+### Permissions checkers
+
+We are not using global permissions checkers anymore.
+
+`checkPermission` and `permissionsOptions` were removed from the options of `createResolver` and `createModelResolver`.
+If you need to check permissions, you can do it in the `resolve` function or in a middleware.
+

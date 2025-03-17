@@ -1,37 +1,38 @@
 import getValidationErrors from './index'
 import Errors from '../Errors'
 import {Schema} from '../types/schema'
+import {test, expect} from 'vitest'
 
 const friend: Schema = {
   firstName: {
-    type: String
-  }
+    type: String,
+  },
 }
 
 const car: Schema = {
   brand: {
-    type: String
+    type: String,
   },
   model: {
-    type: String
-  }
+    type: String,
+  },
 }
 
 const schema: Schema = {
   firstName: {
-    type: String
+    type: String,
   },
   lastName: {
     type: String,
-    optional: true
+    optional: true,
   },
   friends: {
-    type: [friend]
+    type: [friend],
   },
   car: {
     type: car,
-    optional: true
-  }
+    optional: true,
+  },
 }
 
 test('returns null when object is valid', async () => {
@@ -41,21 +42,26 @@ test('returns null when object is valid', async () => {
     friends: [{firstName: 'Roberto'}, {firstName: 'Joaquin'}],
     car: {
       brand: 'Nissan',
-      model: 'Kicks'
-    }
+      model: 'Kicks',
+    },
   })
+  expect(errors).toBeNull()
+})
+
+test('passes on empty schemas', async () => {
+  const errors = await getValidationErrors({}, {})
   expect(errors).toBeNull()
 })
 
 test('returns an array with the respective errors', async () => {
   const errors = await getValidationErrors(schema, {
     lastName: 'López',
-    friends: [{lastName: 'Zibert'}, {firstName: 'Joaquin'}]
+    friends: [{lastName: 'Zibert'}, {firstName: 'Joaquin'}],
   })
   expect(errors).toEqual({
     firstName: Errors.REQUIRED,
     'friends.0.firstName': Errors.REQUIRED,
-    'friends.0.lastName': Errors.NOT_IN_SCHEMA
+    'friends.0.lastName': Errors.NOT_IN_SCHEMA,
   })
 })
 
@@ -64,9 +70,9 @@ test('omits required if specified', async () => {
     schema,
     {
       lastName: 'López',
-      friends: [{}, {firstName: 'Joaquin'}]
+      friends: [{}, {firstName: 'Joaquin'}],
     },
-    {omitRequired: true}
+    {omitRequired: true},
   )
   expect(errors).toBeNull()
 })
@@ -75,32 +81,32 @@ test('gives error when a document field is not present in schema', async () => {
   const errors = await getValidationErrors(
     {
       name: {
-        type: String
-      }
+        type: String,
+      },
     },
     {
       name: 'Nicolás López',
-      age: 25
-    }
+      age: 25,
+    },
   )
   expect(errors).toEqual({
-    age: Errors.NOT_IN_SCHEMA
+    age: Errors.NOT_IN_SCHEMA,
   })
 })
 
 test('dont give error when array is optional and its not passed', async () => {
   const schema: Schema = {
     name: {
-      type: String
+      type: String,
     },
     tags: {
       type: [String],
-      optional: true
-    }
+      optional: true,
+    },
   }
   const errors = await getValidationErrors(schema, {
     name: 'Nicolás López',
-    tags: []
+    tags: [],
   })
   expect(errors).toBeNull()
 })
@@ -111,50 +117,50 @@ test('gives an error if a optional object is present and has missing values', as
     lastName: 'López',
     friends: [{firstName: 'Joaquin'}],
     car: {
-      brand: 'Nissan'
-    }
+      brand: 'Nissan',
+    },
   })
   expect(errors).toEqual({
-    'car.model': Errors.REQUIRED
+    'car.model': Errors.REQUIRED,
   })
 })
 
 test('can check errors in deeply nested keys', async () => {
   const children: Schema = {
     name: {
-      type: String
+      type: String,
     },
     car: {
       type: car,
-      optional: true
-    }
+      optional: true,
+    },
   }
   const mother: Schema = {
     name: {
-      type: String
+      type: String,
     },
     children: {
-      type: [children]
+      type: [children],
     },
     car: {
-      type: car
-    }
+      type: car,
+    },
   }
   const family: Schema = {
     name: {
-      type: String
+      type: String,
     },
     mother: {
-      type: mother
-    }
+      type: mother,
+    },
   }
   const deepSchema: Schema = {
     name: {
-      type: String
+      type: String,
     },
     family: {
-      type: family
-    }
+      type: family,
+    },
   }
   const errors = await getValidationErrors(deepSchema, {
     name: 'Nicolás',
@@ -163,27 +169,27 @@ test('can check errors in deeply nested keys', async () => {
       mother: {
         name: 'Paula',
         car: {
-          model: 'Wrangler'
+          model: 'Wrangler',
         },
         children: [
           {
             name: 'Paula',
             car: {
-              brand: 'Citroën'
-            }
+              brand: 'Citroën',
+            },
           },
           {
             name: 'Diego',
-            age: 21
-          }
-        ]
-      }
-    }
+            age: 21,
+          },
+        ],
+      },
+    },
   })
   expect(errors).toEqual({
     'family.mother.car.brand': Errors.REQUIRED,
     'family.mother.children.0.car.model': Errors.REQUIRED,
-    'family.mother.children.1.age': Errors.NOT_IN_SCHEMA
+    'family.mother.children.1.age': Errors.NOT_IN_SCHEMA,
   })
 })
 
@@ -194,114 +200,114 @@ test('run validate validation when field is optional and no value is passed', as
       optional: true,
       validate(value) {
         return 'No'
-      }
+      },
     },
     __validate: async (value: any) => {
       if (!value) return 'No object'
-    }
+    },
   }
   const schema: Schema = {
     person: {
       type: person,
-      optional: true
+      optional: true,
     },
     number: {
       type: Number,
       validate() {
         return 'No'
-      }
-    }
+      },
+    },
   }
 
   expect(
     await getValidationErrors(schema, {
-      person: {name: null}
-    })
+      person: {name: null},
+    }),
   ).toEqual({
     number: Errors.REQUIRED,
-    'person.name': 'No'
+    'person.name': 'No',
   })
 
   expect(
     await getValidationErrors(schema, {
       person: null,
-      number: null
-    })
+      number: null,
+    }),
   ).toEqual({
     number: Errors.REQUIRED,
-    person: 'No object'
+    person: 'No object',
   })
 
   expect(
     await getValidationErrors(schema, {
-      number: 123
-    })
+      number: 123,
+    }),
   ).toEqual({
     number: 'No',
-    person: 'No object'
+    person: 'No object',
   })
 })
 
 test('can validate object type with validate validation', async () => {
   const person = {
     name: {
-      type: String
+      type: String,
     },
     async __validate(value) {
       return value.name === 'Nicolás' ? null : 'no'
-    }
+    },
   }
   const schema = {
     person: {
-      type: person
-    }
+      type: person,
+    },
   }
 
   expect(
     await getValidationErrors(schema, {
-      person: {name: 'Nicolás'}
-    })
+      person: {name: 'Nicolás'},
+    }),
   ).toBeNull()
 
   expect(
     await getValidationErrors(schema, {
-      person: {name: 'Joaquin'}
-    })
+      person: {name: 'Joaquin'},
+    }),
   ).toEqual({
-    person: 'no'
+    person: 'no',
   })
 })
 
 test('skip child validation if specified', async () => {
   const person = {
     firstName: {
-      type: String
+      type: String,
     },
     lastName: {
-      type: String
+      type: String,
     },
     async __skipChildValidation(value) {
       return value.firstName === 'Nicolás'
-    }
+    },
   }
 
   const schema: Schema = {
     persons: {
-      type: [person]
-    }
+      type: [person],
+    },
   }
 
   expect(
     await getValidationErrors(schema, {
-      persons: [{firstName: 'Nicolás'}]
-    })
+      persons: [{firstName: 'Nicolás'}],
+    }),
   ).toBeNull()
 
   const errors = await getValidationErrors(schema, {
-    persons: [{firstName: 'Joaquin'}]
+    persons: [{firstName: 'Joaquin'}],
   })
   expect(errors).toEqual({
-    'persons.0.lastName': Errors.REQUIRED
+    'persons.0.lastName': Errors.REQUIRED,
   })
 })
 
@@ -311,13 +317,13 @@ test('run custom validation with custom key', async () => {
       type: String,
       async custom(value) {
         return value
-      }
-    }
+      },
+    },
   }
 
   const errors = await getValidationErrors(schema, {name: 'error'})
   expect(errors).toEqual({
-    name: 'error'
+    name: 'error',
   })
 })
 
@@ -328,24 +334,24 @@ test('allow custom validation to pass an error object', async () => {
       async validate(person) {
         return {
           name: 'required',
-          lastName: 'tooShort'
+          lastName: 'tooShort',
         }
-      }
-    }
+      },
+    },
   }
 
   const errors = await getValidationErrors(schema, {person: {lastName: 'López'}})
   expect(errors).toEqual({
     'person.name': 'required',
-    'person.lastName': 'tooShort'
+    'person.lastName': 'tooShort',
   })
 })
 
 test('allow to set type any', async () => {
   const schema: Schema = {
     person: {
-      type: 'any'
-    }
+      type: 'any',
+    },
   }
 
   const errors = await getValidationErrors(schema, {person: {lastName: 'López'}})
@@ -360,17 +366,17 @@ test('allow custom validation to pass an complex error object', async () => {
         return {
           name: 'required',
           'car.name': 'required',
-          friends: [{name: 'required'}]
+          friends: [{name: 'required'}],
         }
-      }
-    }
+      },
+    },
   }
 
   const errors = await getValidationErrors(schema, {person: {lastName: 'López'}})
   expect(errors).toEqual({
     'person.name': 'required',
     'person.car.name': 'required',
-    'person.friends.0.name': 'required'
+    'person.friends.0.name': 'required',
   })
 })
 
@@ -383,8 +389,8 @@ test('pass currentDoc validating arrays', async () => {
       type: String,
       async validate(name, {currentDoc}) {
         expect(currentDoc).toBe(aItem)
-      }
-    }
+      },
+    },
   }
 
   const schema: Schema = {
@@ -392,8 +398,8 @@ test('pass currentDoc validating arrays', async () => {
       type: [item],
       async validate(items, {currentDoc}) {
         expect(currentDoc).toBe(doc)
-      }
-    }
+      },
+    },
   }
 
   expect.assertions(2)
@@ -412,12 +418,12 @@ test('pass currentDoc validating complex schemas', async () => {
       async validate(value, {currentDoc}) {
         expect(value).toEqual(aCar.brand)
         expect(currentDoc).toEqual(aCar)
-      }
+      },
     },
     async __validate(value, info) {
       expect(value).toEqual(aMom.car)
       expect(info.currentDoc).toEqual(aMom)
-    }
+    },
   }
 
   const mom = {
@@ -426,15 +432,15 @@ test('pass currentDoc validating complex schemas', async () => {
       async validate(value, {currentDoc}) {
         expect(value).toEqual(aMom.name)
         expect(currentDoc).toEqual(aMom)
-      }
+      },
     },
     car: {
       type: car,
       async validate(value, {currentDoc, doc}) {
         expect(value).toEqual(aMom.car)
         expect(currentDoc).toEqual(aMom)
-      }
-    }
+      },
+    },
   }
 
   const item = {
@@ -443,15 +449,15 @@ test('pass currentDoc validating complex schemas', async () => {
       async validate(value, {currentDoc}) {
         expect(value).toEqual(aItem.name)
         expect(currentDoc).toEqual(aItem)
-      }
+      },
     },
     mom: {
       type: mom,
       async validate(value, {currentDoc}) {
         expect(value).toEqual(aItem.mom)
         expect(currentDoc).toEqual(aItem)
-      }
-    }
+      },
+    },
   }
 
   const schema: Schema = {
@@ -460,8 +466,8 @@ test('pass currentDoc validating complex schemas', async () => {
       async validate(value, {currentDoc}) {
         expect(value).toEqual(doc.items)
         expect(currentDoc).toEqual(doc)
-      }
-    }
+      },
+    },
   }
 
   expect.assertions(14)

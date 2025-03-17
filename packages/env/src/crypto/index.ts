@@ -1,5 +1,5 @@
 import {generateKeyPair, encrypt as tweetEncrypt, decrypt as tweetDecrypt} from './tweetnacl'
-import {encodeBase64, decodeBase64} from 'tweetnacl-util'
+import {encodeBase64, decodeBase64} from './util'
 
 export function generateKeys() {
   const {publicKey, secretKey} = generateKeyPair()
@@ -9,7 +9,7 @@ export function generateKeys() {
 
   return {
     encryptKey: encryptKeyHex,
-    decryptKey: decryptKeyHex
+    decryptKey: decryptKeyHex,
   }
 }
 

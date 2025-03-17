@@ -1,16 +1,15 @@
 import fieldType from '../fieldType'
-import isString from 'lodash/isString'
+import {isNil} from 'rambdax'
 import Errors from '../Errors'
-import isNil from 'lodash/isNil'
 
-export default fieldType({
+export default fieldType<string>({
   name: 'email',
-  validate(value: string, {currentSchema}) {
+  validate(value, {currentSchema}) {
     if ((value === '' || isNil(value)) && !currentSchema.optional) {
       return Errors.REQUIRED
     }
 
-    if (value && !isString(value)) return Errors.NOT_A_STRING
+    if (value && typeof value !== 'string') return Errors.NOT_A_STRING
 
     // eslint-disable-next-line
     const regex =
@@ -24,5 +23,5 @@ export default fieldType({
     }
 
     return value
-  }
+  },
 })

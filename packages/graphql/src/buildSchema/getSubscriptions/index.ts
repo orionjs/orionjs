@@ -17,7 +17,7 @@ export default async function (options: StartGraphQLOptions) {
       args,
       async subscribe(root, params, viewer) {
         return await subscription.subscribe(params, viewer)
-      }
+      },
     }
   }
 

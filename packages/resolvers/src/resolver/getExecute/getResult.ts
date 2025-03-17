@@ -1,4 +1,3 @@
-import getCacheKey from './getCacheKey'
 import {ExecuteOptions} from '../types'
 
 export default async function (executeOptions: ExecuteOptions) {
@@ -11,13 +10,5 @@ export default async function (executeOptions: ExecuteOptions) {
     return await resultFunc(params, viewer, info)
   }
 
-  if (options.cache && options.cacheProvider) {
-    const key = await getCacheKey(executeOptions)
-    const result = await options.cacheProvider.get(key, {
-      fallback: executeResolver,
-      ttl: options.cache,
-    })
-    return result.value
-  }
   return await executeResolver()
 }

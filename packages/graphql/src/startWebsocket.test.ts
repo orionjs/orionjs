@@ -1,102 +1,84 @@
 import getApolloOptions from './getApolloOptions'
 import startWebsocket from './startWebsocket'
-import {resolver, addPermissionChecker} from '@orion-js/resolvers'
+import {createResolver} from '@orion-js/resolvers'
 import {subscription} from '.'
 import {ApolloClient, InMemoryCache} from '@apollo/client/core'
 import gql from 'graphql-tag'
 import {sleep} from '@orion-js/helpers'
-import {random} from 'lodash'
-import {setGetWebsockerViewer} from './websockerViewer'
-import {TypedModel, Prop, getModelForClass, TypedSchema} from '@orion-js/typed-model'
+import {random} from 'rambdax'
 import {GraphQLWsLink} from '@apollo/client/link/subscriptions'
 import {createClient} from 'graphql-ws'
 import ws, {WebSocketServer} from 'ws'
-import crypto from 'crypto'
-import {express, getServer} from '@orion-js/http'
-import WebSocket from 'ws'
-import http from 'http'
-import request from 'superwstest'
+import crypto from 'node:crypto'
+import {getServer} from '@orion-js/http'
+import {describe, it, expect} from 'vitest'
+import {schemaWithName} from '@orion-js/schema'
 
 const getStartServerOptions = async () => {
-  const resolvers = {
-    helloWorld: resolver({
-      params: {
-        name: {
-          type: 'string'
-        }
-      },
-      returns: 'string',
-      async resolve({name}) {
-        return `Hello ${name}`
-      }
-    })
-  }
-
-  const onNewGreeting = subscription<{name: string}, string>({
+  const helloWorld = createResolver({
     params: {
       name: {
-        type: 'string'
-      }
+        type: 'string',
+      },
     },
-    returns: 'string'
+    returns: 'string',
+    async resolve({name}) {
+      return `Hello ${name}`
+    },
   })
 
-  const withPermissionsSub = subscription({
+  const resolvers = {
+    helloWorld,
+  }
+
+  const onNewGreeting = subscription({
+    params: {
+      name: {
+        type: 'string',
+      },
+    },
     returns: 'string',
-    checkPermission: async () => null
   })
 
   const withoutPermissionsSub = subscription({
     returns: 'string',
-    checkPermission: async () => 'notAllowed'
-  })
-
-  const withGlobalPermissionsSub = subscription({
-    returns: 'string',
-    permissionsOptions: {
-      role: 'user'
-    }
+    canSubscribe: async () => false,
   })
 
   const withoutGlobalPermissionsSub = subscription({
     returns: 'string',
-    permissionsOptions: {
-      role: 'admin'
-    }
   })
 
-  @TypedSchema()
-  class TestParams {
-    @Prop({type: 'ID'})
-    userId: string
+  const TestParams = {
+    userId: {
+      type: 'ID',
+    },
   }
 
-  @TypedSchema()
-  class TestModel {
-    @Prop()
-    name: string
+  const TestModel = schemaWithName('TestModel', {
+    name: {
+      type: 'string',
+    },
+    age: {
+      type: 'number',
+    },
+  })
 
-    @Prop()
-    age: number
-  }
-
-  const modelSub = subscription<TestParams, TestModel>({
-    params: getModelForClass(TestParams),
-    returns: getModelForClass(TestModel)
+  const modelSub = subscription({
+    params: TestParams,
+    returns: TestModel,
   })
 
   const subscriptions = {
     onNewGreeting,
-    withPermissionsSub,
     withoutPermissionsSub,
-    withGlobalPermissionsSub,
     withoutGlobalPermissionsSub,
-    modelSub
+    modelSub,
   }
 
   const apolloOptions = await getApolloOptions({
     resolvers,
-    subscriptions
+    subscriptions,
   })
 
   return {apolloOptions, resolvers, subscriptions}
@@ -115,7 +97,7 @@ const gqClient = async () => {
   const server = new WebSocketServer({
     server: getServer(),
     path: '/subscriptions',
-    port: RANDOM_WS_PORT
+    port: RANDOM_WS_PORT,
   })
   startWebsocket({schema: apolloOptions.schema}, {resolvers: {}, subscriptions: {}}, server)
 
@@ -135,8 +117,8 @@ const gqClient = async () => {
     generateID: () =>
       // @ts-expect-error this is the way to do it segun la doc
       ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-        (c ^ (crypto.randomBytes(1)[0] & (15 >> (c / 4)))).toString(16)
-      )
+        (c ^ (crypto.randomBytes(1)[0] & (15 >> (c / 4)))).toString(16),
+      ),
   })
 
   // The uri of the WebSocketLink has to match the customServer uri.
@@ -146,9 +128,9 @@ const gqClient = async () => {
   return {
     client: new ApolloClient({
       link: wsLink,
-      cache: new InMemoryCache()
+      cache: new InMemoryCache(),
     }),
-    subscriptions
+    subscriptions,
   }
 }
 
@@ -163,12 +145,12 @@ describe('Test GraphQL Subscriptions', () => {
             info: onNewGreeting(name: $name)
           }
         `,
-        variables: {name: 'Nico'}
+        variables: {name: 'Nico'},
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('finally')
-        }
+        },
       })
 
     await sleep(50)
@@ -188,89 +170,21 @@ describe('Test GraphQL Subscriptions', () => {
       .subscribe({
         query: gql`
           subscription {
-            info: withPermissionsSub
-          }
-        `
-      })
-      .subscribe({
-        next({data}) {
-          expect(data.info).toEqual('yes')
-        }
-      })
-
-    client
-      .subscribe({
-        query: gql`
-          subscription {
             info: withoutPermissionsSub
           }
-        `
+        `,
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual('no')
-        }
+        },
       })
 
     await sleep(50)
 
-    expect.assertions(1) // only with should be called
+    expect.assertions(0) // none of the subscriptions should be called
 
-    await subscriptions.withPermissionsSub.publish({}, 'yes')
     await subscriptions.withoutPermissionsSub.publish({}, 'no')
-
-    await sleep(50)
-  })
-
-  it('Should execute subscriptions with global permissions correctly using custom get viewer and custom global permission checker', async () => {
-    const {client, subscriptions} = await gqClient()
-
-    setGetWebsockerViewer((connectionParams: any) => {
-      return {
-        role: 'user'
-      }
-    })
-
-    addPermissionChecker(async ({resolver, viewer}) => {
-      if (!resolver.permissionsOptions) return null
-      if (resolver.permissionsOptions.role === viewer.role) return null
-      return 'notAllowed'
-    })
-
-    client
-      .subscribe({
-        query: gql`
-          subscription {
-            info: withGlobalPermissionsSub
-          }
-        `
-      })
-      .subscribe({
-        next({data}) {
-          expect(data.info).toEqual('yes')
-        }
-      })
-
-    client
-      .subscribe({
-        query: gql`
-          subscription {
-            info: withoutGlobalPermissionsSub
-          }
-        `
-      })
-      .subscribe({
-        next({data}) {
-          expect(data.info).toEqual('no')
-        }
-      })
-
-    await sleep(50)
-
-    expect.assertions(1) // only with should be called
-
-    await subscriptions.withGlobalPermissionsSub.publish({}, 'yes')
-    await subscriptions.withoutGlobalPermissionsSub.publish({}, 'no')
 
     await sleep(50)
   })
@@ -287,12 +201,12 @@ describe('Test GraphQL Subscriptions', () => {
             }
           }
         `,
-        variables: {userId: '1'}
+        variables: {userId: '1'},
       })
       .subscribe({
         next({data}) {
           expect(data.info).toEqual({name: 'Nico', __typename: 'TestModel'})
-        }
+        },
       })
 
     await sleep(50)

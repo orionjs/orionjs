@@ -15,11 +15,11 @@ export interface OrionErrorInformation {
 
 /**
  * Base error class for all Orion-specific errors.
- * 
+ *
  * This abstract class provides common properties and methods for all error types
  * used in the Orion framework. It's extended by more specific error classes
  * like UserError and PermissionsError.
- * 
+ *
  * @property isOrionError - Flag indicating this is an Orion error (always true)
  * @property isUserError - Flag indicating if this is a user-facing error
  * @property isPermissionsError - Flag indicating if this is a permissions-related error

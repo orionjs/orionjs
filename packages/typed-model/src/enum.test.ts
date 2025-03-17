@@ -1,5 +1,6 @@
 import {createEnum} from '@orion-js/schema'
 import {getModelForClass, Prop, TypedSchema} from '.'
+import {describe, it, expect} from 'vitest'
 
 describe('Test custom fields', () => {
   it('Should convert custom fields correctly', async () => {
@@ -14,6 +15,6 @@ describe('Test custom fields', () => {
 
     const model = getModelForClass(TestParams)
 
-    expect((model.getCleanSchema() as any).color.type._isFieldType).toBe(true)
+    expect((model.getSchema() as any).color.type.__isFieldType).toBe(true)
   })
 })

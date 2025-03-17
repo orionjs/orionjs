@@ -1,4 +1,5 @@
 import {executeWithRetries} from './retries'
+import {describe, it, expect} from 'vitest'
 
 describe('Retry helpers', () => {
   it('should retry a function', async () => {

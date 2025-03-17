@@ -1,37 +1,34 @@
-import {resolver} from '@orion-js/resolvers'
-import {generateId} from '@orion-js/helpers'
-import {createModel} from '@orion-js/models'
+import {createResolver} from '@orion-js/resolvers'
+import {generateId, generateUUID} from '@orion-js/helpers'
 import AWS from 'aws-sdk'
 import {getAWSCredentials} from '../credentials'
 import {Files} from '../Files'
+import {schemaWithName} from '@orion-js/schema'
 
-export default resolver({
+export const generateUploadCredentials = createResolver({
   params: {
     name: {
-      type: String,
+      type: 'string',
     },
     size: {
-      type: Number,
+      type: 'number',
     },
     type: {
-      type: String,
+      type: 'string',
     },
   },
-  returns: createModel({
-    name: 'UploadCredentials',
-    schema: {
-      fileId: {
-        type: 'ID',
-      },
-      url: {
-        type: String,
-      },
-      fields: {
-        type: 'blackbox',
-      },
-      key: {
-        type: String,
-      },
+  returns: schemaWithName('UploadCredentials', {
+    fileId: {
+      type: 'ID',
+    },
+    url: {
+      type: 'string',
+    },
+    fields: {
+      type: 'blackbox',
+    },
+    key: {
+      type: 'string',
     },
   }),
   mutation: true,
@@ -60,7 +57,8 @@ export default resolver({
 
     const key = `${basePath}/${generateId()}-${params.name}`
 
-    const fileId = await Files.insertOne({
+    const fileId = await Files.rawCollection.insertOne({
+      _id: `ofl-${generateUUID()}`,
       key,
       bucket,
       name: params.name,
@@ -87,7 +85,7 @@ export default resolver({
             'Cache-Control': 'public, max-age=31536000, immutable',
           },
         },
-        function (error, data) {
+        (error, data) => {
           if (error) reject(error)
           else resolve(data)
         },
@@ -96,7 +94,7 @@ export default resolver({
 
     return {
       fileId,
-      ...(result as object),
+      ...(result as any),
       key,
     }
   },

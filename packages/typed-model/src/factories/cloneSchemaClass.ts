@@ -1,7 +1,7 @@
 import {Model} from '@orion-js/models'
 import {CloneOptions} from '@orion-js/models'
-import {Constructor} from '../utils/interfaces'
 import {getModelForClass} from './getModelForClass'
+import {Constructor} from '../utils/interfaces'
 
 export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
   name: string
@@ -25,7 +25,7 @@ export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
  */
 export function cloneSchemaClass<TClass, TFields extends keyof TClass>(
   schema: Constructor<TClass>,
-  options: CloneSchemaClassOptions<TClass, TFields>
+  options: CloneSchemaClassOptions<TClass, TFields>,
 ): Model<Pick<TClass, TFields>> {
   const model = getModelForClass(schema)
 
@@ -33,7 +33,7 @@ export function cloneSchemaClass<TClass, TFields extends keyof TClass>(
     name: options.name,
     pickFields: options.pickFields as any as string[],
     mapFields: options.mapFields,
-    extendSchema: options.extendSchema
+    extendSchema: options.extendSchema,
   })
 
   return newModel

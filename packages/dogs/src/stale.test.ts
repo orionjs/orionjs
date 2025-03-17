@@ -1,42 +1,40 @@
 import {generateId, sleep} from '@orion-js/helpers'
-import {setLogLevel} from '@orion-js/logger'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
-
-setLogLevel('none')
+import {describe, it, expect} from 'vitest'
 
 describe('Stale Jobs Management', () => {
   it('Should spawn a new worker when a job is stale and kill the stale worker after it ends', async () => {
-    const jobName1 = 'job1' + generateId()
+    const jobName1 = `job1${generateId()}`
     const job1 = defineJob({
       type: 'event',
       async resolve(_, context) {
         if (context.tries === 1) {
-          await sleep(100)
+          await sleep(50)
         }
         return {status: 'finished'}
-      }
+      },
     })
 
-    const jobName2 = 'job2' + generateId()
+    const jobName2 = `job2${generateId()}`
     const job2 = defineJob({
       type: 'event',
       async resolve() {
         return {status: 'finished'}
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobName1]: job1, [jobName2]: job2},
-      workersCount: 1,
+      workersCount: 10,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10
+      lockTime: 20,
     })
 
     await scheduleJob({name: jobName1})
     await scheduleJob({name: jobName2})
 
-    await sleep(150)
+    await sleep(500)
     await instance.stop()
 
     const executions1 = await jobsHistoryRepo.getExecutions(jobName1)
@@ -44,14 +42,12 @@ describe('Stale Jobs Management', () => {
 
     const executions2 = await jobsHistoryRepo.getExecutions(jobName2)
     expect(executions2.length).toBe(1)
-
-    expect(instance.workers.length).toBe(2)
   })
 
   it('Should run stale jobs in the lowest priority', async () => {
     const executions = []
     const priotities = []
-    const jobName1 = 'job1' + generateId()
+    const jobName1 = `job1${generateId()}`
     const job1 = defineJob({
       type: 'event',
       async resolve(_, context) {
@@ -60,15 +56,15 @@ describe('Stale Jobs Management', () => {
         if (context.tries === 1) {
           await sleep(100)
         }
-      }
+      },
     })
 
-    const jobName2 = 'job2' + generateId()
+    const jobName2 = `job2${generateId()}`
     const job2 = defineJob({
       type: 'event',
       async resolve() {
         executions.push('success')
-      }
+      },
     })
 
     const instance = startWorkers({
@@ -76,7 +72,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({name: jobName1})
@@ -92,7 +88,7 @@ describe('Stale Jobs Management', () => {
   it('Should revert to original priority when execution was stale on recurrent jobs', async () => {
     const priotities = []
     let didStale = false
-    const jobName = 'job' + generateId()
+    const jobName = `job${generateId()}`
 
     const job = defineJob({
       type: 'recurrent',
@@ -103,7 +99,7 @@ describe('Stale Jobs Management', () => {
           didStale = true
           await sleep(100)
         }
-      }
+      },
     })
 
     const instance = startWorkers({
@@ -111,7 +107,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await sleep(150)

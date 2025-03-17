@@ -21,6 +21,11 @@ export default function (fieldType) {
   if (fieldMap[fieldType.name]) {
     return fieldMap[fieldType.name]
   }
+
+  if (fieldType.name.startsWith('typedId:')) {
+    return fieldMap.string
+  }
+
   if (fieldType.toGraphQLType) {
     const result = fieldType.toGraphQLType(GraphQL)
     if (result.then) {

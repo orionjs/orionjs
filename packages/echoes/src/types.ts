@@ -1,3 +1,4 @@
+import {InferSchemaType, SchemaFieldType} from '@orion-js/schema'
 import {
   ConsumerConfig,
   KafkaConfig,
@@ -7,13 +8,55 @@ import {
   EachMessagePayload,
 } from 'kafkajs'
 
-export interface EchoConfig {
-  type: 'event' | 'request'
-  resolve(params: any, context?: any): Promise<any>
+export interface EchoRequestConfig<
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+> {
+  params?: TParamsSchema
+  returns?: TReturnsSchema
+  resolve(
+    params?: InferSchemaType<TParamsSchema>,
+    context?: any,
+  ): Promise<InferSchemaType<TReturnsSchema>>
   attemptsBeforeDeadLetter?: number
 }
 
-export interface EchoType extends EchoConfig {
+export interface EchoEventConfig<
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+> {
+  params?: TParamsSchema
+  returns?: TReturnsSchema
+  resolve(
+    params?: InferSchemaType<TParamsSchema>,
+    context?: any,
+  ): Promise<InferSchemaType<TReturnsSchema>>
+  attemptsBeforeDeadLetter?: number
+}
+
+export type EchoConfig<
+  TParamsSchema extends SchemaFieldType,
+  TReturnsSchema extends SchemaFieldType,
+  TEchoType extends 'event' | 'request' = 'event' | 'request',
+> = (TEchoType extends 'event'
+  ? EchoEventConfig<TParamsSchema, TReturnsSchema>
+  : EchoRequestConfig<TParamsSchema, TReturnsSchema>) & {
+  type: TEchoType
+}
+
+export type EchoType<
+  TParamsSchema extends SchemaFieldType = any,
+  TReturnsSchema extends SchemaFieldType = any,
+  TEchoType extends 'event' | 'request' = 'event' | 'request',
+> = {
+  params?: TParamsSchema
+  returns?: TReturnsSchema
+  attemptsBeforeDeadLetter?: number
+  type: TEchoType
+  resolve(
+    params?: InferSchemaType<TParamsSchema>,
+    context?: any,
+  ): Promise<InferSchemaType<TReturnsSchema>>
   onMessage(messageData: EachMessagePayload): Promise<void>
   onRequest(serializedParams: string): any
 }
@@ -86,7 +129,7 @@ export interface RequestsConfig {
 }
 
 export interface EchoesMap {
-  [key: string]: EchoType
+  [key: string]: EchoType<any, any>
 }
 
 export interface EchoesOptions {

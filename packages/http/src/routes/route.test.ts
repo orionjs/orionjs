@@ -1,9 +1,10 @@
 import {getApp} from './../start'
-import route from './route'
+import {route} from './route'
 import registerRoute from './registerRoute'
 import request from 'supertest'
+import {describe, test, expect} from 'vitest'
 
-let app = getApp()
+const app = getApp()
 
 describe('Test routes', () => {
   test('It should reply a http get request with a custom status code', async () => {
@@ -13,7 +14,7 @@ describe('Test routes', () => {
       method: 'get',
       async resolve(req, res, viewer) {
         return {body: test, statusCode: 201}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -29,7 +30,7 @@ describe('Test routes', () => {
       method: 'post',
       async resolve(req, res, viewer) {
         return {body: {status: 'ok'}, statusCode: 200}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -44,7 +45,7 @@ describe('Test routes', () => {
       method: 'post',
       async resolve(req, res, viewer) {
         return {body: {error: '504'}, statusCode: 504}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -61,7 +62,7 @@ describe('Test routes', () => {
       method: 'get',
       async resolve(req, res, viewer) {
         return {body: req.query, statusCode: 200}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -77,7 +78,7 @@ describe('Test routes', () => {
       method: 'get',
       async resolve(req, res, viewer) {
         return {body: 'hello world', statusCode: 200}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -93,7 +94,7 @@ describe('Test routes', () => {
       method: 'all',
       async resolve(req, res, viewer) {
         return {body: 'hello world', statusCode: 200}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -116,10 +117,10 @@ describe('Test routes', () => {
           statusCode: 302,
           body: '',
           headers: {
-            location: '/test8'
-          }
+            location: '/test8',
+          },
         }
-      }
+      },
     })
 
     registerRoute(testRoute)

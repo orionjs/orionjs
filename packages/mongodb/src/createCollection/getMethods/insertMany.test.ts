@@ -1,7 +1,8 @@
 import createInsert from './insertMany'
 import {generateId} from '@orion-js/helpers'
-import createCollection from '..'
+import {createCollection} from '..'
 import {createModel} from '@orion-js/models'
+import {expect, it} from 'vitest'
 
 it('should return a function', async () => {
   const Tests = createCollection({name: generateId()})
@@ -30,13 +31,13 @@ it('should throw an error when no document is passed', async () => {
 
 it('should insert documents passing deep validation', async () => {
   const wife = {
-    name: {type: String}
+    name: {type: String},
   }
   const schema = {
-    wife: {type: wife}
+    wife: {type: wife},
   }
-  const model = createModel({name: generateId(), schema})
-  const Tests = createCollection({name: generateId(), model})
+  const collectionSchema = createModel({name: generateId(), schema})
+  const Tests = createCollection({name: generateId(), schema: collectionSchema})
 
   await Tests.insertMany([{'wife.name': 'Francisca'}])
 })
@@ -45,10 +46,10 @@ it('should clean a document before inserting', async () => {
   const now = new Date()
   const schema = {
     name: {type: String},
-    createdAt: {type: Date, autoValue: () => now}
+    createdAt: {type: Date, defaultValue: () => now},
   }
-  const model = createModel({name: generateId(), schema})
-  const Tests = createCollection({name: generateId(), model})
+  const collectionSchema = createModel({name: generateId(), schema})
+  const Tests = createCollection({name: generateId(), schema: collectionSchema})
 
   const [docId] = await Tests.insertMany([{name: 1234}])
   const result = await Tests.findOne(docId)
@@ -58,8 +59,8 @@ it('should clean a document before inserting', async () => {
 
 it('should validate a document', async () => {
   const schema = {name: {type: String}}
-  const model = createModel({name: generateId(), schema})
-  const Tests = createCollection({name: generateId(), model})
+  const collectionSchema = createModel({name: generateId(), schema})
+  const Tests = createCollection({name: generateId(), schema: collectionSchema})
 
   expect.assertions(1)
   try {

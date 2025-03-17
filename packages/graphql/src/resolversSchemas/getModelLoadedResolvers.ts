@@ -1,9 +1,9 @@
-import {Model} from '@orion-js/models'
 import {StartGraphQLOptions} from '../types/startGraphQL'
+import {Schema} from '@orion-js/schema'
 
-export function getModelLoadedResolvers(model: Model, options: StartGraphQLOptions): any[] {
+export function getModelLoadedResolvers(schema: Schema, options: StartGraphQLOptions): any[] {
   if (!options.modelResolvers) return []
-  const resolvers = options.modelResolvers[model.name]
+  const resolvers = options.modelResolvers[schema.__modelName]
   if (!resolvers) return []
 
   const keys = Object.keys(resolvers)
@@ -13,7 +13,7 @@ export function getModelLoadedResolvers(model: Model, options: StartGraphQLOptio
       const resolver = resolvers[key]
       return {
         ...resolver,
-        key
+        key,
       }
     })
     .filter(resolver => !resolver.private)

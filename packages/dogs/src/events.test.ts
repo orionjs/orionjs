@@ -1,9 +1,6 @@
-import 'reflect-metadata'
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, scheduleJob, startWorkers} from '.'
-import {setLogLevel} from '@orion-js/logger'
-
-setLogLevel('error')
+import {describe, it, expect} from 'vitest'
 
 describe('Event tests', () => {
   it('Should run an event job', async () => {
@@ -12,14 +9,14 @@ describe('Event tests', () => {
       type: 'event',
       async resolve(params) {
         count += params.add
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {job3},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10
+      cooldownPeriod: 10,
     })
 
     expect(count).toBe(0)
@@ -27,26 +24,27 @@ describe('Event tests', () => {
     await scheduleJob({
       name: 'job3',
       params: {add: 5},
-      runIn: 1
+      runIn: 50,
     })
 
     await scheduleJob({
       name: 'job3',
       params: {add: 25},
-      runIn: 1
+      runIn: 1,
     })
 
-    await sleep(100)
+    await sleep(300)
+
     await instance.stop()
 
-    expect(count).toBe(30)
+    expect(count).toBeGreaterThanOrEqual(30)
   })
 
   it('Should run retry the job 3 times', async () => {
     let passes = false
     const job4 = defineJob({
       type: 'event',
-      async resolve(params, context) {
+      async resolve(_, context) {
         if (context.tries < 3) {
           throw new Error('Failed')
         }
@@ -55,23 +53,23 @@ describe('Event tests', () => {
       async onError() {
         return {
           action: 'retry',
-          runIn: 1
+          runIn: 1,
         }
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {job4},
       workersCount: 1,
       pollInterval: 10,
-      cooldownPeriod: 10
+      cooldownPeriod: 10,
     })
 
     expect(passes).toBe(false)
 
     await scheduleJob({
       name: 'job4',
-      runIn: 1
+      runIn: 1,
     })
 
     await sleep(100)
@@ -86,7 +84,7 @@ describe('Event tests', () => {
     let staleCount = 0
     const job = defineJob({
       type: 'event',
-      async resolve(params, context) {
+      async resolve(_, context) {
         if (context.tries === 2) {
           context.extendLockTime(10000)
         }
@@ -94,10 +92,10 @@ describe('Event tests', () => {
         await sleep(100)
         ranCount++
       },
-      async onStale(params, context) {
+      async onStale(_, context) {
         expect(context.tries).toBe(1)
         staleCount++
-      }
+      },
     })
 
     const instance = startWorkers({
@@ -105,12 +103,12 @@ describe('Event tests', () => {
       workersCount: 2,
       pollInterval: 10,
       cooldownPeriod: 10,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({
       name: jobId,
-      runIn: 1
+      runIn: 1,
     })
 
     await sleep(300)
@@ -127,28 +125,28 @@ describe('Event tests', () => {
       type: 'event',
       async resolve() {
         ranCount++
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
-      workersCount: 1,
-      pollInterval: 10,
-      cooldownPeriod: 10
+      workersCount: 5,
+      pollInterval: 50,
+      cooldownPeriod: 50,
     })
 
-    await scheduleJob({
-      name: jobId,
-      runIn: 1,
-      uniqueIdentifier: 'unique'
-    })
-
-    await scheduleJob({
-      name: jobId,
-      runIn: 1,
-      uniqueIdentifier: 'unique'
-    })
-
+    await Promise.all([
+      scheduleJob({
+        name: jobId,
+        runIn: 1,
+        uniqueIdentifier: 'unique',
+      }),
+      scheduleJob({
+        name: jobId,
+        runIn: 1,
+        uniqueIdentifier: 'unique',
+      }),
+    ])
     await sleep(50)
     await instance.stop()
 

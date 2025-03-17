@@ -2,7 +2,7 @@ import getSelector from './getSelector'
 import {Collection, DeleteMany, ModelClassBase} from '../../types'
 
 export default function <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) {
   const func: DeleteMany<DocumentType> = async function (selectorArg, options) {
     await collection.connectionPromise

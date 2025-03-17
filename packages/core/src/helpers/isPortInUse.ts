@@ -1,16 +1,16 @@
-import net from 'net'
+import net from 'node:net'
 
 export default function (port) {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     const tester = net
       .createServer()
-      .once('error', function (err: any) {
+      .once('error', (err: any) => {
         if (err.code !== 'EADDRINUSE') return reject(err)
         resolve(true)
       })
-      .once('listening', function () {
+      .once('listening', () => {
         tester
-          .once('close', function () {
+          .once('close', () => {
             resolve(false)
           })
           .close()

@@ -1,6 +1,8 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel, ModelSchema} from '@orion-js/models'
-import createCollection from '..'
+import {createModel} from '@orion-js/models'
+import {createCollection} from '..'
+import {it, expect} from 'vitest'
+import {Schema} from '@orion-js/schema'
 
 it('updates a document if exists', async () => {
   const Tests = createCollection({name: generateId()})
@@ -8,7 +10,7 @@ it('updates a document if exists', async () => {
   const docId = await Tests.insertOne({hello: 'world'})
   const {modifiedCount, upsertedId} = await Tests.upsert(
     {hello: 'world'},
-    {$set: {hello: 'country'}}
+    {$set: {hello: 'country'}},
   )
   expect(modifiedCount).toBe(1)
   expect(upsertedId).toBeNull()
@@ -21,7 +23,7 @@ it('inserts a document if it does not exists', async () => {
 
   const {modifiedCount, upsertedId} = await Tests.upsert(
     {hello: 'world'},
-    {$set: {hello: 'country'}}
+    {$set: {hello: 'country'}},
   )
   expect(modifiedCount).toBe(0)
   expect(typeof upsertedId).toBe('string')
@@ -32,31 +34,31 @@ it('inserts a document if it does not exists', async () => {
 it('adds default value when creating docs', async () => {
   const now = new Date()
   let calls = 0
-  const schema: ModelSchema = {
+  const schema: Schema = {
     firstName: {
       type: String,
-      defaultValue: () => 'Nicolás'
+      defaultValue: () => 'Nicolás',
     },
     lastName: {
-      type: String
+      type: String,
     },
     createdAt: {
       type: Date,
       defaultValue: () => {
         calls++
         return now
-      }
-    }
+      },
+    },
   }
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const {modifiedCount, upsertedId} = await Tests.upsert(
     {firstName: 'Bastian'},
-    {$set: {lastName: 'Ermann'}}
+    {$set: {lastName: 'Ermann'}},
   )
   expect(modifiedCount).toBe(0)
   expect(calls).toBe(1)
@@ -66,36 +68,36 @@ it('adds default value when creating docs', async () => {
     _id: upsertedId,
     firstName: 'Nicolás',
     lastName: 'Ermann',
-    createdAt: now
+    createdAt: now,
   })
 })
 
 it('should upsert documents passing cleaning validation', async () => {
   const person = {
     name: {type: String},
-    state: {type: String, optional: true}
+    state: {type: String, optional: true},
   }
 
-  const schema: ModelSchema = {
+  const schema: Schema = {
     _id: {type: 'ID'},
     name: {type: String},
     label: {type: String},
     wife: {type: person},
-    friends: {type: [person]}
+    friends: {type: [person]},
   }
 
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const {upsertedId} = await Tests.upsert(
     {name: 'Nicolás', label: 1234},
     {
       $set: {'wife.state': 'Hungry', 'wife.name': 'Francisca'},
-      $push: {friends: {name: 'Joaquín'}}
-    }
+      $push: {friends: {name: 'Joaquín'}},
+    },
   )
 
   await Tests.updateOne(upsertedId, {$set: {'wife.state': 'Full'}})
@@ -106,6 +108,6 @@ it('should upsert documents passing cleaning validation', async () => {
     name: 'Nicolás',
     label: '1234',
     wife: {state: 'Full', name: 'Francisca'},
-    friends: [{name: 'Joaquín'}]
+    friends: [{name: 'Joaquín'}],
   })
 })

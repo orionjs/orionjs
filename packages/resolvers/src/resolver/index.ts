@@ -1,19 +1,12 @@
 import getExecute from './getExecute'
-import cleanParams from './cleanParams'
 import {generateId} from '@orion-js/helpers'
-import {CreateResolver} from './types'
-import {defaultCache} from '@orion-js/cache'
-import {CreateModelResolver} from '..'
-import cleanReturns from './cleanReturns'
-import {getArgs} from './getArgs'
+import {GlobalResolverOptions, ModelResolver, ModelResolverOptions, GlobalResolver} from './types'
+import {getResolverArgs} from './getArgs'
+import {getSchemaFromAnyOrionForm, SchemaFieldType} from '@orion-js/schema'
 
-function createResolver(options: any) {
-  options.params = cleanParams(options.params)
-  options.returns = cleanReturns(options.returns)
-
-  if (!options.cacheProvider) {
-    options.cacheProvider = defaultCache
-  }
+function dynamicCreateResolver(options: any) {
+  options.params = getSchemaFromAnyOrionForm(options.params)
+  options.returns = getSchemaFromAnyOrionForm(options.returns)
 
   if (!options.resolverId) {
     options.resolverId = generateId()
@@ -26,20 +19,50 @@ function createResolver(options: any) {
   const execute = getExecute(options)
 
   const resolve = async (...args: any[]) => {
-    const params: any = getArgs(...args)
+    const params: any = getResolverArgs(...args)
     return await execute(params)
   }
 
   const resolver = {
     ...options,
     resolve,
-    execute
+    execute,
   }
 
   return resolver
 }
 
-const resolver: CreateResolver = createResolver
-const modelResolver: CreateModelResolver = createResolver
+const createResolver = <
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
+  TViewer = any,
+  TInfo = any,
+>(
+  options: GlobalResolverOptions<TParams, TReturns, TViewer, TInfo>,
+): GlobalResolver<TParams, TReturns, TViewer, TInfo> => {
+  return dynamicCreateResolver(options)
+}
 
-export {resolver, modelResolver}
+const createModelResolver = <
+  TItem = any,
+  TParams extends SchemaFieldType = any,
+  TReturns extends SchemaFieldType = any,
+  TViewer = any,
+  TInfo = any,
+>(
+  options: ModelResolverOptions<TItem, TParams, TReturns, TViewer, TInfo>,
+): ModelResolver<TItem, TParams, TReturns, TViewer, TInfo> => {
+  return dynamicCreateResolver(options)
+}
+
+/**
+ * @deprecated Use createResolver and createModelResolver instead
+ */
+const resolver = createResolver
+
+/**
+ * @deprecated Use createResolver and createModelResolver instead
+ */
+const modelResolver = createModelResolver
+
+export {createResolver, createModelResolver, resolver, modelResolver}

@@ -1,5 +1,6 @@
 import plainObject from './plainObject'
 import Errors from '../Errors'
+import {test, expect} from 'vitest'
 
 test('return an error when the value is incorrect', async () => {
   //@ts-ignore
@@ -21,26 +22,26 @@ test('should return same value when cleaning non-object', async () => {
 test('should filter keys not in schema', async () => {
   const schema = {
     yes: {
-      type: String
-    }
+      type: String,
+    },
   }
   const value = {
     yes: 'yes',
-    no: 'no'
+    no: 'no',
   }
   expect(
     plainObject.clean(value, {
       type: schema,
-      options: {filter: true}
-    })
+      options: {filter: true},
+    }),
   ).toEqual({
-    yes: 'yes'
+    yes: 'yes',
   })
 
   expect(
     plainObject.clean(value, {
       type: schema,
-      options: {filter: false}
-    })
+      options: {filter: false},
+    }),
   ).toEqual(value)
 })

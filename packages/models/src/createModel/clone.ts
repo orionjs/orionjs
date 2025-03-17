@@ -1,12 +1,11 @@
-import includes from 'lodash/includes'
-import {CreateModel, CloneOptions, CreateModelOptions} from '../types'
-import cloneDeep from 'lodash/cloneDeep'
+import {CreateModel, CloneOptions, CreateModelOptions, ModelResolversMap} from '../types'
+import {clone as deepClone} from '@orion-js/helpers'
 import {Schema} from '@orion-js/schema'
 
 interface CloneInfo {
   createModel: CreateModel
-  getSchema: () => any
-  getResolvers: () => any
+  getSchema: () => Schema
+  getResolvers: () => ModelResolversMap
   modelOptions: CreateModelOptions
 }
 
@@ -16,28 +15,26 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
     name: options.name,
     clean: modelOptions.clean,
     validate: modelOptions.validate,
-    resolvers: () => {
+    resolvers: (() => {
       if (!options.extendResolvers) return getResolvers()
 
       return {
-        default: {
-          ...getResolvers(),
-          ...options.extendResolvers
-        }
-      }
-    },
-    schema: () => {
-      const oldSchema = cloneDeep(getSchema())
+        ...getResolvers(),
+        ...options.extendResolvers,
+      } as ModelResolversMap
+    })(),
+    schema: (() => {
+      const oldSchema = deepClone(getSchema())
       const newSchema = {}
 
       const keys = Object.keys(oldSchema)
         .filter(key => {
           if (!options.omitFields) return true
-          return !includes(options.omitFields, key)
+          return !options.omitFields.includes(key)
         })
         .filter(key => {
           if (!options.pickFields) return true
-          return includes(options.pickFields, key)
+          return options.pickFields.includes(key)
         })
 
       for (const key of keys) {
@@ -49,15 +46,15 @@ const clone = (cloneInfo: CloneInfo, options: CloneOptions) => {
         }
       }
 
-      if (!options.extendSchema) return {default: newSchema}
+      if (!options.extendSchema) return newSchema
 
       const clonedSchema = {
         ...newSchema,
-        ...options.extendSchema
+        ...options.extendSchema,
       } as Schema
 
-      return {default: clonedSchema}
-    }
+      return clonedSchema
+    })(),
   })
 }
 

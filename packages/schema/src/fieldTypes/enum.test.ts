@@ -2,6 +2,7 @@ import createEnum from './enum'
 import Errors from '../Errors'
 import {Schema} from '../types'
 import getValidationErrors from '../getValidationErrors'
+import {test, expect} from 'vitest'
 
 test('return an error when the value is incorrect', async () => {
   expect(createEnum('hello', ['hello']).validate(['Hello'])).toBe(Errors.NOT_A_STRING)
@@ -11,7 +12,8 @@ test('return an error when the value is incorrect', async () => {
 
 test('enum typescript helpers', async () => {
   const myEnum = createEnum('HelloEnum', ['hello', 'hi'] as const)
-  const string: typeof myEnum.type = 'hello'
+  const string: typeof myEnum.__tsFieldType = 'hello'
+  expect(string).toBe('hello')
 })
 
 test('return no error when the value is correct', async () => {
@@ -28,21 +30,21 @@ test('validate correctly allowed values', async () => {
 test('Full schema with enum', async () => {
   const schema: Schema = {
     color: {
-      type: createEnum('colors', ['red', 'blue', 'green'])
-    }
+      type: createEnum('colors', ['red', 'blue', 'green']),
+    },
   }
 
   expect(
     await getValidationErrors(schema, {
-      color: 'red'
-    })
+      color: 'red',
+    }),
   ).toBeNull()
 
   expect(
     await getValidationErrors(schema, {
-      color: 'yellow'
-    })
+      color: 'yellow',
+    }),
   ).toEqual({
-    color: Errors.NOT_AN_ALLOWED_VALUE
+    color: Errors.NOT_AN_ALLOWED_VALUE,
   })
 })

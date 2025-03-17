@@ -1,7 +1,8 @@
 import createInsert from './insertOne'
 import {generateId} from '@orion-js/helpers'
-import createCollection from '..'
+import {createCollection} from '..'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {expect, it, describe} from 'vitest'
 
 describe('insertAndFind', () => {
   it('should return a function', async () => {
@@ -13,11 +14,12 @@ describe('insertAndFind', () => {
   it('inserts and finds a cleaned document', async () => {
     @TypedSchema()
     class TestSchema1 {
-      @Prop()
+      @Prop({type: String})
       _id: string
 
       @Prop({
-        clean: string => `cleaned ${string}`
+        type: String,
+        clean: string => `cleaned ${string}`,
       })
       hello: string
     }
@@ -30,7 +32,7 @@ describe('insertAndFind', () => {
 
     expect(result).toEqual({
       _id: result._id,
-      hello: 'cleaned world'
+      hello: 'cleaned world',
     })
   })
 })

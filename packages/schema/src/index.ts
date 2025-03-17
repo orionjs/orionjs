@@ -8,6 +8,7 @@ import cleanKey from './cleanKey'
 import validateKey from './validateKey'
 import dotGetSchema from './dotGetSchema'
 import createEnum from './fieldTypes/enum'
+import fieldTypes from './fieldTypes'
 
 export {
   validate,
@@ -19,8 +20,12 @@ export {
   cleanKey,
   dotGetSchema,
   validateKey,
-  createEnum
+  createEnum,
+  fieldTypes,
 }
 
 export * from './types'
+export * from './models'
+export * from './cleanAndValidate'
 export * from './fieldType'
+export * from './schemaWithName'

@@ -1,54 +1,22 @@
-import {Prop, TypedModel} from '@orion-js/typed-model'
+import {InferSchemaType, schemaWithName} from '@orion-js/schema'
 
-export type PlainObject = {[name: string]: any}
+export const HistoryRecordSchema = schemaWithName('HistoryRecord', {
+  _id: {type: 'string'},
+  jobId: {type: 'string'},
+  executionId: {type: 'string'},
+  jobName: {type: 'string'},
+  type: {type: 'string'},
+  priority: {type: 'number'},
+  tries: {type: 'number'},
+  uniqueIdentifier: {type: 'string', optional: true},
+  startedAt: {type: 'date'},
+  endedAt: {type: 'date'},
+  duration: {type: 'number'},
+  expiresAt: {type: 'date', optional: true},
+  status: {type: 'string', enum: ['success', 'error', 'stale']},
+  errorMessage: {type: 'string', optional: true},
+  params: {type: 'blackbox', optional: true},
+  result: {type: 'any', optional: true},
+})
 
-@TypedModel()
-export class HistoryRecord {
-  @Prop()
-  _id: string
-
-  @Prop()
-  jobId: string
-
-  @Prop()
-  executionId: string
-
-  @Prop()
-  jobName: string
-
-  @Prop()
-  type: 'recurrent' | 'event'
-
-  @Prop()
-  priority: number
-
-  @Prop()
-  tries: number
-
-  @Prop({optional: true})
-  uniqueIdentifier?: string
-
-  @Prop()
-  startedAt: Date
-
-  @Prop()
-  endedAt: Date
-
-  @Prop()
-  duration: number
-
-  @Prop({optional: true})
-  expiresAt?: Date
-
-  @Prop()
-  status: 'success' | 'error' | 'stale'
-
-  @Prop({optional: true})
-  errorMessage?: string
-
-  @Prop({type: 'blackbox', optional: true})
-  params?: PlainObject
-
-  @Prop({type: 'blackbox', optional: true})
-  result?: PlainObject
-}
+export type HistoryRecord = InferSchemaType<typeof HistoryRecordSchema>

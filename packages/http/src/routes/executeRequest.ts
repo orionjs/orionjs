@@ -1,27 +1,38 @@
-import {RouteType} from './../types'
-import {onError} from '../errors'
+import {OrionRequest, RouteType} from './../types'
 import {getViewer} from './../viewer'
 import express from 'express'
-import {isNil, isPlainObject, random} from 'lodash'
+import {isNil, type} from 'rambdax'
 import {internalGetEnv} from '@orion-js/env'
 import {sleep} from '@orion-js/helpers'
-
+import {cleanAndValidate} from '@orion-js/schema'
+import {onError} from '../errors'
 const simulateLatency = internalGetEnv('simulate_latency', 'SIMULATE_LATENCY')
 
 export async function executeRequest(
-  route: RouteType,
-  req: express.Request,
-  res: express.Response
+  route: RouteType<any>,
+  req: OrionRequest,
+  res: express.Response,
 ) {
   if (simulateLatency) {
-    const time = parseInt(simulateLatency)
+    const time = Number.parseInt(simulateLatency)
     if (time) {
-      await sleep(random(time * 0.9, time * 1.1))
+      const min = time * 0.9
+      const max = time * 1.1
+      await sleep(Math.floor(Math.random() * (max - min + 1)) + min)
     }
   }
 
   try {
     const viewer = await getViewer(req)
+
+    if (route.queryParams) {
+      req.query = await cleanAndValidate(route.queryParams ?? {}, req.query)
+    }
+
+    if (route.bodyParams) {
+      req.body = await cleanAndValidate(route.bodyParams ?? {}, req.body)
+    }
+
     const result = await route.resolve(req, res, viewer)
     if (!result) return
 
@@ -32,17 +43,23 @@ export async function executeRequest(
 
     // add headers to response
     if (result.headers) {
-      Object.keys(result.headers).forEach(key => {
+      for (const key in result.headers) {
         res.setHeader(key, result.headers[key])
-      })
+      }
     }
 
     // add body to response
     if (!isNil(result.body)) {
-      if (isPlainObject(result.body)) {
-        res.json(result.body)
+      let body = result.body
+
+      if (route.returns) {
+        body = await cleanAndValidate(route.returns, result.body)
+      }
+
+      if (type(body) === 'Object') {
+        res.json(body)
       } else {
-        res.send(result.body)
+        res.send(body)
       }
     }
   } catch (error) {

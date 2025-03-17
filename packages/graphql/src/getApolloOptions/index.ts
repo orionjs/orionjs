@@ -2,22 +2,25 @@ import buildSchema from '../buildSchema'
 import {StartGraphQLOptions} from '../types/startGraphQL'
 import {ApolloServerOptions} from '@apollo/server'
 import formatError from './formatError'
-import {omit} from 'lodash'
+import {omit} from 'rambdax'
 
 export default async function (options: StartGraphQLOptions) {
   const schema = await buildSchema(options)
-  const passedOptions = omit(options, [
-    'resolvers',
-    'modelResolvers',
-    'subscriptions',
-    'executeGraphQLCache',
-    'useGraphiql',
-    'app',
-    'pubsub'
-  ])
+  const passedOptions = omit(
+    [
+      'resolvers',
+      'modelResolvers',
+      'subscriptions',
+      'executeGraphQLCache',
+      'useGraphiql',
+      'app',
+      'pubsub',
+    ],
+    options,
+  )
   return {
     ...passedOptions,
     schema,
-    formatError
+    formatError,
   } as unknown as ApolloServerOptions<any>
 }

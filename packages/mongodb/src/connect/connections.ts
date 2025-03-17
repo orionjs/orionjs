@@ -7,6 +7,7 @@ export interface OrionMongoClient {
   dbName: string
   connectionPromise: Promise<MongoClient>
   connectionName: string
+  startConnection: () => Promise<MongoClient>
 }
 
 export interface OrionMongoConnectionsMap {

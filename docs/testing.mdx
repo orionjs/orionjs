@@ -1,0 +1,72 @@
+---
+title: 'Testing'
+description: 'Testing in Orionjs'
+---
+
+Here is a guide to testing in Orionjs using the Jest framework and MongoDB Memory Server.
+
+### Install Jest
+
+```bash
+yarn add --dev jest @types/jest ts-jest
+```
+ 
+### Install MongoDB Memory Server
+
+```bash
+yarn add --dev @shelf/jest-mongodb
+```
+
+### Create the config file
+
+Create the `
+
+```ts
+import type {Config} from 'jest'
+
+const config: Config = {
+  preset: '@shelf/jest-mongodb',
+  roots: ['./app'],
+  testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest',
+  },
+  moduleNameMapper: {
+    'app/(.*)': '<rootDir>/app/$1',
+  },
+  setupFilesAfterEnv: ['./app/config/tests/setup.ts'],
+  watchPathIgnorePatterns: ['globalConfig'],
+  verbose: false,
+  modulePaths: ['<rootDir>'],
+}
+
+export default config
+```
+
+### Create the setup file
+
+Create a `./app/config/tests/setup.ts` file in your project.
+
+```ts
+import {connections, createIndexesPromises, getMongoConnection} from '@orion-js/mongodb'
+
+const url = `${global.__MONGO_URI__}jest`
+process.env.MONGO_URL = url
+
+beforeAll(async () => {
+  const connection = getMongoConnection({name: 'main'})
+  await connection.connectionPromise
+})
+
+afterAll(async () => {
+  /**
+   * We need to wait on indexes promises to be resolved to close all the handlers
+   */
+  await Promise.all(createIndexesPromises)
+
+  for (const connectionName in connections) {
+    const connection = connections[connectionName]
+    await connection.client.close()
+  }
+})
+```

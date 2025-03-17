@@ -1,6 +1,7 @@
 import {ModelClassBase, ModelToMongoSelector, MongoSelector} from '../..'
 import getSelector from './getSelector'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {expect, it} from 'vitest'
 
 const mongoFunctionMock = function <Model extends ModelClassBase>(selectorArg?: MongoSelector) {
   return getSelector<Model>(arguments)
@@ -27,7 +28,7 @@ it('should return the selector when a valid mongo selector is passed', async () 
 it('should allow passing $in to selectors with typed id', async () => {
   @TypedSchema()
   class Example {
-    @Prop()
+    @Prop({type: String})
     _id: `prefix_${string}`
   }
 

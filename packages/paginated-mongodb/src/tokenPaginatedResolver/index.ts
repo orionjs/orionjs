@@ -1,11 +1,11 @@
-import {resolver} from '@orion-js/resolvers'
+import {createResolver} from '@orion-js/resolvers'
 import getReturnModel from './getReturnModel'
-import {getArgs} from '@orion-js/resolvers/lib/resolver/getArgs'
+import {getResolverArgs} from '@orion-js/resolvers'
 
 export default function ({collection, params, resolve, ...otherOptions}) {
   /* executes the resolve function, obtaining the query that will
    be applied to the collection */
-  const runResolve = async (...args) => {
+  const runResolve = async (...args: any[]) => {
     if (resolve) {
       return await resolve(...args)
     }
@@ -72,8 +72,8 @@ export default function ({collection, params, resolve, ...otherOptions}) {
         query = {
           $or: [
             {...restOfQuery, [sortingField]: offsetDocument[sortingField], _id: {$gt: idOffset}},
-            {...query, [sortingField]: {[sortOperator]: offsetDocument[sortingField]}}
-          ]
+            {...query, [sortingField]: {[sortOperator]: offsetDocument[sortingField]}},
+          ],
         }
       }
     }
@@ -99,23 +99,23 @@ export default function ({collection, params, resolve, ...otherOptions}) {
 
   const {modelName} = otherOptions
 
-  return resolver({
+  return createResolver({
     params: {
       ...params,
       idOffset: {
         type: 'ID',
-        optional: true
+        optional: true,
       },
       limit: {
         type: 'integer',
         defaultValue: 10,
         min: 1,
-        max: 200
-      }
-    },
-    returns: getReturnModel({modelName, collection}),
+        max: 200,
+      },
+    } as any,
+    returns: getReturnModel({modelName, collection}) as any,
     async resolve(...args) {
-      const {params, viewer} = getArgs(...args)
+      const {params, viewer} = getResolverArgs(...args)
       const {query, sort} = await runResolve(...args)
 
       if (!query) throw new Error("'query' object not found in return of resolve function")
@@ -127,9 +127,9 @@ export default function ({collection, params, resolve, ...otherOptions}) {
       return {
         params,
         cursor,
-        viewer
+        viewer,
       }
     },
-    ...otherOptions
+    ...otherOptions,
   })
 }

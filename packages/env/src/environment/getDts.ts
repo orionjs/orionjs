@@ -6,7 +6,7 @@ export function getDts(config: Config) {
   const keys = [
     ...Object.keys(config.cleanKeys),
     ...Object.keys(config.encryptedKeys),
-    ...Object.values(config.readFromSecret).flat()
+    ...Object.values(config.readFromSecret).flat(),
   ]
   return `declare module '@orion-js/env' {
   export const env: {

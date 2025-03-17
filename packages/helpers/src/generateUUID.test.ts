@@ -1,12 +1,12 @@
-import isString from 'lodash/isString'
-import { generateUUID, generateUUIDWithPrefix } from './generateUUID'
+import {generateUUID, generateUUIDWithPrefix} from './generateUUID'
+import {it, expect} from 'vitest'
 
 it('should generate random uuid v4', async () => {
   expect(generateUUID()).not.toBe(generateUUID())
-  expect(isString(generateUUID())).toBe(true)
+  expect(generateUUID()).toBeTypeOf('string')
 })
 
 it('should generate uuid with prefix', async () => {
   expect(generateUUIDWithPrefix('test')).not.toBe(generateUUIDWithPrefix('test'))
-  expect(isString(generateUUIDWithPrefix('test'))).toBe(true)
+  expect(generateUUIDWithPrefix('test')).toBeTypeOf('string')
 })

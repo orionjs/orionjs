@@ -1,5 +1,4 @@
 import {Kafka, EachMessagePayload, Producer, Consumer} from 'kafkajs'
-import types from '../echo/types'
 import {EchoesOptions, EchoType} from '../types'
 
 const HEARTBEAT_INTERVAL_SECONDS = 5 // This value must be less than the kafkajs session timeout
@@ -24,9 +23,7 @@ class KafkaManager {
     this.options = options
     this.producer = this.kafka.producer(options.producer)
     this.consumer = this.kafka.consumer(options.consumer)
-    this.topics = Object.keys(options.echoes).filter(
-      key => options.echoes[key].type === types.event,
-    )
+    this.topics = Object.keys(options.echoes).filter(key => options.echoes[key].type === 'event')
   }
 
   async checkJoinConsumerGroupConditions(): Promise<boolean> {
@@ -104,7 +101,7 @@ class KafkaManager {
 
   async handleMessage(params: EachMessagePayload) {
     const echo = this.options.echoes[params.topic]
-    if (!echo || echo.type !== types.event) {
+    if (!echo || echo.type !== 'event') {
       console.warn(`Echoes: Received a message for an unknown topic: ${params.topic}, ignoring it`)
       return
     }

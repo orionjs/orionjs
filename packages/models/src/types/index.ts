@@ -1,20 +1,15 @@
-import {
-  GlobalResolverResolve,
-  ModelResolver,
-  ModelResolverResolve,
-  Resolver
-} from '@orion-js/resolvers'
-import {Schema, SchemaMetaFieldType, SchemaNode} from '@orion-js/schema'
+import {GlobalResolver, ModelResolver} from '@orion-js/resolvers'
+import {Schema, SchemaFieldType, SchemaNode} from '@orion-js/schema'
 
 export interface ModelsSchemaNode extends Omit<SchemaNode, 'type'> {
-  type: Model | [Model] | SchemaMetaFieldType
+  type: Model | [Model] | SchemaFieldType
 }
 
 export interface ModelSchema {
   [key: string]: ModelsSchemaNode
 }
 
-export interface CreateModelOptions {
+export interface CreateModelOptions<TSchema extends Schema = any> {
   /**
    * The name of the model, used for example for GraphQL
    */
@@ -24,13 +19,13 @@ export interface CreateModelOptions {
    * Pass a function that returns the schema. For example: () => require('./schema').
    * This is used like this to allow circular dependencies
    */
-  schema?: ModelSchema | (() => {default: ModelSchema})
+  schema?: TSchema
 
   /**
    * Pass a function that returns the resolvers. For example: () => require('./resolvers')
    * This is used like this to allow circular dependencies
    */
-  resolvers?: ModelResolversMap | (() => {default: ModelResolversMap})
+  resolvers?: ModelResolversMap
 
   /**
    * Optional function that will process the document before being returned.
@@ -47,11 +42,11 @@ export interface CreateModelOptions {
 }
 
 export interface ModelResolversMap {
-  [key: string]: ModelResolver<ModelResolverResolve>
+  [key: string]: ModelResolver
 }
 
 export interface GlobalResolversMap {
-  [key: string]: Resolver<GlobalResolverResolve>
+  [key: string]: GlobalResolver
 }
 
 export interface CloneOptions {
@@ -64,8 +59,8 @@ export interface CloneOptions {
 }
 
 export interface Model<TSchema = any> {
-  __isModel: boolean
-
+  __isModel: true
+  __modelName: string
   /**
    * The name of the model, used for example for GraphQL
    */
@@ -74,22 +69,12 @@ export interface Model<TSchema = any> {
   /**
    * Returns the schema of the model
    */
-  getSchema: () => Schema & {__model: Model}
-
-  /**
-   * Returns the schema without adding __model to the schema
-   */
-  getCleanSchema: () => Schema
+  getSchema: () => Schema
 
   /**
    * Returns the model resolvers
    */
   getResolvers: () => ModelResolversMap
-
-  /**
-   * Adds the model resolvers to a item
-   */
-  initItem: (item: any) => any
 
   /**
    * Validates an item using @orion-js/schema

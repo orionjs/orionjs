@@ -1,21 +1,37 @@
-import paginatedResolver, {PaginatedResolverOpts} from '../paginatedResolver'
-import {getInstance} from '@orion-js/services'
+import {createPaginatedResolver, PaginatedResolverOpts} from '../paginatedResolver'
+import {internalResolversMetadata, getTargetMetadata} from '@orion-js/graphql'
 
 export interface PagiantedQueryDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: PaginatedResolverOpts['getCursor']
 }
 
-export function PaginatedQuery(options: Omit<PaginatedResolverOpts, 'getCursor'>) {
-  return function (target: any, propertyKey: string, descriptor: PagiantedQueryDescriptor) {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
+export function PaginatedQuery(): (method: any, context: ClassFieldDecoratorContext) => any
+export function PaginatedQuery(
+  options: Omit<PaginatedResolverOpts, 'getCursor'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function PaginatedQuery(options?: Omit<PaginatedResolverOpts, 'getCursor'>) {
+  return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
+    const propertyKey = String(context.name)
 
-    target.resolvers = target.resolvers || {}
-    target.resolvers[propertyKey] = paginatedResolver({
-      ...options,
-      getCursor: async (params, viewer) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
+    context.addInitializer(function (this) {
+      const resolvers = internalResolversMetadata.get(this) || {}
+
+      if (context.kind === 'method') {
+        resolvers[propertyKey] = createPaginatedResolver({
+          params: getTargetMetadata(method, propertyKey, 'params') || {},
+          returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+          ...options,
+          getCursor: this[propertyKey].bind(this),
+        })
       }
+
+      if (context.kind === 'field') {
+        resolvers[propertyKey] = this[propertyKey]
+      }
+
+      internalResolversMetadata.set(this, resolvers)
     })
+
+    return method
   }
 }

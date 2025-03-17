@@ -1,8 +1,6 @@
 import {sleep, generateId} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
-import {setLogLevel} from '@orion-js/logger'
-
-setLogLevel('none')
+import {describe, it, expect} from 'vitest'
 
 describe('Test Jobs History', () => {
   it('Should save success history types', async () => {
@@ -10,34 +8,35 @@ describe('Test Jobs History', () => {
     const job = defineJob({
       type: 'event',
       async resolve() {
-        await sleep(50)
+        await sleep(10)
         return {
-          number: 1
+          number: 1,
         }
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
-      workersCount: 1,
-      pollInterval: 10
+      workersCount: 10,
+      pollInterval: 10,
     })
 
     await scheduleJob({
       name: jobId,
-      runIn: 1,
-      params: {id: 2}
+      runIn: 0,
+      params: {id: 2},
     })
 
-    await sleep(100)
+    await sleep(200)
     await instance.stop()
+    await sleep(100)
 
     const executions = await jobsHistoryRepo.getExecutions(jobId)
 
     expect(executions.length).toBe(1)
 
     const execution = executions[0]
-    expect(execution.duration).toBeGreaterThan(49)
+    expect(execution.duration).toBeGreaterThanOrEqual(7)
     expect(execution).toEqual({
       _id: expect.any(String),
       jobId: expect.any(String),
@@ -53,7 +52,7 @@ describe('Test Jobs History', () => {
       status: 'success',
       errorMessage: null,
       params: {id: 2},
-      result: {number: 1}
+      result: {number: 1},
     })
   })
 
@@ -63,19 +62,19 @@ describe('Test Jobs History', () => {
       type: 'event',
       async resolve() {
         throw new Error('Hello')
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
       workersCount: 1,
-      pollInterval: 10
+      pollInterval: 10,
     })
 
     await scheduleJob({
       name: jobId,
       runIn: 1,
-      params: {id: 4}
+      params: {id: 4},
     })
 
     await sleep(100)
@@ -101,7 +100,7 @@ describe('Test Jobs History', () => {
       status: 'error',
       errorMessage: 'Hello',
       params: {id: 4},
-      result: null
+      result: null,
     })
   })
 
@@ -114,19 +113,19 @@ describe('Test Jobs History', () => {
           await sleep(100)
         }
         return {status: 'ok'}
-      }
+      },
     })
 
     const instance = startWorkers({
       jobs: {[jobId]: job},
-      workersCount: 1,
+      workersCount: 3,
       pollInterval: 10,
-      lockTime: 10
+      lockTime: 10,
     })
 
     await scheduleJob({
       name: jobId,
-      runIn: 1
+      runIn: 1,
     })
 
     await sleep(150)
@@ -154,7 +153,7 @@ describe('Test Jobs History', () => {
       status: 'stale',
       errorMessage: null,
       params: null,
-      result: {status: 'ok'}
+      result: {status: 'ok'},
     })
   })
 })

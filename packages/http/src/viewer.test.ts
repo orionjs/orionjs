@@ -1,15 +1,16 @@
 import {setGetViewer} from './viewer'
 import {getApp} from './start'
-import route from './routes/route'
+import {route} from './routes/route'
 import registerRoute from './routes/registerRoute'
 import request from 'supertest'
+import {describe, test, expect} from 'vitest'
 
 describe('Test viewer', () => {
   test('It should pass the correct viewer', async () => {
     setGetViewer(async req => {
       return {
         name: req.params.name,
-        lastName: req.body.lastName
+        lastName: req.body.lastName,
       }
     })
 
@@ -19,7 +20,7 @@ describe('Test viewer', () => {
       bodyParser: 'json',
       async resolve(req, res, viewer) {
         return {body: viewer}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -40,7 +41,7 @@ describe('Test viewer', () => {
       bodyParser: 'json',
       async resolve(req, res, viewer) {
         return {body: viewer}
-      }
+      },
     })
 
     registerRoute(testRoute)
@@ -51,5 +52,18 @@ describe('Test viewer', () => {
     // expect reponse code to be 401
     expect(response.status).toBe(401)
     expect(response.body).toEqual({error: 'AuthError', message: 'invalid headers'})
+
+    setGetViewer(() => null)
+  })
+})
+
+describe('Test viewer orion v4 syntax', () => {
+  test('It should pass the correct viewer', async () => {
+    setGetViewer(async req => {
+      return {
+        name: req.params.name,
+        lastName: req.body.lastName,
+      }
+    })
   })
 })

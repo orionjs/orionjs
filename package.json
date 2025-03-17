@@ -1,17 +1,32 @@
 {
   "license": "MIT",
+  "name": "orionjs",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "clean": "lerna run clean",
-    "watch": "lerna run --parallel watch",
-    "test": "lerna run test",
-    "publish-all": "lerna publish --dist-tag latest --force-publish=*",
-    "release": "lerna publish --dist-tag latest",
-    "release-alpha": "lerna publish --dist-tag next",
-    "release-from-package": "lerna publish from-package --dist-tag latest"
+    "test": "pnpm --filter=* --workspace-concurrency=1 test",
+    "build": "pnpm --filter=* build"
   },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.28.1",
+    "@types/node": "^22.13.10",
+    "mongodb-memory-server": "^10.1.4",
+    "oxc-transform": "^0.56.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^1.6.1",
+    "vitest-mongodb": "^1.0.1"
   },
-  "dependencies": {}
+  "pnpm": {
+    "overrides": {
+      "@orion-js/core": "link:packages/core"
+    }
+  },
+  "dependencies": {
+    "@orion-js/core": "link:packages/core",
+    "rambdax": "^11.3.1"
+  }
 }

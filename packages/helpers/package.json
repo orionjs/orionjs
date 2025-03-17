@@ -1,29 +1,39 @@
 {
   "name": "@orion-js/helpers",
-  "version": "3.13.1",
-  "main": "lib/index.js",
+  "version": "4.0.0-next.8",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
-    "prepare": "yarn run build",
-    "clean": "rm -rf ./lib",
-    "build": "yarn run clean && tsc",
-    "watch": "tsc -w",
-    "upgrade-interactive": "yarn upgrade-interactive"
+    "test": "vitest run",
+    "prepare": "pnpm build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
   },
   "dependencies": {
-    "object-hash": "^2.2.0"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@shelf/jest-mongodb": "^2.1.0",
-    "@types/jest": "^27.0.2",
-    "jest": "^29.5.0",
-    "ts-jest": "^29.0.5",
-    "typescript": "^4.4.4"
+    "@types/node": "^18.0.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
+    "vitest": "^3.0.8"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9d85ab24776533db109843c277324e42c65ddedd"
+  "gitHead": "a485b1fe6a1840ee6cb58fd69d6de62585f1ed10",
+  "type": "module"
 }

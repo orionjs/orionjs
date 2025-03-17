@@ -7,13 +7,13 @@ export default ({collection, modelName}) => {
     async resolve(params) {
       const {cursor} = params
       return await cursor.toArray()
-    }
+    },
   })
 
   return createModel({
     name: modelName || `tokenPaginated${collection.model.name}`,
     resolvers: {
-      items
-    }
+      items,
+    },
   })
 }

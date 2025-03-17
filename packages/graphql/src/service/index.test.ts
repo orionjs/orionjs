@@ -1,6 +1,7 @@
-import 'reflect-metadata'
 import {Inject, Service} from '@orion-js/services'
-import {Query, getServiceResolvers, Resolvers, Mutation} from './index'
+import {Query, getServiceResolvers, Resolvers, Mutation, createQuery, createMutation} from './index'
+import {describe, it, expect} from 'vitest'
+import {schemaWithName} from '@orion-js/schema'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {
@@ -13,7 +14,7 @@ describe('Resolvers with service injection', () => {
 
     @Resolvers()
     class ExampleResolverService {
-      @Inject()
+      @Inject(() => ExampleRepo)
       private repo: ExampleRepo
 
       @Query({
@@ -40,5 +41,57 @@ describe('Resolvers with service injection', () => {
 
     const result = await resolvers.sayHi.execute({params: {name: 'Orion'}})
     expect(result).toBe(`My name is Orion Lopez and I'm 100 years old`)
+  })
+
+  it('should work with the new registerQuery v4', async () => {
+    const params = schemaWithName('ExampleParams', {
+      name: {type: 'string'},
+    })
+    const returns = schemaWithName('ExampleReturns', {
+      name: {type: 'string'},
+    })
+
+    @Service()
+    class DataService {
+      getLastName() {
+        return 'Lopez'
+      }
+    }
+
+    @Resolvers()
+    class ExampleResolvers {
+      @Inject(() => DataService)
+      private dataService: DataService
+
+      @Query()
+      example = createQuery({
+        params,
+        returns,
+        resolve: async params => {
+          return {
+            name: `${params.name} ${this.dataService.getLastName()}`,
+          }
+        },
+      })
+
+      @Mutation()
+      example2 = createMutation({
+        params,
+        returns,
+        resolve: async params => {
+          return await this.example.resolve(params)
+        },
+      })
+    }
+
+    const resolvers = getServiceResolvers(ExampleResolvers)
+    expect(resolvers.example).toBeDefined()
+    const result = await resolvers.example.execute({params: {name: 'Orion'}})
+    expect(result?.name).toBe('Orion Lopez')
+
+    const result2 = await resolvers.example2.execute({params: {name: 'Orions'}})
+    expect(result2?.name).toBe('Orions Lopez')
+
+    expect(resolvers.example2.mutation).toBe(true)
   })
 })

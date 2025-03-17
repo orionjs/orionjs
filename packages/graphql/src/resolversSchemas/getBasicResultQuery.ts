@@ -1,18 +1,28 @@
-import isArray from 'lodash/isArray'
 import {getStaticFields} from './getStaticFields'
+import {getSchemaFromAnyOrionForm, isSchemaLike, Schema, SchemaNode} from '@orion-js/schema'
 
-export default async function getBasicQuery(field) {
+export default async function getBasicQuery(field: SchemaNode) {
   if (!field.type) return ''
 
-  if ((isArray(field.type) && field.type[0].__model) || field.type.__model) {
-    const model = isArray(field.type) ? field.type[0].__model : field.type.__model
-    const fields = []
-    for (const field of getStaticFields(model)) {
-      fields.push(await getBasicQuery(field))
-    }
-    const key = field.key ? `${field.key} ` : ''
-    return `${key}{ ${fields.join(' ')} }`
-  } else {
+  if (Array.isArray(field.type)) {
+    return getBasicQuery({
+      ...field,
+      type: field.type[0],
+    })
+  }
+
+  if (!isSchemaLike(field.type)) {
     return field.key
   }
+
+  const schema = getSchemaFromAnyOrionForm(field.type) as Schema
+
+  const fields = []
+  for (const field of getStaticFields(schema)) {
+    fields.push(await getBasicQuery(field))
+  }
+
+  const key = field.key ? `${field.key} ` : ''
+
+  return `${key}{ ${fields.join(' ')} }`
 }

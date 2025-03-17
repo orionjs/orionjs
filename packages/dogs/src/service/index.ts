@@ -1,54 +1,132 @@
 import {getInstance, Service} from '@orion-js/services'
-import {defineJob} from '../defineJob'
-import {EventJobDefinition, JobDefinition, RecurrentJobDefinition} from '../types'
+import {createEventJob, defineJob} from '../defineJob'
+import type {CreateEventJobOptions, JobDefinition, RecurrentJobDefinition} from '../types'
 
-export function Jobs(): ClassDecorator {
-  return function (target: any) {
-    Service()(target)
-    target.prototype.service = target
+// Define metadata storage using WeakMaps
+const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
+const jobsMetadata = new Map<any, Record<string, any>>()
+
+export function Jobs() {
+  return (target: any, context: ClassDecoratorContext<any>) => {
+    Service()(target, context)
+
+    context.addInitializer(function (this) {
+      serviceMetadata.set(this, {_serviceType: 'jobs'})
+    })
   }
 }
 
-export interface JobsPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
-  value?: JobDefinition['resolve']
+export function RecurrentJob(): (
+  method: any,
+  context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
+) => any
+export function RecurrentJob(
+  options: Omit<RecurrentJobDefinition, 'resolve' | 'type'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function RecurrentJob(options = {}) {
+  return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
+    const propertyKey = String(context.name)
+
+    context.addInitializer(function (this) {
+      const jobs = jobsMetadata.get(this) || {}
+
+      if (context.kind === 'method') {
+        jobs[propertyKey] = defineJob({
+          ...options,
+          type: 'recurrent',
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        jobs[propertyKey] = this[propertyKey]
+      }
+
+      jobsMetadata.set(this, jobs)
+    })
+
+    return method
+  }
 }
 
-export function RecurrentJob(options: Omit<RecurrentJobDefinition, 'resolve' | 'type'>) {
-  return function (target: any, propertyKey: string, descriptor: JobsPropertyDescriptor) {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
+export function EventJob(): (
+  method: any,
+  context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
+) => any
+export function EventJob(
+  options: Omit<CreateEventJobOptions<any>, 'resolve'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function EventJob(options = {}) {
+  return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
+    const propertyKey = String(context.name)
 
-    target.echoes = target.echoes || {}
-    target.echoes[propertyKey] = defineJob({
-      ...options,
+    context.addInitializer(function (this) {
+      const jobs = jobsMetadata.get(this) || {}
+
+      if (context.kind === 'method') {
+        jobs[propertyKey] = createEventJob({
+          ...options,
+          resolve: this[propertyKey].bind(this),
+        })
+      }
+
+      if (context.kind === 'field') {
+        jobs[propertyKey] = this[propertyKey]
+      }
+
+      jobsMetadata.set(this, jobs)
+    })
+
+    return method
+  }
+}
+
+export function getServiceJobs(target: any): {
+  [key: string]: JobDefinition
+} {
+  const instance = getInstance(target)
+
+  if (!serviceMetadata.has(instance.constructor)) {
+    throw new Error('You must pass a class decorated with @Jobs to getServiceJobs')
+  }
+
+  const instanceMetadata = serviceMetadata.get(instance.constructor)
+  if (instanceMetadata._serviceType !== 'jobs') {
+    throw new Error('You must pass a class decorated with @Jobs to getServiceJobs')
+  }
+
+  const jobsMap = jobsMetadata.get(instance) || {}
+
+  return jobsMap
+}
+
+/**
+ * Logs
+ * after event job {
+  job1: { type: 'event', resolve: [Function: bound job1] AsyncFunction }
+}
+before recurrent job Map(1) {
+  ExampleJobsService {} => {
+    job1: { type: 'event', resolve: [Function: bound job1] AsyncFunction }
+  }
+}
+before recurrent job undefined
+after recurrent job {
+  job2: {
+    runEvery: 1000,
+    type: 'recurrent',
+    resolve: [Function: bound job2] AsyncFunction,
+    priority: 100
+  }
+}
+{
+  serviceJobs: {
+    job2: {
+      runEvery: 1000,
       type: 'recurrent',
-      resolve: async (params, viewer) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
-      }
-    })
+      resolve: [Function: bound job2] AsyncFunction,
+      priority: 100
+    }
   }
 }
-
-export function EventJob(options: Omit<EventJobDefinition, 'resolve' | 'type'> = {}) {
-  return function (target: any, propertyKey: string, descriptor: JobsPropertyDescriptor) {
-    if (!descriptor.value) throw new Error(`You must pass resolver function to ${propertyKey}`)
-
-    target.echoes = target.echoes || {}
-    target.echoes[propertyKey] = defineJob({
-      ...options,
-      type: 'event',
-      resolve: async (params, viewer) => {
-        const instance: any = getInstance(target.service)
-        return await instance[propertyKey](params, viewer)
-      }
-    })
-  }
-}
-
-export function getServiceJobs(target: any): {[key: string]: JobDefinition} {
-  if (!target.prototype) {
-    throw new Error('You must pass a class to getServiceRoutes')
-  }
-
-  return target.prototype.echoes || {}
-}
+ */

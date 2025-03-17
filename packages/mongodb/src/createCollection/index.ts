@@ -1,5 +1,12 @@
-import initItem from './initItem'
-import {Collection, CreateCollection, CreateCollectionOptions, ModelClassBase} from '../types'
+import type {
+  Collection,
+  CreateCollectionOptions,
+  CreateCollectionOptionsWithSchemaType,
+  CreateCollectionOptionsWithTypedSchema,
+  InferSchemaTypeWithId,
+  ModelClassBase,
+  SchemaWithRequiredId,
+} from '../types'
 import {
   countDocuments,
   deleteMany,
@@ -15,21 +22,31 @@ import {
   updateMany,
   updateOne,
   upsert,
-  insertAndFind
+  insertAndFind,
 } from './getMethods'
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
-import {Model} from '@orion-js/models'
 import {loadIndexes} from './createIndexes'
-import {cloneDeep} from 'lodash'
 import {getMongoConnection} from '..'
-import {getSchemaAndModel} from './getSchemaAndModel'
+import {getSchema} from './getSchemaAndModel'
+import {wrapMethods} from './wrapMethods'
+import {InferSchemaType, TypedSchemaOnSchema} from '@orion-js/schema'
 
 export const createIndexesPromises = []
 
-const createCollection: CreateCollection = <DocumentType extends ModelClassBase>(
-  options: CreateCollectionOptions<DocumentType>
-) => {
+export function createCollection<T extends SchemaWithRequiredId>(
+  options: CreateCollectionOptionsWithSchemaType<T>,
+): Collection<InferSchemaTypeWithId<T>>
+
+export function createCollection<T extends TypedSchemaOnSchema & {prototype: {_id: string}}>(
+  options: CreateCollectionOptionsWithTypedSchema<T>,
+): Collection<InferSchemaType<T>>
+
+export function createCollection<T extends ModelClassBase>(
+  options: CreateCollectionOptions<T>,
+): Collection<T>
+
+export function createCollection(options: CreateCollectionOptions) {
   const connectionName = options.connectionName || 'main'
 
   const orionConnection = getMongoConnection({name: connectionName})
@@ -38,26 +55,23 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
   }
 
   const db = orionConnection.db
-  const rawCollection = db.collection<DocumentType>(options.name)
+  const rawCollection = db.collection(options.name)
 
-  const {schema, model} = getSchemaAndModel(options)
+  const schema = getSchema(options)
 
-  const collection: Partial<Collection<DocumentType>> = {
+  const collection: Partial<Collection<any>> = {
     name: options.name,
     connectionName,
     schema,
-    model,
     indexes: options.indexes || [],
     db,
     client: orionConnection,
     connectionPromise: orionConnection.connectionPromise,
+    startConnection: orionConnection.startConnection,
     rawCollection,
     generateId: getIdGenerator(options),
-    getSchema: () => schema
+    getSchema: () => schema,
   }
-
-  // helpers
-  collection.initItem = initItem(collection)
 
   // modified orion methods
   collection.findOne = findOne(collection)
@@ -92,6 +106,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
   collection.loadMany = loadMany(collection)
 
   const createIndexes = async () => {
+    await orionConnection.connectionPromise
     const createIndexPromise = loadIndexes(collection)
     createIndexesPromises.push(createIndexPromise)
     collection.createIndexesPromise = createIndexPromise
@@ -104,7 +119,7 @@ const createCollection: CreateCollection = <DocumentType extends ModelClassBase>
     createIndexes()
   }
 
-  return collection as Collection<DocumentType>
-}
+  wrapMethods(collection as any)
 
-export default createCollection
+  return collection as Collection<ModelClassBase>
+}

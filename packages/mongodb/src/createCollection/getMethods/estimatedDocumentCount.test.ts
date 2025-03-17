@@ -1,5 +1,6 @@
 import {generateId} from '@orion-js/helpers'
-import createCollection from '..'
+import {createCollection} from '..'
+import {describe, it, expect} from 'vitest'
 
 describe('estimatedDocumentCount operation', () => {
   it('should count all documents', async () => {

@@ -2,22 +2,13 @@ import {Collection, Find, ModelClassBase} from '../../types'
 import getSelector from './getSelector'
 
 export default function <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) {
-  const find: Find<DocumentType> = function (selectorArg, options) {
-    const selector = getSelector(arguments)
+  const find: Find<DocumentType> = (...args: any[]) => {
+    const selector = getSelector(args)
+    const options = args[1]
 
-    const cursor = collection.rawCollection.find(selector, options) as any
-
-    cursor._oldToArray = cursor.toArray
-
-    cursor.toArray = async (): Promise<DocumentType> => {
-      await collection.connectionPromise
-      const items = await cursor._oldToArray()
-      return items.map(item => collection.initItem(item))
-    }
-
-    return cursor
+    return collection.rawCollection.find(selector, options) as any
   }
 
   return find

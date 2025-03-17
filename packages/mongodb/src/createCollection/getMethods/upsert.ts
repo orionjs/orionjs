@@ -5,7 +5,7 @@ import {Collection, ModelClassBase, Upsert} from '../../types'
 import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType extends ModelClassBase>(
-  collection: Partial<Collection<DocumentType>>
+  collection: Partial<Collection<DocumentType>>,
 ) => {
   const upsert: Upsert<DocumentType> = async function (selectorArg, modifierArg, options = {}) {
     await collection.connectionPromise
@@ -25,7 +25,10 @@ export default <DocumentType extends ModelClassBase>(
     }
 
     const result = await wrapErrors(() => {
-      return collection.rawCollection.updateOne(selector, modifier, {...options.mongoOptions, upsert: true})
+      return collection.rawCollection.updateOne(selector, modifier, {
+        ...options.mongoOptions,
+        upsert: true,
+      })
     })
 
     return result

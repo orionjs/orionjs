@@ -5,7 +5,7 @@ import {
   getServiceResolvers,
   getServiceSubscriptions,
   OrionSubscriptionsMap,
-  ModelsResolversMap
+  ModelsResolversMap,
 } from '@orion-js/graphql'
 import {getServiceRoutes, RoutesMap} from '@orion-js/http'
 import {getServiceJobs, JobsDefinition} from '@orion-js/dogs'
@@ -107,7 +107,7 @@ export function mergeComponentControllers(component: Component): MergedComponent
     modelResolvers,
     subscriptions,
     routes,
-    jobs
+    jobs,
   }
 }
 
@@ -118,34 +118,34 @@ export function mergeComponents(components: Component[]): MergedComponentControl
     modelResolvers: {},
     subscriptions: {},
     routes: {},
-    jobs: {}
+    jobs: {},
   }
 
   components.forEach(component => {
     const componentControllers = mergeComponentControllers(component)
     mergedControllers.echoes = {
       ...mergedControllers.echoes,
-      ...componentControllers.echoes
+      ...componentControllers.echoes,
     }
     mergedControllers.resolvers = {
       ...mergedControllers.resolvers,
-      ...componentControllers.resolvers
+      ...componentControllers.resolvers,
     }
     mergedControllers.modelResolvers = {
       ...mergedControllers.modelResolvers,
-      ...componentControllers.modelResolvers
+      ...componentControllers.modelResolvers,
     }
     mergedControllers.subscriptions = {
       ...mergedControllers.subscriptions,
-      ...componentControllers.subscriptions
+      ...componentControllers.subscriptions,
     }
     mergedControllers.routes = {
       ...mergedControllers.routes,
-      ...componentControllers.routes
+      ...componentControllers.routes,
     }
     mergedControllers.jobs = {
       ...mergedControllers.jobs,
-      ...componentControllers.jobs
+      ...componentControllers.jobs,
     }
   })
 

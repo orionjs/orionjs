@@ -4,16 +4,18 @@ import generateId from './generateId'
 import createMap from './createMap'
 import createMapArray from './createMapArray'
 
+export * from './clone'
+
 // Import all error-related exports from the Errors module
 import {
   OrionError,
-  OrionErrorInformation,
   PermissionsError,
   UserError,
   isOrionError,
   isUserError,
-  isPermissionsError
+  isPermissionsError,
 } from './Errors'
+import type {OrionErrorInformation} from './Errors'
 
 export * from './composeMiddlewares'
 export * from './retries'
@@ -28,15 +30,14 @@ export {
   generateId,
   hashObject,
   sleep,
-
   // Error classes
   OrionError,
   PermissionsError,
   UserError,
-  OrionErrorInformation,
-
   // Error type guards
   isOrionError,
   isUserError,
-  isPermissionsError
+  isPermissionsError,
 }
+
+export type {OrionErrorInformation}

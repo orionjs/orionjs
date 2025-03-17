@@ -1,7 +1,8 @@
 import {generateId} from '@orion-js/helpers'
-import {createModel, ModelSchema} from '@orion-js/models'
+import {createModel} from '@orion-js/models'
 import {Schema} from '@orion-js/schema'
-import createCollection from '..'
+import {createCollection} from '..'
+import {it, expect} from 'vitest'
 
 it('updates a document without errors', async () => {
   const Tests = createCollection({name: generateId()})
@@ -28,15 +29,16 @@ it('updates multiple document without errors', async () => {
 
 it('should update documents that have array passing validation', async () => {
   const friend = {
-    name: {type: String}
+    name: {type: String},
   }
-  const schema: ModelSchema = {
-    friends: {type: [friend]}
+  const schema: Schema = {
+    friends: {type: [friend]},
   }
   const model = createModel({name: generateId(), schema})
+
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const personId = await Tests.insertOne({friends: [{name: 'Roberto'}, {name: 'Joaquín'}]})
@@ -45,28 +47,28 @@ it('should update documents that have array passing validation', async () => {
 
   expect(await Tests.findOne(personId)).toEqual({
     _id: personId,
-    friends: [{name: 'Robert'}, {name: 'Joaquín'}]
+    friends: [{name: 'Robert'}, {name: 'Joaquín'}],
   })
 
   await Tests.updateOne(personId, {
     $push: {
-      friends: {name: 'Bastian'}
-    }
+      friends: {name: 'Bastian'},
+    },
   })
   expect(await Tests.findOne(personId)).toEqual({
     _id: personId,
-    friends: [{name: 'Robert'}, {name: 'Joaquín'}, {name: 'Bastian'}]
+    friends: [{name: 'Robert'}, {name: 'Joaquín'}, {name: 'Bastian'}],
   })
 })
 
 it('should do $pull operation', async () => {
-  const schema: ModelSchema = {
-    tags: {type: [String]}
+  const schema: Schema = {
+    tags: {type: [String]},
   }
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const itemId = await Tests.insertOne({tags: ['1', '2', '3', '4']})
@@ -76,22 +78,22 @@ it('should do $pull operation', async () => {
 
   expect(await Tests.findOne(itemId)).toEqual({
     _id: itemId,
-    tags: ['2']
+    tags: ['2'],
   })
 })
 
 it('should update documents passing validation', async () => {
   const wife = {
     name: {type: String},
-    state: {type: String}
+    state: {type: String},
   }
   const schema = {
-    wife: {type: wife}
+    wife: {type: wife},
   }
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const personId = await Tests.insertOne({'wife.state': 'Hungry', 'wife.name': 'Francisca'})
@@ -103,18 +105,18 @@ it('should update documents passing validation', async () => {
 })
 
 it('should handle $inc operator on blackbox', async () => {
-  const schema: ModelSchema = {
+  const schema: Schema = {
     services: {
-      type: 'blackbox'
-    }
+      type: 'blackbox',
+    },
   }
   const model = createModel({
     name: generateId(),
-    schema
+    schema,
   })
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const userId = await Tests.insertOne({services: {phoneVerification: {tries: 1}}})
@@ -130,12 +132,12 @@ it('should update documents passing validation with blackbox field', async () =>
   const model = createModel({
     name: generateId(),
     schema: {
-      services: {type: 'blackbox'}
-    }
+      services: {type: 'blackbox'},
+    },
   })
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const personId = await Tests.insertOne({services: {password: 123456}})
@@ -149,15 +151,15 @@ it('should update documents passing validation with blackbox field', async () =>
 it('should throw an error when modifier is invalid', async () => {
   const wife = {
     name: {type: String},
-    state: {type: String}
+    state: {type: String},
   }
   const schema = {
-    wife: {type: wife}
+    wife: {type: wife},
   }
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const personId = await Tests.insertOne({'wife.state': 'Hungry', 'wife.name': 'Francisca'})
@@ -167,7 +169,7 @@ it('should throw an error when modifier is invalid', async () => {
     await Tests.updateOne(
       personId,
       {$set: {'wife.state': 'Full', 'mom.name': 'Paula'}},
-      {clean: false}
+      {clean: false},
     )
   } catch (error) {
     expect(error.code).toBe('validationError')
@@ -178,19 +180,19 @@ it('dont add autovalue when updating', async () => {
   let index = 1
   const schema = {
     name: {
-      type: String
+      type: String,
     },
     count: {
       type: Number,
-      autoValue(name) {
+      clean() {
         return index++
-      }
-    }
+      },
+    },
   }
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const personId = await Tests.insertOne({name: 'Nicolás'})
@@ -202,31 +204,31 @@ it('dont add autovalue when updating', async () => {
 it('should handle $ correctly', async () => {
   const Email = {
     address: {type: String},
-    verified: {type: Boolean}
+    verified: {type: Boolean},
   }
-  const schema: ModelSchema = {
-    emails: {type: [Email]}
+  const schema: Schema = {
+    emails: {type: [Email]},
   }
   const model = createModel({name: generateId(), schema})
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const userId = await Tests.insertOne({
     emails: [
       {
         address: 'nicolas@orionsoft.io',
-        verified: false
-      }
-    ]
+        verified: false,
+      },
+    ],
   })
 
   await Tests.updateOne(
     {_id: userId, 'emails.address': 'nicolas@orionsoft.io'},
     {
-      $set: {'emails.$.verified': 'true'}
-    }
+      $set: {'emails.$.verified': 'true'},
+    },
   )
 
   expect(await Tests.findOne(userId)).toEqual({
@@ -234,9 +236,9 @@ it('should handle $ correctly', async () => {
     emails: [
       {
         address: 'nicolas@orionsoft.io',
-        verified: true
-      }
-    ]
+        verified: true,
+      },
+    ],
   })
 })
 
@@ -251,16 +253,16 @@ it('should pass full doc on clean as well as validate', async () => {
           expect(doc).toEqual({name: item.name})
           return value
         },
-        validate(value, {doc}) {
+        validate(_value, {doc}) {
           expect(doc).toEqual({name: item.name})
-        }
-      }
-    }
+        },
+      },
+    },
   })
 
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   await Tests.updateOne({}, {$set: {name: 'Nico'}})
@@ -273,16 +275,16 @@ it('Should allow custom clean function on a blackbox field', async () => {
       info: {
         type: 'blackbox',
         optional: true,
-        async clean(info, {doc}) {
+        async clean() {
           return {hello: 'world'}
-        }
-      }
-    }
+        },
+      },
+    },
   })
 
   const Tests = createCollection({
     name: generateId(),
-    model
+    schema: model,
   })
 
   const itemId = await Tests.insertOne({info: {hello: 'world2'}})
@@ -297,7 +299,7 @@ it('Should be able to use custom clean for models on update', async () => {
     name: 'File',
     schema: {
       name: {type: String},
-      lastName: {type: String, optional: true}
+      lastName: {type: String, optional: true},
     },
     async clean(value) {
       if (!value) return null
@@ -306,28 +308,28 @@ it('Should be able to use custom clean for models on update', async () => {
       return {
         ...value,
         name: value.name.toUpperCase(),
-        lastName: '1'
+        lastName: '1',
       }
-    }
+    },
   })
 
   const model = createModel({
     name: 'Item',
     schema: {
-      file: {type: modelFile}
-    }
+      file: {type: modelFile},
+    },
   })
 
-  const Tests = createCollection({name: generateId(), model})
+  const Tests = createCollection({name: generateId(), schema: model})
 
   const docId = await Tests.insertOne({
-    file: {name: '1'}
+    file: {name: '1'},
   })
 
   await Tests.updateOne(docId, {
     $set: {
-      file: {name: 'Hello'}
-    }
+      file: {name: 'Hello'},
+    },
   })
   const result = await Tests.findOne(docId)
 

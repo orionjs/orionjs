@@ -1,0 +1,41 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "@orion-js/cache": "3.12.0",
+    "@orion-js/components": "3.12.0",
+    "@orion-js/crypto": "3.12.0",
+    "@orion-js/dogs": "3.12.0",
+    "@orion-js/echoes": "3.12.0",
+    "@orion-js/env": "3.12.0",
+    "@orion-js/file-manager": "3.12.0",
+    "@orion-js/graphql": "3.12.0",
+    "@orion-js/helpers": "3.12.0",
+    "@orion-js/http": "3.12.0",
+    "@orion-js/logger": "3.12.0",
+    "@orion-js/mailing": "3.12.0",
+    "@orion-js/migrations": "3.12.0",
+    "@orion-js/models": "3.12.0",
+    "@orion-js/mongodb": "3.12.0",
+    "@orion-js/paginated-mongodb": "3.12.0",
+    "@orion-js/resolvers": "3.12.0",
+    "@orion-js/schema": "3.12.0",
+    "@orion-js/services": "3.12.0",
+    "@orion-js/telemetry": "3.12.0",
+    "@orion-js/typed-model": "3.12.0",
+    "@orion-js/core": "4.0.0-next.0"
+  },
+  "changesets": [
+    "angry-otters-retire",
+    "bumpy-sides-tan",
+    "dark-pants-hear",
+    "eleven-apples-drive",
+    "fresh-dolls-appear",
+    "funny-memes-guess",
+    "major-rats-beam",
+    "slimy-deer-invent",
+    "smooth-dragons-bet",
+    "smooth-times-double",
+    "violet-snakes-buy"
+  ]
+}

@@ -1,2 +1,1 @@
-import 'reflect-metadata'
-export * from './typedi'
+export * from './di'
