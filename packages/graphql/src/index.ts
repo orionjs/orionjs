@@ -7,6 +7,8 @@ import serializeSchema from './resolversSchemas/serializeSchema'
 import getBasicResultQuery from './resolversSchemas/getBasicResultQuery'
 import * as GraphQL from 'graphql'
 
+const createSubscription = subscription
+
 export {
   GraphQL,
   startGraphQL,
@@ -15,6 +17,7 @@ export {
   ResolverParamsInfo,
   serializeSchema,
   subscription,
+  createSubscription,
   getBasicResultQuery,
 }
 
