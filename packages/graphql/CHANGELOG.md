@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.6
+
+### Patch Changes
+
+- export create subscription
+
 ## 4.0.5
 
 ### Patch Changes
