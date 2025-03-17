@@ -79,18 +79,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Guides",
-        "pages": [
-          "guides/v4"
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "pages": [
-          "api-reference/crypto"
-        ]
       }
     ],
     "global": {
