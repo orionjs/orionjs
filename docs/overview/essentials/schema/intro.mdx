@@ -8,48 +8,50 @@ The schema package in Orionjs provides a powerful type-safe way to define data s
 1. **Define data structures**: Schemas describe the structure, types, and validation rules for your data models.
 2. **Automatic integration**: Schemas automatically integrate with GraphQL for API generation and MongoDB for document validation.
 
-## TypedSchema
+## Schema Definition
 
-The modern approach to define schemas in Orionjs uses TypeScript decorators through the `@TypedSchema` decorator. This provides a class-based, type-safe way to define your data structures.
+The modern approach to define schemas in Orionjs uses the `schemaWithName` function to create type-safe data structures.
 
 ### Basic Usage
 
 ```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+import {typedId} from '@orion-js/mongodb'
 
-@TypedSchema()
-export class UserSchema {
-  @Prop()
-  _id: string
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  name: {type: String, label: 'Full Name'},
+  email: {type: String, optional: true},
+  createdAt: {type: Date}
+})
 
-  @Prop({label: 'Full Name'})
-  name: string
-
-  @Prop({optional: true})
-  email?: string
-
-  @Prop()
-  createdAt: Date
-}
+// You can infer the TypeScript type from your schema
+export type UserType = InferSchemaType<typeof UserSchema>
 ```
 
-The `@TypedSchema()` decorator transforms a TypeScript class into an Orionjs schema. Each property decorated with `@Prop()` becomes a field in your schema, with the type inferred from TypeScript.
+The `schemaWithName()` function creates an Orionjs schema with a name, which is required for GraphQL integration. Each property is defined with its type and options.
 
 ## Integration with GraphQL
 
-Schemas defined with `@TypedSchema` are automatically converted to GraphQL types when used in your API, saving you from writing redundant type definitions.
+Schemas defined with `schemaWithName` are automatically converted to GraphQL types when used in your API, saving you from writing redundant type definitions.
 
 ```typescript
-import {Query, Resolvers} from '@orion-js/graphql'
+import {createQuery, Resolvers} from '@orion-js/graphql'
 import {UserSchema} from '../schemas/UserSchema'
 
 @Resolvers()
 export class UserResolvers {
-  @Query({returns: UserSchema})
-  async getUser(userId: string) {
-    // Your implementation here
-    return user // Returns object that matches UserSchema
-  }
+  @Query()
+  getUser = createQuery({
+    params: {
+      userId: {type: typedId('user')}
+    }
+    returns: UserSchema,
+    resolve: async (params) => {
+      // Your implementation here
+      return user // Returns object that matches UserSchema
+    }
+  })
 }
 ```
 

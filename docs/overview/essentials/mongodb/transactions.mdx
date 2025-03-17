@@ -19,21 +19,38 @@ To use transactions in Orionjs:
 4. Commit or abort the transaction as needed
 
 ```typescript
-import {Repository, MongoCollection} from '@orion-js/mongodb'
+import {Repository} from '@orion-js/services'
+import {createCollection, typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+const AccountSchema = schemaWithName('AccountSchema', {
+  _id: {type: typedId('account')},
+  balance: {type: Number},
+  owner: {type: String}
+})
+
+const TransactionSchema = schemaWithName('TransactionSchema', {
+  _id: {type: typedId('trx')},
+  fromId: {type: String},
+  toId: {type: String},
+  amount: {type: Number},
+  date: {type: Date}
+})
+
+type AccountType = InferSchemaType<typeof AccountSchema>
+type TransactionType = InferSchemaType<typeof TransactionSchema>
 
 @Repository()
 export class AccountRepository {
-  @MongoCollection({
+  accounts = createCollection({
     name: 'accounts',
-    model: AccountSchema
+    schema: AccountSchema
   })
-  private accounts
 
-  @MongoCollection({
+  transactions = createCollection({
     name: 'transactions',
-    model: TransactionSchema
+    schema: TransactionSchema
   })
-  private transactions
 
   async transferFunds(fromId: string, toId: string, amount: number) {
     // Get the MongoDB client from the collection

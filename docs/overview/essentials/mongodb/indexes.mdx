@@ -10,14 +10,25 @@ Indexes are a crucial part of database performance optimization. Orionjs provide
 Indexes are defined as part of the collection configuration:
 
 ```typescript
-import {Repository, MongoCollection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
+import {Repository} from '@orion-js/services'
+import {createCollection, typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  email: {type: String},
+  firstName: {type: String},
+  lastName: {type: String},
+  createdAt: {type: Date}
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
 
 @Repository()
 export class UserRepository {
-  @MongoCollection({
+  users = createCollection({
     name: 'users',
-    model: UserSchema,
+    schema: UserSchema,
     indexes: [
       {
         keys: {email: 1},
@@ -31,7 +42,6 @@ export class UserRepository {
       }
     ]
   })
-  private users
   
   // Repository methods...
 }
@@ -132,4 +142,3 @@ Partial indexes only index documents that meet a specified filter expression:
     }
   }
 }
-```

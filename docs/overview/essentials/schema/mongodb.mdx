@@ -1,301 +1,169 @@
 ---
 title: 'MongoDB Integration'
-description: 'Using schemas with MongoDB collections in Orionjs'
+description: 'How schemas integrate with MongoDB in Orionjs'
 ---
 
-Orionjs integrates MongoDB with its schema system to provide type safety, validation, and improved developer experience. This document explains how to define and use schemas with MongoDB collections.
+Orionjs schemas seamlessly integrate with MongoDB through the `@orion-js/mongodb` package, providing type-safe database operations.
 
-## Overview
+## Defining Collections
 
-Schema integration in Orionjs MongoDB provides several benefits:
-
-- **Type Safety**: TypeScript interfaces generated from your schema definitions
-- **Validation**: Automatic validation of documents before database operations
-- **Error Handling**: Clear error messages when validation fails
-- **Default Values**: Automatic handling of default values
-- **Transformations**: Clean and transform data before storing or after retrieving
-
-## Defining Schemas
-
-There are two primary ways to define schemas for MongoDB collections in Orionjs:
-
-### 1. Using TypedSchema Decorator (Recommended)
-
-The recommended approach uses the `@TypedSchema()` and `@Prop()` decorators from `@orion-js/typed-model`:
-
-```typescript
-import {TypedSchema, Prop} from '@orion-js/typed-model'
-
-@TypedSchema()
-export class UserSchema {
-  @Prop()
-  _id: string
-
-  @Prop({
-    type: String,
-    min: 2,
-    max: 50
-  })
-  name: string
-
-  @Prop({
-    type: String,
-    optional: true
-  })
-  email?: string
-
-  @Prop({
-    type: Date,
-    defaultValue: () => new Date()
-  })
-  createdAt: Date
-
-  @Prop({
-    type: Boolean,
-    defaultValue: false
-  })
-  isActive: boolean
-}
-```
-
-### 2. Using Plain Schema Objects
-
-You can also define schemas using plain JavaScript objects:
+To create a MongoDB collection with schema validation:
 
 ```typescript
 import {createCollection} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-const userSchema = {
-  _id: {
-    type: String
-  },
-  name: {
-    type: String,
-    min: 2,
-    max: 50
-  },
-  email: {
-    type: String,
-    optional: true
-  },
-  createdAt: {
-    type: Date,
-    defaultValue: () => new Date()
-  },
-  isActive: {
-    type: Boolean,
-    defaultValue: false
+// Define your schema
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: String},
+  name: {type: String},
+  email: {type: String},
+  createdAt: {type: Date}
+})
+
+// Infer the TypeScript type from the schema
+export type UserType = InferSchemaType<typeof UserSchema>
+
+// Create a typed collection
+const Users = createCollection({
+  name: 'users',
+  schema: UserSchema
+})
+
+// Now you have type-safe database operations
+const user: UserType = await Users.findOne({email: 'user@example.com'})
+```
+
+## TypedId Support
+
+Orionjs MongoDB has built-in support for typed IDs with automatic prefixing:
+
+```typescript
+import {typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+export const ProductSchema = schemaWithName('ProductSchema', {
+  _id: {type: typedId('product')}, // Will create IDs like 'product-abc123'
+  name: {type: String},
+  price: {type: Number}
+})
+
+export type ProductType = InferSchemaType<typeof ProductSchema>
+
+// The type for _id will be `product-${string}`
+```
+
+## Collection Operations
+
+All MongoDB collection operations are typed based on your schema:
+
+```typescript
+import {createCollection} from '@orion-js/mongodb'
+import {OptionalId} from '@orion-js/mongodb'
+
+// OptionalId makes the _id field optional for insert operations
+const newUser: OptionalId<UserType> = {
+  name: 'John Doe',
+  email: 'john@example.com',
+  createdAt: new Date()
+}
+
+// Insert with type safety
+const userId = await Users.insertOne(newUser)
+
+// Update with type checking
+await Users.updateOne(
+  {_id: userId},
+  {$set: {name: 'John Smith'}}
+)
+
+// Find with type safety
+const user = await Users.findOne({_id: userId})
+console.log(user.name) // TypeScript knows the structure
+```
+
+## Schema Validation in MongoDB
+
+When you create a collection with a schema, Orionjs automatically:
+
+1. Creates a MongoDB validation schema based on your Orionjs schema
+2. Applies validation on all insert and update operations
+3. Enforces types and constraints defined in your schema
+
+```typescript
+// This will throw a validation error
+try {
+  await Users.insertOne({
+    name: 123, // Type error: should be string
+    email: 'invalid-email' // Validation error if email type is used
+  })
+} catch (error) {
+  console.error('Validation failed:', error)
+}
+```
+
+## Repository Pattern
+
+For better organization, you can create a repository class for each collection:
+
+```typescript
+import {createCollection} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+import {Service} from '@orion-js/services'
+
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  name: {type: String},
+  email: {type: String},
+  createdAt: {type: Date}
+})
+
+export type UserType = InferSchemaType<typeof UserSchema>
+
+@Service()
+export class UserRepository {
+  private users = createCollection({
+    name: 'users',
+    schema: UserSchema
+  })
+
+  async findById(id: string) {
+    return this.users.findOne({_id: id})
+  }
+
+  async findByEmail(email: string) {
+    return this.users.findOne({email})
+  }
+
+  async create(user: Omit<UserType, '_id'>) {
+    return this.users.insertOne(user)
+  }
+
+  async updateName(id: string, name: string) {
+    await this.users.updateOne({_id: id}, {$set: {name}})
   }
 }
-
-const Users = createCollection({
-  name: 'users',
-  schema: userSchema
-})
 ```
 
-## Connecting Schemas to Collections
+## Index Management
 
-Once you've defined a schema, you can connect it to a MongoDB collection:
-
-### With Repository Pattern (Recommended)
-
-```typescript
-import {Repository, MongoCollection, Collection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
-
-@Repository()
-export class UserRepository {
-  @MongoCollection({
-    name: 'users',
-    model: UserSchema,
-    indexes: [
-      {
-        keys: { email: 1 },
-        options: { unique: true }
-      }
-    ]
-  })
-  private users: Collection<UserSchema>
-  
-  // Repository methods...
-}
-```
-
-### With Direct Collection Creation
+You can define indices for your collections:
 
 ```typescript
 import {createCollection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
+import {UserSchema} from './schemas/UserSchema'
 
 const Users = createCollection({
   name: 'users',
-  model: UserSchema,
-  // Other options...
+  schema: UserSchema,
+  indexes: [
+    {
+      keys: {email: 1},
+      options: {unique: true}
+    },
+    {
+      keys: {name: 1, createdAt: -1}
+    }
+  ]
 })
-```
-
-## Schema Options
-
-### Property Options
-
-When defining schema properties with `@Prop()` or in plain objects, you can specify:
-
-```typescript
-{
-  // Core options
-  type: String | Number | Boolean | Date | [String] | etc.,  // Required
-  optional: boolean,                 // Default: false
-  
-  // Validation
-  min: number,                      // Min value/length
-  max: number,                      // Max value/length
-  allowedValues: any[],             // List of valid values
-  validate: (val) => string | void, // Custom validation function
-  
-  // Transformations
-  defaultValue: any | () => any,    // Default value
-  autoValue: (val) => any,          // Transform value before save
-  clean: (val) => any,              // Preprocess value
-  
-  // MongoDB specific
-  blackbox: boolean,                // Skip child validation
-}
-```
-
-## Nested Schemas
-
-You can nest schemas to represent complex document structures:
-
-### With TypedSchema Decorators
-
-```typescript
-@TypedSchema()
-class AddressSchema {
-  @Prop()
-  street: string
-  
-  @Prop()
-  city: string
-  
-  @Prop()
-  country: string
-}
-
-@TypedSchema()
-class UserSchema {
-  @Prop()
-  _id: string
-  
-  @Prop()
-  name: string
-  
-  @Prop({ type: AddressSchema })
-  address: AddressSchema
-  
-  @Prop({ type: [AddressSchema] })
-  alternateAddresses: AddressSchema[]
-}
-```
-
-### With Plain Objects
-
-```typescript
-const addressSchema = {
-  street: { type: String },
-  city: { type: String },
-  country: { type: String }
-}
-
-const userSchema = {
-  _id: { type: String },
-  name: { type: String },
-  address: { type: addressSchema },
-  alternateAddresses: { type: [addressSchema] }
-}
-```
-
-## Arrays in Schemas
-
-Define arrays by wrapping the type in square brackets:
-
-```typescript
-@TypedSchema()
-class UserSchema {
-  @Prop()
-  _id: string
-  
-  @Prop({ type: [String] })
-  tags: string[]
-  
-  @Prop({ type: [Number] })
-  scores: number[]
-}
-```
-
-## Validation Process
-
-When you insert or update documents, Orionjs automatically:
-
-1. Validates document structure against the schema
-2. Applies default values for missing fields
-3. Runs `autoValue` and `clean` functions
-4. Checks field constraints (`min`, `max`, `allowedValues`, etc.)
-5. Executes custom validation functions
-
-If validation fails, operations will throw a `ValidationError` that contains details about the validation issues.
-
-## Type Safety with TypeScript
-
-One of the biggest advantages of Orionjs's schema system is TypeScript integration:
-
-```typescript
-// Type-safe methods
-const user = await userRepository.findById('123')
-
-// TypeScript knows user is a UserSchema
-console.log(user.name)
-
-// Would cause a TypeScript error
-console.log(user.nonExistentField)
-```
-
-## Advanced Schema Features
-
-### Custom Types
-
-You can create custom field types by implementing the `FieldType` interface from `@orion-js/schema`.
-
-### Schema Extensions
-
-Schemas can extend other schemas, allowing for code reuse and hierarchies:
-
-```typescript
-@TypedSchema()
-class BaseSchema {
-  @Prop()
-  _id: string
-  
-  @Prop()
-  createdAt: Date
-}
-
-@TypedSchema()
-class UserSchema extends BaseSchema {
-  @Prop()
-  name: string
-  
-  @Prop()
-  email: string
-}
-```
-
-## Best Practices
-
-- **Use TypedSchema**: The decorator pattern provides better TypeScript integration
-- **Validate Early**: Define comprehensive schemas to catch errors before they reach the database
-- **Be Specific**: Use specific types rather than `any` whenever possible
-- **Document Structure**: Keep schema definitions close to their corresponding repository
-- **Repository Pattern**: Encapsulate database operations within repositories
-
-By combining MongoDB with Orionjs's schema system, you get the flexibility of a document database with the safety and structure of a typed system. 
+``` 

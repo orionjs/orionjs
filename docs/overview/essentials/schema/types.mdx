@@ -10,22 +10,19 @@ Orionjs supports a variety of data types for schema definitions. This guide expl
 The most common types are directly mapped from JavaScript/TypeScript types:
 
 ```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-class BasicTypesExample {
-  @Prop()
-  stringField: string        // Text values
+export const BasicTypesExample = schemaWithName('BasicTypesExample', {
+  stringField: {type: String},        // Text values
   
-  @Prop()
-  numberField: number        // Numeric values (integers or floats)
+  numberField: {type: Number},        // Numeric values (integers or floats)
   
-  @Prop()
-  booleanField: boolean      // true/false values
+  booleanField: {type: Boolean},      // true/false values
   
-  @Prop()
-  dateField: Date            // Date and time values
-}
+  dateField: {type: Date}             // Date and time values
+})
+
+export type BasicTypesExampleType = InferSchemaType<typeof BasicTypesExample>
 ```
 
 ## Special Types
@@ -33,20 +30,17 @@ class BasicTypesExample {
 Orionjs supports special types for common use cases:
 
 ```typescript
-@TypedSchema()
-class SpecialTypesExample {
-  @Prop({type: 'ID'})        // String or number ID (typically for database IDs)
-  idField: string
+export const SpecialTypesExample = schemaWithName('SpecialTypesExample', {
+  idField: {type: 'ID'},        // String or number ID (typically for database IDs)
   
-  @Prop({type: 'email'})     // Email with automatic format validation
-  emailField: string
+  emailField: {type: 'email'},  // Email with automatic format validation
   
-  @Prop({type: 'integer'})   // Ensures whole numbers only
-  integerField: number
+  integerField: {type: 'integer'},   // Ensures whole numbers only
   
-  @Prop({type: 'blackbox'})  // Any object without specific schema
-  blackboxField: any
-}
+  blackboxField: {type: 'blackbox'}  // Any object without specific schema
+})
+
+export type SpecialTypesExampleType = InferSchemaType<typeof SpecialTypesExample>
 ```
 
 ## Array Types
@@ -54,21 +48,19 @@ class SpecialTypesExample {
 Define arrays using TypeScript array syntax or the type option:
 
 ```typescript
-@TypedSchema()
-class ArrayExample {
-  @Prop({type: [String]})
-  stringArray: string[]      // Array of strings
+export const ArrayExample = schemaWithName('ArrayExample', {
+  stringArray: {type: [String]},      // Array of strings
   
-  @Prop({type: [Number]})    // Alternative syntax
-  numberArray: number[]
+  numberArray: {type: [Number]},    // Alternative syntax
   
-  @Prop({
+  limitedArray: {
     type: [String],
     minLength: 1,            // Minimum array length
     maxLength: 10            // Maximum array length
-  })
-  limitedArray: string[]
-}
+  }
+})
+
+export type ArrayExampleType = InferSchemaType<typeof ArrayExample>
 ```
 
 ## Nested Schema Types
@@ -76,30 +68,26 @@ class ArrayExample {
 You can use other schemas as types for nested structures:
 
 ```typescript
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-class AddressSchema {
-  @Prop()
-  street: string
-  
-  @Prop()
-  city: string
-}
+export const AddressSchema = schemaWithName('AddressSchema', {
+  street: {type: String},
+  city: {type: String}
+})
 
-@TypedSchema()
-class UserSchema {
-  @Prop()
-  name: string
+export type AddressType = InferSchemaType<typeof AddressSchema>
+
+export const UserSchema = schemaWithName('UserSchema', {
+  name: {type: String},
   
   // Nested schema
-  @Prop({type: getModelForClass(AddressSchema)})
-  address: AddressSchema
+  address: {type: AddressSchema},
   
   // Array of schemas
-  @Prop({type: [getModelForClass(AddressSchema)]})
-  alternateAddresses: AddressSchema[]
-}
+  alternateAddresses: {type: [AddressSchema]}
+})
+
+export type UserType = InferSchemaType<typeof UserSchema>
 ```
 
 ## Enum Types
@@ -107,8 +95,7 @@ class UserSchema {
 For fields with a limited set of allowed values, use the `createEnum` function:
 
 ```typescript
-import {createEnum} from '@orion-js/schema'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {createEnum, schemaWithName, InferSchemaType} from '@orion-js/schema'
 
 // Create a type-safe enum
 export const StatusEnum = createEnum('StatusEnum', [
@@ -120,14 +107,12 @@ export const StatusEnum = createEnum('StatusEnum', [
 // Create a numeric enum
 export const FibonacciEnum = createEnum('FibonacciEnum', [1, 2, 3, 5, 8, 13] as const)
 
-@TypedSchema()
-class EnumExample {
-  @Prop({type: StatusEnum})
-  status: typeof StatusEnum.type
-  
-  @Prop({type: FibonacciEnum, optional: true})
-  fibonacciNumber?: typeof FibonacciEnum.type
-}
+export const EnumExample = schemaWithName('EnumExample', {
+  status: {type: StatusEnum},
+  level: {type: FibonacciEnum}
+})
+
+export type EnumExampleType = InferSchemaType<typeof EnumExample>
 ```
 
 Using `createEnum` provides type safety throughout your application:
@@ -136,25 +121,12 @@ Using `createEnum` provides type safety throughout your application:
 2. The schema validation ensures only valid enum values are accepted
 3. GraphQL will expose the enum as a proper GraphQL enum type
 
-## Type Conversion
-
-During schema processing, TypeScript types are converted as follows:
-
-| TypeScript Type | Schema Type | Description |
-|----------------|-------------|-------------|
-| `string`       | `'string'`  | Text values |
-| `number`       | `'number'`  | Numeric values |
-| `boolean`      | `'boolean'` | True/false values |
-| `Date`         | `'date'`    | Date and time |
-| TypedSchema class | Complex structure | Nested schema |
-| `T[]`          | Array type  | Collection of values |
-
 ## Custom Types
 
 You can create custom types by extending existing ones:
 
 ```typescript
-import {createType} from '@orion-js/schema'
+import {createType, schemaWithName, InferSchemaType} from '@orion-js/schema'
 
 // Custom type for phone numbers
 const PhoneNumber = createType({
@@ -171,21 +143,21 @@ const PhoneNumber = createType({
   }
 })
 
-@TypedSchema()
-class ContactSchema {
-  @Prop({type: PhoneNumber})
-  phone: string
-}
+export const ContactSchema = schemaWithName('ContactSchema', {
+  phone: {type: PhoneNumber}
+})
+
+export type ContactType = InferSchemaType<typeof ContactSchema>
 ```
 
 ## Optional Types
 
-Make any field optional using the optional parameter or TypeScript's optional modifier:
+Make any field optional using the optional parameter:
 
 ```typescript
-@TypedSchema()
-class OptionalExample {
-  @Prop({optional: true})    // Explicit definition
-  optionalField?: string     // TypeScript optional modifier
-}
+export const OptionalExample = schemaWithName('OptionalExample', {
+  optionalField: {type: String, optional: true}    // Explicit definition
+})
+
+export type OptionalExampleType = InferSchemaType<typeof OptionalExample>
 ``` 

@@ -1,238 +1,138 @@
 ---
 title: 'Advanced Schema Usage'
-description: 'Advanced patterns and techniques for schema usage'
+description: 'Advanced techniques for working with schemas in Orionjs'
 ---
 
-This guide covers advanced techniques for working with schemas in Orionjs, including inheritance, composition, and integration with TypeScript.
-
-## Schema Inheritance
-
-You can use TypeScript inheritance to extend schemas:
-
-```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-
-@TypedSchema()
-export class BaseSchema {
-  @Prop()
-  _id: string
-
-  @Prop()
-  createdAt: Date
-
-  @Prop({optional: true})
-  updatedAt?: Date
-}
-
-@TypedSchema()
-export class ProductSchema extends BaseSchema {
-  @Prop()
-  name: string
-
-  @Prop()
-  price: number
-}
-```
-
-This creates a `ProductSchema` that includes all fields from `BaseSchema` plus its own fields.
+This guide covers advanced aspects of working with Orionjs schemas, including composition, inheritance, and complex validation.
 
 ## Schema Composition
 
-For more flexible schema composition, you can use nested schemas:
+You can compose schemas together to create more complex structures:
 
 ```typescript
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-export class AddressSchema {
-  @Prop()
-  street: string
-
-  @Prop()
-  city: string
-
-  @Prop()
-  zipCode: string
-}
-
-@TypedSchema()
-export class CustomerSchema {
-  @Prop()
-  name: string
-
-  @Prop()
-  email: string
-
-  @Prop({type: getModelForClass(AddressSchema)})
-  billingAddress: AddressSchema
-
-  @Prop({type: getModelForClass(AddressSchema), optional: true})
-  shippingAddress?: AddressSchema
-}
-```
-
-## Schema Cloning
-
-Sometimes you need to create a variation of an existing schema. The `cloneSchemaClass` utility allows you to create a derivative schema:
-
-```typescript
-import {Prop, TypedSchema, cloneSchemaClass} from '@orion-js/typed-model'
-
-@TypedSchema()
-export class UserSchema {
-  @Prop()
-  _id: string
-
-  @Prop()
-  name: string
-
-  @Prop()
-  email: string
-
-  @Prop({private: true})
-  password: string
-}
-
-// Create a public version without the password field
-const PublicUser = cloneSchemaClass(UserSchema, {
-  name: 'PublicUser',
-  pickFields: ['_id', 'name', 'email'] as const
+// Base schemas
+export const AddressSchema = schemaWithName('AddressSchema', {
+  street: {type: String},
+  city: {type: String},
+  zipCode: {type: String}
 })
-type PublicUser = typeof PublicUser.type
+
+export const NameSchema = schemaWithName('NameSchema', {
+  firstName: {type: String},
+  lastName: {type: String}
+})
+
+// Composed schema
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: String},
+  
+  // Embed the name schema
+  name: {type: NameSchema},
+  
+  // Embed the address schema
+  address: {type: AddressSchema, optional: true},
+  
+  email: {type: String}
+})
+
+export type UserType = InferSchemaType<typeof UserSchema>
 ```
 
-## Working with Arrays of Schemas
+## Arrays of Complex Types
 
-For collections of nested schemas, use array notation with `getModelForClass`:
+Working with arrays of objects:
 
 ```typescript
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-export class OrderItemSchema {
-  @Prop()
-  productId: string
+export const TagSchema = schemaWithName('TagSchema', {
+  name: {type: String},
+  color: {type: String, optional: true}
+})
 
-  @Prop()
-  quantity: number
+export const PostSchema = schemaWithName('PostSchema', {
+  _id: {type: String},
+  title: {type: String},
+  
+  // Array of primitive values
+  categories: {type: [String]},
+  
+  // Array of complex objects
+  tags: {type: [TagSchema], minLength: 1, maxLength: 10}
+})
 
-  @Prop()
-  unitPrice: number
-}
-
-@TypedSchema()
-export class OrderSchema {
-  @Prop()
-  _id: string
-
-  @Prop()
-  customerId: string
-
-  @Prop({
-    type: [getModelForClass(OrderItemSchema)],
-    min: 1 // Order must have at least one item
-  })
-  items: OrderItemSchema[]
-}
+export type PostType = InferSchemaType<typeof PostSchema>
 ```
 
-## Dynamic Schemas
+## Conditional Validation
 
-In some cases, you might need to create schemas dynamically:
+You can implement conditional validation based on other field values:
 
 ```typescript
-import {createSchema} from '@orion-js/schema'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-const createDynamicSchema = (fields) => {
-  const schemaDefinition = {
-    _id: {
-      type: 'ID'
+export const PaymentSchema = schemaWithName('PaymentSchema', {
+  method: {
+    type: String,
+    allowedValues: ['credit_card', 'bank_transfer', 'paypal']
+  },
+  
+  // Credit card details, required only when method is 'credit_card'
+  cardNumber: {
+    type: String,
+    optional: true,
+    validate: (value, {doc}) => {
+      if (doc.method === 'credit_card' && !value) {
+        return 'required-for-credit-card'
+      }
+      if (value && !/^\d{16}$/.test(value)) {
+        return 'invalid-card-number'
+      }
+    }
+  },
+  
+  // PayPal email, required only when method is 'paypal'
+  paypalEmail: {
+    type: String,
+    optional: true,
+    validate: (value, {doc}) => {
+      if (doc.method === 'paypal' && !value) {
+        return 'required-for-paypal'
+      }
     }
   }
-  
-  for (const field of fields) {
-    schemaDefinition[field.name] = {
-      type: field.type,
-      optional: field.isOptional
+})
+
+export type PaymentType = InferSchemaType<typeof PaymentSchema>
+```
+
+## Custom Types with Transformation
+
+Creating a custom type with validation and transformation:
+
+```typescript
+import {schemaWithName, InferSchemaType, createType} from '@orion-js/schema'
+
+// Custom type for phone numbers
+const PhoneNumberType = createType({
+  name: 'phoneNumber',
+  validate(value) {
+    if (!/^\+?[0-9\s-()]+$/.test(value)) {
+      return 'invalid-phone-format'
     }
+  },
+  clean(value) {
+    // Remove non-digit characters
+    return value.replace(/[^0-9+]/g, '')
   }
-  
-  return createSchema(schemaDefinition)
-}
-```
+})
 
-## Schema Type Utilities
+export const ContactSchema = schemaWithName('ContactSchema', {
+  name: {type: String},
+  phone: {type: PhoneNumberType}
+})
 
-Orionjs provides utilities to extract TypeScript types from schemas:
-
-```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-
-@TypedSchema()
-export class UserSchema {
-  @Prop()
-  _id: string
-
-  @Prop()
-  name: string
-}
-
-// Extract the type from the schema
-type User = typeof UserSchema.type
-
-// This is equivalent to:
-type UserManual = {
-  _id: string
-  name: string
-}
-
-// You can use this in functions for type safety
-function processUser(user: User) {
-  console.log(user.name)
-}
-```
-
-## Schema Integration with GraphQL Resolvers
-
-Schemas are seamlessly integrated with GraphQL resolvers, allowing for strong typing throughout your API:
-
-```typescript
-import {Query, Resolvers} from '@orion-js/graphql'
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {UserSchema} from './schemas/UserSchema'
-
-@TypedSchema()
-export class SearchParams {
-  @Prop({optional: true})
-  query?: string
-
-  @Prop({defaultValue: 1})
-  page: number
-
-  @Prop({defaultValue: 20})
-  limit: number
-}
-
-@TypedSchema()
-export class SearchResult {
-  @Prop({type: [getModelForClass(UserSchema)]})
-  items: UserSchema[]
-
-  @Prop()
-  totalCount: number
-
-  @Prop()
-  hasMore: boolean
-}
-
-@Resolvers()
-export class UserResolvers {
-  @Query({
-    params: SearchParams,
-    returns: SearchResult
-  })
-  async searchUsers(params: SearchParams): Promise<SearchResult> {
-    // Implementation here
-  }
-}
+export type ContactType = InferSchemaType<typeof ContactSchema>
 ```

@@ -115,40 +115,73 @@ Behind the scenes, Orionjs uses the Facebook DataLoader library to implement eff
 ## Example: Solving N+1 Query Problem
 
 ```typescript
-// Without DataLoader (N+1 problem)
-async function getPostsWithAuthors(postIds) {
-  const posts = await Posts.find({_id: {$in: postIds}}).toArray()
+import {Repository} from '@orion-js/services'
+import {createCollection, typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+const PostSchema = schemaWithName('PostSchema', {
+  _id: {type: typedId('post')},
+  title: {type: String},
+  content: {type: String},
+  authorId: {type: String}
+})
+
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  name: {type: String},
+  email: {type: String}
+})
+
+type PostType = InferSchemaType<typeof PostSchema>
+type UserType = InferSchemaType<typeof UserSchema>
+
+@Repository()
+class ContentRepository {
+  posts = createCollection({
+    name: 'posts',
+    schema: PostSchema
+  })
   
-  // This causes N separate database queries, one for each post
-  for (const post of posts) {
-    post.author = await Users.findOne({_id: post.authorId})
+  users = createCollection({
+    name: 'users',
+    schema: UserSchema
+  })
+  
+  // Without DataLoader (N+1 problem)
+  async getPostsWithAuthors(postIds: string[]): Promise<(PostType & {author: UserType})[]> {
+    const posts = await this.posts.find({_id: {$in: postIds}}).toArray()
+    
+    // This causes N separate database queries, one for each post
+    for (const post of posts) {
+      post.author = await this.users.findOne({_id: post.authorId})
+    }
+    
+    return posts as (PostType & {author: UserType})[]
   }
   
-  return posts
-}
-
-// With DataLoader (optimized)
-async function getPostsWithAuthors(postIds) {
-  const posts = await Posts.find({_id: {$in: postIds}}).toArray()
-  
-  // This batches all author lookups into a single query
-  const authorIds = posts.map(post => post.authorId)
-  const authors = await Users.loadMany({
-    key: '_id',
-    values: authorIds
-  })
-  
-  // Map authors to posts
-  const authorMap = {}
-  authors.forEach(author => {
-    authorMap[author._id] = author
-  })
-  
-  posts.forEach(post => {
-    post.author = authorMap[post.authorId]
-  })
-  
-  return posts
+  // With DataLoader (optimized)
+  async getPostsWithAuthorsOptimized(postIds: string[]): Promise<(PostType & {author: UserType})[]> {
+    const posts = await this.posts.find({_id: {$in: postIds}}).toArray()
+    
+    // This batches all author lookups into a single query
+    const authorIds = posts.map(post => post.authorId)
+    const authors = await this.users.loadMany({
+      key: '_id',
+      values: authorIds
+    })
+    
+    // Map authors to posts
+    const authorMap: Record<string, UserType> = {}
+    authors.forEach(author => {
+      authorMap[author._id] = author
+    })
+    
+    posts.forEach(post => {
+      post.author = authorMap[post.authorId]
+    })
+    
+    return posts as (PostType & {author: UserType})[]
+  }
 }
 ```
 

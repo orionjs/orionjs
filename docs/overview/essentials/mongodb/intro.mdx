@@ -18,14 +18,23 @@ Working directly with the MongoDB driver can be verbose and lacks type safety. T
 MongoDB collections are typically used within repository classes, following Orionjs's architecture:
 
 ```typescript
-import {Repository, MongoCollection, Collection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
+import {Repository} from '@orion-js/services'
+import {createCollection, typedId, InferSchemaType} from '@orion-js/mongodb'
+import {schemaWithName} from '@orion-js/schema'
+
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  name: {type: String},
+  email: {type: String}
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
 
 @Repository()
 export class UserRepository {
-  @MongoCollection({
+  users = createCollection({
     name: 'users',
-    model: UserSchema,
+    schema: UserSchema,
     indexes: [
       {
         keys: {
@@ -34,13 +43,12 @@ export class UserRepository {
       },
     ],
   })
-  private users: Collection<UserSchema>
 
-  async findById(id: string): Promise<UserSchema> {
+  async findById(id: string): Promise<UserType> {
     return await this.users.findOne({_id: id})
   }
 
-  async create(userData): Promise<string> {
+  async create(userData: Omit<UserType, '_id'>): Promise<string> {
     return await this.users.insertOne(userData)
   }
 }

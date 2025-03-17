@@ -72,14 +72,14 @@ For nested fields, the path will include the full path to the field:
 
 ## Custom Validation
 
-You can create custom validation rules using the `validate` option in the `@Prop()` decorator:
+You can create custom validation rules using the `validate` option in property definitions:
 
 ```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-export class ProductSchema {
-  @Prop({
+export const ProductSchema = schemaWithName('ProductSchema', {
+  price: {
+    type: Number,
     validate: (value) => {
       if (value < 0) {
         return 'price-must-be-positive'
@@ -88,10 +88,10 @@ export class ProductSchema {
         return 'price-too-high'
       }
     }
-  })
-  price: number
+  },
   
-  @Prop({
+  slug: {
+    type: String,
     validate: async (value) => {
       // You can also perform async validation
       const exists = await checkIfSlugExists(value)
@@ -99,9 +99,10 @@ export class ProductSchema {
         return 'slug-already-exists'
       }
     }
-  })
-  slug: string
-}
+  }
+})
+
+export type ProductType = InferSchemaType<typeof ProductSchema>
 ```
 
 The validate function:
@@ -115,19 +116,16 @@ The validate function:
 For more complex validation that depends on multiple fields, you can use the options object:
 
 ```typescript
-@Prop({
+billingInfo: {
+  type: String,
+  optional: true,
   validate: (value, {doc}) => {
     if (doc.type === 'subscription' && !value) {
-      return 'required-for-subscription'
+      return 'billing-info-required-for-subscriptions'
     }
   }
-})
-renewalDate: Date
+}
 ```
-
-The options object provides:
-- `doc`: The full document being validated
-- `schema`: The current schema being validated against
 
 ## Cleaning Data
 
@@ -160,31 +158,68 @@ const cleanedData = await clean(UserSchema, {
 When using schemas with GraphQL resolvers, validation happens automatically for parameters:
 
 ```typescript
-import {Mutation, Resolvers} from '@orion-js/graphql'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {createMutation, Resolvers} from '@orion-js/graphql'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-class CreateUserParams {
-  @Prop({min: 2})
-  name: string
-  
-  @Prop()
-  email: string
-}
+export const CreateUserParams = schemaWithName('CreateUserParams', {
+  name: {type: String, min: 2},
+  email: {type: String}
+})
+
+export type CreateUserParamsType = InferSchemaType<typeof CreateUserParams>
 
 @Resolvers()
 class UserResolvers {
-  @Mutation({
+  @Mutation()
+  createUser = createMutation({
     params: CreateUserParams,
-    returns: Boolean
+    returns: Boolean,
+    resolve: async (params: CreateUserParamsType) => {
+      // Params are already validated
+      // If validation failed, GraphQL would return an error
+      // ...implementation
+      return true
+    }
   })
-  async createUser(params: CreateUserParams) {
-    // Params are already validated
-    // If validation failed, GraphQL would return an error
-    // ...implementation
-    return true
-  }
 }
 ```
 
-This ensures that your API is always receiving valid data before it reaches your business logic. 
+This ensures that your API is always receiving valid data before it reaches your business logic.
+
+## Validation in Schema Definition
+
+When defining a property in a schema, you can specify validation constraints:
+
+```typescript
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+export const ProductSchema = schemaWithName('ProductSchema', {
+  name: {
+    type: String,
+    min: 3,
+    max: 100,
+    validate: value => {
+      if (value.includes('forbidden')) {
+        return 'name-contains-forbidden-word'
+      }
+    }
+  },
+  
+  price: {
+    type: Number,
+    min: 0
+  },
+  
+  description: {
+    type: String,
+    optional: true
+  }
+})
+
+export type ProductType = InferSchemaType<typeof ProductSchema>
+```
+
+The validation will run automatically when:
+1. A document is validated against the schema (e.g., in MongoDB operations)
+2. A GraphQL input is processed
+3. You manually call `clean` or `validate` on your schema 

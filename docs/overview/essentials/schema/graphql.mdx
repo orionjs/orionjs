@@ -3,133 +3,138 @@ title: 'GraphQL Integration'
 description: 'How schemas integrate with GraphQL in Orionjs'
 ---
 
-One of the key benefits of Orionjs schemas is their seamless integration with GraphQL. This integration happens transparently, without requiring additional configuration or type definitions.
+Orionjs schemas automatically integrate with GraphQL, providing a seamless type-safe experience from your database to your API.
 
-## Schema-to-GraphQL Type Conversion
+## Basic Integration
 
-When a schema is used in a GraphQL context, Orionjs automatically generates the appropriate GraphQL types:
-
-```typescript
-// Your schema definition
-@TypedSchema()
-export class UserSchema {
-  @Prop()
-  _id: string
-
-  @Prop({description: 'The user\'s full name'})
-  name: string
-}
-
-// Behind the scenes, Orionjs generates equivalent GraphQL types:
-// type UserSchema {
-//   _id: String!
-//   name: String! @description(value: "The user's full name")
-// }
-```
-
-## GraphQL-Specific Schema Options
-
-You can control how schemas are represented in GraphQL using specific options:
+When you define a schema with `schemaWithName()`, it can be used directly in GraphQL resolvers:
 
 ```typescript
-@TypedSchema({
-  graphql: {
-    name: 'User',               // Custom GraphQL type name
-    description: 'A user record' // GraphQL type description
-  }
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+import {createQuery, Resolvers} from '@orion-js/graphql'
+
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: String},
+  name: {type: String},
+  email: {type: String, optional: true},
+  createdAt: {type: Date}
 })
-export class UserSchema {
-  @Prop({
-    private: true              // Exclude this field from GraphQL
-  })
-  password: string
 
-  @Prop({
-    graphql: {
-      name: 'fullName',        // Custom field name in GraphQL
-      description: 'Complete name of the user'
+export type UserType = InferSchemaType<typeof UserSchema>
+
+@Resolvers()
+class UserResolvers {
+  @Query()
+  getUser = createQuery({
+    params: {
+      userId: {type: String}
+    },
+    returns: UserSchema,
+    resolve: async ({userId}) => {
+      // Query implementation
+      return user // This will be validated against UserSchema
     }
   })
-  name: string
 }
 ```
 
-## Skipping fields
+Orionjs will automatically:
+1. Generate the GraphQL type for `UserSchema`
+2. Validate the resolver's return value against the schema
+3. Convert any special types (like dates) to the appropriate GraphQL format
 
-The `private` option is particularly useful for GraphQL as it allows you to exclude sensitive fields from your API:
+## GraphQL Schema Customization
 
-```typescript
-@TypedSchema()
-export class UserSchema {
-  @Prop()
-  email: string
-
-  @Prop({private: true})  // This field won't appear in GraphQL schema
-  hashedPassword: string
-}
-```
-
-## Enum Representation
-
-Enums are automatically exposed as GraphQL enum types, ensuring type safety across your API:
+You can customize how a schema appears in GraphQL:
 
 ```typescript
-export const OrderStatusEnum = createEnum('OrderStatusEnum', [
-  'pending',
-  'completed',
-  'cancelled'
-] as const)
+import {schemaWithName} from '@orion-js/schema'
 
-// Generates GraphQL enum:
-// enum OrderStatusEnum {
-//   pending
-//   completed
-//   cancelled
-// }
-```
-
-## Internal Type Mapping
-
-Orionjs handles the mapping between schema types and GraphQL types through an internal `__graphQLType` property, allowing for precise control over the generated GraphQL schema:
-
-| Schema Type | GraphQL Type | Internal Representation |
-|------------|--------------|-------------------------|
-| `string`   | `String`     | `__graphQLType: 'String'` |
-| `number`   | `Float`      | `__graphQLType: 'Float'` |
-| `integer`  | `Int`        | `__graphQLType: 'Int'` |
-| `boolean`  | `Boolean`    | `__graphQLType: 'Boolean'` |
-| `Date`     | `Date`       | Custom scalar type |
-| TypedSchema | Object type | Nested object definition |
-
-## Advanced: Custom GraphQL Types
-
-For advanced use cases, you can create custom GraphQL types by implementing a `toGraphQLType` method:
-
-```typescript
-import {GraphQLScalarType} from 'graphql'
-
-@TypedSchema()
-class ContactSchema {
-  @Prop({
-    name: 'Email',
+export const ProductSchema = schemaWithName('ProductSchema', {
+  _id: {type: String},
+  
+  name: {
     type: String,
-    toGraphQLType() {
-      return new GraphQLScalarType({
-        name: 'Email',
-        description: 'Email address format',
-        serialize: value => value,
-        parseValue: value => {
-          // Custom email validation logic
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            throw new Error('Invalid email format')
-          }
-          return value
-        }
-      })
+    label: 'Product Name',
+    description: 'The display name of the product', // Appears in GraphQL documentation
+    graphQLName: 'displayName' // Override the field name in GraphQL
+  },
+  
+  internalCode: {
+    type: String,
+    private: true // This field won't be exposed in GraphQL
+  },
+  
+  price: {type: Number}
+})
+```
+
+## Generated GraphQL Types
+
+The following table shows how schema types map to GraphQL types:
+
+| Schema Type | GraphQL Type | Notes |
+|-------------|--------------|-------|
+| `String` | `String` | Plain text |
+| `Number` | `Float` | Default numeric type |
+| `'integer'` | `Int` | Whole numbers |
+| `Boolean` | `Boolean` | True/false values |
+| `Date` | `Date` | Custom scalar type |
+| Schema | Object Type | Nested object definition |
+| `[Type]` | `[Type]` | List of items |
+| Enum | Enum | Custom enum type |
+
+## Using Schemas for GraphQL Inputs
+
+Schemas can be used for input validation:
+
+```typescript
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+import {createMutation, Resolvers} from '@orion-js/graphql'
+
+export const CreateUserInput = schemaWithName('CreateUserInput', {
+  name: {type: String, min: 2},
+  email: {type: String},
+  role: {type: String, allowedValues: ['admin', 'user']}
+})
+
+export type CreateUserInputType = InferSchemaType<typeof CreateUserInput>
+
+@Resolvers()
+class UserResolvers {
+  @Mutation()
+  createUser = createMutation({
+    params: CreateUserInput,
+    returns: UserSchema,
+    resolve: async (params: CreateUserInputType) => {
+      // The input has been validated against CreateUserInput schema
+      return await createUser(params)
     }
   })
-  email: string
 }
 ```
 
-This integration allows you to define your data structure once and automatically generate a type-safe GraphQL API that respects all your validation rules and type definitions. 
+## Custom GraphQL Type Resolvers
+
+For complex field types, you can add custom resolvers:
+
+```typescript
+import {schemaWithName} from '@orion-js/schema'
+import {createModelResolver, ModelResolvers} from '@orion-js/graphql'
+
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: String},
+  name: {type: String},
+  // More fields...
+})
+
+@ModelResolvers(UserSchema)
+class UserGraphQLResolvers {
+  @ModelResolver()
+  fullName = createModelResolver({
+    returns: String,
+    resolve: async (user) => {
+      return `${user.firstName} ${user.lastName}`
+    }
+  })
+} 

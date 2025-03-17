@@ -11,22 +11,36 @@ There are two main ways to create collections in Orionjs:
 
 ### Using the Repository Pattern (Recommended)
 
-The recommended approach is to use the `@Repository` and `@MongoCollection` decorators:
+The recommended approach is to use the repository pattern with proper typing:
 
 ```typescript
-import {Repository, MongoCollection, Collection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
+import {Repository} from '@orion-js/services'
+import {createCollection, typedId, OptionalId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  name: {type: String},
+  email: {type: String, optional: true}
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
 
 @Repository()
 export class UserRepository {
-  @MongoCollection({
+  users = createCollection({
     name: 'users',
-    model: UserSchema,
+    schema: UserSchema,
     // Other options...
   })
-  private users: Collection<UserSchema>
   
-  // Repository methods...
+  async findByEmail(email: string): Promise<UserType | null> {
+    return await this.users.findOne({email})
+  }
+  
+  async createUser(userData: OptionalId<UserType>): Promise<string> {
+    return await this.users.insertOne(userData)
+  }
 }
 ```
 
@@ -35,30 +49,37 @@ export class UserRepository {
 You can also create collections directly:
 
 ```typescript
-import {createCollection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
+import {createCollection, typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')},
+  name: {type: String},
+  email: {type: String, optional: true}
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
 
 const Users = createCollection({
   name: 'users',
-  model: UserSchema,
+  schema: UserSchema,
   // Other options...
 })
 ```
 
 ## Configuration Options
 
-The `MongoCollection` decorator and `createCollection` function accept the following options:
+The `createCollection` function accepts the following options:
 
 ```typescript
 {
   // Required options
   name: string,             // Collection name in MongoDB
-  model: TypedSchema,       // Schema for validation and typing
+  schema: SchemaType,       // Schema for validation and typing
 
   // Optional options
   connectionName: string,   // Connection name (default: 'main')
   idGeneration: 'mongo' | 'random' | 'uuid', // ID generation method (default: 'mongo')
-  idPrefix: string,         // Prefix for generated IDs
   indexes: Index[],         // Array of indexes to create
 } 
 ```
@@ -68,9 +89,9 @@ The `MongoCollection` decorator and `createCollection` function accept the follo
 Orionjs offers several options for generating document IDs:
 
 ```typescript
-@MongoCollection({
+const Users = createCollection({
   name: 'users',
-  model: UserSchema,
+  schema: UserSchema,
   idGeneration: 'uuid' // Generate UUIDs for _id
 })
 ```
@@ -81,55 +102,39 @@ Orionjs offers several options for generating document IDs:
 - `'random'`: Random string IDs
 - `'uuid'`: UUID v4 strings
 
-### Prefixed IDs
+### Typed IDs
 
-You can add a prefix to generated IDs, which is useful for distinguishing different document types:
+For TypeScript users, Orionjs provides powerful ways to create type-safe IDs using `typedId`:
 
 ```typescript
-@MongoCollection({
+import {typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('user')}, // Will create IDs like 'user-abc123'
+  name: {type: String},
+  email: {type: String}
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
+// UserType._id will be typed as `user-${string}`
+
+const Users = createCollection({
   name: 'users',
-  model: UserSchema,
-  idPrefix: 'user_'  // All IDs will start with "user_"
+  schema: UserSchema
 })
 ```
 
-When using `idPrefix`, the `idGeneration` method will default to `random` if not specified.
-
-### Type-Safe IDs with TypeScript
-
-For TypeScript users, Orionjs provides powerful ways to create type-safe IDs:
-
-#### String Template IDs
-
-```typescript
-// Define ID type with a specific prefix
-type UserId = `user-${string}`
-
-@TypedSchema()
-class UserSchema {
-  @Prop()
-  _id: UserId
-  
-  @Prop()
-  name: string
-}
-
-// Create collection with matching prefix
-const Users = createCollection<UserSchema>({
-  name: 'users',
-  schema: UserSchema,
-  idPrefix: 'user-'  // Must match the prefix in the type
-})
-```
+The library will automatically detect `typedId` from the schema and use it to create prefixed IDs.
 
 ## Indexes
 
 Define indexes to optimize queries:
 
 ```typescript
-@MongoCollection({
+const Users = createCollection({
   name: 'users',
-  model: UserSchema,
+  schema: UserSchema,
   indexes: [
     {
       keys: { email: 1 },
@@ -144,14 +149,14 @@ Define indexes to optimize queries:
 
 ## Collection Types
 
-When using TypeScript, you can access collection typing:
+When using TypeScript, properly type your collections:
 
 ```typescript
-// Fully typed collection
-private users: Collection<UserSchema>
+// Infer type from schema
+type UserType = InferSchemaType<typeof UserSchema>
 
-// Access document type
-type UserDocument = ModelToDocumentType<UserSchema>
+// For document creation (without _id)
+type NewUserType = OptionalId<UserType>
 ```
 
 ## Getting a Collection Instance
@@ -166,7 +171,7 @@ import {UserRepository} from './UserRepository'
 const userRepo = getInstance(UserRepository)
 
 // Use repository methods
-const user = await userRepo.findById('123')
+const user = await userRepo.findByEmail('user@example.com')
 ```
 
 Collections provide a solid foundation for working with MongoDB in Orionjs, with built-in type safety and schema validation to make your database operations more reliable. 

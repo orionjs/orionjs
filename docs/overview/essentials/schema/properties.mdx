@@ -3,41 +3,39 @@ title: 'Property Options'
 description: 'Options available for schema properties'
 ---
 
-When defining properties in a schema with the `@Prop()` decorator, you can configure various options to specify validation rules, labels, and more.
+When defining properties in a schema, you can configure various options to specify validation rules, labels, and more.
 
 ## Basic Property Definition
 
-The simplest way to define a property is to use the `@Prop()` decorator with the TypeScript type:
+The simplest way to define a property is to specify its type:
 
 ```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-export class ProductSchema {
-  @Prop()
-  _id: string
+export const ProductSchema = schemaWithName('ProductSchema', {
+  _id: {type: String},
+  name: {type: String},
+  price: {type: Number}
+})
 
-  @Prop()
-  name: string
-
-  @Prop()
-  price: number
-}
+export type ProductType = InferSchemaType<typeof ProductSchema>
 ```
 
-In this example, Orionjs infers the type information from TypeScript and applies appropriate validation.
+In this example, Orionjs applies appropriate validation based on the specified types.
 
 ## Available Options
 
-The `@Prop()` decorator accepts an options object with the following properties:
+Each property in the schema can have the following options:
 
 ### `label`
 
 A human-readable label for the field, useful for UI generation and error messages.
 
 ```typescript
-@Prop({label: 'Product Name'})
-name: string
+name: {
+  type: String,
+  label: 'Product Name'
+}
 ```
 
 ### `description`
@@ -45,11 +43,11 @@ name: string
 Provides a description for the field, which will be included in GraphQL schema generation.
 
 ```typescript
-@Prop({
+price: {
+  type: Number,
   label: 'Product Price',
   description: 'The price in USD before tax'
-})
-price: number
+}
 ```
 
 ### `optional`
@@ -57,19 +55,21 @@ price: number
 By default, all fields are required. Set `optional: true` to make a field optional.
 
 ```typescript
-@Prop({optional: true})
-description?: string
+description: {
+  type: String,
+  optional: true
+}
 ```
-
-Note that using the TypeScript optional modifier (`?`) will automatically set `optional: true`.
 
 ### `private`
 
 Fields marked as `private` will not be exposed in the GraphQL API.
 
 ```typescript
-@Prop({private: true})
-internalNotes: string
+internalNotes: {
+  type: String,
+  private: true
+}
 ```
 
 ### `min` / `max`
@@ -81,14 +81,22 @@ These options provide validation constraints based on the field type:
 - For `Date`: Minimum and maximum date
 
 ```typescript
-@Prop({min: 0, max: 1000})
-price: number
+price: {
+  type: Number,
+  min: 0,
+  max: 1000
+},
 
-@Prop({min: 3, max: 50})
-name: string
+name: {
+  type: String,
+  min: 3,
+  max: 50
+},
 
-@Prop({min: new Date('2023-01-01')})
-releaseDate: Date
+releaseDate: {
+  type: Date,
+  min: new Date('2023-01-01')
+}
 ```
 
 ### `allowedValues`
@@ -96,8 +104,10 @@ releaseDate: Date
 Restricts the field to a set of allowed values.
 
 ```typescript
-@Prop({allowedValues: ['small', 'medium', 'large']})
-size: string
+size: {
+  type: String,
+  allowedValues: ['small', 'medium', 'large']
+}
 ```
 
 ### `defaultValue`
@@ -105,11 +115,15 @@ size: string
 Sets a default value for the field if none is provided.
 
 ```typescript
-@Prop({defaultValue: 'draft'})
-status: string
+status: {
+  type: String,
+  defaultValue: 'draft'
+},
 
-@Prop({defaultValue: () => new Date()})
-createdAt: Date
+createdAt: {
+  type: Date,
+  defaultValue: () => new Date()
+}
 ```
 
 ## Custom Validation
@@ -117,14 +131,14 @@ createdAt: Date
 You can create custom validation logic using the `validate` option:
 
 ```typescript
-@Prop({
+slug: {
+  type: String,
   validate: (value) => {
     if (!/^[a-zA-Z0-9-]+$/.test(value)) {
       return 'slug-format-invalid'
     }
   }
-})
-slug: string
+}
 ```
 
 The validate function:
@@ -138,10 +152,10 @@ The validate function:
 The `clean` option allows you to transform data before validation:
 
 ```typescript
-@Prop({
+email: {
+  type: String,
   clean: (value) => value.trim().toLowerCase()
-})
-email: string
+}
 ```
 
 The clean function:
@@ -151,32 +165,35 @@ The clean function:
 
 ## Working with Arrays
 
-To define an array of values, use the TypeScript array syntax:
+To define an array of values, use the array syntax in the type field:
 
 ```typescript
-@Prop()
-tags: string[]
+tags: {
+  type: [String]
+},
 
-@Prop({
+categories: {
+  type: [String],
   min: 1, // At least one item required
   maxLength: 10 // Maximum 10 items allowed
-})
-categories: string[]
+}
 ```
 
 For arrays of complex types, you can reference other schemas:
 
 ```typescript
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 import {ProductVariantSchema} from './ProductVariantSchema'
 
-@TypedSchema()
-export class ProductSchema {
+export const ProductSchema = schemaWithName('ProductSchema', {
   // Other fields...
   
-  @Prop({type: [getModelForClass(ProductVariantSchema)]})
-  variants: ProductVariantSchema[]
-}
+  variants: {
+    type: [ProductVariantSchema]
+  }
+})
+
+export type ProductType = InferSchemaType<typeof ProductSchema>
 ```
 
 ## Nested Schemas
@@ -184,26 +201,23 @@ export class ProductSchema {
 You can nest schemas inside other schemas:
 
 ```typescript
-import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
-@TypedSchema()
-export class AddressSchema {
-  @Prop()
-  street: string
+export const AddressSchema = schemaWithName('AddressSchema', {
+  street: {type: String},
+  city: {type: String},
+  zipCode: {type: String}
+})
 
-  @Prop()
-  city: string
+export type AddressType = InferSchemaType<typeof AddressSchema>
 
-  @Prop()
-  country: string
-}
+export const UserSchema = schemaWithName('UserSchema', {
+  name: {type: String},
+  email: {type: String},
+  
+  // Nested schema
+  address: {type: AddressSchema}
+})
 
-@TypedSchema()
-export class CustomerSchema {
-  @Prop()
-  name: string
-
-  @Prop({type: getModelForClass(AddressSchema)})
-  address: AddressSchema
-}
+export type UserType = InferSchemaType<typeof UserSchema>
 ``` 

@@ -1,70 +1,95 @@
 ---
 title: 'Schema Serialization'
-description: 'How schemas are serialized for client-side validation'
+description: 'Learn about serializing schemas for client-side validation'
 ---
 
-Schema serialization allows you to share schemas between server and client, ensuring consistent validation across your application.
+Orionjs schemas can be serialized and sent to the client for use in form validation, GraphQL introspection, and more.
 
-## Basic Usage
-
-```typescript
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-import {serializeSchema} from '@orion-js/schema'
-
-@TypedSchema()
-class UserSchema {
-  @Prop({min: 2, max: 50})
-  name: string
-}
-
-// Convert schema to JSON-compatible format
-const serializedSchema = await serializeSchema(UserSchema)
-```
-
-## Client-Side Validation
-
-The main use case is enabling consistent validation on both server and client:
+## Basic Serialization Example
 
 ```typescript
-// Server: Expose schema for client use
-app.get('/api/schemas/user', async (req, res) => {
-  const schema = await serializeSchema(UserSchema)
-  res.json(schema)
+import {schemaWithName, InferSchemaType, serializeSchema} from '@orion-js/schema'
+
+export const UserSchema = schemaWithName('UserSchema', {
+  name: {type: String, min: 3},
+  email: {type: String, optional: true},
+  age: {type: Number, min: 18}
 })
 
-// Client: Use the schema for validation
-import {validate, clean} from '@orion-js/schema'
+export type UserType = InferSchemaType<typeof UserSchema>
 
-const schema = await fetch('/api/schemas/user').then(r => r.json())
+// Serialize the schema to JSON
+const serializedSchema = serializeSchema(UserSchema)
+console.log(serializedSchema)
+```
 
-try {
-  await validate(schema, formData)
-  const cleanData = await clean(schema, formData)
-  await submitToServer(cleanData)
-} catch (error) {
-  displayValidationErrors(error.details)
+The output will be a JSON representation of the schema:
+
+```json
+{
+  "name": {
+    "type": "string",
+    "min": 3
+  },
+  "email": {
+    "type": "string",
+    "optional": true
+  },
+  "age": {
+    "type": "number",
+    "min": 18
+  }
 }
 ```
 
-## Nested Schemas
+## Using Serialized Schemas in the Client
 
-Serialization properly handles complex types:
+You can use the serialized schema for client-side validation in frontend applications:
 
 ```typescript
-@TypedSchema()
-class AddressSchema {
-  @Prop()
-  street: string
+import {serializeSchema} from '@orion-js/schema'
+import {UserSchema} from './schemas/UserSchema'
+
+// In your API endpoint
+app.get('/schemas/user', (req, res) => {
+  res.json(serializeSchema(UserSchema))
+})
+```
+
+On the client side, you can use this schema with form libraries or build custom validation:
+
+```javascript
+// Client-side code
+async function fetchUserSchema() {
+  const response = await fetch('/schemas/user')
+  return response.json()
 }
 
-@TypedSchema()
-class UserSchema {
-  @Prop({type: getModelForClass(AddressSchema)})
-  address: AddressSchema
-  
-  @Prop({type: [getModelForClass(ItemSchema)], min: 1})
-  items: ItemSchema[]
+async function validateUserForm(formData) {
+  const schema = await fetchUserSchema()
+  return validateAgainstSchema(formData, schema) // Simplified example
 }
+```
+
+## Schema Serialization with Nested Schemas
+
+When a schema includes nested schemas, these will also be serialized:
+
+```typescript
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+
+export const AddressSchema = schemaWithName('AddressSchema', {
+  street: {type: String},
+  city: {type: String}
+})
+
+export const ContactSchema = schemaWithName('ContactSchema', {
+  name: {type: String},
+  address: {type: AddressSchema}
+})
+
+// Serialized schema will include the nested AddressSchema structure
+const serializedContact = serializeSchema(ContactSchema)
 ```
 
 ## Key Benefits

@@ -20,26 +20,19 @@ Search tokens are a powerful mechanism in Orionjs that enable efficient and flex
 First, add a `searchTokens` field to your schema:
 
 ```typescript
-@TypedSchema()
-export class User {
-  @Prop()
-  _id: UserId
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
+import {typedId} from '@orion-js/mongodb'
 
-  @Prop()
-  firstName: string
+export const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('usr')},
+  firstName: {type: String},
+  lastName: {type: String},
+  email: {type: String},
+  role: {type: String},
+  searchTokens: {type: [String]}
+})
 
-  @Prop()
-  lastName: string
-
-  @Prop()
-  email: string
-
-  @Prop()
-  role: string
-
-  @Prop({type: [String]})
-  searchTokens: string[]
-}
+export type UserType = InferSchemaType<typeof UserSchema>
 ```
 
 ### 2. Create an Index on Search Tokens
@@ -47,19 +40,24 @@ export class User {
 Add an index on the `searchTokens` field in your repository:
 
 ```typescript
-@MongoCollection<User>({
-  name: 'users',
-  schema: User,
-  idPrefix: 'usr-',
-  indexes: [
-    {
-      keys: {
-        searchTokens: 1,
+import {Repository} from '@orion-js/services'
+import {createCollection} from '@orion-js/mongodb'
+import {UserSchema, UserType} from '../schemas/UserSchema'
+
+@Repository()
+export class UserRepository {
+  users = createCollection({
+    name: 'users',
+    schema: UserSchema,
+    indexes: [
+      {
+        keys: {
+          searchTokens: 1,
+        }
       }
-    }
-  ],
-})
-private collection: Collection<User>
+    ]
+  })
+}
 ```
 
 ### 3. Implement a Method to Generate Search Tokens
@@ -67,7 +65,7 @@ private collection: Collection<User>
 Add a method to generate search tokens from relevant fields:
 
 ```typescript
-private getSearchTokens(doc: User) {
+private getSearchTokens(doc: UserType) {
   // Text fields to tokenize
   const texts = [
     doc.firstName,
@@ -86,24 +84,25 @@ private getSearchTokens(doc: User) {
 ### 4. Update Search Tokens When Creating or Updating Documents
 
 ```typescript
-async createUser(doc: Omit<User, '_id'>) {
-  const id = `usr-${generateUUID()}` as UserId
-  doc._id = id
-  doc.searchTokens = this.getSearchTokens(doc as User)
-  return await this.collection.insertAndFind(doc)
+async createUser(doc: Omit<UserType, '_id'>) {
+  const docWithTokens = {
+    ...doc,
+    searchTokens: this.getSearchTokens({...doc, _id: `usr-temp`} as UserType)
+  }
+  return await this.users.insertAndFind(docWithTokens)
 }
 
-async updateUser(userId: UserId, doc: Partial<User>) {
-  const result = await this.collection.updateAndFind(userId, {$set: doc})
+async updateUser(userId: string, doc: Partial<UserType>) {
+  const result = await this.users.updateAndFind(userId, {$set: doc})
   this.ensureSearchTokensAreUpdated(result)
   return result
 }
 
-private ensureSearchTokensAreUpdated(user: User) {
+private ensureSearchTokensAreUpdated(user: UserType) {
   const searchTokens = this.getSearchTokens(user)
 
   if (!isEqual(user.searchTokens, searchTokens)) {
-    this.collection
+    this.users
       .updateOne(user._id, {
         $set: {searchTokens},
       })
@@ -118,7 +117,7 @@ private ensureSearchTokensAreUpdated(user: User) {
 
 ```typescript
 private async getUsersListQuery(params: UsersListQueryParams) {
-  const queries: MongoFilter<User>[] = []
+  const queries: MongoFilter<UserType>[] = []
 
   const searchTokensParams: Record<string, string> = {}
 
@@ -142,7 +141,7 @@ private async getUsersListQuery(params: UsersListQueryParams) {
 
 async getUsersListCursor(params: UsersListQueryParams) {
   const query = await this.getUsersListQuery(params)
-  return this.collection.find(query)
+  return this.users.find(query)
 }
 ```
 
@@ -166,31 +165,41 @@ async getUsersListCursor(params: UsersListQueryParams) {
 ## Complete Example
 
 ```typescript
-import {Collection, MongoCollection, MongoFilter, Repository} from '@orion-js/mongodb'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
-import {User, UserId} from '../schemas/User'
+import {Repository} from '@orion-js/services'
+import {createCollection, MongoFilter, typedId} from '@orion-js/mongodb'
+import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 import {UsersListQueryParams} from './ListQueryParams'
 import {isEqual} from 'lodash'
 import {logger} from '@orion-js/logger'
 import {getSearchTokens, getSearchQueryForTokens, shortenMongoId} from '@orion-js/helpers'
 
+const UserSchema = schemaWithName('UserSchema', {
+  _id: {type: typedId('usr')},
+  firstName: {type: String},
+  lastName: {type: String},
+  email: {type: String},
+  role: {type: String},
+  status: {type: String},
+  searchTokens: {type: [String]}
+})
+
+type UserType = InferSchemaType<typeof UserSchema>
+
 @Repository()
 export class UsersRepo {
-  @MongoCollection<User>({
+  users = createCollection({
     name: 'users',
-    schema: User,
-    idPrefix: 'usr-',
+    schema: UserSchema,
     indexes: [
       {
         keys: {
           searchTokens: 1,
         }
       }
-    ],
+    ]
   })
-  private collection: Collection<User>
 
-  private getSearchTokens(doc: User) {
+  private getSearchTokens(doc: UserType) {
     const texts = [
       doc.firstName,
       doc.lastName,
@@ -203,24 +212,25 @@ export class UsersRepo {
     })
   }
 
-  async createUser(doc: Omit<User, '_id'>) {
-    const id = `usr-${generateUUID()}` as UserId
-    doc._id = id
-    doc.searchTokens = this.getSearchTokens(doc as User)
-    return await this.collection.insertAndFind(doc)
+  async createUser(doc: Omit<UserType, '_id'>) {
+    const docWithTokens = {
+      ...doc,
+      searchTokens: this.getSearchTokens({...doc, _id: `usr-temp`} as UserType)
+    }
+    return await this.users.insertAndFind(docWithTokens)
   }
 
-  async updateUser(userId: UserId, doc: Partial<User>) {
-    const result = await this.collection.updateAndFind(userId, {$set: doc})
+  async updateUser(userId: string, doc: Partial<UserType>) {
+    const result = await this.users.updateAndFind(userId, {$set: doc})
     this.ensureSearchTokensAreUpdated(result)
     return result
   }
 
-  private ensureSearchTokensAreUpdated(user: User) {
+  private ensureSearchTokensAreUpdated(user: UserType) {
     const searchTokens = this.getSearchTokens(user)
 
     if (!isEqual(user.searchTokens, searchTokens)) {
-      this.collection
+      this.users
         .updateOne(user._id, {
           $set: {searchTokens},
         })
@@ -231,7 +241,7 @@ export class UsersRepo {
   }
 
   private async getUsersListQuery(params: UsersListQueryParams) {
-    const queries: MongoFilter<User>[] = []
+    const queries: MongoFilter<UserType>[] = []
 
     const searchTokensParams: Record<string, string> = {}
 
@@ -253,13 +263,13 @@ export class UsersRepo {
     }
 
     return {
-      $and: queries,
+      $and: queries.length ? queries : [{}],
     }
   }
 
   async getUsersListCursor(params: UsersListQueryParams) {
     const query = await this.getUsersListQuery(params)
-    return this.collection.find(query)
+    return this.users.find(query)
   }
 }
 ```

@@ -15,3 +15,15 @@ MONGO_URL=mongodb://localhost:27017/my-database
 ```
 
 You don't need any additional code to use the default connection - all collections will use it automatically unless specified otherwise.
+
+## Connection Initialization
+
+Connections are not started until you call any method in a collection or explicitly call `startConnection` on the collection. This lazy initialization prevents unnecessary connections when a collection is defined but not used.
+
+```typescript
+// Connection will be initialized when using the collection
+const user = await users.findOne({ _id: 'user-123' })
+
+// Or you can explicitly start the connection
+await users.startConnection()
+```
