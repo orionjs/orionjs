@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.0.1
+
+### Patch Changes
+
+- improve path reading in logger
+
 ## 4.0.0
 
 ### Major Changes
