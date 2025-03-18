@@ -75,9 +75,19 @@ export const textConsoleFormat: any = combine(
     const traceId = info.trace_id
       ? `${String(info.trace_id).substring(0, 8)}@${String(info.span_id).substring(0, 8)}`
       : ''
-    const context = `${info.context || ''} ${traceId}`.trim()
-
-    return `[${info.level}] [${timeLabel}] [${context}] ${fileNameLabel} ${info.message} ${value} ${stack}`
+    const context = [info.context, traceId].filter(Boolean).join(' ').trim()
+    const contextLabel = context ? `[${context}]` : ''
+    return [
+      `[${info.level}]`,
+      `[${timeLabel}]`,
+      contextLabel,
+      fileNameLabel,
+      info.message,
+      value,
+      stack,
+    ]
+      .filter(Boolean)
+      .join(' ')
   }),
 )
 
