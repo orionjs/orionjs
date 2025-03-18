@@ -12,6 +12,10 @@ export type CloneSchemaOptions<
    */
   schema: TSchema
   /**
+   * The name of the cloned schema
+   */
+  name?: string
+  /**
    * The schema to extend the cloned schema with
    */
   extendSchema?: TExtendFields
@@ -108,6 +112,10 @@ export function cloneSchema<
     if (originalMetaFields[key]) {
       cloned[key] = originalMetaFields[key]
     }
+  }
+
+  if (options.name) {
+    cloned.__modelName = options.name
   }
 
   return cloned
