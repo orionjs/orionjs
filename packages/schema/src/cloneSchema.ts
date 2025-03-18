@@ -3,9 +3,9 @@ import {Schema, SchemaNode} from './types'
 
 export type CloneSchemaOptions<
   TSchema extends Schema,
-  TExtendFields extends Schema,
-  TPickFields extends keyof TSchema | undefined,
-  TOmitFields extends keyof TSchema | undefined,
+  TExtendFields extends Schema | undefined = undefined,
+  TPickFields extends (keyof TSchema)[] | undefined = undefined,
+  TOmitFields extends (keyof TSchema)[] | undefined = undefined,
 > = {
   /**
    * The schema to clone
@@ -23,11 +23,11 @@ export type CloneSchemaOptions<
   /**
    * The fields to pick from the cloned schema
    */
-  pickFields?: TPickFields[]
+  pickFields?: TPickFields
   /**
    * The fields to omit from the cloned schema
    */
-  omitFields?: TOmitFields[]
+  omitFields?: TOmitFields
 }
 
 // TExtendFields should replace TSchema if present
@@ -44,35 +44,41 @@ type ExtendFields<
           : never
     }
 
-export type ClonedSchema<
+type PickOrOmit<
   TSchema extends Schema,
-  TExtendFields extends Schema,
-  TPickFields extends keyof TSchema,
-  TOmitFields extends keyof TSchema,
+  TPickFields extends (keyof TSchema)[] | undefined = undefined,
+  TOmitFields extends (keyof TSchema)[] | undefined = undefined,
 > = TPickFields extends undefined
   ? TOmitFields extends undefined
-    ? ExtendFields<TSchema, TExtendFields>
-    : ExtendFields<Omit<TSchema, TOmitFields>, TExtendFields>
-  : ExtendFields<Pick<TSchema, TPickFields>, TExtendFields>
+    ? TSchema
+    : Omit<TSchema, TOmitFields[number]>
+  : Pick<TSchema, TPickFields[number]>
+
+export type ClonedSchema<
+  TSchema extends Schema,
+  TExtendFields extends Schema | undefined = undefined,
+  TPickFields extends (keyof TSchema)[] | undefined = undefined,
+  TOmitFields extends (keyof TSchema)[] | undefined = undefined,
+> = ExtendFields<PickOrOmit<TSchema, TPickFields, TOmitFields>, TExtendFields>
 
 export function cloneSchema<
   TSchema extends Schema,
   TExtendFields extends Schema | undefined = undefined,
-  TPickFields extends keyof TSchema | undefined = undefined,
-  TOmitFields extends keyof TSchema | undefined = undefined,
+  TPickFields extends (keyof TSchema)[] | undefined = undefined,
+  TOmitFields extends (keyof TSchema)[] | undefined = undefined,
 >(
   options: CloneSchemaOptions<TSchema, TExtendFields, TPickFields, TOmitFields>,
 ): ClonedSchema<TSchema, TExtendFields, TPickFields, TOmitFields> {
   const {schema, extendSchema, mapFields, pickFields, omitFields} = options
 
-  const originalMetaKeys = ['__schema', '__node', '__type']
+  const originalMetaKeys = Object.keys(schema).filter(key => key.startsWith('__'))
   const originalMetaFields = pick(originalMetaKeys, schema)
 
   const cloned = {...schema} as any
 
   if (pickFields?.length) {
     for (const key in cloned) {
-      if (!pickFields.includes(key as TPickFields)) {
+      if (!pickFields.includes(key)) {
         delete cloned[key]
       }
     }
@@ -80,7 +86,7 @@ export function cloneSchema<
 
   if (omitFields?.length) {
     for (const key in cloned) {
-      if (omitFields.includes(key as TOmitFields)) {
+      if (omitFields.includes(key)) {
         delete cloned[key]
       }
     }

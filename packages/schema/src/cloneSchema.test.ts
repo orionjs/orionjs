@@ -1,5 +1,6 @@
 import {cloneSchema} from './cloneSchema'
 import {test, expect} from 'vitest'
+import {Schema} from './types'
 
 // Sample schema for testing
 const userSchema = {
@@ -35,7 +36,7 @@ const userSchema = {
       },
     },
   },
-}
+} satisfies Schema
 
 test('clones a schema without modifications', () => {
   const cloned = cloneSchema({schema: userSchema})
@@ -105,8 +106,11 @@ test('picks specific fields only', () => {
   expect(Object.keys(cloned)).toHaveLength(2)
   expect(cloned.firstName).toEqual(userSchema.firstName)
   expect(cloned.email).toEqual(userSchema.email)
+  // @ts-expect-error
   expect(cloned.lastName).toBeUndefined()
+  // @ts-expect-error
   expect(cloned.age).toBeUndefined()
+  // @ts-expect-error
   expect(cloned.address).toBeUndefined()
 })
 
@@ -121,7 +125,10 @@ test('omits specific fields', () => {
   expect(cloned.firstName).toEqual(userSchema.firstName)
   expect(cloned.age).toEqual(userSchema.age)
   expect(cloned.email).toEqual(userSchema.email)
+
+  // @ts-expect-error
   expect(cloned.lastName).toBeUndefined()
+  // @ts-expect-error
   expect(cloned.address).toBeUndefined()
 })
 
@@ -140,11 +147,14 @@ test('maps field definitions', () => {
   })
 
   // String fields should have trim: true
+  // @ts-expect-error
   expect(cloned.firstName.optional).toBe(true)
   expect(cloned.lastName.optional).toBe(true)
+  // @ts-expect-error
   expect(cloned.email.optional).toBe(true)
 
   // Non-string fields should remain unchanged
+  // @ts-expect-error
   expect(cloned.age.optional).toBeUndefined()
 })
 
@@ -167,7 +177,9 @@ test('combines pick, omit, and extend operations', () => {
   expect(cloned.firstName).toEqual(userSchema.firstName)
   expect(cloned.email).toEqual(userSchema.email)
   expect(cloned.isVerified).toEqual(extensionSchema.isVerified)
+  // @ts-expect-error
   expect(cloned.lastName).toBeUndefined()
+  // @ts-expect-error
   expect(cloned.age).toBeUndefined()
 })
 

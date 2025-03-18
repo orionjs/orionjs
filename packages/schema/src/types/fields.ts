@@ -1,11 +1,6 @@
+import {createEnum} from '..'
 import {FieldType} from '../fieldType'
-import {
-  Blackbox,
-  Schema,
-  SchemaMetaFieldTypeSingleNonSchema,
-  SchemaRecursiveNodeTypeExtras,
-  TypedSchemaOnSchema,
-} from './schema'
+import {Blackbox, Schema, SchemaMetaFieldTypeSingleNonSchema, TypedSchemaOnSchema} from './schema'
 
 type InferSchemaTypeForFieldType<T> =
   // field type with setted _tsFieldType
@@ -55,7 +50,7 @@ type InferSchemaTypeForFieldType<T> =
                                           ? InferSchemaTypeForSchema<T>
                                           : T
 
-type SchemaKeysNotOfSchemaItems = keyof SchemaRecursiveNodeTypeExtras
+type SchemaKeysNotOfSchemaItems = '__isFieldType' | '__GraphQLType' | '__skipChildValidation'
 
 type NodeIsOptional<TNode> = TNode extends {optional: true} ? true : false
 
@@ -66,17 +61,28 @@ type NodeIsOptional<TNode> = TNode extends {optional: true} ? true : false
 //     ? true
 //     : false
 
-type InferSchemaTypeForSchema<TSchema extends Record<string, any>> = Omit<
-  {
-    -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
-      ? never
-      : K]: InferSchemaType<TSchema[K]['type']>
-  } & {
-    -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
-      ? K
-      : never]?: InferSchemaType<TSchema[K]['type']>
-  },
-  SchemaKeysNotOfSchemaItems
+export type Simplifed<T> = {
+  [K in keyof T]: T[K] extends object ? Simplifed<T[K]> : T[K]
+}
+
+type WithoutNotSchemaItems<T extends Record<string, any>> = T extends {
+  [key in SchemaKeysNotOfSchemaItems]: any
+} & Record<string, any>
+  ? Omit<T, SchemaKeysNotOfSchemaItems>
+  : T
+
+type InferSchemaTypeForSchema<TSchema extends Record<string, any>> = Simplifed<
+  WithoutNotSchemaItems<
+    {
+      -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
+        ? never
+        : K]: InferSchemaType<TSchema[K]['type']>
+    } & {
+      -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
+        ? K
+        : never]?: InferSchemaType<TSchema[K]['type']>
+    }
+  >
 >
 
 // is a record with a child item that has type in its type
@@ -114,64 +120,54 @@ export type StrictInferSchemaType<TSchema extends Schema> = InferSchemaTypeForSc
  */
 export type InferSchemaTypeFromTypedSchema<TTypedSchema extends TypedSchemaOnSchema> = TTypedSchema
 
-// const Gender = createEnum('Gender', ['male', 'female'])
+const subSchema = {
+  name: {
+    type: String,
+  },
+}
 
-// type IsSchema = IsPossiblyASchema<typeof Gender>
-// type Keys = keyof {
-//   [K in keyof typeof Gender as 'type' extends keyof (typeof Gender)[K]
-//     ? K
-//     : never]: (typeof Gender)[K]
-// }
+const schema = {
+  filter: {
+    type: String,
+  },
+  sub: {
+    type: subSchema,
+  },
+  gender: {
+    type: createEnum('gender', ['male', 'female']),
+  },
+  page: {
+    type: 'integer',
+    defaultValue: 1,
+    min: 1,
+  },
+  limit: {
+    type: 'integer',
+    defaultValue: 0,
+    min: 0,
+    max: 200,
+  },
+  sortBy: {
+    type: String,
+    optional: true,
+  },
+  sortType: {
+    type: String,
+    allowedValues: ['asc', 'desc'],
+    optional: true,
+  },
+} as const
 
-// class SubClass {
-//   name: string
-// }
+type _ = InferSchemaType<typeof schema>
 
-// const schema = {
-//   filter: {
-//     type: String,
-//   },
-//   sub: {
-//     type: SubClass,
-//   },
-//   gender: {
-//     type: createEnum('gender', ['male', 'female']),
-//   },
-//   page: {
-//     type: 'integer',
-//     defaultValue: 1,
-//     min: 1,
-//   },
-//   limit: {
-//     type: 'integer',
-//     defaultValue: 0,
-//     min: 0,
-//     max: 200,
-//   },
-//   sortBy: {
-//     type: String,
-//     optional: true,
-//   },
-//   sortType: {
-//     type: String,
-//     allowedValues: ['asc', 'desc'],
-//     optional: true,
-//   },
-// } as const
+const _a: _ = {
+  filter: '123',
+  gender: 'male',
+  sub: {
+    name: '123',
+  },
+  limit: 1,
+  page: 1,
+}
 
-// type _ = InferSchemaType<typeof schema>
-
-// type _2 = InferSchemaType<typeof SubClass>
-// const b: _2 = {
-//   name: '123',
-// }
-
-// const a: _ = {
-//   filter: '123',
-//   gender: 'male',
-//   sub: {
-//     name: '123',
-//   },
-// }
-
-// type _2 = NodeIsOptional<(typeof schema)['sortType']>
+type _2 = NodeIsOptional<(typeof schema)['sortType']>
