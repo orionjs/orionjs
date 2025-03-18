@@ -1,5 +1,12 @@
 # @orion-js/mongodb
 
+## 4.0.6
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.0.2
+
 ## 4.0.5
 
 ### Patch Changes

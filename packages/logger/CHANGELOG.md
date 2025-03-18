@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.0.2
+
+### Patch Changes
+
+- improves logger
+
 ## 4.0.1
 
 ### Patch Changes
