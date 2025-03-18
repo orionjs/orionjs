@@ -1,7 +1,7 @@
 import {Blackbox, InferSchemaType, SchemaInAnyOrionForm} from '@orion-js/schema'
 import {ExecutionContext} from './Worker'
 import {ScheduleJobOptions} from './Events'
-import ms from 'ms'
+import {StringValue as MSStringValue} from 'ms'
 
 export interface JobRetryResultBase {
   action: 'retry' | 'dismiss'
@@ -90,7 +90,7 @@ export type CreateEventJobOptions<TParamsSchema extends SchemaInAnyOrionForm = a
 >
 
 export type CreateRecurrentJobOptions = Omit<RecurrentJobDefinition, 'type' | 'runEvery'> & {
-  runEvery: number | ms.StringValue
+  runEvery: number | MSStringValue
 }
 
 export type CreateJobOptions<TParamsSchema extends SchemaInAnyOrionForm = any> =
