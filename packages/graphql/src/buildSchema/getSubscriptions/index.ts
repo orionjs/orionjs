@@ -11,7 +11,7 @@ export default async function (options: StartGraphQLOptions) {
     subscription.name = subscription.name || key
 
     const type = await getType(subscription.returns, options)
-    const args = await getArgs(subscription.params)
+    const args = await getArgs(subscription.params as any, options)
     fields[subscription.name] = {
       type,
       args,

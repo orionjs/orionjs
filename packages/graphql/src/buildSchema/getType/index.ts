@@ -15,7 +15,11 @@ import {getDynamicFields} from '../../resolversSchemas/getDynamicFields'
 import {getModelLoadedResolvers} from '../../resolversSchemas/getModelLoadedResolvers'
 import {StartGraphQLOptions} from '../../types/startGraphQL'
 
-const createGraphQLObjectType = (modelName: string, schema: Schema, options: StartGraphQLOptions) =>
+export const createGraphQLObjectType = (
+  modelName: string,
+  schema: Schema,
+  options: StartGraphQLOptions,
+) =>
   new GraphQLObjectType({
     name: modelName,
     fields: () => buildFields(schema, options),

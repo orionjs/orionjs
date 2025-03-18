@@ -23,7 +23,7 @@ export default async function (options: StartGraphQLOptions, mutation: boolean) 
     resolversStore[name] = resolver
 
     const type = await getType(resolver.returns, options)
-    const args = await getArgs(resolver.params)
+    const args = await getArgs(resolver.params, options)
 
     fields[name] = {
       type,

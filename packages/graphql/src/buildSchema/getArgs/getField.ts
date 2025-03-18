@@ -1,56 +1,64 @@
-import {GraphQLList, GraphQLInputObjectType} from 'graphql'
-import {getFieldType, getSchemaFromAnyOrionForm} from '@orion-js/schema'
+import {GraphQLInputObjectType, GraphQLList} from 'graphql'
+import {
+  getFieldType,
+  getSchemaWithMetadataFromAnyOrionForm,
+  isSchemaLike,
+  Schema,
+  SchemaWithMetadata,
+} from '@orion-js/schema'
 import getScalar from '../getType/getScalar'
+import {equals} from 'rambdax'
+import {StartGraphQLOptions} from '../../types'
 import {getStaticFields} from '../../resolversSchemas/getStaticFields'
-import {isType} from 'rambdax'
 
-// @ts-ignore polyfill for Symbol.metadata
-Symbol.metadata ??= Symbol('Symbol.metadata')
+// we'll save the list of models that have been registered
+// to avoid duplicate registration of models.
+// if two models have the same name, but are different,
+// it will throw an error.
+const registeredGraphQLTypes = new Map<
+  string,
+  {schema: SchemaWithMetadata; graphQLType: GraphQLInputObjectType}
+>()
 
-const storedModelInput = {}
-
-const getCachedModelInput = (model, fields) => {
-  if (!storedModelInput[model.name]) {
-    storedModelInput[model.name] = new GraphQLInputObjectType({
-      name: `${model.name}Input`,
-      fields,
-    })
-  }
-
-  return storedModelInput[model.name]
-}
-
-const resolveModelFields = model => {
-  const fields = {}
-
-  for (const field of getStaticFields(model)) {
-    fields[field.key] = {type: resolveType(field.type)}
-  }
-
-  return fields
-}
-
-const resolveArrayType = type => new GraphQLList(resolveType(type[0]))
-
-const resolvePlainObjectOrModelType = type => {
-  const model = getSchemaFromAnyOrionForm(type)
-
-  const fields = resolveModelFields(model)
-  return getCachedModelInput(model, fields)
-}
-
-const resolveType = type => {
+const resolveType = (type, options: StartGraphQLOptions) => {
   if (!type) throw new Error('No type specified')
 
   if (type?.[Symbol.metadata]?._getModel) {
     const model = type[Symbol.metadata]._getModel()
-    return resolveType(model)
+    return resolveType(model, options)
   }
 
-  if (Array.isArray(type)) return resolveArrayType(type)
+  if (Array.isArray(type)) {
+    return new GraphQLList(resolveType(type[0], options))
+  }
 
-  if (!type.__isFieldType && (isType('Object', type) || type.__isModel)) {
-    return resolvePlainObjectOrModelType(type)
+  if (isSchemaLike(type)) {
+    const schema = getSchemaWithMetadataFromAnyOrionForm(type)
+    const modelName = `${schema.__modelName}Input`
+
+    if (schema.__graphQLType) {
+      return schema.__graphQLType
+    }
+
+    if (!schema.__modelName) {
+      throw new Error(
+        `Schema name is not defined. Register a name with schemaWithName. Schema: ${JSON.stringify(schema)}`,
+      )
+    }
+
+    if (registeredGraphQLTypes.has(modelName)) {
+      const {graphQLType, schema: registeredSchema} = registeredGraphQLTypes.get(modelName)
+      if (equals(registeredSchema, schema)) {
+        return graphQLType
+      }
+      throw new Error(`Schema named "${modelName}" already registered`)
+    }
+
+    const graphQLType = createGraphQLInputType(modelName, schema as Schema, options)
+
+    registeredGraphQLTypes.set(modelName, {schema, graphQLType})
+
+    return graphQLType
   }
 
   const schemaType = getFieldType(type)
@@ -58,3 +66,31 @@ const resolveType = type => {
 }
 
 export default resolveType
+
+export const createGraphQLInputType = (
+  modelName: string,
+  schema: Schema,
+  options: StartGraphQLOptions,
+) =>
+  new GraphQLInputObjectType({
+    name: modelName,
+    fields: () => buildFields(schema, options),
+  })
+
+const buildFields = (schema: Schema, options: StartGraphQLOptions) => {
+  const fields = {}
+
+  const addStaticFields = () => {
+    for (const field of getStaticFields(schema)) {
+      try {
+        fields[field.key] = {type: resolveType(field.type, options)}
+      } catch (error) {
+        throw new Error(`Error getting type for ${field.key}: ${error.message}`)
+      }
+    }
+  }
+
+  addStaticFields()
+
+  return fields
+}

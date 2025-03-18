@@ -3,7 +3,7 @@ import errorHandler from '../../errorHandler'
 
 export default function ({resolver, getGraphQLType, options, schema}) {
   const type = getGraphQLType(resolver.returns, options)
-  const args = getArgs(resolver.params)
+  const args = getArgs(resolver.params, options)
   return {
     type,
     args,

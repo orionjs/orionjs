@@ -10,14 +10,10 @@ export default async function serializeSchema(params: Schema): Promise<SchemaWit
 
   const fields = {}
 
-  console.log(schema, 'schema')
   for (const key of Object.keys(schema).filter(key => !key.startsWith('__'))) {
     const field = schema[key]
     fields[key] = await getField(field)
-    console.log(fields[key], field)
   }
-
-  console.log(fields, 'fields')
 
   return fields
 }
