@@ -16,7 +16,7 @@ export interface Runner {
   stop: () => void
 }
 
-export function getRunner(options: RunnerOptions): Runner {
+export function getRunner(options: RunnerOptions, command: any): Runner {
   let appProcess = null
 
   if (options.clean) {
@@ -25,7 +25,7 @@ export function getRunner(options: RunnerOptions): Runner {
 
   const start = () => {
     console.log(chalk.bold('=> Starting app...\n'))
-    appProcess = startProcess(options)
+    appProcess = startProcess(options, command)
 
     appProcess.on('exit', (code: number, signal: string) => {
       if (!code || code === 143 || code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {

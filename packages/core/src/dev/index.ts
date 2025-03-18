@@ -4,7 +4,7 @@ import {copyCursorRule} from './copyCursorRule'
 import {copyMCP} from './copyMCP'
 import chalk from 'chalk'
 
-export default async function (options: RunnerOptions) {
+export default async function (options: RunnerOptions, command: any) {
   console.log(chalk.bold(`\nOrionjs App ${chalk.green(chalk.bold('V4'))} Dev mode \n`))
 
   if (!options.omitCursorRule) {
@@ -19,7 +19,7 @@ export default async function (options: RunnerOptions) {
     console.log(chalk.bold('=> ✨ Orionjs AI is ready\n'))
   }
 
-  const runner = getRunner(options)
+  const runner = getRunner(options, command)
 
   watchAndCompile(runner)
 }

@@ -1,7 +1,8 @@
 import {spawn} from 'node:child_process'
 
-export function runProd() {
-  spawn('tsx', ['./app/index.ts'], {
+export function runProd(command: any) {
+  const args = [...command.args, './app/index.ts']
+  spawn('tsx', args, {
     env: {
       NODE_ENV: 'production',
       ...process.env,

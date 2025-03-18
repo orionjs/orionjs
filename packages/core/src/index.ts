@@ -7,6 +7,7 @@ import prod from './prod'
 import './handleErrors'
 import version from './version'
 import 'dotenv/config'
+import check from './check'
 
 const program = new Command()
 
@@ -26,9 +27,16 @@ program
   .option('--shell', 'Opens a shell in Chrome developer tools')
   .option('--omit-cursor-rule', 'Omit the creation of the Orionjs Cursor rule')
   .option('--omit-mcp-server', 'Omit the creation of the Orionjs MCP server')
+  .allowUnknownOption()
   .action(run(dev))
 
-program.command('prod').description('Run the Orionjs app in production mode').action(run(prod))
+program.command('check').description('Runs a typescript check').action(run(check))
+
+program
+  .command('prod')
+  .allowUnknownOption()
+  .description('Run the Orionjs app in production mode')
+  .action(run(prod))
 
 program
   .command('create')

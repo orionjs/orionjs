@@ -1,6 +1,6 @@
 import {RunnerOptions} from '.'
 
-export function getArgs(options: RunnerOptions) {
+export function getArgs(options: RunnerOptions, command: any) {
   let startCommand = process.env.START_COMMAND || 'tsx'
 
   const args = []
@@ -14,6 +14,8 @@ export function getArgs(options: RunnerOptions) {
   } else if (options.shell) {
     args.push('--inspect')
   }
+
+  args.push(...command.args)
 
   args.push('./app/index.ts')
 

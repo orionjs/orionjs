@@ -2,8 +2,8 @@ import {spawn} from 'node:child_process'
 import {getArgs} from './getArgs'
 import {RunnerOptions} from './index'
 
-export function startProcess(options: RunnerOptions) {
-  const {startCommand, args} = getArgs(options)
+export function startProcess(options: RunnerOptions, command: any) {
+  const {startCommand, args} = getArgs(options, command)
 
   return spawn(startCommand, args, {
     env: {
