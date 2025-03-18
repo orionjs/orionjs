@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.11
+
+### Patch Changes
+
+- fix graphql schema to input
+
 ## 4.0.10
 
 ### Patch Changes
