@@ -1,5 +1,11 @@
 # @orion-js/models
 
+## 4.0.4
+
+### Patch Changes
+
+- d812284: removes a log
+
 ## 4.0.3
 
 ### Patch Changes

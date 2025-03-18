@@ -1,5 +1,12 @@
 # @orion-js/typed-model
 
+## 4.0.4
+
+### Patch Changes
+
+- Updated dependencies [d812284]
+  - @orion-js/models@4.0.4
+
 ## 4.0.3
 
 ### Patch Changes

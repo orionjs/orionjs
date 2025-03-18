@@ -1,5 +1,14 @@
 # @orion-js/graphql
 
+## 4.0.10
+
+### Patch Changes
+
+- better handling of models in building the schema
+- Updated dependencies [d812284]
+  - @orion-js/models@4.0.4
+  - @orion-js/typed-model@4.0.4
+
 ## 4.0.9
 
 ### Patch Changes
