@@ -92,15 +92,15 @@ If your file defines MongoDB collections:
 
 ```ts
 // Replace
-import {createCollection, Repository} from '@orion-js/mongodb'
+import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {CardSchema} from '../schemas/Card'
 
 @Repository()
 export class CardsRepo {
-  private collection = createCollection({
+  @MongoCollection<CardSchema>({
     name: 'cards',
-    schema: CardSchema,
+    schema: CardSchema, // or model: CardSchema
     indexes: [
       {
         keys: {
@@ -109,6 +109,7 @@ export class CardsRepo {
       }
     ],
   })
+  private collection: Collection<CardSchema>
 }
 
 // With
