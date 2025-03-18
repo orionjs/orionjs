@@ -556,6 +556,48 @@ createResolver({
 })
 ```
 
+## Cloning Schemas
+
+The proper way of cloning a schema now is using the `cloneSchema` helper:
+
+```ts
+import {cloneSchema} from '@orion-js/schema'
+
+const cloned = cloneSchema({schema})
+```
+
+```ts
+// documentation
+export type CloneSchemaOptions = {
+  /**
+   * The schema to clone
+   */
+  schema: TSchema
+  /**
+   * The name of the cloned schema
+   */
+  name?: string
+  /**
+   * The schema to extend the cloned schema with
+   */
+  extendSchema?: TExtendFields
+  /**
+   * A function to map the fields of the cloned schema.
+   * Warning: This function will not be applied to the typescript types of this schema.
+   */
+  mapFields?: (field: TSchema[keyof TSchema], key: keyof TSchema) => SchemaNode
+  /**
+   * The fields to pick from the cloned schema
+   */
+  pickFields?: TPickFields
+  /**
+   * The fields to omit from the cloned schema
+   */
+  omitFields?: TOmitFields
+}
+```
+
+
 ## Removed Features
 
 If your file contains any of these features, they need to be replaced:
