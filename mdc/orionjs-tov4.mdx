@@ -117,7 +117,7 @@ import {createCollection, Repository} from '@orion-js/mongodb'
 import {InferSchemaType} from '@orion-js/schema'
 import {CardSchema} from '../schemas/Card'
 
-type CardType = InferSchemaType<typeof CardSchema>
+type CardType = InferSchemaType<typeof CardSchema> // or check if this is exported from the schema file
 
 @Repository()
 export class CardsRepo {
