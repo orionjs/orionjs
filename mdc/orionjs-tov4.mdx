@@ -17,7 +17,7 @@ import {Prop, TypedSchema} from '@orion-js/typed-model'
 
 export const ExampleTypeEnum = createEnum('ExampleTypeEnum', ['type1', 'type2', 'type3'] as const)
 
-type ExampleId = `ex-${string}`
+export type ExampleId = `ex-${string}`
 
 @TypedSchema()
 export class ExampleSchema {
@@ -35,8 +35,10 @@ export class ExampleSchema {
 }
 
 // With
-import {typedId} from '@orion-js/mongodb'
+import {TypedId, typedId} from '@orion-js/mongodb'
 import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
+
+export type ExampleId = TypedId<'ex'>
 
 export const PaymentMethodEnum = createEnum('PaymentMethodEnum', [
   'type1',
@@ -114,6 +116,7 @@ type CardType = InferSchemaType<typeof CardSchema>
 export class CardsRepo {
   private collection = createCollection({
     name: 'cards',
+    // if the model had a model param, change it to schema
     schema: CardSchema,
     indexes: [
       {
@@ -150,6 +153,15 @@ export class WebsiteConfigResolvers {
   @Query()
   @ResolverParams(WebsiteConfigParams)
   @ResolverReturns(WebsiteConfig)
+  async websiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+    return await this.websiteConfigsRepo.getWebsiteConfigByWebsiteId(params.websiteId)
+  }
+
+  // or 
+  @Query({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfig,
+  })
   async websiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
     return await this.websiteConfigsRepo.getWebsiteConfigByWebsiteId(params.websiteId)
   }
@@ -213,6 +225,15 @@ export class UpdateWebsiteConfigResolvers {
   async updateWebsiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
     return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, {name: params.name})
   }
+
+  // or
+  @Mutation({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfig,
+  })
+  async updateWebsiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+    return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, {name: params.name})
+  }
 }
 
 // With
@@ -255,6 +276,14 @@ import {Person} from 'app/providers/schemas/Person'
 export class PersonResolvers {
   @ModelResolver()
   @ResolverReturns(String)
+  async sayHi(person: Person): Promise<string> {
+    return `My name is ${person.name}`
+  }
+
+  // or
+  @ModelResolver({
+    returns: String,
+  })
   async sayHi(person: Person): Promise<string> {
     return `My name is ${person.name}`
   }
@@ -328,7 +357,11 @@ import {route, Router} from '@orion-js/http'
 
 @route()
 export default class ExampleRouter extends Router {
-  @route.post('/route-service-test/:age')
+  @Route({
+    method: 'post',
+    path: '/route-service-test/:age',
+    bodyParser: 'json',
+  })
   async getRoute(req, res) {
     return {
       statusCode: 200,
@@ -382,22 +415,20 @@ If your file contains jobs:
 
 ```ts
 // Replace
-import {defineJob} from '@orion-js/jobs'
+import {EventJob, Jobs} from '@orion-js/dogs'
 
-export const job1 = defineJob({
-  type: 'event',
-  resolve: async (params) => {
+@Jobs()
+class ExampleJobsService {
+  @EventJob()
+  async job1(params: {age: number}) {
     // job code
   }
-})
 
-export const job2 = defineJob({
-  type: 'recurrent',
-  runEvery: 600, // 10 minutes
-  resolve: async () => {
+  @RecurrentJob({runEvery: '10m'})
+  async job2() {
     // job code
   }
-})
+}
 
 // Calling jobs
 scheduleJob('job1', {params})
@@ -429,8 +460,13 @@ class ExampleJobsService {
   })
 }
 
-// Calling jobs
-job1.schedule({age: 25})
+// Calling jobs from other service
+@Inject(() => ExampleJobsService)
+private exampleJobsService: ExampleJobsService
+
+async mehtodThatRunsJobs() {
+  await this.exampleJobsService.job1.schedule({age: 25})
+}
 ```
 
 ## Echoes
@@ -439,22 +475,20 @@ If your file contains echoes:
 
 ```ts
 // Replace
-import {echo} from '@orion-js/echoes'
+import {EchoEvent, EchoRequest, Echoes} from '@orion-js/echoes'
 
-export const echo1 = echo({
-  type: 'event',
-  resolve: async (params) => {
-    // echo code
+@Echoes()
+class ExampleEchoesService {
+  @EchoRequest()
+  async echo(params: {name: string}): Promise<string> {
+    return params.name
   }
-})
 
-export const echo2 = echo({
-  type: 'request',
-  resolve: async (params) => {
-    return 'result'
+  @EchoEvent()
+  async echoEvent(params: string): Promise<string> {
+    return params
   }
-})
-
+}
 // With
 import {EchoEvent, EchoRequest, Echoes} from '@orion-js/echoes'
 import {createEchoEvent, createEchoRequest} from '@orion-js/echoes'
@@ -495,19 +529,16 @@ import {createPaginatedResolver} from '@orion-js/pagination'
 
 @Resolvers()
 class ExampleResolvers {
-  @Query()
-  @ResolverParams(Params)
-  @ResolverReturns(PaginatedResults)
-  paginated = createPaginatedResolver({
+  @PaginatedQuery({
     returns: ItemSchema,
     allowedSorts: ['index'],
-    async getCursor(params) {
-      return {
-        cursor: this.repo.find(query),
-        count: () => this.repo.countDocuments(query),
-      }
-    },
   })
+  async paginatedList(params) {
+    return {
+      cursor: this.repo.find(query),
+      count: () => this.repo.countDocuments(query),
+    }
+  }
 }
 
 // With
@@ -517,7 +548,7 @@ import {createPaginatedResolver} from '@orion-js/pagination'
 @Resolvers()
 class ExampleResolvers {
   @PaginatedQuery()
-  paginated = createPaginatedResolver({
+  paginatedList = createPaginatedResolver({
     returns: ItemSchema,
     params: Params,
     allowedSorts: ['index'],
@@ -536,22 +567,28 @@ class ExampleResolvers {
 If your file contains permissions in resolvers:
 
 ```ts
-createResolver({
-  ...
+@Mutation({ // or @Query() or @ModelResolver()
+  params: WebsiteConfigParams,
+  returns: WebsiteConfig,
   permissionsOptions: {
     roles: ['admin', 'support'],
   },
 })
+async updateWebsiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+  // do something here
+}
 ```
 
 With:
 
 ```ts
-createResolver({
+@Mutation() // or @Query() or @ModelResolver()
+updateWebsiteConfig = createResolver({
   ...
   async resolve (params, viewer) => {
     // check permissions here
     checkRoles(['admin', 'support'], viewer)
+    // or leave a throw error to be later changed by the human programmer
   },
 })
 ```
