@@ -1,5 +1,12 @@
 # @orion-js/core
 
+## 4.0.4
+
+### Patch Changes
+
+- Allows to pass any option to the runner
+  Adds a new command to run a typescript check
+
 ## 4.0.3
 
 ### Patch Changes
