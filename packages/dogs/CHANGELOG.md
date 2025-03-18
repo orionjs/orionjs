@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.0.8
+
+### Patch Changes
+
+- fix type stringvalue
+
 ## 4.0.7
 
 ### Patch Changes
