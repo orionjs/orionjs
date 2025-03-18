@@ -1,5 +1,18 @@
 # @orion-js/file-manager
 
+## 4.0.8
+
+### Patch Changes
+
+- 8b5dd3a: add FileManagerOptions to exports in index.ts
+- Updated dependencies
+  - @orion-js/schema@4.0.1
+  - @orion-js/models@4.0.1
+  - @orion-js/mongodb@4.0.3
+  - @orion-js/paginated-mongodb@4.0.8
+  - @orion-js/resolvers@4.0.1
+  - @orion-js/typed-model@4.0.1
+
 ## 4.0.7
 
 ### Patch Changes

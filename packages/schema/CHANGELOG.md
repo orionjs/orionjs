@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.1
+
+### Patch Changes
+
+- add clone schema class helper
+
 ## 4.0.0
 
 ### Major Changes
