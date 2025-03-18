@@ -12,7 +12,6 @@ export function processModelSchemaKey(schemaNode: SchemaNode): SchemaNode {
   if (!schemaNode) return null
 
   if (Array.isArray(schemaNode.type)) {
-    console.log('processing array', schemaNode.type)
     const processedItem = processModelSchemaKey({
       ...schemaNode,
       type: schemaNode.type[0],
