@@ -1,5 +1,5 @@
 import {GraphQLList, GraphQLInputObjectType} from 'graphql'
-import {getFieldType} from '@orion-js/schema'
+import {getFieldType, getSchemaFromAnyOrionForm} from '@orion-js/schema'
 import getScalar from '../getType/getScalar'
 import {getStaticFields} from '../../resolversSchemas/getStaticFields'
 import {isType} from 'rambdax'
@@ -33,11 +33,7 @@ const resolveModelFields = model => {
 const resolveArrayType = type => new GraphQLList(resolveType(type[0]))
 
 const resolvePlainObjectOrModelType = type => {
-  const model = type.__isModel ? type : type.__model
-
-  if (!model || !model.__isModel) {
-    throw new Error('A type is not a Model')
-  }
+  const model = getSchemaFromAnyOrionForm(type)
 
   const fields = resolveModelFields(model)
   return getCachedModelInput(model, fields)
