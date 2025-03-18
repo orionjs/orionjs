@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.3
+
+### Patch Changes
+
+- add option to change name in schema
+
 ## 4.0.2
 
 ### Patch Changes
