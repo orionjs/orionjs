@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.2
+
+### Patch Changes
+
+- exports clone schema helper
+
 ## 4.0.1
 
 ### Patch Changes

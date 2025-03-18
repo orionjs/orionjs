@@ -1,5 +1,13 @@
 # @orion-js/models
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/schema@4.0.2
+  - @orion-js/resolvers@4.0.2
+
 ## 4.0.1
 
 ### Patch Changes
