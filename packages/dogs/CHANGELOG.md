@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.0.9
+
+### Patch Changes
+
+- change from ms to parse string
+
 ## 4.0.8
 
 ### Patch Changes
