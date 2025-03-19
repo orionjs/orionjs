@@ -2,7 +2,7 @@ import {describe, it, expect} from 'vitest'
 import {createModel} from '@orion-js/models'
 import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {getPaginatedResolverParams} from './params'
-import {schemaWithName} from '@orion-js/schema'
+import {cleanAndValidate, schemaWithName} from '@orion-js/schema'
 
 describe('Get params', () => {
   it('should return the params', () => {
@@ -23,7 +23,7 @@ describe('Get params', () => {
       },
       limit: {
         type: 'integer',
-        defaultValue: 0,
+        defaultValue: 20,
         optional: true,
         min: 0,
         max: 200,
@@ -52,7 +52,7 @@ describe('Get params', () => {
       },
       limit: {
         type: 'integer',
-        defaultValue: 0,
+        defaultValue: 20,
         optional: true,
         min: 0,
         max: 200,
@@ -94,7 +94,7 @@ describe('Get params', () => {
       },
       limit: {
         type: 'integer',
-        defaultValue: 0,
+        defaultValue: 20,
         optional: true,
         min: 0,
         max: 200,
@@ -139,7 +139,7 @@ describe('Get params', () => {
       },
       limit: {
         type: 'integer',
-        defaultValue: 0,
+        defaultValue: 20,
         optional: true,
         min: 0,
         max: 200,
@@ -182,7 +182,7 @@ describe('Get params', () => {
       },
       limit: {
         type: 'integer',
-        defaultValue: 0,
+        defaultValue: 20,
         optional: true,
         min: 0,
         max: 200,
@@ -200,6 +200,37 @@ describe('Get params', () => {
       foo: {
         type: String,
       },
+    })
+  })
+
+  it('should correctly apply the default sort', async () => {
+    const params = getPaginatedResolverParams({
+      params: {},
+      allowedSorts: ['foo'],
+      defaultSortBy: 'foo',
+      defaultSortType: 'asc',
+    })
+
+    expect(params.sortBy).toEqual({
+      type: String,
+      allowedValues: ['foo'],
+      optional: true,
+      defaultValue: 'foo',
+    })
+    expect(params.sortType).toEqual({
+      type: String,
+      allowedValues: ['asc', 'desc'],
+      optional: true,
+      defaultValue: 'asc',
+    })
+
+    const cleaned = await cleanAndValidate(params, {})
+
+    expect(cleaned).toEqual({
+      limit: 20,
+      page: 1,
+      sortBy: 'foo',
+      sortType: 'asc',
     })
   })
 })

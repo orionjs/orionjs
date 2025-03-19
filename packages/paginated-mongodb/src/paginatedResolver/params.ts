@@ -15,7 +15,7 @@ export const paginatedResolverBaseParamsSchema = {
   },
   limit: {
     type: 'integer',
-    defaultValue: 0,
+    defaultValue: 20,
     optional: true,
     min: 0,
     max: 200,

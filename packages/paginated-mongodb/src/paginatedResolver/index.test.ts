@@ -26,12 +26,12 @@ describe('Full example of paginated resolver', () => {
     })
 
     await collection.insertMany([
-      {name: 'Number 1', index: 1},
-      {name: 'Number 2', index: 2},
-      {name: 'Number 3', index: 3},
       {name: 'Number 4', index: 4},
-      {name: 'Number 5', index: 5},
+      {name: 'Number 1', index: 1},
+      {name: 'Number 3', index: 3},
+      {name: 'Number 2', index: 2},
       {name: 'Number 6', index: 6},
+      {name: 'Number 5', index: 5},
     ])
 
     const Params = schemaWithName('Params', {
@@ -45,6 +45,8 @@ describe('Full example of paginated resolver', () => {
       returns: ItemSchema,
       params: Params,
       allowedSorts: ['index'],
+      defaultSortBy: 'index',
+      defaultSortType: 'asc',
       async getCursor(params) {
         const query: MongoFilter<InferSchemaTypeWithId<typeof ItemSchema>> = {}
         if (params.filter) {
@@ -74,5 +76,13 @@ describe('Full example of paginated resolver', () => {
     expect(items.length).toBe(1)
     expect(items[0].index).toBe(1)
     expect(count).toBe(1)
+  })
+
+  it('should set correctly the default sort', async () => {
+    const {paginatedResolver, modelResolvers} = await createResolver()
+    const preResult = await paginatedResolver.resolve({filter: 'Number 1'}, {})
+    const result = internal_appendResolversToItem(preResult, modelResolvers) as any
+    const items = await result.items()
+    expect(items[0].index).toBe(1)
   })
 })
