@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.5
+
+### Patch Changes
+
+- saca el uso de simplified
+
 ## 4.0.4
 
 ### Patch Changes

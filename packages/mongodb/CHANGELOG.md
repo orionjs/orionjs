@@ -1,5 +1,16 @@
 # @orion-js/mongodb
 
+## 4.0.12
+
+### Patch Changes
+
+- export optionalid desde mongodb
+- Updated dependencies
+  - @orion-js/schema@4.0.5
+  - @orion-js/models@4.0.7
+  - @orion-js/resolvers@4.0.5
+  - @orion-js/typed-model@4.0.9
+
 ## 4.0.11
 
 ### Patch Changes

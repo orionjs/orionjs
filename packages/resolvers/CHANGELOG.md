@@ -1,5 +1,12 @@
 # @orion-js/resolvers
 
+## 4.0.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/schema@4.0.5
+
 ## 4.0.4
 
 ### Patch Changes

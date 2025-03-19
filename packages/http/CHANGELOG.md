@@ -1,5 +1,14 @@
 # @orion-js/http
 
+## 4.0.8
+
+### Patch Changes
+
+- saca el uso de simplified
+- Updated dependencies
+  - @orion-js/schema@4.0.5
+  - @orion-js/resolvers@4.0.5
+
 ## 4.0.7
 
 ### Patch Changes
