@@ -13,6 +13,8 @@ import {EnhancedOmit} from 'mongodb'
 
 export {MongoDB}
 
+export type OptionalId<T> = MongoDB.OptionalId<T>
+
 export declare type InferIdType<TSchema> = TSchema extends {
   _id: infer IdType
 }
