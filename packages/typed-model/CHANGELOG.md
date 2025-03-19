@@ -1,5 +1,11 @@
 # @orion-js/typed-model
 
+## 4.0.5
+
+### Patch Changes
+
+- improvements to cloneSchemaClass
+
 ## 4.0.4
 
 ### Patch Changes

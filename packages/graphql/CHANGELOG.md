@@ -1,5 +1,12 @@
 # @orion-js/graphql
 
+## 4.0.12
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/typed-model@4.0.5
+
 ## 4.0.11
 
 ### Patch Changes
