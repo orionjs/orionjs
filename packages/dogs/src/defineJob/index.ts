@@ -8,7 +8,7 @@ import {
 } from '../types/JobsDefinition'
 import {scheduleJob, ScheduleJobOptions} from '..'
 import {cleanAndValidate, SchemaInAnyOrionForm} from '@orion-js/schema'
-import ms from 'ms'
+import parse from 'parse-duration'
 
 export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
   options: CreateEventJobOptions<TParamsSchema>,
@@ -45,7 +45,7 @@ export function createRecurrentJob(options: CreateRecurrentJobOptions): Recurren
     ...options,
     priority: options.priority ?? 100,
     type: 'recurrent',
-    runEvery: typeof options.runEvery === 'string' ? ms(options.runEvery) : options.runEvery,
+    runEvery: typeof options.runEvery === 'string' ? parse(options.runEvery) : options.runEvery,
   }
 
   return jobDefinition

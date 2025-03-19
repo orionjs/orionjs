@@ -32,14 +32,13 @@
     "@orion-js/typed-model": "workspace:*",
     "dataloader": "2.2.2",
     "dot-object": "^2.1.5",
-    "ms": "^2.1.3"
+    "parse-duration": "^2.1.3"
   },
   "peerDependencies": {
     "@orion-js/logger": "workspace:*"
   },
   "devDependencies": {
     "@orion-js/logger": "workspace:*",
-    "@types/ms": "^2.1.0",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",
     "vitest": "^3.0.8"

@@ -4,16 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@orion-js/core': link:packages/core
-
 importers:
 
   .:
     dependencies:
-      '@orion-js/core':
-        specifier: link:packages/core
-        version: link:packages/core
       rambdax:
         specifier: ^11.3.1
         version: 11.3.1
@@ -110,7 +104,7 @@ importers:
         specifier: ^2.4.2
         version: 2.4.2
       tsx:
-        specifier: ^4.19.3
+        specifier: '*'
         version: 4.19.3
       typescript:
         specifier: ^5.4.5
@@ -186,16 +180,13 @@ importers:
       dot-object:
         specifier: ^2.1.5
         version: 2.1.5
-      ms:
+      parse-duration:
         specifier: ^2.1.3
         version: 2.1.3
     devDependencies:
       '@orion-js/logger':
         specifier: workspace:*
         version: link:../logger
-      '@types/ms':
-        specifier: ^2.1.0
-        version: 2.1.0
       tsup:
         specifier: ^8.0.1
         version: 8.4.0(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.2)(yaml@2.7.0)
@@ -367,9 +358,6 @@ importers:
       '@orion-js/typed-model':
         specifier: workspace:*
         version: link:../typed-model
-      graphql-iso-date:
-        specifier: ^3.6.1
-        version: 3.6.1(graphql@16.10.0)
       graphql-scalars:
         specifier: ^1.24.1
         version: 1.24.1(graphql@16.10.0)
@@ -2099,9 +2087,6 @@ packages:
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
-  '@types/ms@2.1.0':
-    resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
-
   '@types/mysql@2.15.26':
     resolution: {integrity: sha512-DSLCOXhkvfS5WNNPbfn2KdICAmk8lLc+/PNvnPnF7gOdMZCxopXduqv0OQ13y/yA/zXTSikZZqVgybUxOEg6YQ==}
 
@@ -2886,11 +2871,6 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  graphql-iso-date@3.6.1:
-    resolution: {integrity: sha512-AwFGIuYMJQXOEAgRlJlFL4H1ncFM8n8XmoVDTNypNOZyQ8LFDG2ppMFlsS862BSTCDcSUfHp8PD3/uJhv7t59Q==}
-    peerDependencies:
-      graphql: ^0.5.0 || ^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0
-
   graphql-scalars@1.24.1:
     resolution: {integrity: sha512-3L553TMPh3YpHQM4x9G4tXcyD+AX8QQOYA6tUn1nrNiWEXE0JfAnWdjoe3WGxRuGjnZrzvHDz62q8S+sSGXXwA==}
     engines: {node: '>=10'}
@@ -3424,6 +3404,9 @@ packages:
 
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
+
+  parse-duration@2.1.3:
+    resolution: {integrity: sha512-MtbharL7Bets65qDBXuDOHHWyY1BxTJZmJ/xGmS90iEbKE0gZ6yZpZtCda7O79GeOi/f0NwBaplIuReExIoVsw==}
 
   parseurl@1.3.3:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
@@ -5794,8 +5777,6 @@ snapshots:
 
   '@types/mime@1.3.5': {}
 
-  '@types/ms@2.1.0': {}
-
   '@types/mysql@2.15.26':
     dependencies:
       '@types/node': 22.13.10
@@ -6719,10 +6700,6 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  graphql-iso-date@3.6.1(graphql@16.10.0):
-    dependencies:
-      graphql: 16.10.0
-
   graphql-scalars@1.24.1(graphql@16.10.0):
     dependencies:
       graphql: 16.10.0
@@ -7179,6 +7156,8 @@ snapshots:
   package-manager-detector@0.2.11:
     dependencies:
       quansync: 0.2.8
+
+  parse-duration@2.1.3: {}
 
   parseurl@1.3.3: {}
 
