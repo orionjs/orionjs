@@ -1,4 +1,4 @@
-import {CleanFunction, ValidateFunction} from './types/schema'
+import {CleanFunction, SchemaFieldType, SchemaNode, ValidateFunction} from './types/schema'
 
 export interface FieldTypeOpts<TType = any> {
   name: string
@@ -14,6 +14,7 @@ export interface FieldType<TType = any> {
   clean: CleanFunction
   meta?: any
   toGraphQLType?: (GraphQL: any) => any
+  toSerializedType?: (node: SchemaNode) => Promise<SchemaFieldType>
   __tsFieldType: TType
   __isFieldType: boolean
 }

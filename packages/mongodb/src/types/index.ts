@@ -329,5 +329,6 @@ export function typedId<const TPrefix extends string>(
   return {
     ...fieldTypes.string,
     name: `typedId:${prefix}`,
+    toSerializedType: async () => 'string',
   } as any
 }
