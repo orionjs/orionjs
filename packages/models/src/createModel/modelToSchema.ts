@@ -7,6 +7,7 @@ import {
   SchemaNode,
   SchemaWithMetadata,
 } from '@orion-js/schema'
+import {ModelResolversMap} from '../types'
 
 export function processModelSchemaKey(schemaNode: SchemaNode): SchemaNode {
   if (!schemaNode) return null
@@ -43,6 +44,7 @@ interface ModelToSchemaOptions {
   modelName?: string
   cleanOptions?: any
   validateOptions?: any
+  resolvers?: ModelResolversMap
 }
 
 export function modelToSchema(options: ModelToSchemaOptions): Schema {
@@ -58,6 +60,10 @@ export function modelToSchema(options: ModelToSchemaOptions): Schema {
 
   if (options.validateOptions) {
     compiledSchema.__validate = options.validateOptions
+  }
+
+  if (options.resolvers) {
+    compiledSchema.__resolvers = options.resolvers
   }
 
   for (const key in options.modelSchema) {

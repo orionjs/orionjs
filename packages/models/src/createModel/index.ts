@@ -8,20 +8,6 @@ export default function createModel<TSchema extends Schema>(
 ): Model<TSchema> {
   const name = modelOptions.name
 
-  let resolvedSchema: Schema
-  const getSchema = () => {
-    if (!modelOptions.schema) return {}
-    if (!resolvedSchema) {
-      resolvedSchema = modelToSchema({
-        modelSchema: modelOptions.schema,
-        modelName: model.name,
-        cleanOptions: modelOptions.clean,
-        validateOptions: modelOptions.validate,
-      })
-    }
-    return resolvedSchema
-  }
-
   let resolvedResolvers: ModelResolversMap
   const getResolvers = () => {
     if (!modelOptions.resolvers) return {}
@@ -29,6 +15,22 @@ export default function createModel<TSchema extends Schema>(
       resolvedResolvers = modelOptions.resolvers
     }
     return resolvedResolvers
+  }
+
+  let resolvedSchema: Schema
+  const getSchema = () => {
+    if (!modelOptions.schema) return {}
+    if (!resolvedSchema) {
+      console.log('getting schema', getResolvers())
+      resolvedSchema = modelToSchema({
+        modelSchema: modelOptions.schema,
+        modelName: model.name,
+        cleanOptions: modelOptions.clean,
+        validateOptions: modelOptions.validate,
+        resolvers: getResolvers(),
+      })
+    }
+    return resolvedSchema
   }
 
   const model: Model<TSchema> = {

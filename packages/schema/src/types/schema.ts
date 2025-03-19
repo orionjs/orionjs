@@ -195,6 +195,10 @@ export type SchemaMetadata = {
    * Validates the whole schema
    */
   __validate?: ValidateFunction
+  /**
+   * The resolvers of the model
+   */
+  __resolvers?: any
 }
 
 export type Schema = {
