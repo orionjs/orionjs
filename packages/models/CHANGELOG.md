@@ -1,5 +1,11 @@
 # @orion-js/models
 
+## 4.0.6
+
+### Patch Changes
+
+- remove log
+
 ## 4.0.5
 
 ### Patch Changes

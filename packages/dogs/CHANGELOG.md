@@ -1,5 +1,12 @@
 # @orion-js/dogs
 
+## 4.0.13
+
+### Patch Changes
+
+- @orion-js/mongodb@4.0.11
+- @orion-js/typed-model@4.0.8
+
 ## 4.0.12
 
 ### Patch Changes
