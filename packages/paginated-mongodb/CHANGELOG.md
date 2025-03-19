@@ -1,5 +1,12 @@
 # @orion-js/paginated-mongodb
 
+## 4.0.16
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/graphql@4.0.14
+
 ## 4.0.15
 
 ### Patch Changes

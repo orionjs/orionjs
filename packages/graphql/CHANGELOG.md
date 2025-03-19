@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.14
+
+### Patch Changes
+
+- correctly sest model resolvers args
+
 ## 4.0.13
 
 ### Patch Changes
