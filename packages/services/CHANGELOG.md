@@ -1,5 +1,11 @@
 # @orion-js/services
 
+## 4.0.1
+
+### Patch Changes
+
+- add method to set instance compatible with Container.set
+
 ## 4.0.0
 
 ### Major Changes
