@@ -1,6 +1,6 @@
 import {Prop, TypedSchema} from '..'
 import {cloneSchemaClass} from './cloneSchemaClass'
-import {describe, it, expect} from 'vitest'
+import {describe, expect, it} from 'vitest'
 
 describe('cloneSchemaClass', () => {
   it('should clone a schema class', async () => {
@@ -14,17 +14,25 @@ describe('cloneSchemaClass', () => {
     }
 
     type fields = keyof SchemaName
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const test2: fields = 'name'
+    const _test2: fields = 'name'
 
     const ClonedSchema = cloneSchemaClass(SchemaName, {
       name: 'Test',
       pickFields: ['name'] as const,
     })
 
-    type ClonedType = typeof ClonedSchema.type
+    console.log(ClonedSchema)
+
+    expect(ClonedSchema).toEqual({
+      __modelName: 'Test',
+      name: {
+        type: String,
+      },
+    })
+
+    type ClonedType = typeof ClonedSchema.__tsFieldType
     type fields2 = keyof ClonedType
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const test: fields2 = 'name'
+    const _test: fields2 = 'name'
   })
 })

@@ -1,7 +1,6 @@
-import {Model} from '@orion-js/models'
 import {CloneOptions} from '@orion-js/models'
-import {getModelForClass} from './getModelForClass'
 import {Constructor} from '../utils/interfaces'
+import {cloneSchema, getSchemaFromAnyOrionForm, Schema} from '@orion-js/schema'
 
 export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
   name: string
@@ -11,30 +10,21 @@ export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
 }
 
 /**
- * This function returns a cloned model but the type is a subset of the original Schema.
- * To use the type of the cloned schema use `typeof ClonedModel.type`
- *
- * Example:
- * ```ts
- * const ClonedModel = cloneSchemaClass(Schema, {
- *   name: 'ClonedSchema',
- *   pickFields: ['name'] as const
- * })
- * type ClonedType = typeof ClonedModel.type
- * ```
+ * @deprecated Use `cloneSchema` instead
  */
 export function cloneSchemaClass<TClass, TFields extends keyof TClass>(
-  schema: Constructor<TClass>,
+  inputType: Constructor<TClass>,
   options: CloneSchemaClassOptions<TClass, TFields>,
-): Model<Pick<TClass, TFields>> {
-  const model = getModelForClass(schema)
+): Schema & {__tsFieldType: Pick<TClass, TFields>} {
+  const schema = getSchemaFromAnyOrionForm(inputType) as Schema
 
-  const newModel: Model<Pick<TClass, TFields>> = model.clone({
+  const newSchema = cloneSchema({
+    schema,
     name: options.name,
     pickFields: options.pickFields as any as string[],
     mapFields: options.mapFields,
     extendSchema: options.extendSchema,
   })
 
-  return newModel
+  return newSchema as any
 }
