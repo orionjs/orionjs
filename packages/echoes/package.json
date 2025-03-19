@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "4.0.8",
+  "version": "4.0.9",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [

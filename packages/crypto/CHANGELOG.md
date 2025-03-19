@@ -1,5 +1,11 @@
 # @orion-js/crypto
 
+## 4.0.3
+
+### Patch Changes
+
+- corrects node import
+
 ## 4.0.2
 
 ### Patch Changes

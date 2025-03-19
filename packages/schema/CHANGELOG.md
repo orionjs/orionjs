@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.6
+
+### Patch Changes
+
+- adds toSerializedType functionlity to custom field types
+
 ## 4.0.5
 
 ### Patch Changes
