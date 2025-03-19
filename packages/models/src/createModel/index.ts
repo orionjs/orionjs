@@ -21,7 +21,6 @@ export default function createModel<TSchema extends Schema>(
   const getSchema = () => {
     if (!modelOptions.schema) return {}
     if (!resolvedSchema) {
-      console.log('getting schema', getResolvers())
       resolvedSchema = modelToSchema({
         modelSchema: modelOptions.schema,
         modelName: model.name,
