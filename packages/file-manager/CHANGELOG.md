@@ -1,5 +1,11 @@
 # @orion-js/file-manager
 
+## 4.0.21
+
+### Patch Changes
+
+- fix generate upload credentials
+
 ## 4.0.20
 
 ### Patch Changes
