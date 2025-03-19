@@ -1,5 +1,13 @@
 # @orion-js/core
 
+## 4.0.5
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/env@4.0.2
+
 ## 4.0.4
 
 ### Patch Changes

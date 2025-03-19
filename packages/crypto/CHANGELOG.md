@@ -1,5 +1,13 @@
 # @orion-js/crypto
 
+## 4.0.2
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/services@4.0.2
+
 ## 4.0.1
 
 ### Patch Changes

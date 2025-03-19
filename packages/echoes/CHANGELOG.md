@@ -1,5 +1,17 @@
 # @orion-js/echoes
 
+## 4.0.7
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/env@4.0.2
+  - @orion-js/helpers@4.0.1
+  - @orion-js/http@4.0.7
+  - @orion-js/schema@4.0.4
+  - @orion-js/services@4.0.2
+
 ## 4.0.6
 
 ### Patch Changes

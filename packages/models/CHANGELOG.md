@@ -1,5 +1,15 @@
 # @orion-js/models
 
+## 4.0.5
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/helpers@4.0.1
+  - @orion-js/resolvers@4.0.4
+  - @orion-js/schema@4.0.4
+
 ## 4.0.4
 
 ### Patch Changes

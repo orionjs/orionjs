@@ -1,5 +1,11 @@
 # @orion-js/env
 
+## 4.0.2
+
+### Patch Changes
+
+- pass resolvers in schema
+
 ## 4.0.1
 
 ### Patch Changes

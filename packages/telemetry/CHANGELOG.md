@@ -1,5 +1,11 @@
 # @orion-js/telemetry
 
+## 4.0.1
+
+### Patch Changes
+
+- pass resolvers in schema
+
 ## 4.0.0
 
 ### Major Changes

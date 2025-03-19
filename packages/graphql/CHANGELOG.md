@@ -1,5 +1,20 @@
 # @orion-js/graphql
 
+## 4.0.15
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/env@4.0.2
+  - @orion-js/helpers@4.0.1
+  - @orion-js/http@4.0.7
+  - @orion-js/models@4.0.5
+  - @orion-js/resolvers@4.0.4
+  - @orion-js/schema@4.0.4
+  - @orion-js/services@4.0.2
+  - @orion-js/typed-model@4.0.7
+
 ## 4.0.14
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @orion-js/dogs
 
+## 4.0.12
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/helpers@4.0.1
+  - @orion-js/logger@4.0.3
+  - @orion-js/mongodb@4.0.10
+  - @orion-js/schema@4.0.4
+  - @orion-js/services@4.0.2
+  - @orion-js/typed-model@4.0.7
+
 ## 4.0.11
 
 ### Patch Changes

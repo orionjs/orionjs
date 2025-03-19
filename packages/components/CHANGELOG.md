@@ -1,5 +1,20 @@
 # @orion-js/components
 
+## 4.0.19
+
+### Patch Changes
+
+- pass resolvers in schema
+- Updated dependencies
+  - @orion-js/dogs@4.0.12
+  - @orion-js/echoes@4.0.7
+  - @orion-js/graphql@4.0.15
+  - @orion-js/helpers@4.0.1
+  - @orion-js/http@4.0.7
+  - @orion-js/models@4.0.5
+  - @orion-js/mongodb@4.0.10
+  - @orion-js/services@4.0.2
+
 ## 4.0.18
 
 ### Patch Changes

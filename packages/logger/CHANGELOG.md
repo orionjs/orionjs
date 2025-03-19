@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.0.3
+
+### Patch Changes
+
+- pass resolvers in schema
+
 ## 4.0.2
 
 ### Patch Changes
