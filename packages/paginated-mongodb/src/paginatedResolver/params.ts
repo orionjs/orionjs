@@ -1,5 +1,6 @@
 import {getSchemaFromAnyOrionForm, Schema} from '@orion-js/schema'
 import {PaginatedResolverOpts} from '.'
+import {clone} from '@orion-js/helpers'
 
 // @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
@@ -37,10 +38,10 @@ export function getPaginatedResolverParams<const TDefinedParams extends Schema>(
   const {params, allowedSorts, defaultSortBy, defaultSortType} = options
   const paramsSchema = (params ? getSchemaFromAnyOrionForm(params) : {}) as Schema
 
-  const schema = {
+  const schema = clone({
     ...paginatedResolverBaseParamsSchema,
     ...(paramsSchema || {}),
-  }
+  })
 
   if (allowedSorts?.length) {
     // @ts-ignore
