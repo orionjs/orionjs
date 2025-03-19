@@ -42,17 +42,11 @@ type InferPathParam<Path, NextPart> = Path extends `:${infer OptionalParam}?`
     ? {[K in Param]: string} & NextPart
     : NextPart
 
-type Simplify<T> = T extends object
-  ? T extends infer O
-    ? {[K in keyof O]: Simplify<O[K]>}
-    : never
-  : T
-
 type InternalPathParams<Path> = Path extends `${infer Segment}/${infer Rest}`
   ? InferPathParam<Segment, InferPathParams<Rest>>
   : InferPathParam<Path, {}>
 
-export type InferPathParams<Path> = Simplify<InternalPathParams<Path>>
+export type InferPathParams<Path> = InternalPathParams<Path>
 
 export interface OrionRouteOptions<
   TPath extends string,

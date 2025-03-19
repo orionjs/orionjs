@@ -61,28 +61,22 @@ type NodeIsOptional<TNode> = TNode extends {optional: true} ? true : false
 //     ? true
 //     : false
 
-export type Simplifed<T> = {
-  [K in keyof T]: T[K] extends object ? Simplifed<T[K]> : T[K]
-}
-
 type WithoutNotSchemaItems<T extends Record<string, any>> = T extends {
   [key in SchemaKeysNotOfSchemaItems]: any
 } & Record<string, any>
   ? Omit<T, SchemaKeysNotOfSchemaItems>
   : T
 
-type InferSchemaTypeForSchema<TSchema extends Record<string, any>> = Simplifed<
-  WithoutNotSchemaItems<
-    {
-      -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
-        ? never
-        : K]: InferSchemaType<TSchema[K]['type']>
-    } & {
-      -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
-        ? K
-        : never]?: InferSchemaType<TSchema[K]['type']>
-    }
-  >
+type InferSchemaTypeForSchema<TSchema extends Record<string, any>> = WithoutNotSchemaItems<
+  {
+    -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
+      ? never
+      : K]: InferSchemaType<TSchema[K]['type']>
+  } & {
+    -readonly [K in keyof TSchema as NodeIsOptional<TSchema[K]> extends true
+      ? K
+      : never]?: InferSchemaType<TSchema[K]['type']>
+  }
 >
 
 // is a record with a child item that has type in its type
