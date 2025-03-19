@@ -1,4 +1,4 @@
-import {createResolver} from '@orion-js/resolvers'
+import {createModelResolver, createResolver} from '@orion-js/resolvers'
 import buildSchema from '..'
 import {describe, expect, it} from 'vitest'
 import {schemaWithName} from '@orion-js/schema'
@@ -63,5 +63,43 @@ describe('Enum test', () => {
     expect(graphqlSchema.getType('Sub')).toBeDefined()
     expect(graphqlSchema.getType('Schema')).toBeDefined()
     expect(resolverData.args[0].type.name).toBe('SubInput')
+  })
+
+  it('should correctly pass resolver arguments when its a scalar', async () => {
+    const schemaResult = schemaWithName('SchemaResult', {
+      query: {
+        type: 'string',
+      },
+    })
+
+    const search = createResolver({
+      returns: schemaResult,
+      async resolve() {
+        return {query: 'hola'}
+      },
+    })
+
+    const searchResolver = createModelResolver({
+      params: {
+        name: {type: 'string'},
+      },
+      returns: String,
+      async resolve() {
+        return 'hola'
+      },
+    })
+
+    const modelResolvers = {
+      SchemaResult: {searchResolver},
+    }
+
+    const resolvers = {search}
+    const graphqlSchema = await buildSchema({
+      resolvers,
+      modelResolvers,
+    })
+
+    const typeData = graphqlSchema.getType('SchemaResult').toConfig() as any
+    expect(typeData.fields.searchResolver.args.name).toBeDefined()
   })
 })

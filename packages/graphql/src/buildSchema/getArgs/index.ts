@@ -2,7 +2,7 @@ import {Schema} from '@orion-js/schema'
 import getField from './getField'
 import {StartGraphQLOptions} from '../../types'
 
-export default async function (params: Schema, options: StartGraphQLOptions) {
+export default function (params: Schema, options: StartGraphQLOptions) {
   if (!params) return
   if (Object.keys(params).length === 0) return
 
