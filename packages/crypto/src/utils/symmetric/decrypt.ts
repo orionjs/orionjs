@@ -1,5 +1,5 @@
 import algorithm from './algorithm'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 
 export default function symmetricDecrypt(text: string, password: string) {
   const encryptedArray = text.split(':')
