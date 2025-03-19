@@ -1,5 +1,12 @@
 # @orion-js/paginated-mongodb
 
+## 4.0.20
+
+### Patch Changes
+
+- 4a241ea: fixes clone error in paginated params
+- 3d9c008: set paginated default limit to 20
+
 ## 4.0.19
 
 ### Patch Changes
