@@ -8,6 +8,7 @@ import {
   SchemaWithMetadata,
 } from '@orion-js/schema'
 import {ModelResolversMap} from '../types'
+import {isEmpty} from 'rambdax'
 
 export function processModelSchemaKey(schemaNode: SchemaNode): SchemaNode {
   if (!schemaNode) return null
@@ -62,7 +63,7 @@ export function modelToSchema(options: ModelToSchemaOptions): Schema {
     compiledSchema.__validate = options.validateOptions
   }
 
-  if (options.resolvers) {
+  if (options.resolvers && !isEmpty(options.resolvers)) {
     compiledSchema.__resolvers = options.resolvers
   }
 
