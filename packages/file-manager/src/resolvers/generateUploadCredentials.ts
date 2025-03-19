@@ -57,7 +57,7 @@ export const generateUploadCredentials = createResolver({
 
     const key = `${basePath}/${generateId()}-${params.name}`
 
-    const fileId = await Files.rawCollection.insertOne({
+    const {insertedId: fileId} = await Files.rawCollection.insertOne({
       _id: `ofl-${generateUUID()}`,
       key,
       bucket,
