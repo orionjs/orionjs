@@ -31,6 +31,10 @@ export function Inject<T>(getDependency: () => Token<T>) {
   }
 }
 
+export function setInstance<T extends object>(token: Token<T>, instance: T) {
+  instances.set(token, instance)
+}
+
 export function getInstance<T extends object>(token: Token<T>): T {
   if (!instances.has(token)) {
     const instance = new token()
