@@ -59,7 +59,7 @@ export const ExampleSchema = schemaWithName('ExampleSchema', {
   paymentMethod: {type: PaymentMethodEnum, optional: true},
 })
 
-export type ExampleSchemaType = InferSchemaType<typeof ExampleSchema>
+export type Example = InferSchemaType<typeof ExampleSchema>
 ```
 
 ## Dependency Injection
@@ -117,7 +117,7 @@ import {createCollection, Repository} from '@orion-js/mongodb'
 import {InferSchemaType} from '@orion-js/schema'
 import {CardSchema} from '../schemas/Card'
 
-type CardType = InferSchemaType<typeof CardSchema> // or check if this is exported from the schema file
+type Card = InferSchemaType<typeof CardSchema> // or check if this is exported from the schema file
 
 @Repository()
 export class CardsRepo {
@@ -175,10 +175,9 @@ export class WebsiteConfigResolvers {
 }
 
 // With
-import {Query, Resolvers} from '@orion-js/graphql'
+import {Query, Resolvers, createQuery} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {createQuery} from '@orion-js/resolvers'
 
 const WebsiteConfigParams = schemaWithName('WebsiteConfigParams', {
   websiteId: {type: String}
@@ -244,10 +243,9 @@ export class UpdateWebsiteConfigResolvers {
 }
 
 // With
-import {Mutation, Resolvers} from '@orion-js/graphql'
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {createMutation} from '@orion-js/resolvers'
 
 const WebsiteConfigParams = schemaWithName('WebsiteConfigParams', {
   websiteId: {type: String},
@@ -302,12 +300,12 @@ import {PersonSchema} from 'app/providers/schemas/Person'
 import {createModelResolver} from '@orion-js/resolvers'
 import {InferSchemaType} from '@orion-js/schema'
 
-type PersonType = InferSchemaType<typeof PersonSchema>
+type Person = InferSchemaType<typeof PersonSchema> // if its not exported in the schema file
 
 @ModelResolvers(PersonSchema)
 export class PersonResolvers {
   @ModelResolver()
-  sayHi = createModelResolver<PersonType>({
+  sayHi = createModelResolver<Person>({
     returns: String,
     resolve: async person => {
       return `My name is ${person.name}`
