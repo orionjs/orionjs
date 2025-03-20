@@ -25,7 +25,6 @@ const run =
 program
   .command('dev')
   .description('Run the Orionjs app in development mode')
-  .option('--shell', 'Opens a shell in Chrome developer tools')
   .option('--omit-cursor-rule', 'Omit the creation of the Orionjs Cursor rule')
   .option('--omit-mcp-server', 'Omit the creation of the Orionjs MCP server')
   .allowUnknownOption()

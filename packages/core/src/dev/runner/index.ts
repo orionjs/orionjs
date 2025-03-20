@@ -12,6 +12,7 @@ export interface RunnerOptions {
 }
 
 export interface Runner {
+  start: () => void
   restart: () => void
   stop: () => void
 }
@@ -23,8 +24,7 @@ export function getRunner(options: RunnerOptions, command: any): Runner {
     console.log(chalk.bold('=> Cleaning directory...\n'))
   }
 
-  const start = () => {
-    console.log(chalk.bold('=> Starting app...\n'))
+  const startApp = () => {
     appProcess = startProcess(options, command)
 
     appProcess.on('exit', (code: number, signal: string) => {
@@ -40,16 +40,28 @@ export function getRunner(options: RunnerOptions, command: any): Runner {
   const stop = () => {
     if (appProcess) {
       appProcess.kill()
+      appProcess = null
     }
   }
 
   const restart = () => {
+    console.log(chalk.bold('=> Restarting app...\n'))
     stop()
-    start()
+    startApp()
+  }
+
+  const start = () => {
+    // check if the app is already running
+    if (appProcess) {
+      // console.log(chalk.bold('=> App is already running. Restarting...\n'))
+    } else {
+      startApp()
+    }
   }
 
   return {
     restart,
     stop,
+    start,
   }
 }

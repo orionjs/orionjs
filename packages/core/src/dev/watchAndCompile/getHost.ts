@@ -24,7 +24,7 @@ export function getHost(runner: Runner) {
         }
       }
 
-      runner.restart()
+      runner.start()
     }
   }
 
