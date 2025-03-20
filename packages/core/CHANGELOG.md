@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.9
+
+### Patch Changes
+
+- improves cli dev
+
 ## 4.0.8
 
 ### Patch Changes
