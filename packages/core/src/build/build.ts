@@ -1,4 +1,4 @@
-import {typecheckPlugin} from '@jgoz/esbuild-plugin-typecheck'
+import chalk from 'chalk'
 import * as esbuild from 'esbuild'
 
 export async function build(options: {output?: string}) {
@@ -18,6 +18,7 @@ export async function build(options: {output?: string}) {
     allowOverwrite: true,
     minify: true,
     packages: 'external',
-    plugins: [typecheckPlugin()],
   })
+
+  console.log(chalk.green.bold('Build successful'))
 }

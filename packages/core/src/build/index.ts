@@ -1,6 +1,7 @@
 import chalk from 'chalk'
 import {build} from './build'
 import cleanDirectory from '../dev/watchAndCompile/cleanDirectory'
+import {checkTs} from './checkTs'
 
 export default async function (options: {output?: string}) {
   console.log(chalk.bold(`Building Orionjs App ${chalk.green(chalk.bold('V4'))}...`))
@@ -11,7 +12,7 @@ export default async function (options: {output?: string}) {
 
   await cleanDirectory(options.output)
 
-  await build(options)
+  await Promise.all([checkTs(), build(options)])
 
-  console.log(chalk.bold('Build successful'))
+  console.log(chalk.bold('Build completed'))
 }

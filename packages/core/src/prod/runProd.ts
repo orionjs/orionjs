@@ -1,8 +1,11 @@
 import {spawn} from 'node:child_process'
+import {ProdOptions} from './index'
 
-export function runProd(command: any) {
-  const args = [...command.args, './app/index.ts']
-  spawn('tsx', args, {
+export function runProd(options: ProdOptions, command: any) {
+  const indexPath = `${options.path}/index.js`
+
+  const args = ['--import=tsx', ...command.args, indexPath]
+  spawn('node', args, {
     env: {
       NODE_ENV: 'production',
       ...process.env,

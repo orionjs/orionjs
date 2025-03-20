@@ -42,6 +42,10 @@ program
 program
   .command('prod')
   .allowUnknownOption()
+  .option(
+    '--path [path]',
+    'Path of the compiled Orionjs app. If not provided, the app will be compiled and then run',
+  )
   .description('Run the Orionjs app in production mode')
   .action(run(prod))
 
