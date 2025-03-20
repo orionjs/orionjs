@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.8
+
+### Patch Changes
+
+- awesome dev runner
+
 ## 4.0.7
 
 ### Patch Changes
