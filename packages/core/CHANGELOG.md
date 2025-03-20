@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.7
+
+### Patch Changes
+
+- better build and import commands
+
 ## 4.0.6
 
 ### Patch Changes
