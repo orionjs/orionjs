@@ -5,14 +5,20 @@ import {Runner} from '../runner'
 import chalk from 'chalk'
 
 export function getHost(runner: Runner) {
+  let isStopped = true
   const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
     if (diagnostic.category !== 3) return
-
-    if (diagnostic.code === 6032 || diagnostic.code === 6031) {
-      runner.stop()
+    if (diagnostic.code === 6031 || diagnostic.code === 6032) {
+      // file change detected, starting compilation
+      // console.log(chalk.bold(`=> ${diagnostic.messageText}`))
+      return
     }
 
-    console.log(chalk.bold(`=> ${diagnostic.messageText}`))
+    if (diagnostic.code === 6193) {
+      runner.stop()
+      isStopped = true
+      return
+    }
 
     if (diagnostic.code === 6194) {
       /**
@@ -20,12 +26,20 @@ export function getHost(runner: Runner) {
        */
       if (/^Found .+ errors?/.test(diagnostic.messageText.toString())) {
         if (!diagnostic.messageText.toString().includes('Found 0 errors.')) {
+          runner.stop()
+          isStopped = true
           return
         }
       }
 
-      runner.start()
+      if (isStopped) {
+        isStopped = false
+        runner.start()
+      }
+      return
     }
+
+    console.log(chalk.bold(`=> ${diagnostic.messageText} [${diagnostic.code}]`))
   }
 
   const configPath = getConfigPath()
