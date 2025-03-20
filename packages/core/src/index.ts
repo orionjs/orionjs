@@ -8,6 +8,7 @@ import './handleErrors'
 import version from './version'
 import 'dotenv/config'
 import check from './check'
+import build from './build'
 
 const program = new Command()
 
@@ -31,6 +32,12 @@ program
   .action(run(dev))
 
 program.command('check').description('Runs a typescript check').action(run(check))
+
+program
+  .command('build')
+  .description('Build the Orionjs app for production')
+  .option('--output [path]', 'Path of the output file')
+  .action(run(build))
 
 program
   .command('prod')

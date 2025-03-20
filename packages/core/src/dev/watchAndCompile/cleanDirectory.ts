@@ -20,9 +20,9 @@ function rimraf(dir_path: string) {
   }
 }
 
-export default async function cleanDirectory() {
+export default async function cleanDirectory(directory?: string) {
   try {
-    const dirPath = path.join(process.cwd(), '.orion', 'build')
+    const dirPath = directory ? directory : path.join(process.cwd(), '.orion', 'build')
     rimraf(dirPath)
   } catch (_) {
     // Ignore errors during cleanup

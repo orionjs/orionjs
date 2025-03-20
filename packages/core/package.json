@@ -20,12 +20,14 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
+    "@jgoz/esbuild-plugin-typecheck": "^4.0.3",
     "@orion-js/env": "workspace:*",
     "chalk": "^4.1.2",
     "chokidar": "3.5.3",
     "commander": "^9.4.1",
     "comment-json": "^4.2.3",
     "dotenv": "^16.0.3",
+    "esbuild": "^0.25.1",
     "prompts": "^2.4.2",
     "typescript": "^5.4.5",
     "yaml": "^2.2.1"
