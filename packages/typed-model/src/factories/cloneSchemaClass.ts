@@ -4,7 +4,7 @@ import {cloneSchema, getSchemaFromAnyOrionForm, Schema} from '@orion-js/schema'
 
 export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
   name: string
-  pickFields: readonly TFields[]
+  pickFields?: readonly TFields[]
   mapFields?: CloneOptions['mapFields']
   extendSchema?: CloneOptions['extendSchema']
 }
@@ -12,10 +12,12 @@ export interface CloneSchemaClassOptions<TClass, TFields extends keyof TClass> {
 /**
  * @deprecated Use `cloneSchema` instead
  */
-export function cloneSchemaClass<TClass, TFields extends keyof TClass>(
+export function cloneSchemaClass<TClass, TFields extends keyof TClass | undefined = undefined>(
   inputType: Constructor<TClass>,
   options: CloneSchemaClassOptions<TClass, TFields>,
-): Schema & {__tsFieldType: Pick<TClass, TFields>} {
+): Schema & {
+  __tsFieldType: TFields extends undefined ? TClass : Pick<TClass, TFields>
+} {
   const schema = getSchemaFromAnyOrionForm(inputType) as Schema
 
   const newSchema = cloneSchema({

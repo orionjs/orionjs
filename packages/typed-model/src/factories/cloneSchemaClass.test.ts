@@ -35,4 +35,29 @@ describe('cloneSchemaClass', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _test: fields2 = 'name'
   })
+
+  it('should clone a schema class without passing pick fields', () => {
+    @TypedSchema()
+    class SchemaName {
+      @Prop({type: String})
+      _id: string
+
+      @Prop({type: String})
+      name: string
+    }
+
+    const ClonedSchema = cloneSchemaClass(SchemaName, {
+      name: 'Test',
+    })
+
+    expect(ClonedSchema).toEqual({
+      __modelName: 'Test',
+      _id: {
+        type: String,
+      },
+      name: {
+        type: String,
+      },
+    })
+  })
 })
