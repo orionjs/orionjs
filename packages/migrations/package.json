@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/migrations",
-  "version": "4.0.16",
+  "version": "4.0.17",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [

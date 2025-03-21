@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.8
+
+### Patch Changes
+
+- fix clones
+
 ## 4.0.7
 
 ### Patch Changes
