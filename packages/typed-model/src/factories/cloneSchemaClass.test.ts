@@ -11,6 +11,9 @@ describe('cloneSchemaClass', () => {
 
       @Prop({type: String})
       name: string
+
+      @Prop({type: String})
+      name2: string
     }
 
     type fields = keyof SchemaName
@@ -18,14 +21,15 @@ describe('cloneSchemaClass', () => {
 
     const ClonedSchema = cloneSchemaClass(SchemaName, {
       name: 'Test',
-      pickFields: ['name'] as const,
+      pickFields: ['name', 'name2'],
     })
-
-    console.log(ClonedSchema)
 
     expect(ClonedSchema).toEqual({
       __modelName: 'Test',
       name: {
+        type: String,
+      },
+      name2: {
         type: String,
       },
     })
