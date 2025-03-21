@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.7
+
+### Patch Changes
+
+- allow clone schema class without pickFields
+
 ## 4.0.6
 
 ### Patch Changes
