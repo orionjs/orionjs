@@ -12,7 +12,8 @@ export default async function (options: {output?: string}) {
 
   await cleanDirectory(options.output)
 
-  await Promise.all([checkTs(), build(options)])
+  await checkTs()
+  await build(options)
 
   console.log(chalk.bold('Build completed'))
 }
