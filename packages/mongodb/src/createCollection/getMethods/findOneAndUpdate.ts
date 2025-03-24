@@ -16,14 +16,14 @@ export default <DocumentType extends ModelClassBase>(
 
     if (collection.schema) {
       const schema = collection.getSchema()
-      modifier = options.clean !== false ? await cleanModifier(schema, modifier) : modifier
-      if (options.validate !== false) await validateModifier(schema, modifier)
+      modifier = options?.clean !== false ? await cleanModifier(schema, modifier) : modifier
+      if (options?.validate !== false) await validateModifier(schema, modifier)
     }
 
     const result = await collection.rawCollection.findOneAndUpdate(
       finalSelector,
       modifier,
-      options.mongoOptions,
+      options?.mongoOptions,
     )
 
     if (!result) return null
