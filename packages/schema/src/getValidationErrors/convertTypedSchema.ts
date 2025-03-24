@@ -1,4 +1,4 @@
-import {getSchemaFromTypedSchema} from '../getSchemaFromTypedSchema'
+import {getSchemaFromAnyOrionForm} from '../models'
 import {CurrentNodeInfo} from '../types/schema'
 
 const convertOnParam = (info: CurrentNodeInfo, paramName: string) => {
@@ -7,7 +7,7 @@ const convertOnParam = (info: CurrentNodeInfo, paramName: string) => {
   const type = info[paramName].type as any
   if (!type) return
 
-  info[paramName].type = getSchemaFromTypedSchema(type)
+  info[paramName].type = getSchemaFromAnyOrionForm(type)
 }
 
 export const convertTypedSchema = (info: CurrentNodeInfo) => {

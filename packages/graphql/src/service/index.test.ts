@@ -2,6 +2,7 @@ import {Inject, Service} from '@orion-js/services'
 import {Query, getServiceResolvers, Resolvers, Mutation, createQuery, createMutation} from './index'
 import {describe, it, expect} from 'vitest'
 import {schemaWithName} from '@orion-js/schema'
+import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {
@@ -93,5 +94,40 @@ describe('Resolvers with service injection', () => {
     expect(result2?.name).toBe('Orions Lopez')
 
     expect(resolvers.example2.mutation).toBe(true)
+  })
+
+  it('should work with cloneModel in params', async () => {
+    @TypedSchema()
+    class SubParamsTypedSchema {
+      @Prop({type: String})
+      name: string
+
+      @Prop({type: String})
+      age: number
+    }
+
+    const subParams = getModelForClass(SubParamsTypedSchema).clone({
+      name: 'SubParams',
+      pickFields: ['name'],
+    })
+
+    @Resolvers()
+    class ExampleResolvers {
+      @Query()
+      example = createQuery({
+        params: {
+          subParams: {type: subParams as any}, // fails in ts, but should work in runtime
+        },
+        returns: 'string',
+        resolve: async params => {
+          return `${params.subParams.name}`
+        },
+      })
+    }
+
+    const resolvers = getServiceResolvers(ExampleResolvers)
+
+    const result = await resolvers.example.execute({params: {subParams: {name: 'Orion'}}})
+    expect(result).toBe('Orion')
   })
 })

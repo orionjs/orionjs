@@ -61,7 +61,7 @@ export function getSchemaFromAnyOrionForm(type: any): SchemaFieldType {
     return type.getSchema()
   }
 
-  if (objectHasSubObjectWithKey(type, 'type')) return type // ya es un schema
+  // if (objectHasSubObjectWithKey(type, 'type')) return type // ya es un schema
 
   return type
 }
