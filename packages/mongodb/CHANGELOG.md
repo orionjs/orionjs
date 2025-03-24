@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.16
+
+### Patch Changes
+
+- fix: safe access options
+
 ## 4.0.15
 
 ### Patch Changes
