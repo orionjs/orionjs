@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.10
+
+### Patch Changes
+
+- build sequantially
+
 ## 4.0.9
 
 ### Patch Changes
