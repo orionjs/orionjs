@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/http",
-  "version": "4.0.11",
+  "version": "4.0.12",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [

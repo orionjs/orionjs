@@ -1,5 +1,16 @@
 # @orion-js/graphql
 
+## 4.0.21
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/schema@4.0.9
+  - @orion-js/http@4.0.12
+  - @orion-js/models@4.0.11
+  - @orion-js/resolvers@4.0.9
+  - @orion-js/typed-model@4.0.13
+
 ## 4.0.20
 
 ### Patch Changes
