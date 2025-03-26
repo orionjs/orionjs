@@ -7,12 +7,6 @@ import {Schema} from '@orion-js/schema'
 // @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
 
-const modelCache = new Map<string, Model>()
-
-export function resetModelCache() {
-  modelCache.clear()
-}
-
 export function getModelForClass(target: any): Model {
   const targetAsModel = target as any as Model
   if (targetAsModel.__isModel) {
@@ -30,9 +24,6 @@ export function getModelForClass(target: any): Model {
 
 export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedSchemaMetadata) {
   const modelName = metadata._modelName
-  if (modelCache.has(modelName)) {
-    return modelCache.get(modelName)
-  }
 
   const schema: Schema = {}
   const keys = Object.keys(metadata ?? {})
@@ -53,8 +44,6 @@ export function internal_getModelForClassFromMetadata(metadata: SchemaFromTypedS
     name: modelName,
     schema,
   })
-
-  modelCache.set(modelName, model)
 
   return model
 }

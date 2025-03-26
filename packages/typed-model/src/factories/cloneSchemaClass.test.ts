@@ -42,7 +42,7 @@ describe('cloneSchemaClass', () => {
 
   it('should clone a schema class without passing pick fields', () => {
     @TypedSchema()
-    class SchemaName12341 {
+    class SchemaName {
       @Prop({type: String})
       _id: string
 
@@ -50,7 +50,7 @@ describe('cloneSchemaClass', () => {
       name: string
     }
 
-    const ClonedSchema = cloneSchemaClass(SchemaName12341, {
+    const ClonedSchema = cloneSchemaClass(SchemaName, {
       name: 'Test',
     })
 

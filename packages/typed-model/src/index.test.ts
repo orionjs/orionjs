@@ -1,11 +1,7 @@
 import {createModel} from '@orion-js/models'
 import {modelResolver} from '@orion-js/resolvers'
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
-import {Prop, TypedSchema, getSchemaForClass, getModelForClass, resetModelCache} from './index'
-
-afterEach(() => {
-  resetModelCache()
-})
+import {describe, it, expect} from 'vitest'
+import {Prop, TypedSchema, getSchemaForClass, getModelForClass} from './index'
 
 describe('typed-schema e2e tests', () => {
   describe('getSchemaForClass', () => {
@@ -350,8 +346,6 @@ describe('typed-schema e2e tests', () => {
         },
       })
 
-      console.log('expected', JSON.stringify(getModelForClass(Spec).getSchema(), null, 2))
-
       expect(getModelForClass(Spec).name).toEqual(expected.name)
       expect(getModelForClass(Spec).getSchema()).toEqual(expected.getSchema())
     })
@@ -455,8 +449,8 @@ describe('typed-schema e2e tests', () => {
         name: string
       }
 
-      const model = getModelForClass(Spec)
-      expect(getModelForClass(Spec)).toBe(model)
+      const model = getModelForClass(Spec).getSchema()
+      expect(getModelForClass(Spec).getSchema()).toEqual(model)
     })
   })
 
@@ -490,7 +484,6 @@ describe('typed-schema e2e tests', () => {
         fullName: string
       }
 
-      console.log('will create model resolver')
       const fullName = modelResolver({
         params: ResolverParams,
         returns: ResolverReturns,
@@ -510,7 +503,6 @@ describe('typed-schema e2e tests', () => {
       }
 
       const model = getModelForClass(Person)
-      console.log('model person', model.getSchema(), model.getResolvers())
     })
   })
 })
