@@ -31,6 +31,11 @@ export function ensureConfigComplies(configPath: string) {
       newConfig.compilerOptions.rootDir = './app'
     }
 
+    // are the same, no write
+    if (JSON.stringify(config) === JSON.stringify(newConfig)) {
+      return
+    }
+
     writeFile(configPath, stringify(newConfig, null, 2))
   } catch (error) {
     console.log(`Error reading tsconfig: ${error.message}`)
