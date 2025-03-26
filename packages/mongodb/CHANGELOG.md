@@ -1,5 +1,12 @@
 # @orion-js/mongodb
 
+## 4.0.18
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/typed-model@4.0.14
+
 ## 4.0.17
 
 ### Patch Changes

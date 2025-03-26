@@ -1,5 +1,11 @@
 # @orion-js/typed-model
 
+## 4.0.14
+
+### Patch Changes
+
+- remove model cache
+
 ## 4.0.13
 
 ### Patch Changes
