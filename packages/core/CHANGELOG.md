@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.0.11
+
+### Patch Changes
+
+- no rewrite config always
+
 ## 4.0.10
 
 ### Patch Changes
