@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 import {Command} from 'commander'
-import colors from 'colors/safe'
+import chalk from 'chalk'
 import envInit from './init'
 import envAdd from './add'
 import envRead from './read'
 
 const program = new Command()
 
-const run = function (action) {
-  return async function (...args) {
+const run =
+  action =>
+  async (...args) => {
     try {
       await action(...args)
     } catch (e) {
-      console.error(colors.red('Error: ' + e.message))
+      console.error(chalk.red(`Error: ${e.message}`))
     }
   }
-}
 
 program
   .command('init')
