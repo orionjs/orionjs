@@ -557,7 +557,7 @@ class ExampleResolvers {
     returns: ItemSchema,
     params: Params,
     allowedSorts: ['index'],
-    async getCursor(params) {
+    getCursor: async (params) => {
       return {
         cursor: this.repo.find(query),
         count: () => this.repo.countDocuments(query),
