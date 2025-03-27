@@ -1,5 +1,15 @@
 # @orion-js/components
 
+## 4.0.28
+
+### Patch Changes
+
+- @orion-js/echoes@4.0.13
+- @orion-js/graphql@4.0.23
+- @orion-js/http@4.0.13
+- @orion-js/mongodb@4.0.19
+- @orion-js/dogs@4.0.21
+
 ## 4.0.27
 
 ### Patch Changes

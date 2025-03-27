@@ -1,5 +1,13 @@
 # @orion-js/graphql
 
+## 4.0.23
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/env@4.0.3
+  - @orion-js/http@4.0.13
+
 ## 4.0.22
 
 ### Patch Changes

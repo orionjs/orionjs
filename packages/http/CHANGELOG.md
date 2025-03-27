@@ -1,5 +1,12 @@
 # @orion-js/http
 
+## 4.0.13
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/env@4.0.3
+
 ## 4.0.12
 
 ### Patch Changes
