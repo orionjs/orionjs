@@ -33,10 +33,9 @@ Resolvers in Orionjs define GraphQL API endpoints using a clean, decorator-based
 ## Example 1: Query
 
 ```typescript
-import {Query, Resolvers} from '@orion-js/graphql'
+import {Query, Resolvers, createQuery} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {createQuery} from '@orion-js/resolvers'
 import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
 import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
@@ -63,10 +62,9 @@ export class WebsiteConfigResolvers {
 ## Example 2: Full Entity Update Mutation
 
 ```typescript
-import {Mutation, Resolvers} from '@orion-js/graphql'
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {createMutation} from '@orion-js/resolvers'
 import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
 import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
@@ -100,10 +98,9 @@ export class UpdateWebsiteConfigResolvers {
 ## Example 3: Simple Entity Update Mutation
 
 ```typescript
-import {Mutation, Resolvers} from '@orion-js/graphql'
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {createMutation} from '@orion-js/resolvers'
 import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
 import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
@@ -131,10 +128,9 @@ export class SetWebsiteConfigNameResolvers {
 ## Example 4: Mutation Using a Service
 
 ```typescript
-import {Mutation, Resolvers} from '@orion-js/graphql'
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {createMutation} from '@orion-js/resolvers'
 import {SendToInboxService} from 'app/services/SendToInbox'
 
 const SendToInboxParams = schemaWithName('SendToInboxParams', {
