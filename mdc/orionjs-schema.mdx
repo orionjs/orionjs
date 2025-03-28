@@ -61,9 +61,12 @@ export const ProductVariantSchema = schemaWithName('ProductVariantSchema', {
 
 export type ProductVariantType = InferSchemaType<typeof ProductVariantSchema>
 
+export const typedProductId = typedId('prd')
+export type ProductId = typeof typedProductId.__tsFieldType
+
 export const ProductSchema = schemaWithName('ProductSchema', {
   _id: {
-    type: typedId('prd')
+    type: typedProductId
   },
   name: {
     type: String,
@@ -104,9 +107,9 @@ export const ProductSchema = schemaWithName('ProductSchema', {
   }
 })
 
-export type ProductType = InferSchemaType<typeof ProductSchema>
+export type Product = InferSchemaType<typeof ProductSchema>
 // The type will be inferred as:
-// type ProductType = {
+// type Product = {
 //   _id: `prd-${string}`;
 //   name: string;
 //   description?: string;
