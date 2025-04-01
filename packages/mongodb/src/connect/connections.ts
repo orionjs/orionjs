@@ -12,9 +12,8 @@ export interface OrionMongoClient {
   uri: string
   dbName: string
   /**
-   * ⚠️ Prefer using the startConnection method instead of await connectionPromise, Kept for backwards compatibility.
-   * this property is not guaranteed to be resolved if the connection is not started
-   * startConnection does not re-start the connection if it is already started, so it is safe to use.
+   * @deprecated Use startConnection() instead. This property is not guaranteed to be resolved if the connection is not started.
+   *  Kept for backwards compatibility. startConnection does not re-start the connection if it is already started, so it is safe to use.
    */
   connectionPromise: Promise<MongoClient>
   connectionName: string
