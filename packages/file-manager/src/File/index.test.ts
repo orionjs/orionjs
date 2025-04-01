@@ -6,7 +6,7 @@ import {describe, it, expect} from 'vitest'
 
 describe('File model', () => {
   it('should correctly clean on a simple file input', async () => {
-    await Files.rawCollection.insertOne({
+    await (await Files.getRawCollection()).insertOne({
       _id: '1',
       externalUrl: 'https://example.com/file.jpg',
     })
@@ -42,7 +42,7 @@ describe('File model', () => {
   })
 
   it('should correctly clean the file input on a complex schema', async () => {
-    await Files.rawCollection.insertOne({
+    await (await Files.getRawCollection()).insertOne({
       _id: '2',
       externalUrl: 'https://example.com/file.jpg',
     })

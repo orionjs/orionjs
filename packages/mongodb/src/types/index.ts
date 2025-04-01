@@ -249,7 +249,11 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
 
   db: MongoDB.Db
   client: OrionMongoClient
+  /**
+   * @deprecated Use getRawCollection() instead. This property is not guaranteed to be defined if the connection has not been started.
+   */
   rawCollection: MongoDB.Collection<ModelClass>
+  getRawCollection: () => Promise<MongoDB.Collection<ModelClass>>
 
   findOne: FindOne<ModelClass>
   find: Find<ModelClass>

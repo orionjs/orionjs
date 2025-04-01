@@ -68,14 +68,13 @@ export function createCollection(options: CreateCollectionOptions) {
     schema,
     indexes: options.indexes || [],
     client: orionConnection,
-    /**
-     * @deprecated Use startConnection() instead. This property is not guaranteed to be resolved if the connection is not started.
-     * When using async calls startConnection or connectionPromise is no longer needed. Orion will automatically start the connection if it is not already started.
-     * Kept for backwards compatibility. startConnection does not re-start the connection if it is already started, so it is safe to use.
-     */
     connectionPromise: collectionPromise,
     startConnection: () => orionConnection.startConnection(),
     generateId: getIdGenerator(options),
+    getRawCollection: async () => {
+      await orionConnection.startConnection()
+      return orionConnection.db.collection(options.name)
+    },
     getSchema: () => schema,
   }
 
