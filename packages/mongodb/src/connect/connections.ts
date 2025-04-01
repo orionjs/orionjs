@@ -13,7 +13,8 @@ export interface OrionMongoClient {
   dbName: string
   /**
    * @deprecated Use startConnection() instead. This property is not guaranteed to be resolved if the connection is not started.
-   *  Kept for backwards compatibility. startConnection does not re-start the connection if it is already started, so it is safe to use.
+   * When using async calls startConnection or connectionPromise is no longer needed. Orion will automatically start the connection if it is not already started.
+   * Kept for backwards compatibility. startConnection does not re-start the connection if it is already started, so it is safe to use.
    */
   connectionPromise: Promise<MongoClient>
   connectionName: string
