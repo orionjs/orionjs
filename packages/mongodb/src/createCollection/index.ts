@@ -1,4 +1,4 @@
-import type {
+import {
   Collection,
   CreateCollectionOptions,
   CreateCollectionOptionsWithSchemaType,
@@ -31,6 +31,7 @@ import {getMongoConnection} from '..'
 import {getSchema} from './getSchemaAndModel'
 import {wrapMethods} from './wrapMethods'
 import {InferSchemaType, TypedSchemaOnSchema} from '@orion-js/schema'
+import {MongoClient} from 'mongodb'
 
 export const createIndexesPromises = []
 
@@ -54,24 +55,30 @@ export function createCollection(options: CreateCollectionOptions) {
     throw new Error(`The connection to MongoDB "${connectionName}" was not found`)
   }
 
-  const db = orionConnection.db
-  const rawCollection = db.collection(options.name)
-
   const schema = getSchema(options)
+
+  let resolveCollectionPromise: (MongoClient) => void
+  const collectionPromise = new Promise<MongoClient>(resolve => {
+    resolveCollectionPromise = resolve
+  })
 
   const collection: Partial<Collection<any>> = {
     name: options.name,
     connectionName,
     schema,
     indexes: options.indexes || [],
-    db,
     client: orionConnection,
-    connectionPromise: orionConnection.connectionPromise,
-    startConnection: orionConnection.startConnection,
-    rawCollection,
+    connectionPromise: collectionPromise,
+    startConnection: () => orionConnection.startConnection(),
     generateId: getIdGenerator(options),
     getSchema: () => schema,
   }
+
+  orionConnection.connectionPromise.then(() => {
+    collection.db = orionConnection.db
+    collection.rawCollection = orionConnection.db.collection(options.name)
+    resolveCollectionPromise(orionConnection.client)
+  })
 
   // modified orion methods
   collection.findOne = findOne(collection)

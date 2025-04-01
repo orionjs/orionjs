@@ -24,7 +24,7 @@ afterAll(async () => {
 
   // Close all connections
   for (const connection of Object.values(connections)) {
-    await connection.client.close()
+    await connection.closeConnection()
   }
 
   // Stop the in-memory MongoDB instance

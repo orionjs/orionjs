@@ -1,4 +1,4 @@
-import {connections} from './connections'
+import {getExistingConnection} from './connections'
 import {internalGetEnv} from '@orion-js/env'
 
 export const getMongoURLFromEnv = (connectionName: string): string => {
@@ -11,7 +11,7 @@ export const getMongoURLFromEnv = (connectionName: string): string => {
 
   const envName = `mongo_url_${connectionName.toLowerCase()}`
   const processEnvName = `MONGO_URL_${connectionName.toUpperCase()}`
-  const uri = connections[connectionName]?.uri ?? internalGetEnv(envName, processEnvName)
+  const uri = getExistingConnection(connectionName)?.uri ?? internalGetEnv(envName, processEnvName)
   if (!uri) {
     throw new Error(
       `To use the connection "${connectionName}" you must initialize it first calling getMongoConnection({name: "${connectionName}", uri: "MONGOURI"}) or setting the environment variable ${processEnvName}.`,
@@ -19,4 +19,14 @@ export const getMongoURLFromEnv = (connectionName: string): string => {
   }
 
   return uri
+}
+
+export const requiresExplicitSetup = (connectionName: string): boolean => {
+  if (connectionName === 'main') {
+    return internalGetEnv('mongo_explicit_setup', 'MONGO_EXPLICIT_SETUP') === 'true'
+  }
+
+  const envName = `mongo_explicit_setup_${connectionName.toLowerCase()}`
+  const processEnvName = `MONGO_EXPLICIT_SETUP_${connectionName.toUpperCase()}`
+  return internalGetEnv(envName, processEnvName) === 'true'
 }
