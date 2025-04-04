@@ -1,4 +1,5 @@
 import {Collection} from '../types'
+import {logger} from '@orion-js/logger'
 
 export function wrapMethods(collection: Partial<Collection>) {
   // Wrap all collection methods to ensure connection is started
@@ -39,6 +40,14 @@ export function wrapMethods(collection: Partial<Collection>) {
       if (typeof collection[methodName] === 'function') {
         collection[methodName] = (...args: any[]) => {
           collection.startConnection()
+          if (!collection.rawCollection) {
+            logger.error('Method called before connection was initialized', {
+              collectionName: collection.name,
+              connectionName: collection.connectionName,
+              methodName,
+            })
+            throw new Error('Method called before connection was initialized')
+          }
           return originalMethods[methodName](...args)
         }
       }

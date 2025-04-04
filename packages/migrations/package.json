@@ -16,16 +16,20 @@
     "upgrade-interactive": "pnpm upgrade --interactive",
     "dev": "tsup --watch"
   },
+  "peerDependencies": {
+    "@orion-js/mongodb": "workspace:*",
+    "@orion-js/dogs": "workspace:*"
+  },
   "dependencies": {
-    "@orion-js/dogs": "workspace:*",
     "@orion-js/helpers": "workspace:*",
     "@orion-js/logger": "workspace:*",
-    "@orion-js/mongodb": "workspace:*",
     "@orion-js/schema": "workspace:*",
     "@orion-js/services": "workspace:*",
     "@orion-js/typed-model": "workspace:*"
   },
   "devDependencies": {
+    "@orion-js/mongodb": "workspace:*",
+    "@orion-js/dogs": "workspace:*",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",

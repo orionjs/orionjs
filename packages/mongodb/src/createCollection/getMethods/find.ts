@@ -1,6 +1,5 @@
 import {Collection, Find, ModelClassBase} from '../../types'
 import getSelector from './getSelector'
-
 export default function <DocumentType extends ModelClassBase>(
   collection: Partial<Collection<DocumentType>>,
 ) {

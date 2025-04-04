@@ -1,4 +1,4 @@
-import {connections} from './connections'
+import {connections, configureConnection} from './connections'
 import {allConnectionPromises, getMongoConnection} from './getMongoConnection'
 
-export {getMongoConnection, connections, allConnectionPromises}
+export {getMongoConnection, connections, allConnectionPromises, configureConnection}
