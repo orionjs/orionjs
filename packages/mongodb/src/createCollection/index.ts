@@ -1,4 +1,5 @@
 import {
+  BaseCollection,
   Collection,
   CreateCollectionOptions,
   CreateCollectionOptionsWithSchemaType,
@@ -62,7 +63,7 @@ export function createCollection(options: CreateCollectionOptions) {
     resolveCollectionPromise = resolve
   })
 
-  const collection: Partial<Collection<any>> = {
+  const baseCollection: Partial<Collection<any>> = {
     name: options.name,
     connectionName,
     schema,
@@ -78,59 +79,90 @@ export function createCollection(options: CreateCollectionOptions) {
     getSchema: () => schema,
   }
 
+  const encryptedCollection: Partial<Collection<any>> = {
+    ...baseCollection,
+    getRawCollection: async () => {
+      await orionConnection.startConnection()
+      return orionConnection.encrypted.db.collection(options.name)
+    },
+  }
+
+  const mainCollection: Partial<Collection<any>> = {
+    ...baseCollection,
+    encrypted: encryptedCollection as BaseCollection<ModelClassBase>,
+  }
+
+  if (orionConnection.db) {
+    mainCollection.db = orionConnection.db
+    mainCollection.rawCollection = orionConnection.db.collection(options.name)
+  }
+
+  if (orionConnection.encrypted.db) {
+    encryptedCollection.db = orionConnection.encrypted.db
+    encryptedCollection.rawCollection = orionConnection.encrypted.db.collection(options.name)
+  }
+
   orionConnection.connectionPromise.then(() => {
-    collection.db = orionConnection.db
-    collection.rawCollection = orionConnection.db.collection(options.name)
+    mainCollection.db = orionConnection.db
+    mainCollection.rawCollection = orionConnection.db.collection(options.name)
+    encryptedCollection.db = orionConnection.encrypted.db
+    encryptedCollection.rawCollection = orionConnection.encrypted.db?.collection(options.name)
     resolveCollectionPromise(orionConnection.client)
   })
 
-  // modified orion methods
-  collection.findOne = findOne(collection)
-  collection.find = find(collection)
-  collection.findOneAndUpdate = findOneAndUpdate(collection)
-  collection.insertOne = insertOne(collection)
-  collection.insertMany = insertMany(collection)
-  collection.insertAndFind = insertAndFind(collection)
-  collection.updateOne = updateOne(collection)
-  collection.updateMany = updateMany(collection)
-  collection.deleteMany = deleteMany(collection)
-  collection.deleteOne = deleteOne(collection)
-  collection.upsert = upsert(collection)
+  const collections = [mainCollection, encryptedCollection]
 
-  // counts
-  collection.estimatedDocumentCount = estimatedDocumentCount(collection)
-  collection.countDocuments = countDocuments(collection)
+  for (const collection of collections) {
+    // modified orion methods
+    collection.findOne = findOne(collection)
+    collection.find = find(collection)
+    collection.findOneAndUpdate = findOneAndUpdate(collection)
+    collection.insertOne = insertOne(collection)
+    collection.insertMany = insertMany(collection)
+    collection.insertAndFind = insertAndFind(collection)
+    collection.updateOne = updateOne(collection)
+    collection.updateMany = updateMany(collection)
+    collection.deleteMany = deleteMany(collection)
+    collection.deleteOne = deleteOne(collection)
+    collection.upsert = upsert(collection)
 
-  // update and find
-  collection.updateAndFind = updateAndFind(collection)
-  collection.updateItem = updateItem(collection)
+    // counts
+    collection.estimatedDocumentCount = estimatedDocumentCount(collection)
+    collection.countDocuments = countDocuments(collection)
 
-  // plain passed methods
-  collection.aggregate = (pipeline, options) =>
-    collection.rawCollection.aggregate(pipeline, options)
-  collection.watch = (pipeline, options) => collection.rawCollection.watch(pipeline, options)
+    // update and find
+    collection.updateAndFind = updateAndFind(collection)
+    collection.updateItem = updateItem(collection)
 
-  // data loader
-  collection.loadData = loadData(collection)
-  collection.loadById = loadById(collection)
-  collection.loadOne = loadOne(collection)
-  collection.loadMany = loadMany(collection)
+    // plain passed methods
+    collection.aggregate = (pipeline, options) =>
+      collection.rawCollection.aggregate(pipeline, options)
+    collection.watch = (pipeline, options) => collection.rawCollection.watch(pipeline, options)
+
+    // data loader
+    collection.loadData = loadData(collection)
+    collection.loadById = loadById(collection)
+    collection.loadOne = loadOne(collection)
+    collection.loadMany = loadMany(collection)
+    collection.createIndexes = async () => []
+  }
 
   const createIndexes = async () => {
-    await orionConnection.connectionPromise
-    const createIndexPromise = loadIndexes(collection)
+    await orionConnection.startConnection()
+    const createIndexPromise = loadIndexes(mainCollection)
     createIndexesPromises.push(createIndexPromise)
-    collection.createIndexesPromise = createIndexPromise
+    mainCollection.createIndexesPromise = createIndexPromise
     return createIndexPromise
   }
 
-  collection.createIndexes = createIndexes
+  mainCollection.createIndexes = createIndexes
 
   if (!process.env.DONT_CREATE_INDEXES_AUTOMATICALLY) {
     createIndexes()
   }
 
-  wrapMethods(collection as any)
+  wrapMethods(mainCollection as any)
+  wrapMethods(encryptedCollection as any)
 
-  return collection as Collection<ModelClassBase>
+  return mainCollection as Collection<ModelClassBase>
 }

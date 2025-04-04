@@ -1,3 +1,6 @@
 packages:
-  - 'packages/*'
-
+  - packages/*
+ignoredBuiltDependencies:
+  - mongodb-memory-server
+onlyBuiltDependencies:
+  - mongodb-client-encryption

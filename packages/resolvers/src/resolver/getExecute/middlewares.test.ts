@@ -37,7 +37,7 @@ it('should call middlewares in the correct order', async () => {
   expect(order).toEqual([1, 2, 5, 'resolve', 4, 'middleware2', 3])
 })
 
-it('should let you throw an error inside a middleware', () => {
+it('should let you throw an error inside a middleware', async () => {
   const middleware1 = createResolverMiddleware(async () => {
     throw new Error('middleware1')
   })
@@ -50,7 +50,7 @@ it('should let you throw an error inside a middleware', () => {
     },
   })
 
-  expect(testResolver.resolve()).rejects.toEqual(new Error('middleware1'))
+  await expect(testResolver.resolve()).rejects.toEqual(new Error('middleware1'))
 })
 
 it('should work with model resolvers and modify its params', async () => {

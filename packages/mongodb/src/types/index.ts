@@ -239,7 +239,7 @@ export type CreateCollectionOptionsWithTypedSchema<
   schema: T
 } & Omit<CreateCollectionOptions<InferSchemaType<T>>, 'schema'>
 
-export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
+export class BaseCollection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
   connectionName?: string
   schema?: Schema
@@ -308,6 +308,12 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
    */
   connectionPromise: Promise<MongoDB.MongoClient>
   startConnection: () => Promise<MongoDB.MongoClient>
+}
+
+export class Collection<
+  ModelClass extends ModelClassBase = ModelClassBase,
+> extends BaseCollection<ModelClass> {
+  encrypted?: BaseCollection<ModelClass>
 }
 
 export type DistinctDocumentId<DistinctId extends string> = string & {

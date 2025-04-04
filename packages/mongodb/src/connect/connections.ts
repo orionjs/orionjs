@@ -18,6 +18,7 @@ export interface OrionMongoClient {
    */
   connectionPromise: Promise<MongoClient>
   connectionName: string
+  encrypted: {client: MongoClient; db: Db}
   /**
    * Starts the connection if it is not already started.
    * If the connection is already started, it resolves immediately.
@@ -26,7 +27,8 @@ export interface OrionMongoClient {
   closeConnection: () => Promise<void>
 }
 
-export const connectionWrappers: {[key: string]: OrionMongoDatabaseWrapper} = {}
+// globalThis.myModuleMap ??= {}
+export const connectionWrappers: {[key: string]: OrionMongoDatabaseWrapper} = {} //globalThis.myModuleMap
 
 class OrionMongoDatabaseWrapper implements OrionMongoClient {
   uri: string
@@ -44,6 +46,9 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
 
   constructor(connectionName: string) {
     this.connectionName = connectionName
+    logger.info('New connection requested', {
+      connectionName,
+    })
     this.connectionEvent.setMaxListeners(Number.POSITIVE_INFINITY)
     this.connectionPromise = new Promise((resolve, reject) => {
       if (this.state === 'connected') {
@@ -67,6 +72,20 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
     this.uri = mongoURL
     this.mongoOptions = mongoOptions
     this.configured = true
+    if (this.mongoOptions?.autoEncryption) {
+      this.encrypted.client = new MongoClient(mongoURL, {
+        retryReads: true,
+        ...this.mongoOptions,
+      })
+      this.encrypted.db = this.encrypted.client.db(getDBName(this.uri))
+    }
+    this.client = new MongoClient(mongoURL, {
+      retryReads: true,
+      ...this.mongoOptions,
+      autoEncryption: null,
+    })
+    this.db = this.client.db(getDBName(this.uri))
+    clearTimeout(this.configTimeout)
   }
 
   async awaitConnection() {
@@ -78,26 +97,18 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
     }
     this.state = 'connecting'
     const censoredURI = this.uri.replace(/\/\/.*:.*@/, '//') // remove user and password from URL
-    logger.info('Connecting to mongo', {uri: censoredURI, connectionName: this.connectionName})
-    if (this.mongoOptions?.autoEncryption) {
-      this.encrypted.client = new MongoClient(censoredURI, {
-        retryReads: true,
-        ...this.mongoOptions,
-      })
+    logger.info('Connecting to mongo', {
+      uri: censoredURI,
+      connectionName: this.connectionName,
+    })
+    if (this.encrypted.client) {
       await this.connectWithRetry(this.encrypted.client)
-      this.encrypted.db = this.encrypted.client.db(getDBName(this.uri))
       logger.info('Successfully connected to encrypted mongo', {
         uri: censoredURI,
         connectionName: this.connectionName,
       })
     }
-    this.client = new MongoClient(this.uri, {
-      retryReads: true,
-      ...this.mongoOptions,
-      autoEncryption: null,
-    })
     await this.connectWithRetry(this.client)
-    this.db = this.client.db(getDBName(this.uri))
     this.state = 'connected'
     this.connectionEvent.emit('connected', this.client)
     logger.info('Successfully connected to mongo', {
@@ -105,7 +116,6 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
       connectionName: this.connectionName,
     })
     nextTick(() => {
-      clearTimeout(this.configTimeout)
       this.connectionEvent.removeAllListeners()
       this.connectionEvent = null
     })
@@ -126,8 +136,7 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
   }
 
   async startConnection() {
-    await this.awaitConnection()
-    return this.client
+    return this.awaitConnection().then(() => this.client)
   }
 
   async closeConnection() {
@@ -153,6 +162,7 @@ export function configureConnection(connectionName: string, mongoOptions: MongoC
 export function getExistingConnection(connectionName: string) {
   connectionWrappers[connectionName] =
     connectionWrappers[connectionName] || new OrionMongoDatabaseWrapper(connectionName)
+
   return connectionWrappers[connectionName]
 }
 

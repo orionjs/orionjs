@@ -11,7 +11,8 @@ interface MongoConnectOptions {
 export const getMongoConnection = ({name, uri}: MongoConnectOptions): OrionMongoClient => {
   uri = uri || getMongoURLFromEnv(name)
   const connection = getExistingConnection(name)
-  if (!requiresExplicitSetup(name)) {
+
+  if (!connection.configured && !requiresExplicitSetup(name)) {
     connection.config(uri, {})
   }
   allConnectionPromises.push(connection.connectionPromise)

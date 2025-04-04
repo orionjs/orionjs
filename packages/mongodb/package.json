@@ -33,17 +33,18 @@
     "@orion-js/services": "workspace:*",
     "@orion-js/typed-model": "workspace:*",
     "bson": "^6.10.3",
-    "dataloader": "2.2.2",
-    "dot-object": "2.1.4",
-    "mongodb": "6.5.0"
+    "dataloader": "2.2.3",
+    "dot-object": "2.1.5",
+    "mongodb": "6.15.0",
+    "mongodb-client-encryption": "^6.3.0"
   },
   "devDependencies": {
     "@types/dot-object": "^2.1.6",
-    "@types/node": "^18.0.0",
+    "@types/node": "^18.19.86",
     "mongodb-memory-server": "^10.1.4",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",
-    "vitest": "^3.0.8"
+    "vitest": "^3.1.1"
   },
   "publishConfig": {
     "access": "public"
