@@ -1,6 +1,5 @@
 import {defineConfig} from 'vitest/config'
 
-console.log('CI VALUE:', process.env.CI)
 export default defineConfig({
   esbuild: {
     target: 'es2022',
