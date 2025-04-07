@@ -11,8 +11,6 @@ export class MigrationsRepo {
   })
 
   async getCompletedMigrationNames() {
-    //await this.collection.startConnection()
-    console.log('Getting completed migrations')
     const migrations = await this.collection.find().toArray()
     return migrations.map(m => m.name)
   }

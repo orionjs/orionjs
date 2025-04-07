@@ -92,21 +92,22 @@ export function createCollection(options: CreateCollectionOptions) {
     encrypted: encryptedCollection as BaseCollection<ModelClassBase>,
   }
 
-  if (orionConnection.db) {
-    mainCollection.db = orionConnection.db
-    mainCollection.rawCollection = orionConnection.db.collection(options.name)
+  const defineCollectionProperties = () => {
+    if (orionConnection.db) {
+      mainCollection.db = orionConnection.db
+      mainCollection.rawCollection = orionConnection.db.collection(options.name)
+    }
+
+    if (orionConnection.encrypted.db) {
+      encryptedCollection.db = orionConnection.encrypted.db
+      encryptedCollection.rawCollection = orionConnection.encrypted.db.collection(options.name)
+    }
   }
 
-  if (orionConnection.encrypted.db) {
-    encryptedCollection.db = orionConnection.encrypted.db
-    encryptedCollection.rawCollection = orionConnection.encrypted.db.collection(options.name)
-  }
+  defineCollectionProperties()
 
   orionConnection.connectionPromise.then(() => {
-    mainCollection.db = orionConnection.db
-    mainCollection.rawCollection = orionConnection.db.collection(options.name)
-    encryptedCollection.db = orionConnection.encrypted.db
-    encryptedCollection.rawCollection = orionConnection.encrypted.db?.collection(options.name)
+    defineCollectionProperties()
     resolveCollectionPromise(orionConnection.client)
   })
 

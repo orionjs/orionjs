@@ -243,7 +243,6 @@ export class BaseCollection<ModelClass extends ModelClassBase = ModelClassBase> 
   name: string
   connectionName?: string
   schema?: Schema
-  indexes: Array<CollectionIndex>
   generateId: () => ModelClass['_id']
   getSchema: () => Schema
 
@@ -313,6 +312,7 @@ export class BaseCollection<ModelClass extends ModelClassBase = ModelClassBase> 
 export class Collection<
   ModelClass extends ModelClassBase = ModelClassBase,
 > extends BaseCollection<ModelClass> {
+  indexes: Array<CollectionIndex>
   encrypted?: BaseCollection<ModelClass>
 }
 
