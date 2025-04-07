@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - run: pnpm build
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm run build
       # - run: pnpm run safe-order-build
       - run: pnpm test
