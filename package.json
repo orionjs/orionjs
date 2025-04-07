@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "test": "pnpm --filter=* --workspace-concurrency=1 test",
-    "build": "pnpm --filter=* build"
+    "build": "pnpm recursive run build"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
