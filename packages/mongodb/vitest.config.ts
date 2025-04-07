@@ -1,5 +1,6 @@
 import {defineConfig} from 'vitest/config'
 
+console.log('CI VALUE:', process.env.CI)
 export default defineConfig({
   esbuild: {
     target: 'es2022',
@@ -11,6 +12,6 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     setupFiles: ['./setup-tests.ts'],
     testTimeout: 2000,
-    maxWorkers: process.env.CI === 'true' ? 1 : '50%',
+    fileParallelism: process.env.CI !== 'true',
   },
 })
