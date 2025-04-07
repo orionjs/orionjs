@@ -7,7 +7,8 @@
   ],
   "scripts": {
     "test": "pnpm --filter=* --workspace-concurrency=1 test",
-    "build": "pnpm recursive run build"
+    "build": "pnpm recursive --sort run build",
+    "safe-order-build": "pnpm --filter=@orion-js/schema --filter=@orion-js/env --filter=@orion-js/helpers --filter=@orion-js/logger --filter=@orion-js/telemetry build && pnpm --filter=@orion-js/resolvers --filter=@orion-js/core --filter=@orion-js/services build && pnpm --filter=@orion-js/http --filter=@orion-js/models --filter=@orion-js/crypt build && pnpm --filter=* build"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
