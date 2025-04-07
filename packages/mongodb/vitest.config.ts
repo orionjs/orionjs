@@ -12,6 +12,6 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     setupFiles: ['./setup-tests.ts'],
     testTimeout: 2000,
-    fileParallelism: process.env.CI !== 'true',
+    fileParallelism: process.env.CI !== 'true', // Disable parallelism in CI to avoid Github Actions error with mongodb-memory-server
   },
 })
