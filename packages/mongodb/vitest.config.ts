@@ -11,5 +11,6 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     setupFiles: ['./setup-tests.ts'],
     testTimeout: 2000,
+    maxWorkers: process.env.CI === 'true' ? 1 : '50%',
   },
 })
