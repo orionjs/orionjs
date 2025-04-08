@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.20
+
+### Patch Changes
+
+- Adds encryption support for mongodb and explicit configuration for connections
+
 ## 4.0.19
 
 ### Patch Changes

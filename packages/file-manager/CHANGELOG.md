@@ -1,5 +1,14 @@
 # @orion-js/file-manager
 
+## 4.0.29
+
+### Patch Changes
+
+- Update mongodb use of rawCollection
+- Updated dependencies
+  - @orion-js/mongodb@4.0.20
+  - @orion-js/paginated-mongodb@4.0.28
+
 ## 4.0.28
 
 ### Patch Changes
