@@ -27,8 +27,7 @@ export interface OrionMongoClient {
   closeConnection: () => Promise<void>
 }
 
-// globalThis.myModuleMap ??= {}
-export const connectionWrappers: {[key: string]: OrionMongoDatabaseWrapper} = {} //globalThis.myModuleMap
+export const connectionWrappers: {[key: string]: OrionMongoDatabaseWrapper} = {}
 
 class OrionMongoDatabaseWrapper implements OrionMongoClient {
   uri: string
