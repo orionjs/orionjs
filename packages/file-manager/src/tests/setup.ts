@@ -16,6 +16,6 @@ afterAll(async () => {
 
   for (const connectionName in connections) {
     const connection = connections[connectionName]
-    await connection.client.close()
+    await connection.closeConnection()
   }
 })

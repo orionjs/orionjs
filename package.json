@@ -7,7 +7,8 @@
   ],
   "scripts": {
     "test": "pnpm --filter=* --workspace-concurrency=1 test",
-    "build": "pnpm --filter=* build"
+    "build": "pnpm recursive --sort run build",
+    "first-install": "pnpm install --ignore-scripts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

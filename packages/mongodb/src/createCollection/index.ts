@@ -1,4 +1,5 @@
-import type {
+import {
+  BaseCollection,
   Collection,
   CreateCollectionOptions,
   CreateCollectionOptionsWithSchemaType,
@@ -31,6 +32,7 @@ import {getMongoConnection} from '..'
 import {getSchema} from './getSchemaAndModel'
 import {wrapMethods} from './wrapMethods'
 import {InferSchemaType, TypedSchemaOnSchema} from '@orion-js/schema'
+import {MongoClient} from 'mongodb'
 
 export const createIndexesPromises = []
 
@@ -54,72 +56,114 @@ export function createCollection(options: CreateCollectionOptions) {
     throw new Error(`The connection to MongoDB "${connectionName}" was not found`)
   }
 
-  const db = orionConnection.db
-  const rawCollection = db.collection(options.name)
-
   const schema = getSchema(options)
 
-  const collection: Partial<Collection<any>> = {
+  let resolveCollectionPromise: (MongoClient) => void
+  const collectionPromise = new Promise<MongoClient>(resolve => {
+    resolveCollectionPromise = resolve
+  })
+
+  const baseCollection: Partial<Collection<any>> = {
     name: options.name,
     connectionName,
     schema,
     indexes: options.indexes || [],
-    db,
     client: orionConnection,
-    connectionPromise: orionConnection.connectionPromise,
-    startConnection: orionConnection.startConnection,
-    rawCollection,
+    connectionPromise: collectionPromise,
+    startConnection: () => orionConnection.startConnection(),
     generateId: getIdGenerator(options),
+    getRawCollection: async () => {
+      await orionConnection.startConnection()
+      return orionConnection.db.collection(options.name)
+    },
     getSchema: () => schema,
   }
 
-  // modified orion methods
-  collection.findOne = findOne(collection)
-  collection.find = find(collection)
-  collection.findOneAndUpdate = findOneAndUpdate(collection)
-  collection.insertOne = insertOne(collection)
-  collection.insertMany = insertMany(collection)
-  collection.insertAndFind = insertAndFind(collection)
-  collection.updateOne = updateOne(collection)
-  collection.updateMany = updateMany(collection)
-  collection.deleteMany = deleteMany(collection)
-  collection.deleteOne = deleteOne(collection)
-  collection.upsert = upsert(collection)
+  const encryptedCollection: Partial<Collection<any>> = {
+    ...baseCollection,
+    getRawCollection: async () => {
+      await orionConnection.startConnection()
+      return orionConnection.encrypted.db.collection(options.name)
+    },
+  }
 
-  // counts
-  collection.estimatedDocumentCount = estimatedDocumentCount(collection)
-  collection.countDocuments = countDocuments(collection)
+  const mainCollection: Partial<Collection<any>> = {
+    ...baseCollection,
+    encrypted: encryptedCollection as BaseCollection<ModelClassBase>,
+  }
 
-  // update and find
-  collection.updateAndFind = updateAndFind(collection)
-  collection.updateItem = updateItem(collection)
+  const defineCollectionProperties = () => {
+    if (orionConnection.db) {
+      mainCollection.db = orionConnection.db
+      mainCollection.rawCollection = orionConnection.db.collection(options.name)
+    }
 
-  // plain passed methods
-  collection.aggregate = (pipeline, options) =>
-    collection.rawCollection.aggregate(pipeline, options)
-  collection.watch = (pipeline, options) => collection.rawCollection.watch(pipeline, options)
+    if (orionConnection.encrypted.db) {
+      encryptedCollection.db = orionConnection.encrypted.db
+      encryptedCollection.rawCollection = orionConnection.encrypted.db.collection(options.name)
+    }
+  }
 
-  // data loader
-  collection.loadData = loadData(collection)
-  collection.loadById = loadById(collection)
-  collection.loadOne = loadOne(collection)
-  collection.loadMany = loadMany(collection)
+  defineCollectionProperties()
+
+  orionConnection.connectionPromise.then(() => {
+    defineCollectionProperties()
+    resolveCollectionPromise(orionConnection.client)
+  })
+
+  const collections = [mainCollection, encryptedCollection]
+
+  for (const collection of collections) {
+    // modified orion methods
+    collection.findOne = findOne(collection)
+    collection.find = find(collection)
+    collection.findOneAndUpdate = findOneAndUpdate(collection)
+    collection.insertOne = insertOne(collection)
+    collection.insertMany = insertMany(collection)
+    collection.insertAndFind = insertAndFind(collection)
+    collection.updateOne = updateOne(collection)
+    collection.updateMany = updateMany(collection)
+    collection.deleteMany = deleteMany(collection)
+    collection.deleteOne = deleteOne(collection)
+    collection.upsert = upsert(collection)
+
+    // counts
+    collection.estimatedDocumentCount = estimatedDocumentCount(collection)
+    collection.countDocuments = countDocuments(collection)
+
+    // update and find
+    collection.updateAndFind = updateAndFind(collection)
+    collection.updateItem = updateItem(collection)
+
+    // plain passed methods
+    collection.aggregate = (pipeline, options) =>
+      collection.rawCollection.aggregate(pipeline, options)
+    collection.watch = (pipeline, options) => collection.rawCollection.watch(pipeline, options)
+
+    // data loader
+    collection.loadData = loadData(collection)
+    collection.loadById = loadById(collection)
+    collection.loadOne = loadOne(collection)
+    collection.loadMany = loadMany(collection)
+    collection.createIndexes = async () => []
+  }
 
   const createIndexes = async () => {
-    await orionConnection.connectionPromise
-    const createIndexPromise = loadIndexes(collection)
+    await orionConnection.startConnection()
+    const createIndexPromise = loadIndexes(mainCollection)
     createIndexesPromises.push(createIndexPromise)
-    collection.createIndexesPromise = createIndexPromise
+    mainCollection.createIndexesPromise = createIndexPromise
     return createIndexPromise
   }
 
-  collection.createIndexes = createIndexes
+  mainCollection.createIndexes = createIndexes
 
   if (!process.env.DONT_CREATE_INDEXES_AUTOMATICALLY) {
     createIndexes()
   }
 
-  wrapMethods(collection as any)
+  wrapMethods(mainCollection as any)
+  wrapMethods(encryptedCollection as any)
 
-  return collection as Collection<ModelClassBase>
+  return mainCollection as Collection<ModelClassBase>
 }
