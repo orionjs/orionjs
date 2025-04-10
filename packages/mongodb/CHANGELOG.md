@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.21
+
+### Patch Changes
+
+- 27a0e4d: Add AWS credentials dependency for KMS providers on encrypted connections
+
 ## 4.0.20
 
 ### Patch Changes
