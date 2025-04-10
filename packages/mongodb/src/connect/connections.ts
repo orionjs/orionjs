@@ -49,6 +49,7 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
     logger.info('New connection requested', {
       connectionName,
     })
+    this.dbName = getDBName(this.uri)
     this.connectionEvent.setMaxListeners(Number.POSITIVE_INFINITY)
     this.connectionPromise = new Promise((resolve, reject) => {
       if (this.state === 'connected') {
