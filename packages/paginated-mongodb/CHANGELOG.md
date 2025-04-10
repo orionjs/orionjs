@@ -1,5 +1,12 @@
 # @orion-js/paginated-mongodb
 
+## 4.0.31
+
+### Patch Changes
+
+- Updated dependencies [00f3a6f]
+  - @orion-js/mongodb@4.0.23
+
 ## 4.0.30
 
 ### Patch Changes

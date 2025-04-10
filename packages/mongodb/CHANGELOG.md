@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.23
+
+### Patch Changes
+
+- 00f3a6f: Expose getDBName
+
 ## 4.0.22
 
 ### Patch Changes
