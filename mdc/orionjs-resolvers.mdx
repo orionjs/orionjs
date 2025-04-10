@@ -181,7 +181,7 @@ export class PersonResolvers {
 ```typescript
 import {PaginatedQuery, Resolvers} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
-import {createPaginatedResolver} from '@orion-js/pagination'
+import {createPaginatedResolver} from '@orion-js/paginated-mongodb'
 import {ProductsRepo} from 'app/providers/repos/Products'
 import {ProductSchema} from 'app/providers/schemas/Product'
 import {ProductsListParams} from 'app/providers/schemas/params/ProductsList'
@@ -196,11 +196,10 @@ export class ProductsListResolvers {
     returns: ProductSchema,
     params: ProductsListParams,
     allowedSorts: ['createdAt', 'name'],
-    async getCursor(params) {
-      const query = await this.productsRepo.getProductsListQuery(params)
+    getCursor: async (params) => {
       return {
-        cursor: this.productsRepo.find(query),
-        count: () => this.productsRepo.countDocuments(query)
+        cursor: this.productsRepo.getProductsListCursor(params),
+        count: () => this.productsRepo.getProductsListCount(params)
       }
     }
   })
