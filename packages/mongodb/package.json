@@ -24,6 +24,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
+    "@aws-sdk/credential-providers": "^3.782.0",
     "@orion-js/env": "workspace:*",
     "@orion-js/helpers": "workspace:*",
     "@orion-js/logger": "workspace:*",
