@@ -239,17 +239,20 @@ export type CreateCollectionOptionsWithTypedSchema<
   schema: T
 } & Omit<CreateCollectionOptions<InferSchemaType<T>>, 'schema'>
 
-export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
+export class BaseCollection<ModelClass extends ModelClassBase = ModelClassBase> {
   name: string
   connectionName?: string
   schema?: Schema
-  indexes: Array<CollectionIndex>
   generateId: () => ModelClass['_id']
   getSchema: () => Schema
 
   db: MongoDB.Db
   client: OrionMongoClient
+  /**
+   * @deprecated Use getRawCollection() instead. This property is not guaranteed to be defined if the connection has not been started.
+   */
   rawCollection: MongoDB.Collection<ModelClass>
+  getRawCollection: () => Promise<MongoDB.Collection<ModelClass>>
 
   findOne: FindOne<ModelClass>
   find: Find<ModelClass>
@@ -297,8 +300,20 @@ export class Collection<ModelClass extends ModelClassBase = ModelClassBase> {
    */
   createIndexes: () => Promise<string[]>
   createIndexesPromise: Promise<string[]>
+  /**
+   * @deprecated Use startConnection() instead. This property is not guaranteed to be resolved if the connection is not started.
+   * When using async calls startConnection or connectionPromise is no longer needed. Orion will automatically start the connection if it is not already started.
+   * Kept for backwards compatibility. startConnection does not re-start the connection if it is already started, so it is safe to use.
+   */
   connectionPromise: Promise<MongoDB.MongoClient>
   startConnection: () => Promise<MongoDB.MongoClient>
+}
+
+export class Collection<
+  ModelClass extends ModelClassBase = ModelClassBase,
+> extends BaseCollection<ModelClass> {
+  indexes: Array<CollectionIndex>
+  encrypted?: BaseCollection<ModelClass>
 }
 
 export type DistinctDocumentId<DistinctId extends string> = string & {

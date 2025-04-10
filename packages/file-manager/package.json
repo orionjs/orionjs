@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "4.0.28",
+  "version": "4.0.32",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,7 +15,6 @@
   "dependencies": {
     "@orion-js/helpers": "workspace:*",
     "@orion-js/models": "workspace:*",
-    "@orion-js/mongodb": "workspace:*",
     "@orion-js/paginated-mongodb": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
@@ -24,7 +23,11 @@
     "escape-string-regexp": "^4.0.0",
     "luxon": "^2.1.1"
   },
+  "peerDependencies": {
+    "@orion-js/mongodb": "workspace:*"
+  },
   "devDependencies": {
+    "@orion-js/mongodb": "workspace:*",
     "@types/dot-object": "^2.1.2",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",

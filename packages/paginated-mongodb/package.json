@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/paginated-mongodb",
-  "version": "4.0.27",
+  "version": "4.0.31",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -19,14 +19,17 @@
   "dependencies": {
     "@orion-js/helpers": "workspace:*",
     "@orion-js/models": "workspace:*",
-    "@orion-js/mongodb": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
     "@orion-js/services": "workspace:*",
     "@orion-js/typed-model": "workspace:*",
     "@orion-js/graphql": "workspace:*"
   },
+  "peerDependencies": {
+    "@orion-js/mongodb": "workspace:*"
+  },
   "devDependencies": {
+    "@orion-js/mongodb": "workspace:*",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",

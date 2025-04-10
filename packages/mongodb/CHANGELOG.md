@@ -1,5 +1,29 @@
 # @orion-js/mongodb
 
+## 4.0.23
+
+### Patch Changes
+
+- 00f3a6f: Expose getDBName
+
+## 4.0.22
+
+### Patch Changes
+
+- e69c35d: Set dbName to connections on construct
+
+## 4.0.21
+
+### Patch Changes
+
+- 27a0e4d: Add AWS credentials dependency for KMS providers on encrypted connections
+
+## 4.0.20
+
+### Patch Changes
+
+- Adds encryption support for mongodb and explicit configuration for connections
+
 ## 4.0.19
 
 ### Patch Changes

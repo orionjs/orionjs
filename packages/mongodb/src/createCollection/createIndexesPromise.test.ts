@@ -1,6 +1,5 @@
 import {generateId} from '@orion-js/helpers'
 import {createCollection} from '.'
-import {allConnectionPromises} from '..'
 import {describe, it, expect, beforeEach} from 'vitest'
 
 const Tests = createCollection({
@@ -9,7 +8,7 @@ const Tests = createCollection({
 })
 
 beforeEach(async () => {
-  await Promise.all(allConnectionPromises)
+  await Tests.startConnection()
 })
 
 describe('createIndexesPromise', () => {
