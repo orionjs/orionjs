@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.22
+
+### Patch Changes
+
+- e69c35d: Set dbName to connections on construct
+
 ## 4.0.21
 
 ### Patch Changes
