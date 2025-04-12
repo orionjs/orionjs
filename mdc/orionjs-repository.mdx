@@ -1,7 +1,7 @@
 ---
 description: How to create a good Orionjs Repository
-globs: 
-alwaysApply: false
+globs: *.ts
+alwaysApply: true
 ---
 # How to create a good Repository
 
@@ -17,6 +17,7 @@ Repositories in Orionjs handle data access operations, separating data access lo
 
 ## Best Practices
 - Keep methods simple and focused on a single responsibility
+- Collection name should be `component_name.prural_of_entity`. Component name is the name of the folder of the component.
 - Return plain objects or domain models, not database-specific structures
 - Use descriptive method names: `findById`, `findByEmail`, `create{EntityName}`, `update{EntityName}`, `delete{EntityName}`.
 - Avoid business logic in repositories (use services instead)
@@ -44,7 +45,7 @@ import {getSearchTokens, shortenMongoId} from '@orion-js/helpers'
 @Repository()
 export class CardsRepo {
   private collection = createCollection({
-    name: 'cards',
+    name: 'game.cards',
     schema: CardSchema,
     indexes: [
       {
