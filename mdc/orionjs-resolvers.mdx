@@ -182,7 +182,7 @@ export class PersonResolvers {
 ## Example 6: Paginated Query
 
 ```typescript
-import {PaginatedQuery, Resolvers} from '@orion-js/graphql'
+import {Query, Resolvers} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
 import {createPaginatedResolver} from '@orion-js/paginated-mongodb'
 import {ProductsRepo} from 'app/providers/repos/Products'
@@ -194,7 +194,7 @@ export class ProductsListResolvers {
   @Inject(() => ProductsRepo)
   private productsRepo: ProductsRepo
 
-  @PaginatedQuery()
+  @Query()
   productsList = createPaginatedResolver({
     returns: ProductSchema,
     params: ProductsListParams,
