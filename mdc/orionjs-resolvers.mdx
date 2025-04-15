@@ -25,6 +25,7 @@ Resolvers in Orionjs define GraphQL API endpoints using a clean, decorator-based
 - Use `createQuery()`, `createMutation()` and `createModelResolver()` functions
 - Provide descriptive names and descriptions for GraphQL schema documentation
 - Always use `schemaWithName()` for schemas that will be used in GraphQL
+- When creating a schema for params, prefer to clone another schema with the `schemaWithName()` function
 
 ## Query vs Mutation
 - Use `@Query()` for operations that fetch data without side effects
@@ -64,14 +65,14 @@ export class WebsiteConfigResolvers {
 ```typescript
 import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
-import {schemaWithName} from '@orion-js/schema'
+import {schemaWithName, cloneSchema} from '@orion-js/schema'
 import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
 import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
 // Define a schema with only the fields we want to update
-const UpdatesSchema = schemaWithName('UpdateWebsiteConfigUpdates', {
-  name: {type: String},
-  description: {type: String, optional: true}
+const UpdatesSchema = cloneSchema({
+  schema: WebsiteConfigSchema,
+  pickFields: ['name', 'description'],
 })
 
 const WebsiteConfigParams = schemaWithName('UpdateWebsiteConfigParams', {
@@ -100,13 +101,13 @@ export class UpdateWebsiteConfigResolvers {
 ```typescript
 import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
 import {Inject} from '@orion-js/services'
-import {schemaWithName} from '@orion-js/schema'
+import {cloneSchema} from '@orion-js/schema'
 import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
 import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
-const SetWebsiteConfigNameParams = schemaWithName('SetWebsiteConfigNameParams', {
-  websiteId: {type: String},
-  name: {type: String}
+const SetWebsiteConfigNameParams = cloneSchema({
+  schema: WebsiteConfigSchema,
+  pickFields: ['websiteId', 'name']
 })
 
 @Resolvers()
@@ -204,3 +205,24 @@ export class ProductsListResolvers {
     }
   })
 }
+```
+
+## Example 7: Complex clone schema for params
+
+```typescript
+import {cloneSchema, InferSchemaType} from '@orion-js/schema'
+import {ArticleSchema} from '../Article'
+
+export const ArticlesListParamsSchema = cloneSchema({
+  schema: ArticleSchema,
+  extendSchema: {
+    filter: {
+      type: String,
+      optional: true,
+    },
+  },
+  pickFields: ['websiteId', 'type'],
+})
+
+export type ArticlesListParamsType = InferSchemaType<typeof ArticlesListParamsSchema>
+```
