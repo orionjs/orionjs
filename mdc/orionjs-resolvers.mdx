@@ -71,6 +71,7 @@ import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
 // Define a schema with only the fields we want to update
 const UpdatesSchema = cloneSchema({
+  name: 'Updates',
   schema: WebsiteConfigSchema,
   pickFields: ['name', 'description'],
 })
@@ -106,6 +107,7 @@ import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
 import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
 
 const SetWebsiteConfigNameParams = cloneSchema({
+  name: 'SetWebsiteConfigNameParams',
   schema: WebsiteConfigSchema,
   pickFields: ['websiteId', 'name']
 })
@@ -214,6 +216,7 @@ import {cloneSchema, InferSchemaType} from '@orion-js/schema'
 import {ArticleSchema} from '../Article'
 
 export const ArticlesListParamsSchema = cloneSchema({
+  name: 'ArticlesListParams',
   schema: ArticleSchema,
   extendSchema: {
     filter: {
