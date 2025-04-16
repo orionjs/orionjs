@@ -17,6 +17,7 @@ Repositories in Orionjs handle data access operations, separating data access lo
 
 ## Best Practices
 - Keep methods simple and focused on a single responsibility
+- If you need to create a new query or a new method, always do it inside the repository file. Other files should never access the collection directly.
 - Collection name should be `component_name.prural_of_entity`. Component name is the name of the folder of the component.
 - Return plain objects or domain models, not database-specific structures
 - Use descriptive method names: `findById`, `findByEmail`, `create{EntityName}`, `update{EntityName}`, `delete{EntityName}`.
