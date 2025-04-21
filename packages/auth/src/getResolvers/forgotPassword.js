@@ -1,14 +1,14 @@
-import {resolver, generateId} from '@orion-js/app'
+import { resolver, generateId, config } from '@orion-js/app'
 import findUserByEmail from '../helpers/findUserByEmail'
 
-export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
+export default ({ Users, Session, Sessions, sendForgotPasswordToken }) =>
   resolver({
     params: {
       email: {
         type: 'email',
         label: 'Email',
         async custom(email) {
-          const user = await findUserByEmail({email, Users})
+          const user = await findUserByEmail({ email, Users })
           if (!user) {
             return 'userNotFound'
           }
@@ -17,12 +17,14 @@ export default ({Users, Session, Sessions, sendForgotPasswordToken}) =>
     },
     returns: Boolean,
     mutation: true,
-    resolve: async function({email, password}) {
-      const user = await findUserByEmail({email, Users})
+    resolve: async ({ email }) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'forgotPassword', email })
+      const user = await findUserByEmail({ email, Users })
       const token = generateId() + generateId()
       const date = new Date()
 
-      await Users.update(user._id, {$set: {'services.forgot': {token, date}}})
+      await Users.update(user._id, { $set: { 'services.forgot': { token, date } } })
       if (sendForgotPasswordToken) {
         await sendForgotPasswordToken(user, token)
       }

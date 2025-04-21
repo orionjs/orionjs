@@ -1,4 +1,4 @@
-import { resolver } from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 import createSession from '../helpers/createSession'
 import { DateTime } from 'luxon'
 import hashPassword from '../helpers/hashPassword'
@@ -29,6 +29,8 @@ export default ({ Users, Session, Sessions }) =>
     returns: Session,
     mutation: true,
     resolve: async function resetPassword({ token, password }, viewer) {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'resetPassword', viewer })
       const user = await Users.findOne({ 'services.forgot.token': token })
 
       const modifier = {

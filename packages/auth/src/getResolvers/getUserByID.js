@@ -1,4 +1,4 @@
-import {resolver} from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 
 export default options =>
   resolver({
@@ -10,7 +10,9 @@ export default options =>
     },
     returns: options.Users.model,
     mutation: false,
-    resolve: async function({userId}) {
+    resolve: async ({ userId }) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'getUserByID', userId })
       return await options.Users.findOne(userId)
     }
   })

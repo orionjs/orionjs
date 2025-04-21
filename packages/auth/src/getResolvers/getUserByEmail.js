@@ -1,6 +1,6 @@
-import {resolver} from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 
-export default ({Users}) =>
+export default ({ Users }) =>
   resolver({
     name: 'getUserByEmail',
     private: true,
@@ -11,10 +11,12 @@ export default ({Users}) =>
     },
     returns: Users.model,
     mutation: false,
-    resolve: async function({email}) {
+    resolve: async ({ email }) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'getUserByEmail', email })
       if (!email) return null
       email = email.toLowerCase()
 
-      return await Users.findOne({'emails.address': email})
+      return await Users.findOne({ 'emails.address': email })
     }
   })

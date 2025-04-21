@@ -1,4 +1,4 @@
-import { resolver } from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 import hashPassword from '../helpers/hashPassword'
 import createSession from '../helpers/createSession'
 import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
@@ -29,7 +29,9 @@ export default ({ Session, Users, Sessions, onCreateUser, sendEmailVerificationT
     },
     returns: Session,
     mutation: true,
-    resolve: async function createUser({ email, password, profile }, viewer) {
+    resolve: async ({ email, password, profile }, viewer) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'createUser', viewer, email, profile })
       const newUser = {
         emails: [
           {
