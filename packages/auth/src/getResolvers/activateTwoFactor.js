@@ -1,7 +1,7 @@
-import {resolver} from '@orion-js/app'
+import { resolver } from '@orion-js/app'
 import speakeasy from 'speakeasy'
 
-export default ({Users, Session}) =>
+export default ({ Users, Session }) =>
   resolver({
     requireUserId: true,
     params: {
@@ -11,8 +11,9 @@ export default ({Users, Session}) =>
     },
     returns: Users.model,
     mutation: true,
-    resolve: async function({code}, viewer) {
-      const user = await Users.findOne(viewer.userId)
+    resolve: async ({ code }, viewer) => {
+      const UsersCollection = getUserCollection(Users)
+      const user = await UsersCollection.findOne(viewer.userId)
       if (!user) throw new Error('User not found')
 
       const verified = speakeasy.totp.verify({
@@ -25,8 +26,8 @@ export default ({Users, Session}) =>
         throw new Error('The code is not correct')
       }
 
-      await Users.update(user._id, {$set: {'services.twoFactor.enabled': true}})
+      await Users.update(user._id, { $set: { 'services.twoFactor.enabled': true } })
 
-      return await Users.findOne(viewer.userId)
+      return await UsersCollection.findOne(viewer.userId)
     }
   })

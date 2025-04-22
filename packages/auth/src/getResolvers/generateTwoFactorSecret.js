@@ -1,7 +1,7 @@
 import { resolver, ConfigurationError, Model } from '@orion-js/app'
 import speakeasy from 'speakeasy'
 import qr from 'qr-image'
-
+import getUserCollection from '../helpers/getUserCollection'
 const model = new Model({
   name: 'QRSetupInformation',
   schema: {
@@ -20,7 +20,8 @@ export default ({ Users, Session, twoFactor }) =>
     returns: model,
     mutation: true,
     resolve: async function generateTwoFactorSecret(params, viewer) {
-      const user = await Users.findOne(viewer.userId)
+      const UsersCollection = getUserCollection(Users)
+      const user = await UsersCollection.findOne(viewer.userId)
       if (await user.hasTwoFactor()) {
         throw new Error('User has two factor')
       }
