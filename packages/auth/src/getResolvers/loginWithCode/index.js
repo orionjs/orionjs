@@ -53,6 +53,12 @@ export default ({ Users, Session, Sessions, twoFactor }) =>
             }
           }
         )
+
+        await UsersCollection.update({ _id: user._id, 'accountEmail.enc_address': email }, {
+          $set: {
+            'accountEmail.verified': true
+          }
+        })
       }
 
       await user.update({ $unset: { 'services.loginCode': '' } })

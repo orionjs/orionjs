@@ -39,6 +39,12 @@ export default ({ Users, Session, Sessions }) =>
           $unset: { 'services.emailVerify': '' }
         }
       )
+
+      await UsersCollection.update({ _id: user._id, 'accountEmail.enc_address': email }, {
+        $set: {
+          'accountEmail.verified': true
+        }
+      })
       return await createSession(user, viewer)
     }
   })
