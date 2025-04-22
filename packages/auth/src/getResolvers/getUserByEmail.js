@@ -1,5 +1,5 @@
 import { resolver, config } from '@orion-js/app'
-
+import getUserCollection from '../helpers/getUserCollection'
 export default ({ Users }) =>
   resolver({
     name: 'getUserByEmail',
@@ -17,6 +17,8 @@ export default ({ Users }) =>
       if (!email) return null
       email = email.toLowerCase()
 
-      return await Users.findOne({ 'emails.address': email })
+      return await getUserCollection(Users).findOne({
+        $or: [{ 'emails.address': email }, { 'accountEmail.enc_address': email }],
+      })
     }
   })

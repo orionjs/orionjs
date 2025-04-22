@@ -1,7 +1,7 @@
 import { resolver, config } from '@orion-js/app'
 import createSession from '../helpers/createSession'
 import { DateTime } from 'luxon'
-
+import getUserCollection from '../helpers/getUserCollection'
 export default ({ Users, Session, Sessions }) =>
   resolver({
     params: {
@@ -25,7 +25,7 @@ export default ({ Users, Session, Sessions }) =>
     resolve: async function verifyEmail({ token }, viewer) {
       const { logger } = config()
       logger.info('Using orionjs/auth deprecated method', { method: 'verifyEmail', viewer, token })
-      const UsersCollection = Users.encrypted ? Users.encrypted : Users
+      const UsersCollection = getUserCollection(Users)
       const user = await UsersCollection.findOne({ 'services.emailVerify.token': token })
       const { email } = user.services.emailVerify
 

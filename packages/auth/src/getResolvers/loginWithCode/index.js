@@ -3,7 +3,7 @@ import findUserByEmail from '../../helpers/findUserByEmail'
 import createSession from '../../helpers/createSession'
 import requireTwoFactor from '../../helpers/requireTwoFactor'
 import validate from './validate'
-
+import getUserCollection from '../../helpers/getUserCollection'
 export default ({ Users, Session, Sessions, twoFactor }) =>
   resolver({
     name: 'loginWithCode',
@@ -43,7 +43,7 @@ export default ({ Users, Session, Sessions, twoFactor }) =>
       const userEmail = user.emails.find(({ address }) => address === email)
 
       if (!userEmail.verified) {
-        const UsersCollection = Users.encrypted ? Users.encrypted : Users
+        const UsersCollection = getUserCollection(Users)
         await UsersCollection.update(
           { _id: user._id, 'emails.address': email },
           {

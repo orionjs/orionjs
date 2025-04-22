@@ -2,6 +2,7 @@ import { resolver, config } from '@orion-js/app'
 import hashPassword from '../helpers/hashPassword'
 import createSession from '../helpers/createSession'
 import generateVerifyEmailToken from '../helpers/generateVerifyEmailToken'
+import getUserCollection from '../helpers/getUserCollection'
 
 export default ({ Session, Users, Sessions, onCreateUser, sendEmailVerificationToken }) => {
   const profile = Users.model.schema.profile || null
@@ -13,7 +14,9 @@ export default ({ Session, Users, Sessions, onCreateUser, sendEmailVerificationT
         label: 'Email',
         async custom(email) {
           email = email.toLowerCase()
-          const count = await Users.find({ 'emails.address': email }).count()
+          const count = await getUserCollection(Users).find({
+            $or: [{ 'emails.address': email }, { 'accountEmail.enc_address': email }],
+          }).count()
           if (count) {
             return 'emailExists'
           }
@@ -55,7 +58,7 @@ export default ({ Session, Users, Sessions, onCreateUser, sendEmailVerificationT
           createdAt: new Date()
         }
       }
-      const UsersCollection = Users.encrypted ? Users.encrypted : Users
+      const UsersCollection = getUserCollection(Users)
       const userId = await UsersCollection.insert(newUser)
       const user = await UsersCollection.findOne(userId)
       if (onCreateUser) {
