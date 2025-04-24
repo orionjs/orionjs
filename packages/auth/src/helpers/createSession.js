@@ -1,6 +1,5 @@
-import { generateId } from '@orion-js/app'
+import { generateId, config } from '@orion-js/app'
 import { getOptions } from '../optionsStore'
-import config from '@orion-js/config'
 const hasEmailsVerified = (user) => {
   if (!user.emails && !user.accountEmail) return true
   const emails = [...(user.emails || []), ...(user.accountEmail ? [user.accountEmail] : [])]
