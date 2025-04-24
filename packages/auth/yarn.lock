@@ -843,13 +843,13 @@
   dependencies:
     sparse-bitfield "^3.0.3"
 
-"@orion-js/app@^2.10.1":
-  version "2.10.1"
-  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-2.10.1.tgz#62ffcd7b21ba8f16a43b55740f57eb504608ca72"
-  integrity sha512-3qnqNdyrj94CSaDppMcSGZpkjCMS+F7d4T1SHqL+/20gF7RQmRayYQpikA/KFll2MrnW3/JMqvbQXIa1MIswlw==
+"@orion-js/app@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/app/-/app-2.12.0.tgz#f91cba4360c0a37561c11150fb5ac1528be73200"
+  integrity sha512-YO+DX15VKeQrAwkm9Is4Mv0Jl5yTFKppetmnQZOmtfJr/fVn5W19QdfE4qLzM3JyV4MueAoSf/+gfC5oRmmE8A==
   dependencies:
     "@babel/runtime" "^7.14.0"
-    "@orion-js/schema" "^2.10.0"
+    "@orion-js/schema" "^2.12.0"
     colors "^1.3.3"
     dataloader "^2.0.0"
     dot-object "^1.9.0"
@@ -860,10 +860,10 @@
     path-match "^1.2.4"
     path-to-regexp "^3.0.0"
 
-"@orion-js/schema@^2.10.0":
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.10.0.tgz#c25fd0652ea152b5cec416eeab229c53e3660163"
-  integrity sha512-r6er+Zo51x5yd1q8lp+QCPSxHMCvFSvDbD3bZmL18nGkVEMXQFkQhZ+5w8MIBkA1i+9F8RshNpo1cAhywjInZg==
+"@orion-js/schema@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@orion-js/schema/-/schema-2.12.0.tgz#34e5f6024771aecda617b24911ab556f72ef69dc"
+  integrity sha512-U1ug7FuqC1ztsSzBzAdqmSNjZZ7vJq31XQWB0LqZwBSEyXEtItgQ10cHkwv5tiTII+dZrE/YIxMD4CJMXtpOPw==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dot-object "^1.9.0"
