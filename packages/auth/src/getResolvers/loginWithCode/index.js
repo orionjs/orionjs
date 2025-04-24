@@ -1,9 +1,9 @@
-import { resolver } from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 import findUserByEmail from '../../helpers/findUserByEmail'
 import createSession from '../../helpers/createSession'
 import requireTwoFactor from '../../helpers/requireTwoFactor'
 import validate from './validate'
-
+import getUserCollection from '../../helpers/getUserCollection'
 export default ({ Users, Session, Sessions, twoFactor }) =>
   resolver({
     name: 'loginWithCode',
@@ -34,6 +34,8 @@ export default ({ Users, Session, Sessions, twoFactor }) =>
     returns: Session,
     mutation: true,
     resolve: async function loginWithCode({ email, code, token }, viewer) {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'loginWithCode', viewer, email, code, token })
       const user = await findUserByEmail({ email, Users })
 
       await validate({ user, code, token })
@@ -41,7 +43,7 @@ export default ({ Users, Session, Sessions, twoFactor }) =>
       const userEmail = user.emails.find(({ address }) => address === email)
 
       if (!userEmail.verified) {
-        const UsersCollection = Users.encrypted ? Users.encrypted : Users
+        const UsersCollection = getUserCollection(Users)
         await UsersCollection.update(
           { _id: user._id, 'emails.address': email },
           {
@@ -51,6 +53,12 @@ export default ({ Users, Session, Sessions, twoFactor }) =>
             }
           }
         )
+
+        await UsersCollection.update({ _id: user._id, 'accountEmail.enc_address': email }, {
+          $set: {
+            'accountEmail.verified': true
+          }
+        })
       }
 
       await user.update({ $unset: { 'services.loginCode': '' } })

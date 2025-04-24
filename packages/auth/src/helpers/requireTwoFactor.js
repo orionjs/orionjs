@@ -1,13 +1,13 @@
-import {getOptions} from '../optionsStore'
+import { getOptions } from '../optionsStore'
 import speakeasy from 'speakeasy'
-import {PermissionsError} from '@orion-js/app'
+import { PermissionsError } from '@orion-js/app'
 
-export default async function({userId, twoFactorCode} = {}) {
+export default async function ({ userId, twoFactorCode } = {}) {
   const options = getOptions()
   if (!options.twoFactor) throw new Error('Two factor is disabled in this app')
   if (!userId) return
 
-  const user = await options.Users.findOne(userId, {projection: {'services.twoFactor': 1}})
+  const user = await options.Users.findOne(userId, { projection: { 'services.twoFactor': 1 } })
   const has = await user.hasTwoFactor()
   if (!has) return
   if (!twoFactorCode) {

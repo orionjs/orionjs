@@ -1,4 +1,4 @@
-import { resolver } from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 import checkPassword from '../helpers/checkPassword'
 import hashPassword from '../helpers/hashPassword'
 import hasPassword from '../helpers/hasPassword'
@@ -35,6 +35,8 @@ export default ({ Users, Session }) =>
     returns: Boolean,
     mutation: true,
     resolve: async function changePassword({ oldPassword, newPassword }, viewer) {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'changePassword', viewer })
       await Users.update(viewer.userId, {
         $set: {
           'services.password': {

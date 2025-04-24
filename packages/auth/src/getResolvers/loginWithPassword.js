@@ -1,11 +1,11 @@
-import {resolver} from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 import findUserByEmail from '../helpers/findUserByEmail'
 import checkPassword from '../helpers/checkPassword'
 import hasPassword from '../helpers/hasPassword'
 import createSession from '../helpers/createSession'
 import requireTwoFactor from '../helpers/requireTwoFactor'
 
-export default ({Users, Session, Sessions, twoFactor}) =>
+export default ({ Users, Session, Sessions, twoFactor }) =>
   resolver({
     name: 'loginWithPassword',
     params: {
@@ -13,7 +13,7 @@ export default ({Users, Session, Sessions, twoFactor}) =>
         type: 'email',
         label: 'Email',
         async custom(email) {
-          const user = await findUserByEmail({email, Users})
+          const user = await findUserByEmail({ email, Users })
           if (!user) {
             return 'userNotFound'
           }
@@ -22,9 +22,9 @@ export default ({Users, Session, Sessions, twoFactor}) =>
       password: {
         type: String,
         label: 'Password',
-        async custom(password, {doc}) {
-          const {email} = doc
-          const user = await findUserByEmail({email, Users})
+        async custom(password, { doc }) {
+          const { email } = doc
+          const user = await findUserByEmail({ email, Users })
           if (!user) {
             return
           }
@@ -39,10 +39,12 @@ export default ({Users, Session, Sessions, twoFactor}) =>
     },
     returns: Session,
     mutation: true,
-    resolve: async function({email, password}, viewer) {
-      const user = await findUserByEmail({email, Users})
+    resolve: async ({ email, _password }, viewer) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'loginWithPassword', viewer, email })
+      const user = await findUserByEmail({ email, Users })
       if (twoFactor) {
-        await requireTwoFactor({userId: user._id, twoFactorCode: viewer.twoFactorCode})
+        await requireTwoFactor({ userId: user._id, twoFactorCode: viewer.twoFactorCode })
       }
 
       return await createSession(user, viewer)

@@ -1,4 +1,5 @@
-import {resolver} from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
+import getUserCollection from '../helpers/getUserCollection'
 
 export default options =>
   resolver({
@@ -10,7 +11,10 @@ export default options =>
     },
     returns: options.Users.model,
     mutation: false,
-    resolve: async function({userId}) {
-      return await options.Users.findOne(userId)
+    resolve: async ({ userId }) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'getUserByID', userId })
+      const UsersCollection = getUserCollection(options.Users)
+      return await UsersCollection.findOne(userId)
     }
   })

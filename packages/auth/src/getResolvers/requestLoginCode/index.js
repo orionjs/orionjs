@@ -1,9 +1,9 @@
-import {resolver} from '@orion-js/app'
+import { resolver, config } from '@orion-js/app'
 import findUserByEmail from '../../helpers/findUserByEmail'
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
 import generateCode from './generateCode'
 
-export default ({Users, sendLoginCode, createUserAtLoginWithCode}) =>
+export default ({ Users, sendLoginCode, createUserAtLoginWithCode }) =>
   resolver({
     name: 'requestLoginCode',
     params: {
@@ -11,11 +11,11 @@ export default ({Users, sendLoginCode, createUserAtLoginWithCode}) =>
         type: 'email',
         label: 'Email',
         async custom(email) {
-          let user = await findUserByEmail({email, Users})
+          let user = await findUserByEmail({ email, Users })
 
           if (!user && createUserAtLoginWithCode) {
             await createUserAtLoginWithCode(email)
-            user = await findUserByEmail({email, Users})
+            user = await findUserByEmail({ email, Users })
           }
 
           if (!user) {
@@ -26,7 +26,7 @@ export default ({Users, sendLoginCode, createUserAtLoginWithCode}) =>
             const lastDate = DateTime.fromJSDate(user.services.loginCode.date)
 
             const date = DateTime.local()
-              .minus({seconds: 10})
+              .minus({ seconds: 10 })
               .toJSDate()
             if (lastDate > date) {
               return 'mustWaitToRequestLoginCode'
@@ -37,10 +37,12 @@ export default ({Users, sendLoginCode, createUserAtLoginWithCode}) =>
     },
     returns: String,
     mutation: true,
-    resolve: async function({email}, viewer) {
-      const user = await findUserByEmail({email, Users})
-      const {token, code} = await generateCode(user)
-      await sendLoginCode({user, email, code}, viewer)
+    resolve: async ({ email }, viewer) => {
+      const { logger } = config()
+      logger.info('Using orionjs/auth deprecated method', { method: 'requestLoginCode', viewer, email })
+      const user = await findUserByEmail({ email, Users })
+      const { token, code } = await generateCode(user)
+      await sendLoginCode({ user, email, code }, viewer)
       return token
     }
   })
