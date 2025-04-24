@@ -40,7 +40,7 @@ export default ({ Users, Session, Sessions, twoFactor }) =>
 
       await validate({ user, code, token })
 
-      const userEmail = user.emails.find(({ address }) => address === email)
+      const userEmail = user.emails.find(({ address }) => address === email) || user.accountEmail
 
       if (!userEmail.verified) {
         const UsersCollection = getUserCollection(Users)

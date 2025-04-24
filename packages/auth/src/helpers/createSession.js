@@ -1,16 +1,19 @@
-import {generateId} from '@orion-js/app'
-import {getOptions} from '../optionsStore'
-
-const hasEmailsVerified = function (user) {
-  if (!user.emails) return true
-  for (const email of user.emails) {
+import { generateId } from '@orion-js/app'
+import { getOptions } from '../optionsStore'
+import config from '@orion-js/config'
+const hasEmailsVerified = (user) => {
+  if (!user.emails && !user.accountEmail) return true
+  const emails = [...(user.emails || []), ...(user.accountEmail ? [user.accountEmail] : [])]
+  for (const email of emails) {
     if (!email.verified) return false
   }
   return true
 }
 
 export default async function (user, viewer) {
-  const {Sessions, onCreateSession, customCreateSession} = getOptions()
+  const { Sessions, onCreateSession, customCreateSession } = getOptions()
+  const { logger } = config()
+  logger.info('Using orionjs/auth deprecated method', { method: 'createSession', user, viewer })
 
   if (!user) throw new Error('User not found')
 
@@ -22,7 +25,7 @@ export default async function (user, viewer) {
       publicKey: generateId() + generateId(),
       secretKey: generateId() + generateId() + generateId() + generateId(),
       createdAt: new Date(),
-      nonce: {default: '0'},
+      nonce: { default: '0' },
       lastCall: new Date(),
       userId: user._id,
       locale: user.locale,
