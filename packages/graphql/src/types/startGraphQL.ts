@@ -8,7 +8,7 @@ export type ExecuteGraphQLCache = (
   req: express.Request,
   res: express.Response,
   viewer: object,
-  executeQuery: () => Promise<string>
+  executeQuery: () => Promise<string>,
 ) => Promise<string>
 
 export interface ModelsResolversMap {
@@ -53,4 +53,9 @@ export interface StartGraphQLOptions extends Omit<ApolloServerOptions<any>, Sche
    * If you are using multiple servers you must pass a pubsub provider like RedisPubSub
    */
   pubsub?: PubSubEngine
+
+  /**
+   * Path to the graphql endpoint. Default to /graphql
+   */
+  path?: string
 }

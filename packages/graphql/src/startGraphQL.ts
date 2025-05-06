@@ -37,7 +37,7 @@ export default async function (options: StartGraphQLOptions) {
     route({
       app,
       method: 'all',
-      path: '/graphql',
+      path: options.path || '/graphql',
       bodyParser: 'json',
       async resolve(req, res, viewer) {
         ;(req as any)._viewer = viewer
