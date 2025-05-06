@@ -26,7 +26,6 @@ Repositories in Orionjs handle data access operations, separating data access lo
 - Put the repository in `app/exampleComponent/repos/{EntityNameInPlural}Repo/index.ts`
 - Always use `typedId()` in schema definitions for document IDs
 - Use `InferSchemaType` to derive types from schemas
-- In `getSearchTokens` pass all text like fields to texts array and the category-like fields to the second argument.
 
 ## Example
 
@@ -39,9 +38,6 @@ import {createCollection, MongoFilter, Repository, OptionalId} from '@orion-js/m
 import {InferSchemaType} from '@orion-js/schema'
 import {CardSchema, CardType, CardId} from '../schemas/Card'
 import {CardsListQueryParamsType} from './ListQueryParams'
-import {isEqual} from 'lodash-es'
-import {logger} from '@orion-js/logger'
-import {getSearchTokens, shortenMongoId} from '@orion-js/helpers'
 
 @Repository()
 export class CardsRepo {
@@ -49,49 +45,21 @@ export class CardsRepo {
     name: 'game.cards',
     schema: CardSchema,
     indexes: [
-      {
-        keys: {
-          searchTokens: 1,
-        }
-      }
+      
     ],
   })
 
-  private getSearchTokens(doc: CardType) {
-    const texts = [shortenMongoId(doc._id, doc.name)]
-    return getSearchTokens(texts, {
-      status: doc.status,
-    })
-  }
 
-  async createCard(doc: Omit<CardType, '_id'>) {
-    // typedId in schema will automatically create prefixed IDs
-    doc.searchTokens = this.getSearchTokens(doc as CardType)
-    return await this.collection.insertAndFind(doc as OptionalId<CardType>)
+  async createCard(doc: OptionalId<CardType>) {
+    return await this.collection.insertAndFind(doc)
   }
 
   async getCardById(docId: CardId) {
     return await this.collection.findOne(docId)
   }
 
-  private ensureSearchTokensAreUpdated(card: CardType) {
-    const searchTokens = this.getSearchTokens(card)
-
-    if (!isEqual(card.searchTokens, searchTokens)) {
-      this.collection
-        .updateOne(card._id, {
-          $set: {searchTokens},
-        })
-        .catch(error => {
-          logger.error('Error updating search tokens', {error, docId: card._id, searchTokens})
-        })
-    }
-  }
-
   async updateCard(docId: CardId, doc: Partial<CardType>) {
-    const result = await this.collection.updateAndFind(docId, {$set: doc})
-    this.ensureSearchTokensAreUpdated(result)
-    return result
+    return await this.collection.updateAndFind(docId, {$set: doc})
   }
 
   async deleteCard(docId: CardId) {
@@ -100,21 +68,6 @@ export class CardsRepo {
 
   private async getCardsListQuery(params: CardsListQueryParamsType) {
     const queries: MongoFilter<CardType>[] = []
-
-    const searchTokensParams: Record<string, string> = {}
-
-    if (params.status) {
-      searchTokensParams.status = params.status
-    }
-
-    const searchTokens = getSearchQueryForTokens({
-      filter: params.filter,
-      ...searchTokensParams,
-    })
-
-    if (searchTokens.$all.length) {
-      queries.push({searchTokens})
-    }
 
     return {
       $and: queries,
@@ -137,7 +90,6 @@ import {schemaWithName, InferSchemaType} from '@orion-js/schema'
 
 export const CardsListQueryParamsSchema = schemaWithName('CardsListQueryParams', {
   filter: {type: String, optional: true},
-  status: {type: String, optional: true},
 })
 
 export type CardsListQueryParamsType = InferSchemaType<typeof CardsListQueryParamsSchema>
