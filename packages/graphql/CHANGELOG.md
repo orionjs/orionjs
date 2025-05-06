@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.0.24
+
+### Patch Changes
+
+- allow to set graphql endpoint path
+
 ## 4.0.23
 
 ### Patch Changes
