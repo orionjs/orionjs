@@ -111,7 +111,7 @@ const gqClient = async () => {
     connectionParams: getConnectionParams,
     lazy: false,
     /**
-     * Generates a v4 UUID to be used as the ID.
+     * Generates a v7 UUID to be used as the ID.
      * Reference: https://gist.github.com/jed/982883
      */
     generateID: () =>

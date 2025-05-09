@@ -23,7 +23,7 @@ it('generates a usable mongo objectId as string', async () => {
   expect(diff).toBeGreaterThan(0)
 })
 
-it('generates a ids with uuidv4', async () => {
+it('generates a ids with uuidv7', async () => {
   type DocId = `prefix-${string}`
 
   @TypedSchema()
