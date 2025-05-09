@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.24
+
+### Patch Changes
+
+- Empieza a usar uuidv7 en vez de v4
+
 ## 4.0.23
 
 ### Patch Changes
