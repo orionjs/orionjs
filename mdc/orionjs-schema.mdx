@@ -43,7 +43,7 @@ export const ProductStatusEnum = createEnum('ProductStatusEnum', [
 ] as const)
 
 // Create a nested schema for product variants
-export const ProductVariantSchema = schemaWithName('ProductVariantSchema', {
+export const ProductVariantSchema = schemaWithName('ProductVariant', {
   name: {
     type: String,
     label: 'Variant Name',
@@ -64,7 +64,7 @@ export type ProductVariantType = InferSchemaType<typeof ProductVariantSchema>
 export const typedProductId = typedId('prd')
 export type ProductId = typeof typedProductId.__tsFieldType
 
-export const ProductSchema = schemaWithName('ProductSchema', {
+export const ProductSchema = schemaWithName('Product', {
   _id: {
     type: typedProductId
   },
@@ -127,7 +127,7 @@ export type Product = InferSchemaType<typeof ProductSchema>
 Orionjs supports the following common types:
 
 ```typescript
-export const TypeExamplesSchema = schemaWithName('TypeExamplesSchema', {
+export const TypeExamplesSchema = schemaWithName('TypeExamples', {
   stringField: {
     type: String         // Text values
   },

@@ -103,7 +103,7 @@ import {schemaWithName, InferSchemaType, typedId} from '@orion-js/schema'
 export const typedCardId = typedId('crd')
 export type CardId = typeof typedCardId.__tsFieldType
 
-export const CardSchema = schemaWithName('CardSchema', {
+export const CardSchema = schemaWithName('Card', {
   _id: {type: typedCardId},
   name: {type: String},
   // ... other properties
