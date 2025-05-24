@@ -34,9 +34,9 @@ In this example we have a `Card` entity and a `CardsRepo` repository.
 It's always a good idea to create at list all the methods that are in this example, but you can add more methods if you need to.
 
 ```typescript
-import {createCollection, MongoFilter, Repository, OptionalId} from '@orion-js/mongodb'
+import {createCollection, MongoFilter, Repository, OptionalId, MongoDB} from '@orion-js/mongodb'
 import {InferSchemaType} from '@orion-js/schema'
-import {CardSchema, CardType, CardId} from '../schemas/Card'
+import {CardSchema, Card, CardId} from '../schemas/Card'
 import {CardsListQueryParamsType} from './ListQueryParams'
 
 @Repository()
@@ -50,7 +50,7 @@ export class CardsRepo {
   })
 
 
-  async createCard(doc: OptionalId<CardType>) {
+  async createCard(doc: OptionalId<Card>) {
     return await this.collection.insertAndFind(doc)
   }
 
@@ -58,7 +58,7 @@ export class CardsRepo {
     return await this.collection.findOne(docId)
   }
 
-  async updateCard(docId: CardId, doc: Partial<CardType>) {
+  async updateCard(docId: CardId, doc: MongoDB.UpdateFilter<Card>['$set']) {
     return await this.collection.updateAndFind(docId, {$set: doc})
   }
 
@@ -67,7 +67,7 @@ export class CardsRepo {
   }
 
   private async getCardsListQuery(params: CardsListQueryParamsType) {
-    const queries: MongoFilter<CardType>[] = []
+    const queries: MongoFilter<Card>[] = []
 
     return {
       $and: queries,
