@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.10
+
+### Patch Changes
+
+- expose labels in validation error
+
 ## 4.0.9
 
 ### Patch Changes
