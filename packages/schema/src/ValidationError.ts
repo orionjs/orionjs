@@ -3,7 +3,8 @@ import {type} from 'rambdax'
 export interface ValidationErrorInfo {
   error: string
   message: string
-  validationErrors: object
+  validationErrors: Record<string, string>
+  labels: Record<string, string>
 }
 
 const getPrintableError = (validationErrors: object): string => {
@@ -16,13 +17,29 @@ const getPrintableError = (validationErrors: object): string => {
   return message
 }
 
+const cleanLabels = (
+  labels: Record<string, string>,
+  validationErrors: Record<string, string>,
+): Record<string, string> => {
+  const result: Record<string, string> = {}
+
+  for (const key of Object.keys(validationErrors)) {
+    if (labels[key]) {
+      result[key] = labels[key]
+    }
+  }
+
+  return result
+}
+
 export default class ValidationError extends Error {
   public code: string
   public isValidationError: boolean
   public isOrionError: boolean
-  public validationErrors: object
+  public validationErrors: Record<string, string>
+  public labels: Record<string, string>
 
-  constructor(validationErrors: object) {
+  constructor(validationErrors: Record<string, string>, labels: Record<string, string> = {}) {
     super(getPrintableError(validationErrors))
 
     if (type(validationErrors) !== 'Object') {
@@ -35,8 +52,9 @@ export default class ValidationError extends Error {
     this.isValidationError = true
     this.isOrionError = true
     this.validationErrors = validationErrors
+    this.labels = cleanLabels(labels, validationErrors)
 
-    this.getInfo
+    this.getInfo()
   }
 
   public getInfo = (): ValidationErrorInfo => {
@@ -44,6 +62,7 @@ export default class ValidationError extends Error {
       error: 'validationError',
       message: 'Validation Error',
       validationErrors: this.validationErrors,
+      labels: this.labels,
     }
   }
 
@@ -56,6 +75,12 @@ export default class ValidationError extends Error {
       newErrors[`${prepend}.${key}`] = this.validationErrors[key]
     }
 
-    return new ValidationError(newErrors)
+    const newFieldLabels = {}
+
+    for (const key of Object.keys(this.labels)) {
+      newFieldLabels[`${prepend}.${key}`] = this.labels[key]
+    }
+
+    return new ValidationError(newErrors, newFieldLabels)
   }
 }
