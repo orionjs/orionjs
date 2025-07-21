@@ -75,7 +75,8 @@
               "overview/other-modules/file-manager",
               "overview/other-modules/helpers",
               "overview/other-modules/logger",
-              "overview/other-modules/migrations"
+              "overview/other-modules/migrations",
+              "overview/other-modules/vectors"
             ]
           }
         ]

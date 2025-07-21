@@ -1,0 +1,39 @@
+{
+  "name": "@orion-js/vectors",
+  "version": "4.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "vitest --config vitest.config.ts run",
+    "prepare": "pnpm build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3vectors": "^3.848.0",
+    "@types/node": "^18.19.86",
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
+    "vitest": "^3.1.1"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-s3vectors": "*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

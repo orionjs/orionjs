@@ -22,7 +22,7 @@ exampleComponent/
 ├── schemas/          # Data schemas/models
 ├── services/         # Business logic services
 └── index.ts          # Component definition with the controllers, repos, schemas and services
-└── Component.md      # A markdown file that describes the component for later use by other Agent
+└── Component.md      # A markdown with notes for later use by other Agents
 ```
 
 Each component controller type folder has an index.ts (for example controllers/resolvers/index.ts) that exports default an array (which will be filled with the Classes) like this:
@@ -68,12 +68,24 @@ export default component({
 
 ## CRITICAL: Component.md Management
 
+**Component.md serves as a memory store for agents** - it contains essential notes that help future agents understand the component without having to read all the code.
+
+**Structure:**
+Component.md should contain organized "notes" as bullet points, where each note is 2-5 phrases describing:
+- Key business logic and data flows
+- Important architectural decisions 
+- External dependencies and integrations
+- Critical implementation details
+- Known issues or limitations
+- How to check for permissions
+- Anything else that is important to know about the component
+
 **MANDATORY ACTIONS:**
 - BEFORE any task: Read the Component.md file if it exists
 - IF no Component.md exists: IMMEDIATELY create it by reading the whole component folder
-- AFTER any schema, service, or controller changes: Update the Component.md
-- AFTER adding new features: Document them in Component.md
+- AFTER any schema, service, or controller changes: Update the Component.md with relevant notes
+- AFTER adding new features: Document important implementation details in Component.md
 
-You should after each task update the Component.md file with the new information.
-If there is no Component.md file, you should create it, read the whole component folder and write the information in the Component.md file.
-You should always read the Component.md file before starting a new task.
+**What to include:** Only store notes that would be valuable for the next agent to understand the component's purpose, behavior, and important implementation details.
+
+**What NOT to include:** Avoid storing temporary information, detailed code explanations, or information that can be easily derived from reading the code structure.

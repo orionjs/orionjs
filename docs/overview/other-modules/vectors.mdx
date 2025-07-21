@@ -1,0 +1,127 @@
+---
+title: 'Vectors'
+description: 'Vector storage provider interface, Local and S3 implementations'
+---
+
+# @orion-js/vectors
+
+The **vectors** module adds vector‐store capabilities to Orionjs with a clean, provider-agnostic interface.
+
+> Since AWS S3 Vectors is still in preview, `LocalVectorProvider` is ideal for development & testing. The `S3VectorProvider` uses the new [`@aws-sdk/client-s3vectors`](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3vectors/) client.
+
+## Installation
+
+```bash
+pnpm add @orion-js/vectors
+```
+
+## Core Concepts
+
+### 1. VectorStorageProvider interface
+
+```ts
+interface VectorStorageProvider {
+  defineVectorStore(config: VectorStoreConfig): Promise<void>
+  storeExists(storeName: string): Promise<boolean>
+  indexExists(storeName: string, indexName: string): Promise<boolean>
+  insertVectors(store, index, vectors): Promise<void>
+  queryVectors(store, index, params): Promise<VectorQueryResult[]>
+  deleteVectors(store, index, keys): Promise<void>
+  getIndexInfo(store, index): Promise<VectorIndexConfig>
+  deleteIndex(store, index): Promise<void>
+  deleteStore(store): Promise<void>
+}
+```
+
+### 2. VectorStore & Index
+* **VectorStore** → an S3 Vector bucket (or a folder for local provider).
+* **VectorIndex** → a searchable index inside the store. You define the dimension & distance metric (cosine / euclidean).
+
+```ts
+const storeConfig = {
+  storeName: 'media-embeddings',
+  indexes: [
+    {
+      name: 'movies',
+      dimension: 1024,
+      distanceMetric: 'cosine',
+      nonFilterableMetadataKeys: ['source_text']
+    }
+  ]
+}
+await provider.defineVectorStore(storeConfig)
+```
+
+## Providers
+
+### LocalVectorProvider
+File-system implementation – perfect for unit tests & local dev.
+
+```ts
+import { LocalVectorProvider } from '@orion-js/vectors'
+
+const provider = new LocalVectorProvider({ basePath: './vector-data' })
+```
+
+* Stores JSON files on disk (`.store.json`, `.index.json`, `vectors.json`).
+* Supports cosine & euclidean distance.
+* Same API as cloud provider → easy migration.
+
+### S3VectorProvider *(preview)*
+
+```ts
+import { S3VectorProvider } from '@orion-js/vectors'
+
+const provider = new S3VectorProvider({
+  region: 'us-east-1',
+  // optional credentials if not using IAM role
+})
+```
+
+It maps operations to the S3 Vectors API:
+
+| Interface Method | AWS API |
+| ---------------- | ------- |
+| defineVectorStore | `CreateVectorBucket`, `CreateVectorIndex` |
+| insertVectors | `PutVectors` |
+| queryVectors | `QueryVectors` |
+| deleteVectors | `DeleteVectors` |
+| getIndexInfo | `DescribeVectorIndex` |
+| deleteIndex | `DeleteVectorIndex` |
+| deleteStore | `DeleteVectorBucket` |
+
+## Example
+
+```ts
+await provider.insertVectors('media-embeddings', 'movies', [
+  {
+    key: 'Star Wars',
+    data: { float32: embedding },
+    metadata: { genre: 'scifi', source_text: originalText }
+  }
+])
+
+const results = await provider.queryVectors('media-embeddings', 'movies', {
+  queryVector: { float32: queryEmbedding },
+  topK: 3,
+  returnDistance: true,
+  filter: { genre: 'scifi' }
+})
+```
+
+## Testing
+
+`LocalVectorProvider` is fully covered by unit & integration tests (run with `pnpm --filter @orion-js/vectors test`). To run S3 tests, set AWS creds & region:
+
+```bash
+export AWS_REGION=us-east-1
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+```
+
+---
+
+### Coming Soon
+* Advanced filtering harnessing S3 Vectors metadata expressions.
+* Binary embedding support once S3 Vectors GA.
+* Additional providers (e.g., Pinecone, Weaviate). 
