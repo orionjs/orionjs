@@ -1,5 +1,11 @@
 # @orion-js/vectors
 
+## 4.0.1
+
+### Patch Changes
+
+- new vectors pacakge
+
 ## 4.0.0
 
 ### Features
@@ -17,6 +23,7 @@
 ### Provider Features
 
 #### LocalVectorProvider
+
 - File-system based storage using JSON files
 - Perfect for development, testing, and small-scale deployments
 - Real vector similarity calculations (cosine & euclidean)
@@ -25,6 +32,7 @@
 - Configurable base path for storage location
 
 #### VectorStorageProvider Interface
+
 - `defineVectorStore()` - Setup stores and indexes with validation
 - `insertVectors()` / `queryVectors()` - Vector operations with metadata
 - `deleteVectors()` - Batch deletion by keys
@@ -33,8 +41,9 @@
 - Store and index management operations
 
 ### Technical Details
+
 - **Dimensions**: Support for 1-4096 dimensional vectors
 - **Distance Metrics**: Cosine similarity and Euclidean distance
 - **Metadata**: Filterable and non-filterable metadata support
 - **Validation**: Comprehensive input validation and error handling
-- **Type Safety**: Full TypeScript coverage with strict typing 
+- **Type Safety**: Full TypeScript coverage with strict typing
