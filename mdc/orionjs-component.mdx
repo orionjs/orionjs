@@ -18,6 +18,7 @@ exampleComponent/
 ├── schemas/          # Data schemas/models
 ├── services/         # Business logic services
 └── index.ts          # Component definition with the controllers, repos, schemas and services
+└── Component.md      # A markdown file that describes the component for later use by other Agent
 ```
 
 Each component controller type folder has an index.ts (for example controllers/resolvers/index.ts) that exports default an array (which will be filled with the Classes) like this:
@@ -59,3 +60,8 @@ export default component({
   - Echo controllers: Handle event-based communication
 - GraphQL resolvers are the prefered over routes for exposing method to the client
 
+### Component.md
+
+You should after each task update the Component.md file with the new information.
+If there is no Component.md file, you should create it, read the whole component folder and write the information in the Component.md file.
+You should always read the Component.md file before starting a new task.
