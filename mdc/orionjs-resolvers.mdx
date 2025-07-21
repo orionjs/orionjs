@@ -17,7 +17,7 @@ Resolvers in Orionjs define GraphQL API endpoints using a clean, decorator-based
   - Resolver classes: `{Action}{Entity}Resolvers` (e.g., `GetUserResolvers`, `UpdateProductResolvers`)
   - Mutations: descriptive of the operation (e.g., `listProducts`, `createUser`)
   - Queries: only the name of the entity (e.g., `user`, `productsList`, `blogPosts`)
-- Put resolvers in `app/exampleComponent/controllers/resolvers/{Action}{Entity}/index.ts`
+- Put resolvers in `app/exampleComponent/controllers/resolvers/{Entity}/{Action}/index.ts`
 
 ## Best Practices
 - Use `@Inject(() => ServiceName)` for dependency injection of services

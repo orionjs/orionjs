@@ -13,7 +13,11 @@ exampleComponent/
 │   ├── routes/         # HTTP routes
 │   ├── jobs/         # Background jobs
 │   ├── modelResolvers/ # GraphQL model resolvers
-│   └── resolvers/    # GraphQL resolvers
+│   └── resolvers/    # GraphQL resolvers container folder
+│       ├── users/    # User-related resolvers
+│       ├── orders/   # Order-related resolvers
+│       └── products/ # Product-related resolvers
+│       └── index.ts  # Exports all the resolvers in all subfolders as a single array
 ├── repos/            # Data repositories
 ├── schemas/          # Data schemas/models
 ├── services/         # Business logic services
@@ -26,6 +30,8 @@ Each component controller type folder has an index.ts (for example controllers/r
 ```ts
 export default []
 ```
+
+Important note: The `resolvers/` sub-folder is a new requirement, so if you don't see that pattern you should update the resolvers folder to use it.
 
 The component definition index.ts is always like this:
 
@@ -60,7 +66,13 @@ export default component({
   - Echo controllers: Handle event-based communication
 - GraphQL resolvers are the prefered over routes for exposing method to the client
 
-### Component.md
+## CRITICAL: Component.md Management
+
+**MANDATORY ACTIONS:**
+- BEFORE any task: Read the Component.md file if it exists
+- IF no Component.md exists: IMMEDIATELY create it by reading the whole component folder
+- AFTER any schema, service, or controller changes: Update the Component.md
+- AFTER adding new features: Document them in Component.md
 
 You should after each task update the Component.md file with the new information.
 If there is no Component.md file, you should create it, read the whole component folder and write the information in the Component.md file.
