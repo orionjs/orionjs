@@ -101,12 +101,13 @@ export class JobsRepo {
     priority: number
   }) {
     const updator: MongoDB.UpdateFilter<JobRecord> = {
-      $set: {nextRunAt: options.nextRunAt, priority: options.priority},
+      $set: {
+        nextRunAt: options.nextRunAt,
+        priority: options.priority,
+        ...(options.addTries ? {} : {tries: 0}),
+      },
       $unset: {lockedUntil: ''},
-    }
-
-    if (options.addTries) {
-      updator.$inc = {tries: 1}
+      ...(options.addTries ? {$inc: {tries: 1}} : {}),
     }
 
     await this.jobs.updateOne(options.jobId, updator)
