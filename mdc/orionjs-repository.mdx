@@ -9,6 +9,8 @@ alwaysApply: true
 
 Repositories in Orionjs handle data access operations, separating data access logic from business logic. They should focus exclusively on database interactions.
 
+When asked to create a new repository, create a minimal repository, with the basic CRUD operations and no indexes.
+
 ## Structure
 - Use `@Repository()` decorator from `@orion-js/mongodb`
 - Each repository should manage a single entity type
@@ -30,8 +32,6 @@ Repositories in Orionjs handle data access operations, separating data access lo
 ## Example
 
 In this example we have a `Card` entity and a `CardsRepo` repository.
-
-It's always a good idea to create at list all the methods that are in this example, but you can add more methods if you need to.
 
 ```typescript
 import {createCollection, MongoFilter, Repository, OptionalId, MongoDB} from '@orion-js/mongodb'
