@@ -1,6 +1,6 @@
 import {Blackbox, InferSchemaType, SchemaInAnyOrionForm} from '@orion-js/schema'
 import {ExecutionContext} from './Worker'
-import {ScheduleJobOptions} from './Events'
+import {ScheduleJobOptions, ScheduleJobsResult} from './Events'
 
 export interface JobRetryResultBase {
   action: 'retry' | 'dismiss'
@@ -73,6 +73,13 @@ export interface EventJobDefinition<TParamsSchema extends SchemaInAnyOrionForm =
   schedule: (params: Omit<ScheduleJobOptions<TParamsSchema>, 'name'>) => Promise<void>
 
   /**
+   * Schedule multiple jobs at once.
+   */
+  scheduleJobs: (
+    jobs: Array<Omit<ScheduleJobOptions<TParamsSchema>, 'name'>>,
+  ) => Promise<ScheduleJobsResult>
+
+  /**
    * The schema of the params of the job.
    */
   params?: TParamsSchema
@@ -85,7 +92,7 @@ export interface EventJobDefinition<TParamsSchema extends SchemaInAnyOrionForm =
 
 export type CreateEventJobOptions<TParamsSchema extends SchemaInAnyOrionForm = any> = Omit<
   EventJobDefinition<TParamsSchema>,
-  'type' | 'schedule'
+  'type' | 'schedule' | 'scheduleJobs'
 >
 
 export type CreateRecurrentJobOptions = Omit<RecurrentJobDefinition, 'type' | 'runEvery'> & {

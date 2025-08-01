@@ -2,7 +2,7 @@ import {getInstance} from '@orion-js/services'
 import {EventsService} from './services/EventsService'
 import {WorkerService} from './services/WorkerService'
 import {StartWorkersConfig} from './types/StartConfig'
-import {ScheduleJobOptions} from './types/Events'
+import {ScheduleJobOptions, ScheduleJobsOptions, ScheduleJobsResult} from './types/Events'
 import {JobsHistoryRepo} from './repos/JobsHistoryRepo'
 import {JobsRepo} from './repos/JobsRepo'
 import {SchemaInAnyOrionForm} from '@orion-js/schema'
@@ -29,4 +29,14 @@ const scheduleJob = <TParamsSchema extends SchemaInAnyOrionForm = any>(
   return eventsService.scheduleJob(options)
 }
 
-export {startWorkers, scheduleJob, jobsHistoryRepo, jobsRepo}
+/**
+ * Schedule multiple jobs at once for better performance.
+ * @deprecated Use the event job definition.scheduleJobs method instead.
+ */
+const scheduleJobs = <TParamsSchema extends SchemaInAnyOrionForm = any>(
+  jobs: ScheduleJobsOptions<TParamsSchema>,
+): Promise<ScheduleJobsResult> => {
+  return eventsService.scheduleJobs(jobs)
+}
+
+export {startWorkers, scheduleJob, scheduleJobs, jobsHistoryRepo, jobsRepo}

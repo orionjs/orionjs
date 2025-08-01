@@ -30,3 +30,16 @@ export interface ScheduleJobRecordOptions {
   priority: number
   uniqueIdentifier?: string
 }
+
+export type ScheduleJobsOptions<TParamsSchema extends SchemaInAnyOrionForm = any> =
+  ScheduleJobOptions<TParamsSchema>[]
+
+export interface ScheduleJobsResult {
+  scheduledCount: number
+  skippedCount: number
+  errors: Array<{
+    index: number
+    error: Error
+    job: ScheduleJobOptions
+  }>
+}

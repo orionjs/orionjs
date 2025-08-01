@@ -1,7 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {Collection, MongoDB, MongoCollection} from '@orion-js/mongodb'
-import {ScheduleJobRecordOptions} from '../types/Events'
+import {ScheduleJobRecordOptions, ScheduleJobsResult} from '../types/Events'
 import {JobRecord} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
 import {JobToRun} from '../types/Worker'
@@ -174,6 +174,59 @@ export class JobsRepo {
       } else {
         throw error
       }
+    }
+  }
+
+  async scheduleJobs(jobs: ScheduleJobRecordOptions[]): Promise<ScheduleJobsResult> {
+    if (jobs.length === 0) {
+      return {scheduledCount: 0, skippedCount: 0, errors: []}
+    }
+
+    // Process each job individually to handle errors properly
+    let scheduledCount = 0
+    let skippedCount = 0
+    const errors: Array<{index: number; error: Error; job: ScheduleJobRecordOptions}> = []
+
+    for (let i = 0; i < jobs.length; i++) {
+      const job = jobs[i]
+      try {
+        // Insert directly to get better error handling than the single scheduleJob method
+        await this.jobs.insertOne({
+          jobName: job.name,
+          uniqueIdentifier: job.uniqueIdentifier,
+          params: job.params,
+          nextRunAt: job.nextRunAt,
+          priority: job.priority,
+          type: 'event',
+        })
+        scheduledCount++
+      } catch (error) {
+        // Check if it's a validation error with uniqueIdentifier constraint
+        if (
+          error.isValidationError &&
+          Object.values(error.validationErrors).includes('notUnique') &&
+          job.uniqueIdentifier
+        ) {
+          logger.info(`Job "${job.name}" with identifier "${job.uniqueIdentifier}" already exists`)
+          skippedCount++
+        } else {
+          errors.push({
+            index: i,
+            error: error instanceof Error ? error : new Error(String(error)),
+            job,
+          })
+        }
+      }
+    }
+
+    logger.debug(
+      `Scheduled ${scheduledCount} jobs successfully, skipped ${skippedCount}, errors: ${errors.length}`,
+    )
+
+    return {
+      scheduledCount,
+      skippedCount,
+      errors,
     }
   }
 }

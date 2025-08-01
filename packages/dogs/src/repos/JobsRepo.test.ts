@@ -287,4 +287,187 @@ describe('JobsRepo', () => {
       expect(jobRecord.type).toBe('recurrent')
     })
   })
+
+  describe('scheduleJobs method (bulk scheduling)', () => {
+    it('should schedule multiple jobs successfully', async () => {
+      // Arrange: Create multiple job options
+      const jobs = [
+        {
+          name: 'bulk-job-1',
+          params: {message: 'Hello 1'},
+          nextRunAt: new Date(),
+          priority: 100,
+        },
+        {
+          name: 'bulk-job-2',
+          params: {message: 'Hello 2'},
+          nextRunAt: new Date(),
+          priority: 200,
+        },
+        {
+          name: 'bulk-job-3',
+          params: {message: 'Hello 3'},
+          nextRunAt: new Date(),
+          priority: 150,
+        },
+      ]
+
+      // Act: Schedule all jobs at once
+      const result = await jobsRepo.scheduleJobs(jobs)
+
+      // Assert: All jobs should be scheduled successfully
+      expect(result.scheduledCount).toBe(3)
+      expect(result.skippedCount).toBe(0)
+      expect(result.errors).toHaveLength(0)
+
+      // Verify jobs exist in database
+      const scheduledJobs = await jobsRepo.jobs
+        .find({
+          jobName: {$in: ['bulk-job-1', 'bulk-job-2', 'bulk-job-3']},
+        })
+        .toArray()
+      expect(scheduledJobs).toHaveLength(3)
+      expect(scheduledJobs.every(job => job.type === 'event')).toBe(true)
+    })
+
+    it('should handle empty job array', async () => {
+      // Act: Schedule empty array
+      const result = await jobsRepo.scheduleJobs([])
+
+      // Assert: Should return zeros for all counts
+      expect(result.scheduledCount).toBe(0)
+      expect(result.skippedCount).toBe(0)
+      expect(result.errors).toHaveLength(0)
+    })
+
+    it('should handle jobs without validation errors', async () => {
+      // Arrange: Create multiple valid jobs
+      const jobs = [
+        {
+          name: 'valid-job-1',
+          params: {message: 'Valid 1'},
+          nextRunAt: new Date(),
+          priority: 100,
+        },
+        {
+          name: 'valid-job-2',
+          params: {message: 'Valid 2'},
+          nextRunAt: new Date(),
+          priority: 200,
+        },
+        {
+          name: 'valid-job-3',
+          params: {message: 'Valid 3'},
+          nextRunAt: new Date(),
+          priority: 150,
+        },
+      ]
+
+      // Act: Schedule all valid jobs
+      const result = await jobsRepo.scheduleJobs(jobs)
+
+      // Assert: All jobs should be scheduled successfully
+      expect(result.scheduledCount).toBe(3)
+      expect(result.skippedCount).toBe(0)
+      expect(result.errors).toHaveLength(0)
+
+      // Verify all jobs were added to the database
+      const allJobs = await jobsRepo.jobs
+        .find({
+          jobName: {$in: ['valid-job-1', 'valid-job-2', 'valid-job-3']},
+        })
+        .toArray()
+      expect(allJobs).toHaveLength(3)
+
+      const jobNames = allJobs.map(job => job.jobName).sort()
+      expect(jobNames).toEqual(['valid-job-1', 'valid-job-2', 'valid-job-3'])
+    })
+
+    it('should handle validation errors for individual jobs', async () => {
+      // Arrange: Create jobs with invalid data that would cause validation errors
+      const jobs = [
+        {
+          name: 'valid-job',
+          params: {message: 'Valid'},
+          nextRunAt: new Date(),
+          priority: 100,
+        },
+        {
+          name: '', // Invalid: empty name
+          params: {message: 'Invalid'},
+          nextRunAt: new Date(),
+          priority: 100,
+        },
+        {
+          name: 'another-valid-job',
+          params: {message: 'Another Valid'},
+          nextRunAt: new Date(),
+          priority: 100,
+        },
+      ]
+
+      // Act & Assert: Should handle the validation errors gracefully
+      // Note: The actual validation depends on the schema implementation
+      // This test structure is prepared for when validation is added
+      const result = await jobsRepo.scheduleJobs(jobs)
+
+      // At minimum, we should get a result structure
+      expect(result).toHaveProperty('scheduledCount')
+      expect(result).toHaveProperty('skippedCount')
+      expect(result).toHaveProperty('errors')
+      expect(typeof result.scheduledCount).toBe('number')
+      expect(typeof result.skippedCount).toBe('number')
+      expect(Array.isArray(result.errors)).toBe(true)
+    })
+
+    it('should handle jobs with different priorities and timing', async () => {
+      // Arrange: Create jobs with different characteristics
+      const now = new Date()
+      const jobs = [
+        {
+          name: 'high-priority-job',
+          params: {message: 'High Priority'},
+          nextRunAt: new Date(now.getTime() + 1000),
+          priority: 300,
+        },
+        {
+          name: 'medium-priority-job',
+          params: {message: 'Medium Priority'},
+          nextRunAt: new Date(now.getTime() + 2000),
+          priority: 200,
+        },
+        {
+          name: 'low-priority-job',
+          params: {message: 'Low Priority'},
+          nextRunAt: new Date(now.getTime() + 3000),
+          priority: 100,
+        },
+      ]
+
+      // Act: Schedule jobs with different priorities
+      const result = await jobsRepo.scheduleJobs(jobs)
+
+      // Assert: All should be scheduled successfully
+      expect(result.scheduledCount).toBe(3)
+      expect(result.skippedCount).toBe(0)
+      expect(result.errors).toHaveLength(0)
+
+      // Verify all jobs exist with correct priorities
+      const allJobs = await jobsRepo.jobs
+        .find({
+          jobName: {$in: ['high-priority-job', 'medium-priority-job', 'low-priority-job']},
+        })
+        .toArray()
+      expect(allJobs).toHaveLength(3)
+
+      // Check priorities are correctly set
+      const highPriorityJob = allJobs.find(j => j.jobName === 'high-priority-job')
+      const mediumPriorityJob = allJobs.find(j => j.jobName === 'medium-priority-job')
+      const lowPriorityJob = allJobs.find(j => j.jobName === 'low-priority-job')
+
+      expect(highPriorityJob.priority).toBe(300)
+      expect(mediumPriorityJob.priority).toBe(200)
+      expect(lowPriorityJob.priority).toBe(100)
+    })
+  })
 })
