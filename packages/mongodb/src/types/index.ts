@@ -104,6 +104,12 @@ export interface InsertOptions {
   mongoOptions?: MongoDB.InsertOneOptions
 }
 
+export interface InsertManyOptions {
+  clean?: boolean
+  validate?: boolean
+  mongoOptions?: MongoDB.BulkWriteOptions
+}
+
 export type InitItem<ModelClass extends ModelClassBase> = (doc: any) => ModelClass
 
 export type ModelToMongoSelector<ModelClass extends ModelClassBase> =
@@ -149,7 +155,7 @@ export type InsertOne<ModelClass extends ModelClassBase> = (
 
 export type InsertMany<ModelClass extends ModelClassBase> = (
   doc: Array<MongoDB.OptionalId<ModelClass>>,
-  options?: InsertOptions,
+  options?: InsertManyOptions,
 ) => Promise<Array<ModelClass['_id']>>
 
 export type InsertAndFind<ModelClass extends ModelClassBase> = (
