@@ -1,5 +1,14 @@
 # @orion-js/dogs
 
+## 4.0.28
+
+### Patch Changes
+
+- 1c96b20: set jobs tries to 0 after successfull recurrent execution
+- b3e4b8f: allow multiple scheduling of event jobs
+- Updated dependencies [812a62c]
+  - @orion-js/mongodb@4.0.26
+
 ## 4.0.27
 
 ### Patch Changes

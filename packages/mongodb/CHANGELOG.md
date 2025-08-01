@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.26
+
+### Patch Changes
+
+- 812a62c: correct insert many mongodb options
+
 ## 4.0.25
 
 ### Patch Changes
