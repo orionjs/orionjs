@@ -15,6 +15,7 @@ export default function getFieldValidator(type: SchemaFieldType): FieldValidator
   if (type === Number) return 'number'
   if (type === Boolean) return 'boolean'
   if (type === 'enum') return 'string'
+  if (typeof type === 'string' && type.startsWith('typedId:')) return 'string'
 
   if (typeof type !== 'string') {
     throw new Error(`Field type is invalid. Pass a string or a custom field type. Got ${type}`)
