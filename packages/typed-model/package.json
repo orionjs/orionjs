@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "4.0.15",
+  "version": "4.0.16",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

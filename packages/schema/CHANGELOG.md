@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.11
+
+### Patch Changes
+
+- 0b1180f: fixes validation of typeid clientside
+
 ## 4.0.10
 
 ### Patch Changes
