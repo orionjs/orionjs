@@ -7,7 +7,11 @@ const convertOnParam = (info: CurrentNodeInfo, paramName: string) => {
   const type = info[paramName].type as any
   if (!type) return
 
-  info[paramName].type = getSchemaFromAnyOrionForm(type)
+  // Create a copy of the schema object to avoid mutating readonly objects
+  info[paramName] = {
+    ...info[paramName],
+    type: getSchemaFromAnyOrionForm(type),
+  }
 }
 
 export const convertTypedSchema = (info: CurrentNodeInfo) => {

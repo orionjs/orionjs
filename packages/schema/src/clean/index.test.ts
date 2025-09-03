@@ -1,4 +1,5 @@
 import {Schema} from '../types/schema'
+import validate from '../validate'
 import clean from './index'
 import {test, expect} from 'vitest'
 
@@ -514,4 +515,41 @@ test('On blackbox allow use of custom clean', async () => {
 
   const result = await clean(schema, {info: {hello: 'night'}})
   expect(result).toEqual({info: {hello: 'world'}})
+})
+
+test('should handle readonly schema objects without errors', async () => {
+  const timeSchema = {
+    type: String,
+  }
+
+  const paramsSchema = {
+    time: timeSchema,
+  }
+
+  const schema: Schema = {
+    params: {
+      type: paramsSchema,
+    },
+  }
+
+  // Make the schema readonly to simulate the error condition
+  Object.freeze(schema)
+  Object.freeze(schema.params)
+  Object.freeze(schema.params.type)
+  Object.freeze((schema.params.type as any).time)
+
+  const doc = {
+    params: {
+      time: 'some-time-value',
+    },
+  }
+
+  // This test verifies that readonly/frozen schema objects are handled correctly
+  const result = await clean(schema, doc)
+  await validate(schema, doc)
+  expect(result).toEqual({
+    params: {
+      time: 'some-time-value',
+    },
+  })
 })
