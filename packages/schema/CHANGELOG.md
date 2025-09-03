@@ -1,5 +1,11 @@
 # @orion-js/schema
 
+## 4.0.12
+
+### Patch Changes
+
+- fix error validating frozen objects
+
 ## 4.0.11
 
 ### Patch Changes

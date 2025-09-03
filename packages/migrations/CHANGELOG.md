@@ -1,5 +1,15 @@
 # @orion-js/migrations
 
+## 4.0.30
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/schema@4.0.12
+  - @orion-js/dogs@4.0.30
+  - @orion-js/mongodb@4.0.28
+  - @orion-js/typed-model@4.0.17
+
 ## 4.0.29
 
 ### Patch Changes
