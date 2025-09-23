@@ -58,4 +58,11 @@ export interface StartGraphQLOptions extends Omit<ApolloServerOptions<any>, Sche
    * Path to the graphql endpoint. Default to /graphql
    */
   path?: string
+
+  /**
+   * Body parser options for the graphql endpoint.
+   */
+  bodyParserOptions?: {
+    limit?: number | string | undefined
+  }
 }
