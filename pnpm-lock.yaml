@@ -42,6 +42,9 @@ importers:
 
   packages/components:
     dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/mongodb':
         specifier: workspace:*
         version: link:../mongodb
@@ -88,6 +91,9 @@ importers:
       '@orion-js/env':
         specifier: workspace:*
         version: link:../env
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -134,6 +140,9 @@ importers:
 
   packages/crypto:
     dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/services':
         specifier: workspace:*
         version: link:../services
@@ -214,6 +223,9 @@ importers:
       '@orion-js/http':
         specifier: workspace:*
         version: link:../http
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/schema':
         specifier: workspace:*
         version: link:../schema
@@ -254,6 +266,9 @@ importers:
 
   packages/env:
     dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -291,6 +306,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/models':
         specifier: workspace:*
         version: link:../models
@@ -352,6 +370,9 @@ importers:
       '@orion-js/http':
         specifier: workspace:*
         version: link:../http
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/models':
         specifier: workspace:*
         version: link:../models
@@ -419,6 +440,9 @@ importers:
 
   packages/helpers:
     dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -561,6 +585,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/resolvers':
         specifier: workspace:*
         version: link:../resolvers
@@ -653,6 +680,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/models':
         specifier: workspace:*
         version: link:../models
@@ -690,6 +720,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/schema':
         specifier: workspace:*
         version: link:../schema
@@ -709,6 +742,9 @@ importers:
 
   packages/schema:
     dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       dot-object:
         specifier: ^2.1.4
         version: 2.1.4
@@ -734,6 +770,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       typedi:
         specifier: ^0.10.0
         version: 0.10.0
@@ -765,6 +804,9 @@ importers:
       '@opentelemetry/sdk-node':
         specifier: ^0.57.2
         version: 0.57.2(@opentelemetry/api@1.9.0)
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       '@types/node':
         specifier: ^18.0.0
@@ -781,6 +823,9 @@ importers:
 
   packages/typed-model:
     dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/models':
         specifier: workspace:*
         version: link:../models
@@ -808,6 +853,10 @@ importers:
         version: 3.0.8(@types/node@18.19.80)(tsx@4.19.3)(yaml@2.7.0)
 
   packages/vectors:
+    dependencies:
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       '@aws-sdk/client-s3vectors':
         specifier: ^3.848.0
