@@ -18,6 +18,9 @@
     "@opentelemetry/host-metrics": "^0.35.5",
     "@opentelemetry/sdk-node": "^0.57.2"
   },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
@@ -36,7 +39,5 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

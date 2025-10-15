@@ -21,6 +21,9 @@
     "tweetnacl-es6": "^1.0.3",
     "yaml": "^2.7.0"
   },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
@@ -39,7 +42,5 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

@@ -18,6 +18,9 @@
     "bcryptjs": "^2.4.3",
     "tweetnacl-es6": "^1.0.3"
   },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/node": "^18.0.0",
@@ -37,7 +40,5 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

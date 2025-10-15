@@ -18,6 +18,7 @@
     "@orion-js/graphql": "workspace:*",
     "@orion-js/helpers": "workspace:*",
     "@orion-js/http": "workspace:*",
+    "@orion-js/logger": "workspace:*",
     "@orion-js/models": "workspace:*",
     "@orion-js/mongodb": "workspace:*",
     "@orion-js/services": "workspace:*"
@@ -47,7 +48,5 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

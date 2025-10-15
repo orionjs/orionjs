@@ -3,9 +3,7 @@
   "version": "4.0.12",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "author": "nicolaslopezj",
   "license": "MIT",
   "bin": {
@@ -33,6 +31,7 @@
     "yaml": "^2.2.1"
   },
   "peerDependencies": {
+    "@orion-js/logger": "workspace:*",
     "tsx": "*"
   },
   "publishConfig": {

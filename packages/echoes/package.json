@@ -3,9 +3,7 @@
   "version": "4.0.17",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -26,6 +24,9 @@
     "jssha": "^3.2.0",
     "kafkajs": "^2.2.4",
     "serialize-javascript": "^6.0.0"
+  },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

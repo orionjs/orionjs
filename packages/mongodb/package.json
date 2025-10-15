@@ -10,9 +10,7 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -27,7 +25,6 @@
     "@aws-sdk/credential-providers": "^3.782.0",
     "@orion-js/env": "workspace:*",
     "@orion-js/helpers": "workspace:*",
-    "@orion-js/logger": "workspace:*",
     "@orion-js/models": "workspace:*",
     "@orion-js/resolvers": "workspace:*",
     "@orion-js/schema": "workspace:*",
@@ -38,6 +35,9 @@
     "dot-object": "2.1.5",
     "mongodb": "6.15.0",
     "mongodb-client-encryption": "^6.3.0"
+  },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
   },
   "devDependencies": {
     "@types/dot-object": "^2.1.6",

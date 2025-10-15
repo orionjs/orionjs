@@ -24,6 +24,7 @@
     "luxon": "^2.1.1"
   },
   "peerDependencies": {
+    "@orion-js/logger": "workspace:*",
     "@orion-js/mongodb": "workspace:*"
   },
   "devDependencies": {
@@ -46,7 +47,5 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

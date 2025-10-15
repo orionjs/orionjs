@@ -9,9 +9,7 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
@@ -24,6 +22,9 @@
   },
   "dependencies": {
     "uuid": "^11.1.0"
+  },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
