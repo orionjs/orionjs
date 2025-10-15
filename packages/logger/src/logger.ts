@@ -21,7 +21,7 @@ export const configureLogger = (options: winston.LoggerOptions) => {
 }
 
 export const setLogLevel = (level: string) => {
-  return (winstonLogger.level = level)
+  winstonLogger.level = level
 }
 
 export const addTransport = (transport: winston.transport) => {

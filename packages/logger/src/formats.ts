@@ -68,7 +68,7 @@ export const textConsoleFormat: any = combine(
     // console.log(info)
 
     const date = new Date(info.timestamp)
-    const timeLabel = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+    const timeLabel = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`
     const fileNameLabel = info.fileName ? `[${info.fileName}]` : ''
     const stack = info.stack ? `\n${info.stack}` : ''
     const value = getMetadataText(info.metadata)
