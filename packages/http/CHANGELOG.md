@@ -1,5 +1,13 @@
 # @orion-js/http
 
+## 4.0.17
+
+### Patch Changes
+
+- f5fa611: better error handling at http
+- Updated dependencies [31ce96e]
+  - @orion-js/logger@4.0.4
+
 ## 4.0.16
 
 ### Patch Changes

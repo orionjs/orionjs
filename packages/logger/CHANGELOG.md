@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.0.4
+
+### Patch Changes
+
+- 31ce96e: pad time label correctly in dev logs
+
 ## 4.0.3
 
 ### Patch Changes
