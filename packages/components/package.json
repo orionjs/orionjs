@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "4.0.40",
+  "version": "4.0.41",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -48,5 +48,7 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

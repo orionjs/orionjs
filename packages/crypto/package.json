@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/crypto",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -40,5 +40,7 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

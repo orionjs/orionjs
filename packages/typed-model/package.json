@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "4.0.17",
+  "version": "4.0.18",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -10,7 +10,9 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "dmerrill6",
   "license": "MIT",
   "scripts": {

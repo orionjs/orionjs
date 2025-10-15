@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.0.5
+
+### Patch Changes
+
+- add logger to all packages in peer deps
+
 ## 4.0.4
 
 ### Patch Changes

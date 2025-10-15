@@ -1,5 +1,17 @@
 # @orion-js/http
 
+## 4.0.18
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.0.5
+  - @orion-js/env@4.0.4
+  - @orion-js/helpers@4.0.2
+  - @orion-js/resolvers@4.0.13
+  - @orion-js/schema@4.0.13
+  - @orion-js/services@4.0.3
+
 ## 4.0.17
 
 ### Patch Changes

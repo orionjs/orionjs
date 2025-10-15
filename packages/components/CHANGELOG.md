@@ -1,5 +1,20 @@
 # @orion-js/components
 
+## 4.0.41
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.0.5
+  - @orion-js/dogs@4.0.32
+  - @orion-js/echoes@4.0.18
+  - @orion-js/graphql@4.0.30
+  - @orion-js/helpers@4.0.2
+  - @orion-js/http@4.0.18
+  - @orion-js/models@4.0.15
+  - @orion-js/mongodb@4.0.30
+  - @orion-js/services@4.0.3
+
 ## 4.0.40
 
 ### Patch Changes

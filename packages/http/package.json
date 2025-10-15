@@ -1,9 +1,11 @@
 {
   "name": "@orion-js/http",
-  "version": "4.0.17",
+  "version": "4.0.18",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {

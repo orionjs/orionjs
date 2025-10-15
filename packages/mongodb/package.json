@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "4.0.29",
+  "version": "4.0.30",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -10,7 +10,9 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {

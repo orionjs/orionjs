@@ -1,5 +1,13 @@
 # @orion-js/core
 
+## 4.0.13
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.0.5
+  - @orion-js/env@4.0.4
+
 ## 4.0.12
 
 ### Patch Changes

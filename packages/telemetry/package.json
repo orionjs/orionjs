@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/telemetry",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -39,5 +39,7 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }
