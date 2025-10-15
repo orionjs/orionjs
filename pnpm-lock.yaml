@@ -444,6 +444,9 @@ importers:
       '@orion-js/helpers':
         specifier: workspace:*
         version: link:../helpers
+      '@orion-js/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@orion-js/resolvers':
         specifier: workspace:*
         version: link:../resolvers

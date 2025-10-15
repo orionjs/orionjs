@@ -1,5 +1,6 @@
 import express from 'express'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
+import {logger} from '@orion-js/logger'
 
 type onErrorFunction = (req: express.Request, res: express.Response, error: any) => Promise<void>
 
@@ -9,7 +10,7 @@ const defaultOnError: onErrorFunction = async (req, res, error) => {
     if (error.code === 'AuthError') {
       statusCode = 401
     } else {
-      console.warn(`[route/handler] OrionError in ${req.path}:`, error)
+      logger.error(`[route/handler] OrionError in ${req.path}:`, {error})
     }
 
     const data = error.getInfo()
@@ -19,7 +20,7 @@ const defaultOnError: onErrorFunction = async (req, res, error) => {
   } else if (error.isGraphQLError) {
     res.writeHead(error.statusCode)
     res.end(error.message)
-    console.warn(`[route/handler] GraphQLError in ${req.path}:`, error)
+    logger.error(`[route/handler] GraphQLError in ${req.path}:`, {error})
   } else {
     const hash = crypto
       .createHash('sha1')
@@ -33,7 +34,7 @@ const defaultOnError: onErrorFunction = async (req, res, error) => {
     res.end(JSON.stringify(data, null, 2))
 
     error.hash = hash
-    console.error(`[route/handler] Internal server error in ${req.url}:`, error)
+    logger.error('[route/handler] Internal server error', {error, url: req.url, hash})
   }
 }
 
