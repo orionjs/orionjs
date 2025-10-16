@@ -1,5 +1,11 @@
 # @orion-js/echoes
 
+## 4.0.19
+
+### Patch Changes
+
+- 6553a11: cambia console log por logger
+
 ## 4.0.18
 
 ### Patch Changes

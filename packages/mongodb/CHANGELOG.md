@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.0.31
+
+### Patch Changes
+
+- 6553a11: cambia console log por logger
+
 ## 4.0.30
 
 ### Patch Changes
