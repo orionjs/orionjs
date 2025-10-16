@@ -1,5 +1,6 @@
 import {MongoExpiredSessionError, MongoNotConnectedError} from 'mongodb'
 import {Collection, ModelClassBase} from '..'
+import {logger} from '@orion-js/logger'
 
 function matchingDefinition(defIndex, curIndex) {
   if (defIndex.options && defIndex.options.name === curIndex.name) return true
@@ -30,7 +31,7 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
     : currentIndexes
 
   if (indexesToDelete.length > 0) {
-    console.warn(
+    logger.warn(
       `${indexesToDelete.length} unexpected indexes found in collection "${
         collection.name
       }": ${indexesToDelete

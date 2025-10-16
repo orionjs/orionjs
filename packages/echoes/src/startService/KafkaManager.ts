@@ -1,5 +1,6 @@
 import {Kafka, EachMessagePayload, Producer, Consumer} from 'kafkajs'
 import {EchoesOptions, EchoType} from '../types'
+import {logger} from '@orion-js/logger'
 
 const HEARTBEAT_INTERVAL_SECONDS = 5 // This value must be less than the kafkajs session timeout
 const CHECK_JOIN_CONSUMER_INTERVAL_SECONDS = 30
@@ -33,7 +34,7 @@ class KafkaManager {
       const groupDescriptions = await admin.describeGroups([this.options.consumer.groupId])
       const group = groupDescriptions.groups[0]
       if (group.state === 'Empty') {
-        console.info(`Echoes: Consumer group ${this.options.consumer.groupId} is empty, joining`)
+        logger.info(`Echoes: Consumer group ${this.options.consumer.groupId} is empty, joining`)
         return true
       }
       const topicsMetadata = await admin.fetchTopicMetadata({topics: this.topics})
@@ -41,24 +42,24 @@ class KafkaManager {
         (acc, topic) => acc + topic.partitions.length,
         0,
       )
-      console.info(
+      logger.info(
         `Echoes: Consumer group ${this.options.consumer.groupId} has ${group.members.length} members and ${totalPartitions} partitions`,
       )
       const partitionsRatio =
         this.options.membersToPartitionsRatio || DEFAULT_MEMBERS_TO_PARTITIONS_RATIO
       const partitionsThreshold = Math.ceil(totalPartitions * partitionsRatio)
       if (partitionsThreshold > group.members.length) {
-        console.info(
+        logger.info(
           `Echoes: Consumer group ${this.options.consumer.groupId} has room for more members ${group.members.length}/${partitionsThreshold}, joining`,
         )
         return true
       }
     } catch (error) {
-      console.error(`Echoes: Error checking consumer group conditions, join: ${error.message}`)
+      logger.error(`Echoes: Error checking consumer group conditions, join: ${error.message}`)
       return true
     } finally {
       await admin.disconnect().catch(error => {
-        console.error(`Echoes: Error disconnecting admin client: ${error.message}`)
+        logger.error(`Echoes: Error disconnecting admin client: ${error.message}`)
       })
     }
   }
@@ -85,7 +86,7 @@ class KafkaManager {
     await this.producer.connect()
     this.started = await this.conditionalStart()
     if (this.started) return
-    console.info('Echoes: Delaying consumer group join, waiting for conditions to be met')
+    logger.info('Echoes: Delaying consumer group join, waiting for conditions to be met')
     this.interval = setInterval(async () => {
       this.started = await this.conditionalStart()
       if (this.started) clearInterval(this.interval)
@@ -93,7 +94,7 @@ class KafkaManager {
   }
 
   async stop() {
-    console.warn('Echoes: Stopping echoes')
+    logger.warn('Echoes: Stopping echoes')
     if (this.interval) clearInterval(this.interval)
     if (this.consumer) await this.consumer.disconnect()
     if (this.producer) await this.producer.disconnect()
@@ -102,18 +103,18 @@ class KafkaManager {
   async handleMessage(params: EachMessagePayload) {
     const echo = this.options.echoes[params.topic]
     if (!echo || echo.type !== 'event') {
-      console.warn(`Echoes: Received a message for an unknown topic: ${params.topic}, ignoring it`)
+      logger.warn(`Echoes: Received a message for an unknown topic: ${params.topic}, ignoring it`)
       return
     }
 
     let intervalsCount = 0
     const heartbeatInterval = setInterval(async () => {
       await params.heartbeat().catch(error => {
-        console.warn(`Echoes: Error sending heartbeat: ${error.message}`)
+        logger.warn(`Echoes: Error sending heartbeat: ${error.message}`)
       })
       intervalsCount++
       if ((intervalsCount * HEARTBEAT_INTERVAL_SECONDS) % 30 === 0) {
-        console.warn(
+        logger.warn(
           `Echoes: Event is taking too long to process: ${params.topic} ${intervalsCount * HEARTBEAT_INTERVAL_SECONDS}s`,
         )
       }
@@ -122,7 +123,7 @@ class KafkaManager {
     try {
       await echo.onMessage(params).catch(error => this.handleRetries(echo, params, error))
     } catch (error) {
-      console.error(`Echoes: error processing a message: ${params.topic} ${error.message}`)
+      logger.error(`Echoes: error processing a message: ${params.topic} ${error.message}`)
       throw error
     } finally {
       clearInterval(heartbeatInterval)
@@ -152,11 +153,11 @@ class KafkaManager {
     })
 
     if (exceededMaxRetries) {
-      console.error(
+      logger.error(
         `Echoes: a message has reached the maximum number of retries, sending it to DLQ: ${nextTopic}`,
       )
     } else {
-      console.warn(
+      logger.warn(
         `Echoes: a retryable message failed "${error.message}", re-sending it to topic: ${nextTopic}`,
       )
     }
