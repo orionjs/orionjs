@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.0.6
+
+### Patch Changes
+
+- 0aade07: wraps executions in a async context
+
 ## 4.0.5
 
 ### Patch Changes

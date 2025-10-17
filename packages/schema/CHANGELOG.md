@@ -1,5 +1,12 @@
 # @orion-js/schema
 
+## 4.0.14
+
+### Patch Changes
+
+- Updated dependencies [0aade07]
+  - @orion-js/logger@4.0.6
+
 ## 4.0.13
 
 ### Patch Changes

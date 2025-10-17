@@ -1,5 +1,15 @@
 # @orion-js/resolvers
 
+## 4.0.14
+
+### Patch Changes
+
+- 0aade07: wraps executions in a async context
+- Updated dependencies [0aade07]
+  - @orion-js/logger@4.0.6
+  - @orion-js/helpers@4.0.3
+  - @orion-js/schema@4.0.14
+
 ## 4.0.13
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @orion-js/env
 
+## 4.0.5
+
+### Patch Changes
+
+- Updated dependencies [0aade07]
+  - @orion-js/logger@4.0.6
+
 ## 4.0.4
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @orion-js/dogs
 
+## 4.0.34
+
+### Patch Changes
+
+- 0aade07: wraps executions in a async context
+- Updated dependencies [0aade07]
+  - @orion-js/logger@4.0.6
+  - @orion-js/mongodb@4.0.32
+  - @orion-js/typed-model@4.0.19
+  - @orion-js/helpers@4.0.3
+  - @orion-js/schema@4.0.14
+  - @orion-js/services@4.0.4
+
 ## 4.0.33
 
 ### Patch Changes

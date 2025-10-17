@@ -1,5 +1,21 @@
 # @orion-js/graphql
 
+## 4.0.31
+
+### Patch Changes
+
+- 0aade07: wraps executions in a async context
+- Updated dependencies [0aade07]
+  - @orion-js/resolvers@4.0.14
+  - @orion-js/logger@4.0.6
+  - @orion-js/http@4.0.19
+  - @orion-js/models@4.0.16
+  - @orion-js/typed-model@4.0.19
+  - @orion-js/env@4.0.5
+  - @orion-js/helpers@4.0.3
+  - @orion-js/schema@4.0.14
+  - @orion-js/services@4.0.4
+
 ## 4.0.30
 
 ### Patch Changes

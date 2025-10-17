@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/models",
-  "version": "4.0.15",
+  "version": "4.0.16",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
