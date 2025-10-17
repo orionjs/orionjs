@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.1.4
+
+### Patch Changes
+
+- 9572f15: ordena los logs para q se vean mejor en aws
+
 ## 4.1.3
 
 ### Patch Changes
