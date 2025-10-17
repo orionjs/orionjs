@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.1.2
+
+### Patch Changes
+
+- c791369: improve loggin
+
 ## 4.1.1
 
 ### Patch Changes

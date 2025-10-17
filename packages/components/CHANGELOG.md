@@ -1,5 +1,20 @@
 # @orion-js/components
 
+## 4.1.2
+
+### Patch Changes
+
+- Updated dependencies [c791369]
+  - @orion-js/logger@4.1.2
+  - @orion-js/dogs@4.1.2
+  - @orion-js/echoes@4.1.2
+  - @orion-js/graphql@4.1.2
+  - @orion-js/helpers@4.1.2
+  - @orion-js/http@4.1.2
+  - @orion-js/models@4.1.2
+  - @orion-js/mongodb@4.1.2
+  - @orion-js/services@4.1.2
+
 ## 4.1.1
 
 ### Patch Changes
