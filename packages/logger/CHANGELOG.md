@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.1.3
+
+### Patch Changes
+
+- 1e33ec4: fix logger pathname at develop
+
 ## 4.1.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @orion-js/crypto
 
+## 4.1.3
+
+### Patch Changes
+
+- Updated dependencies [1e33ec4]
+  - @orion-js/logger@4.1.3
+  - @orion-js/services@4.1.3
+
 ## 4.1.2
 
 ### Patch Changes
