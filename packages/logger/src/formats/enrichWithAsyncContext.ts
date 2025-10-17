@@ -1,7 +1,7 @@
-import {format} from 'winston'
+import {format, Logform} from 'winston'
 import {getOrionAsyncContext} from '../asyncContext'
 
-export const enrichWithAsyncContext = format(info => {
+export const enrichWithAsyncContext: Logform.FormatWrap = format(info => {
   const asyncContext = getOrionAsyncContext()
   if (!asyncContext) return info
 

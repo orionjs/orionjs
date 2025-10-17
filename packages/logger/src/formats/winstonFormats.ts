@@ -1,8 +1,8 @@
-import {format} from 'winston'
+import {format, Logform} from 'winston'
 import opentelemetry, {Span} from '@opentelemetry/api'
 import {getAsyncContextLabel} from './getAsyncContextLabel'
 
-export const opentelemetryContext = format(info => {
+export const opentelemetryContext: Logform.FormatWrap = format(info => {
   const activeSpan: Span & {name?: string} = opentelemetry.trace.getActiveSpan()
   if (activeSpan) {
     const spanContex = activeSpan.spanContext()
@@ -19,7 +19,7 @@ export const opentelemetryContext = format(info => {
   return info
 })
 
-export const metaError = format((info: any) => {
+export const metaError: Logform.FormatWrap = format((info: any) => {
   if (info?.metadata?.value?.error instanceof Error) {
     info.stack = info?.metadata?.value?.error.stack
     info.errorMessage = info?.metadata?.value?.error.message
@@ -35,14 +35,14 @@ export const metaError = format((info: any) => {
   return info
 })
 
-export const asyncContextFormat = format(info => {
+export const asyncContextFormat: Logform.FormatWrap = format(info => {
   if (!info.context) {
     info.context = getAsyncContextLabel()
   }
   return info
 })
 
-export const sentryFormat: any = format(info => {
+export const sentryFormat: Logform.FormatWrap = format(info => {
   const {path, label, ...extra} = info
   return {
     ...extra,
