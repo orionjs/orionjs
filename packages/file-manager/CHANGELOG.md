@@ -1,5 +1,19 @@
 # @orion-js/file-manager
 
+## 4.1.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.1.1
+  - @orion-js/helpers@4.1.1
+  - @orion-js/models@4.1.1
+  - @orion-js/mongodb@4.1.1
+  - @orion-js/paginated-mongodb@4.1.1
+  - @orion-js/resolvers@4.1.1
+  - @orion-js/schema@4.1.1
+  - @orion-js/typed-model@4.1.1
+
 ## 4.0.43
 
 ### Patch Changes

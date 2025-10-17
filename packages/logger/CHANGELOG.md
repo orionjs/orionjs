@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.1.1
+
+### Patch Changes
+
+- export getAsyncContextLabel at logger
+
 ## 4.0.6
 
 ### Patch Changes

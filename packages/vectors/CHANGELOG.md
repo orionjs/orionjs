@@ -1,5 +1,12 @@
 # @orion-js/vectors
 
+## 4.1.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.1.1
+
 ## 4.0.3
 
 ### Patch Changes
