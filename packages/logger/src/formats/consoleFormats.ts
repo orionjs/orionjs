@@ -19,22 +19,21 @@ export const textConsoleFormat: any = combine(
     const fileNameLabel = info.fileName ? `[${info.fileName}]` : ''
     const stack = info.stack ? formatStack(info.stack) : ''
     const value = getMetadataText(info.metadata)
-    const traceId = info.trace_id
-      ? `${String(info.trace_id).substring(0, 8)}@${String(info.span_id).substring(0, 8)}`
-      : ''
-    const context = [info.context, traceId].filter(Boolean).join(' ').trim()
-    const contextLabel = context ? `[${context}]` : ''
-    return [
+    const contextLabel = info.context ? `[${info.context}]` : ''
+
+    const mainLine = [
       `[${info.level}]`,
       `[${timeLabel}]`,
       contextLabel,
       fileNameLabel,
       info.message,
-      value,
-      stack,
     ]
       .filter(Boolean)
       .join(' ')
+
+    const valueLine = value ? `\n${value}` : ''
+
+    return `${mainLine}${valueLine}${stack}`
   }),
 )
 
