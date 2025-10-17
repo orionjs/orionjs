@@ -10,7 +10,7 @@ export function getAsyncContextLabel(): string {
     case 'job':
       return `${controllerType}:${asyncContext.jobName}`
     case 'route':
-      return `${controllerType}:${asyncContext.pathname}`
+      return `${controllerType}:${asyncContext.routeName}`
     case 'resolver':
       return asyncContext.resolverName
         ? `${controllerType}:${asyncContext.resolverName}`
