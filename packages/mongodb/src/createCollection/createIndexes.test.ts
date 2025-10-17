@@ -1,6 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {createCollection, createIndexesPromises} from '.'
 import {it, describe, expect, vi} from 'vitest'
+import {logger} from '@orion-js/logger'
 
 describe('Test indexes', () => {
   it('Should store all create indexes promises in the array', async () => {
@@ -59,7 +60,7 @@ describe('Test indexes', () => {
     await collection1.startConnection()
     await collection1.createIndexesPromise
 
-    console.warn = vi.fn(() => Math.random())
+    logger.warn = vi.fn(() => Math.random())
 
     const collection2 = createCollection({
       name: collectionName,
@@ -68,7 +69,7 @@ describe('Test indexes', () => {
     await collection2.startConnection()
     await collection2.createIndexesPromise
 
-    expect(console.warn).toHaveBeenCalled()
+    expect(logger.warn).toHaveBeenCalled()
   })
 
   it('Should upgrade a index correctly', async () => {
