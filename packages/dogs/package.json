@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "4.0.34",
+  "version": "4.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
