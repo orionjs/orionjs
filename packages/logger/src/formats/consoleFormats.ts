@@ -42,12 +42,18 @@ export const textConsoleTransport = new transports.Console({
   format: textConsoleFormat,
 })
 
+const messageFirstFormat = format((info: any) => {
+  const {level, message, ...rest} = info
+  return {level, message, ...rest}
+})
+
 export const jsonConsoleFormat: any = combine(
   metadata({fillExcept: ['fileName', 'level', 'message']}),
   opentelemetryContext(),
   enrichWithAsyncContext(),
   metaError(),
   timestamp(),
+  messageFirstFormat(),
   json(),
 )
 

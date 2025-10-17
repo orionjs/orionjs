@@ -146,4 +146,13 @@ describe('JSON console format with async context', () => {
     expect(logs).toHaveLength(1)
     expect(logs[0].asyncContext).toBeUndefined()
   })
+
+  it('outputs level and message as first keys in order', () => {
+    testLogger.info('Test message')
+
+    expect(logs).toHaveLength(1)
+    const actualKeys = Object.keys(logs[0])
+    expect(actualKeys[0]).toBe('level')
+    expect(actualKeys[1]).toBe('message')
+  })
 })
