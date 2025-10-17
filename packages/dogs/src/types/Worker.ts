@@ -1,6 +1,6 @@
 import {OrionLogger} from '@orion-js/logger'
 import {JobDefinition} from './JobsDefinition'
-import { Blackbox } from '@orion-js/schema'
+import {Blackbox} from '@orion-js/schema'
 
 export interface JobToRun {
   jobId: string

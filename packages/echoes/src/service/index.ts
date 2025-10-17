@@ -1,3 +1,4 @@
+import {runWithOrionAsyncContext} from '@orion-js/logger'
 import {createEchoEvent, createEchoRequest} from '../echo'
 import {EchoConfig, EchoesMap} from '../types'
 import {getInstance, Service} from '@orion-js/services'
@@ -34,9 +35,21 @@ export function EchoEvent(options = {}) {
       const echoes = echoesMetadata.get(this) || {}
 
       if (context.kind === 'method') {
+        const originalResolve = this[propertyKey].bind(this)
         echoes[propertyKey] = createEchoEvent({
           ...options,
-          resolve: this[propertyKey].bind(this),
+          resolve: async (params, contextData) => {
+            return await runWithOrionAsyncContext(
+              {
+                controllerType: 'echo',
+                echoName: propertyKey,
+                params,
+              },
+              async () => {
+                return await originalResolve(params, contextData)
+              },
+            )
+          },
         })
       }
 
@@ -66,9 +79,21 @@ export function EchoRequest(options = {}) {
       const echoes = echoesMetadata.get(this) || {}
 
       if (context.kind === 'method') {
+        const originalResolve = this[propertyKey].bind(this)
         echoes[propertyKey] = createEchoRequest({
           ...options,
-          resolve: this[propertyKey].bind(this),
+          resolve: async (params, contextData) => {
+            return await runWithOrionAsyncContext(
+              {
+                controllerType: 'echo',
+                echoName: propertyKey,
+                params,
+              },
+              async () => {
+                return await originalResolve(params, contextData)
+              },
+            )
+          },
         })
       }
 

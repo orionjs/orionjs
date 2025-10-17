@@ -166,6 +166,7 @@ describe('Test GraphQL Server', () => {
             code: 'validationError',
             info: {
               error: 'validationError',
+              labels: {},
               message: 'Validation Error',
               validationErrors: {
                 name: 'notUnique',

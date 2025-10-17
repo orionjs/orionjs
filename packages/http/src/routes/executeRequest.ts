@@ -1,5 +1,6 @@
 import {OrionRequest, RouteType} from './../types'
 import {getViewer} from './../viewer'
+import {runWithOrionAsyncContext, updateOrionAsyncContext} from '@orion-js/logger'
 import express from 'express'
 import {isNil, type} from 'rambdax'
 import {internalGetEnv} from '@orion-js/env'
@@ -33,7 +34,22 @@ export async function executeRequest(
       req.body = await cleanAndValidate(route.bodyParams ?? {}, req.body)
     }
 
-    const result = await route.resolve(req, res, viewer)
+    const context = {
+      controllerType: 'route' as const,
+      routeName: route.path,
+      pathname: req.path,
+      viewer,
+      params: {
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      },
+    }
+
+    const result = await runWithOrionAsyncContext(context, async () => {
+      updateOrionAsyncContext({viewer})
+      return await route.resolve(req, res, viewer)
+    })
     if (!result) return
 
     // add status code to response

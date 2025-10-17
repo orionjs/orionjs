@@ -1,4 +1,4 @@
-import {logger} from '@orion-js/logger'
+import {logger, runWithOrionAsyncContext, updateOrionAsyncContext} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
 import {JobsHistoryRepo} from '../repos/JobsHistoryRepo'
 import {JobsRepo} from '../repos/JobsRepo'
@@ -168,33 +168,46 @@ export class Executor {
 
         const context = this.getContext(job, jobToRun, onStale)
 
-        try {
-          const result = await job.resolve(jobToRun.params, context)
-          context.clearStaleTimeout()
-
-          this.saveExecution({
-            startedAt,
-            status: 'success',
-            result: result || null,
-            errorMessage: null,
-            job,
-            jobToRun,
-          })
-
-          await this.afterExecutionSuccess(job, jobToRun, context)
-        } catch (error) {
-          context.clearStaleTimeout()
-          this.saveExecution({
-            startedAt,
-            status: 'error',
-            result: null,
-            errorMessage: error.message,
-            job,
-            jobToRun,
-          })
-
-          await this.onError(error, job, jobToRun, context)
+        const extraContext = {
+          controllerType: 'job' as const,
+          jobName: jobToRun.name,
+          params: jobToRun.params,
         }
+
+        await runWithOrionAsyncContext(extraContext, async () => {
+          try {
+            // Inject async context update
+            updateOrionAsyncContext({
+              jobName: jobToRun.name,
+              params: jobToRun.params,
+            })
+            const result = await job.resolve(jobToRun.params, context)
+            context.clearStaleTimeout()
+
+            this.saveExecution({
+              startedAt,
+              status: 'success',
+              result: result || null,
+              errorMessage: null,
+              job,
+              jobToRun,
+            })
+
+            await this.afterExecutionSuccess(job, jobToRun, context)
+          } catch (error) {
+            context.clearStaleTimeout()
+            this.saveExecution({
+              startedAt,
+              status: 'error',
+              result: null,
+              errorMessage: (error as Error).message,
+              job,
+              jobToRun,
+            })
+
+            await this.onError(error, job, jobToRun, context)
+          }
+        })
       } catch (error) {
         span.setStatus({
           code: SpanStatusCode.ERROR,
