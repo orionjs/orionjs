@@ -129,6 +129,19 @@ export class JobsRepo {
     )
   }
 
+  async unlockAllJobs(): Promise<number> {
+    const result = await this.jobs.updateMany(
+      {
+        lockedUntil: {$exists: true},
+      },
+      {
+        $unset: {lockedUntil: ''},
+      },
+    )
+
+    return result.modifiedCount
+  }
+
   async ensureJobRecord(job: JobDefinitionWithName) {
     const result = await this.jobs.upsert(
       {

@@ -24,7 +24,7 @@
     "dev": "tsup --watch"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3vectors": "^3.848.0",
+    "@aws-sdk/client-s3vectors": "^3.911.0",
     "@types/node": "^18.19.86",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5",
