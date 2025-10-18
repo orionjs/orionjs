@@ -1,5 +1,12 @@
 # @orion-js/migrations
 
+## 4.1.5
+
+### Patch Changes
+
+- Updated dependencies [848241e]
+  - @orion-js/dogs@4.1.5
+
 ## 4.1.4
 
 ### Patch Changes

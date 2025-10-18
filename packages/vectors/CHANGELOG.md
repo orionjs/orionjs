@@ -1,5 +1,11 @@
 # @orion-js/vectors
 
+## 4.1.5
+
+### Patch Changes
+
+- 848241e: unlockAllJobs
+
 ## 4.1.4
 
 ### Patch Changes
