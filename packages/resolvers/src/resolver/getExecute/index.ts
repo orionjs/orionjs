@@ -1,5 +1,5 @@
 import {clean, cleanAndValidate} from '@orion-js/schema'
-import {getOrionAsyncContext, runWithOrionAsyncContext} from '@orion-js/logger'
+import {runWithOrionAsyncContext} from '@orion-js/logger'
 import {ResolverOptions, Execute, ExecuteOptions} from '../types'
 import {getResultWithMiddlewares} from './getResultWithMiddlewares'
 
@@ -15,38 +15,30 @@ export default function getExecute(options: ResolverOptions) {
       options: options,
     }
 
-    const currentContext = getOrionAsyncContext()
-
-    const context = currentContext
-      ? {
-          ...currentContext,
-          viewer: executeContext.viewer,
-          params: executeContext.params,
-          parentData: executeContext.parent,
-          modelResolverName: executeContext.parent
-            ? executeContext.options.resolverId
-            : currentContext.controllerType === 'modelResolver'
-              ? currentContext.modelResolverName
-              : undefined,
-          resolverName:
-            !executeContext.parent && currentContext.controllerType === 'resolver'
-              ? executeContext.options.resolverId
-              : currentContext.controllerType === 'resolver'
-                ? currentContext.resolverName
-                : undefined,
-        }
-      : {
-          controllerType: executeContext.parent ? 'modelResolver' : 'resolver',
-          viewer: executeContext.viewer,
-          params: executeContext.params,
-          parentData: executeContext.parent,
-          modelResolverName: executeContext.parent ? executeContext.options.resolverId : undefined,
-          resolverName: !executeContext.parent ? executeContext.options.resolverId : undefined,
-        }
-
-    const result = await runWithOrionAsyncContext(context, async () => {
-      return await getResultWithMiddlewares(executeContext)
-    })
+    const result = executeContext.parent
+      ? await runWithOrionAsyncContext(
+          {
+            controllerType: 'modelResolver' as const,
+            viewer: executeContext.viewer,
+            params: executeContext.params,
+            parentData: executeContext.parent,
+            modelResolverName: executeContext.options.resolverId,
+          },
+          async () => {
+            return await getResultWithMiddlewares(executeContext)
+          },
+        )
+      : await runWithOrionAsyncContext(
+          {
+            controllerType: 'resolver' as const,
+            viewer: executeContext.viewer,
+            params: executeContext.params,
+            resolverName: executeContext.options.resolverId,
+          },
+          async () => {
+            return await getResultWithMiddlewares(executeContext)
+          },
+        )
 
     if (options.returns) {
       return await clean(options.returns, result)
