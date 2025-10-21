@@ -4,12 +4,12 @@ import errorHandler from '../../errorHandler'
 import {resolversStore} from './resolversStore'
 import {GraphQLFieldConfig, ThunkObjMap} from 'graphql'
 import {StartGraphQLOptions} from '../../types/startGraphQL'
+import {runWithOrionAsyncContext} from '@orion-js/logger'
 
 export default async function (options: StartGraphQLOptions, mutation: boolean) {
   const {resolvers} = options
   const filteredResolvers = Object.keys(resolvers)
     .map(key => {
-      resolvers[key].resolverName = key
       return {
         name: key,
         resolver: resolvers[key],
@@ -31,8 +31,17 @@ export default async function (options: StartGraphQLOptions, mutation: boolean) 
       args,
       async resolve(_root, params, context, info) {
         try {
-          const result = await resolver.resolve(params, context, info)
-          return result
+          return await runWithOrionAsyncContext(
+            {
+              controllerType: 'resolver' as const,
+              viewer: context,
+              params: params,
+              resolverName: name,
+            },
+            async () => {
+              return await resolver.resolve(params, context, info)
+            },
+          )
         } catch (error) {
           errorHandler(error, {context, resolver, options, name})
           throw error
