@@ -22,7 +22,7 @@ export default function getExecute(options: ResolverOptions) {
             viewer: executeContext.viewer,
             params: executeContext.params,
             parentData: executeContext.parent,
-            modelResolverName: executeContext.options.resolverId,
+            modelResolverName: executeContext.options.resolverName || 'unknown',
           },
           async () => {
             return await getResultWithMiddlewares(executeContext)
@@ -33,7 +33,7 @@ export default function getExecute(options: ResolverOptions) {
             controllerType: 'resolver' as const,
             viewer: executeContext.viewer,
             params: executeContext.params,
-            resolverName: executeContext.options.resolverId,
+            resolverName: executeContext.options.resolverName || 'unknown',
           },
           async () => {
             return await getResultWithMiddlewares(executeContext)

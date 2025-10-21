@@ -30,7 +30,7 @@ test('resolver context should override route context properties', async () => {
   let capturedContext: OrionAsyncContext | undefined = undefined
 
   const resolver = createResolver({
-    resolverId: 'testResolver',
+    resolverName: 'testResolver',
     async resolve(_params, viewer: {id: string}) {
       capturedContext = getOrionAsyncContext()
       return viewer.id

@@ -11,6 +11,7 @@ export function getModelLoadedResolvers(schema: Schema, options: StartGraphQLOpt
   return keys
     .map(key => {
       const resolver = resolvers[key]
+      resolver.resolverName = key
       return {
         ...resolver,
         key,

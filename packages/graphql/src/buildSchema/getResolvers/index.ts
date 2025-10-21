@@ -9,6 +9,7 @@ export default async function (options: StartGraphQLOptions, mutation: boolean) 
   const {resolvers} = options
   const filteredResolvers = Object.keys(resolvers)
     .map(key => {
+      resolvers[key].resolverName = key
       return {
         name: key,
         resolver: resolvers[key],

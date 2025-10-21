@@ -61,6 +61,7 @@ export interface SharedResolverOptions<
   TReturns extends SchemaFieldType = any,
 > {
   resolverId?: string
+  resolverName?: string
   params?: TParams
   returns?: TReturns
   mutation?: boolean
