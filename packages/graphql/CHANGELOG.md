@@ -1,5 +1,16 @@
 # @orion-js/graphql
 
+## 4.1.7
+
+### Patch Changes
+
+- 6892956: fix resolver async context
+- Updated dependencies [6892956]
+  - @orion-js/resolvers@4.1.7
+  - @orion-js/http@4.1.7
+  - @orion-js/models@4.1.7
+  - @orion-js/typed-model@4.1.7
+
 ## 4.1.6
 
 ### Patch Changes

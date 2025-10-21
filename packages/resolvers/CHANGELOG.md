@@ -1,5 +1,11 @@
 # @orion-js/resolvers
 
+## 4.1.7
+
+### Patch Changes
+
+- 6892956: fix resolver async context
+
 ## 4.1.6
 
 ### Patch Changes

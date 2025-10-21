@@ -1,5 +1,13 @@
 # @orion-js/migrations
 
+## 4.1.8
+
+### Patch Changes
+
+- @orion-js/mongodb@4.1.7
+- @orion-js/typed-model@4.1.7
+- @orion-js/dogs@4.1.8
+
 ## 4.1.7
 
 ### Patch Changes

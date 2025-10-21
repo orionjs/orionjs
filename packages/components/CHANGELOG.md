@@ -1,5 +1,17 @@
 # @orion-js/components
 
+## 4.1.8
+
+### Patch Changes
+
+- Updated dependencies [6892956]
+  - @orion-js/graphql@4.1.7
+  - @orion-js/http@4.1.7
+  - @orion-js/models@4.1.7
+  - @orion-js/mongodb@4.1.7
+  - @orion-js/echoes@4.1.7
+  - @orion-js/dogs@4.1.8
+
 ## 4.1.7
 
 ### Patch Changes
