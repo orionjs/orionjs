@@ -97,7 +97,7 @@ export default class MaintenanceJobs {
     priority: 100,
     // Optional: specify error handling
     onError: async function(error, params, context) {
-      logger.error('Daily cleanup failed', {error: error.message})
+      logger.error('Daily cleanup failed', {error})
       if (context.tries < 3) {
         return {action: 'retry', runIn: 60000} // Retry in 1 minute
       }
@@ -307,7 +307,7 @@ riskyJob = createEventJob({
   },
   onError: async (error, params, context) => {
     logger.error('Job failed', {
-      error: error.message,
+      error,
       userId: params.userId,
       attempt: context.tries
     })

@@ -61,11 +61,11 @@ export class Executor {
     }
 
     if (!job.onError) {
-      context.logger.error(`Error executing job "${jobToRun.name}"`, error)
+      context.logger.error(`Error executing job "${jobToRun.name}"`, {error})
       await scheduleRecurrent()
       return
     }
-    context.logger.info(`Error executing job "${jobToRun.name}"`, error)
+    context.logger.info(`Error executing job "${jobToRun.name}"`, {error})
 
     const result = await job.onError(error, jobToRun.params, context)
 

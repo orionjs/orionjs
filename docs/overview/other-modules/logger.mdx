@@ -20,7 +20,9 @@ import {logger} from '@orion-js/logger'
 logger.debug('Debug message', {customData: 'value'})
 logger.info('Info message', {userId: 123})
 logger.warn('Warning message', {attemptCount: 3})
-logger.error('Error occurred', new Error('Something went wrong'))
+logger.error('Error occurred', {
+  error: new Error('Something went wrong')
+})
 
 // Add metadata to all subsequent logs from this logger instance
 const userLogger = logger.addMetadata({userId: 'user-123'})
@@ -137,7 +139,7 @@ configureLogger({
      // some operation
    } catch (error) {
      // Good - preserves stack trace
-     logger.error('Operation failed', error)
+     logger.error('Operation failed', {error})
      
      // Avoid - loses stack trace
      logger.error('Operation failed', {message: error.message})

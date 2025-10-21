@@ -45,7 +45,7 @@ export class MigrationsService {
     try {
       await func(context)
     } catch (error) {
-      logger.error('[orionjs/migrations] Error running migration', error)
+      logger.error('[orionjs/migrations] Error running migration', {error})
       throw error
     }
   }

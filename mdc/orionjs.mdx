@@ -58,6 +58,18 @@ affected by code changes
 - Write acceptance tests for each module.
   - Follow the Given-When-Then convention.
 
+### Logging
+
+- All logs should be make using the library @orion-js/logger
+- Levels could be info, warn or error
+```ts
+import {logger} from '@orion-js/logger'
+// the first argument must always be a static string, all variables should be at the object in the second argument 
+logger.info('', {a: b})
+// when logging error, the error must be in a parameter at the object at the second argument
+logger.error('Error...', {error, a: b})
+```
+
 ### Creating scripts
 
 - If there is a need to create a script to run a task, do it using tsx (#!/usr/bin/env -S npx tsx)

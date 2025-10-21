@@ -58,7 +58,7 @@ export class WorkerService {
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
-        logger.error('Error in job runner.', error)
+        logger.error('Error in job runner.', {error})
         await sleep(config.pollInterval)
       }
     }

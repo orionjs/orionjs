@@ -55,11 +55,11 @@ class KafkaManager {
         return true
       }
     } catch (error) {
-      logger.error(`Echoes: Error checking consumer group conditions, join: ${error.message}`)
+      logger.error('Echoes: Error checking consumer group conditions, join', {error})
       return true
     } finally {
       await admin.disconnect().catch(error => {
-        logger.error(`Echoes: Error disconnecting admin client: ${error.message}`)
+        logger.error('Echoes: Error disconnecting admin client', {error})
       })
     }
   }
@@ -123,7 +123,7 @@ class KafkaManager {
     try {
       await echo.onMessage(params).catch(error => this.handleRetries(echo, params, error))
     } catch (error) {
-      logger.error(`Echoes: error processing a message: ${params.topic} ${error.message}`)
+      logger.error('Echoes: error processing a message', {error, topic: params.topic})
       throw error
     } finally {
       clearInterval(heartbeatInterval)
@@ -154,12 +154,11 @@ class KafkaManager {
 
     if (exceededMaxRetries) {
       logger.error(
-        `Echoes: a message has reached the maximum number of retries, sending it to DLQ: ${nextTopic}`,
+        'Echoes: a message has reached the maximum number of retries, sending it to DLQ',
+        {topic: nextTopic},
       )
     } else {
-      logger.warn(
-        `Echoes: a retryable message failed "${error.message}", re-sending it to topic: ${nextTopic}`,
-      )
+      logger.warn('Echoes: a retryable message failed', {error, topic: nextTopic})
     }
   }
 }
