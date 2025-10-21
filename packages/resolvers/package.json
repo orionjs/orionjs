@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/resolvers",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [

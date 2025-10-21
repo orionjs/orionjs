@@ -1,5 +1,11 @@
 # @orion-js/resolvers
 
+## 4.1.5
+
+### Patch Changes
+
+- 86e263f: fix logger inherit
+
 ## 4.1.4
 
 ### Patch Changes
