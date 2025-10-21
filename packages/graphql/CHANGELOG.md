@@ -1,5 +1,16 @@
 # @orion-js/graphql
 
+## 4.1.6
+
+### Patch Changes
+
+- 9645567: set resolver name into async context
+- Updated dependencies [9645567]
+  - @orion-js/resolvers@4.1.6
+  - @orion-js/http@4.1.6
+  - @orion-js/models@4.1.6
+  - @orion-js/typed-model@4.1.6
+
 ## 4.1.5
 
 ### Patch Changes

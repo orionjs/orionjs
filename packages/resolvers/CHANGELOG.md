@@ -1,5 +1,11 @@
 # @orion-js/resolvers
 
+## 4.1.6
+
+### Patch Changes
+
+- 9645567: set resolver name into async context
+
 ## 4.1.5
 
 ### Patch Changes
