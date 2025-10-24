@@ -14,7 +14,7 @@ Services in Orionjs encapsulate business logic, following the dependency injecti
 - Use `@Service()` decorator from `@orion-js/services`
 - Each service should focus on a **single** business operation
 - Follow verb-noun naming convention: `{Action}{Entity}Service` (e.g., `SendEmailService`, `CreatePostService`, `CallWebhookService`)
-- Service should typically have one main public method (e.g., `execute()`, `run()`, or named after the action)
+- Service should typically have one main public method named like the action (send, create, etc)
 
 ## Best Practices
 - Follow single responsibility principle strictly - one service should do only one thing
@@ -28,6 +28,7 @@ Services in Orionjs encapsulate business logic, following the dependency injecti
 - Handle validation and error cases appropriately
 - For circular dependencies, use factory function pattern with `@Inject(() => ServiceName)`
 - Write unit tests for service methods
+- Keep the methods in the service short, divide the login into other private methods in the same service
 
 ## Example
 
