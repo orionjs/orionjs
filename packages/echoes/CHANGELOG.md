@@ -1,5 +1,11 @@
 # @orion-js/echoes
 
+## 4.1.8
+
+### Patch Changes
+
+- 2ed96d2: better logger instructions
+
 ## 4.1.7
 
 ### Patch Changes

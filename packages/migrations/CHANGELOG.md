@@ -1,5 +1,15 @@
 # @orion-js/migrations
 
+## 4.1.9
+
+### Patch Changes
+
+- fixes types in job schedule params
+- 2ed96d2: better logger instructions
+- Updated dependencies
+- Updated dependencies [2ed96d2]
+  - @orion-js/dogs@4.1.9
+
 ## 4.1.8
 
 ### Patch Changes

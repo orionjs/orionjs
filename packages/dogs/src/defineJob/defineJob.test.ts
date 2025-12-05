@@ -3,6 +3,119 @@ import {createEventJob} from './index'
 import {getInstance} from '@orion-js/services'
 import {JobsRepo} from '../repos/JobsRepo'
 
+describe('Event Job Definition - schedule method with runIn/runAt', () => {
+  let jobsRepo: JobsRepo
+
+  beforeEach(async () => {
+    jobsRepo = getInstance(JobsRepo)
+    await jobsRepo.jobs.deleteMany({})
+  })
+
+  it('should schedule a job with runIn option', async () => {
+    // Arrange: Create an event job definition
+    const jobDefinition = createEventJob({
+      params: {
+        message: {type: String},
+      },
+      resolve: async params => {
+        return {success: true, message: params.message}
+      },
+    })
+
+    jobDefinition.jobName = 'test-schedule-runIn'
+
+    const now = Date.now()
+
+    // Act: Schedule a job with runIn
+    await jobDefinition.schedule({
+      params: {message: 'Hello with runIn'},
+      runIn: 5000,
+    })
+
+    // Assert: Job should be scheduled with correct nextRunAt
+    const scheduledJobs = await jobsRepo.jobs
+      .find({
+        jobName: 'test-schedule-runIn',
+      })
+      .toArray()
+
+    expect(scheduledJobs).toHaveLength(1)
+    const scheduledJob = scheduledJobs[0]
+    expect(scheduledJob.params.message).toBe('Hello with runIn')
+    // Should be scheduled ~5 seconds in the future
+    expect(scheduledJob.nextRunAt.getTime()).toBeGreaterThan(now + 4000)
+    expect(scheduledJob.nextRunAt.getTime()).toBeLessThan(now + 6000)
+  })
+
+  it('should schedule a job with runAt option', async () => {
+    // Arrange: Create an event job definition
+    const jobDefinition = createEventJob({
+      params: {
+        message: {type: String},
+      },
+      resolve: async params => {
+        return {success: true, message: params.message}
+      },
+    })
+
+    jobDefinition.jobName = 'test-schedule-runAt'
+
+    const targetDate = new Date(Date.now() + 10000) // 10 seconds from now
+
+    // Act: Schedule a job with runAt
+    await jobDefinition.schedule({
+      params: {message: 'Hello with runAt'},
+      runAt: targetDate,
+    })
+
+    // Assert: Job should be scheduled at the exact time
+    const scheduledJobs = await jobsRepo.jobs
+      .find({
+        jobName: 'test-schedule-runAt',
+      })
+      .toArray()
+
+    expect(scheduledJobs).toHaveLength(1)
+    const scheduledJob = scheduledJobs[0]
+    expect(scheduledJob.params.message).toBe('Hello with runAt')
+    expect(scheduledJob.nextRunAt.getTime()).toBe(targetDate.getTime())
+  })
+
+  it('should schedule a job without timing options (runs immediately)', async () => {
+    // Arrange: Create an event job definition
+    const jobDefinition = createEventJob({
+      params: {
+        message: {type: String},
+      },
+      resolve: async params => {
+        return {success: true, message: params.message}
+      },
+    })
+
+    jobDefinition.jobName = 'test-schedule-immediate'
+
+    const now = Date.now()
+
+    // Act: Schedule a job without timing options
+    await jobDefinition.schedule({
+      params: {message: 'Hello immediate'},
+    })
+
+    // Assert: Job should be scheduled to run immediately
+    const scheduledJobs = await jobsRepo.jobs
+      .find({
+        jobName: 'test-schedule-immediate',
+      })
+      .toArray()
+
+    expect(scheduledJobs).toHaveLength(1)
+    const scheduledJob = scheduledJobs[0]
+    expect(scheduledJob.params.message).toBe('Hello immediate')
+    // Should be scheduled to run now (within 1 second)
+    expect(scheduledJob.nextRunAt.getTime()).toBeLessThanOrEqual(now + 1000)
+  })
+})
+
 describe('Event Job Definition - scheduleJobs method', () => {
   let jobsRepo: JobsRepo
 
