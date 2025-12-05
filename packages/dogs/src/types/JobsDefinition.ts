@@ -1,6 +1,6 @@
 import {Blackbox, InferSchemaType, SchemaInAnyOrionForm} from '@orion-js/schema'
 import {ExecutionContext} from './Worker'
-import {ScheduleJobOptions, ScheduleJobsResult} from './Events'
+import {ScheduleJobOptionsWithoutName, ScheduleJobsResult} from './Events'
 
 export interface JobRetryResultBase {
   action: 'retry' | 'dismiss'
@@ -68,15 +68,15 @@ export interface EventJobDefinition<TParamsSchema extends SchemaInAnyOrionForm =
   type: 'event'
 
   /**
-   * Schedule of the job.
+   * Schedule of the job. Supports optional runIn (milliseconds) or runAt (Date) for delayed execution.
    */
-  schedule: (params: Omit<ScheduleJobOptions<TParamsSchema>, 'name'>) => Promise<void>
+  schedule: (options: ScheduleJobOptionsWithoutName<TParamsSchema>) => Promise<void>
 
   /**
-   * Schedule multiple jobs at once.
+   * Schedule multiple jobs at once. Each job supports optional runIn or runAt for delayed execution.
    */
   scheduleJobs: (
-    jobs: Array<Omit<ScheduleJobOptions<TParamsSchema>, 'name'>>,
+    jobs: Array<ScheduleJobOptionsWithoutName<TParamsSchema>>,
   ) => Promise<ScheduleJobsResult>
 
   /**

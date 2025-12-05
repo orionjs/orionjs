@@ -6,7 +6,8 @@ import {
   JobDefinition,
   RecurrentJobDefinition,
 } from '../types/JobsDefinition'
-import {scheduleJob, ScheduleJobOptions, ScheduleJobsResult, scheduleJobs} from '..'
+import {scheduleJob, ScheduleJobsResult, scheduleJobs} from '..'
+import {ScheduleJobOptionsWithoutName} from '../types/Events'
 import {cleanAndValidate, SchemaInAnyOrionForm} from '@orion-js/schema'
 import parse from 'parse-duration'
 
@@ -20,14 +21,12 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
     scheduleJobs: null,
   }
 
-  jobDefinition.schedule = async (
-    scheduleOptions: Omit<ScheduleJobOptions<TParamsSchema>, 'name'>,
-  ) => {
+  jobDefinition.schedule = async (scheduleOptions: ScheduleJobOptionsWithoutName<TParamsSchema>) => {
     if (!jobDefinition.jobName) {
       throw new Error('This job has not been registered in the workers')
     }
 
-    const params: any = jobDefinition.params
+    const params = jobDefinition.params
       ? await cleanAndValidate(jobDefinition.params, scheduleOptions.params)
       : scheduleOptions.params
 
@@ -39,7 +38,7 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
   }
 
   jobDefinition.scheduleJobs = async (
-    jobs: Array<Omit<ScheduleJobOptions<TParamsSchema>, 'name'>>,
+    jobs: Array<ScheduleJobOptionsWithoutName<TParamsSchema>>,
   ): Promise<ScheduleJobsResult> => {
     if (!jobDefinition.jobName) {
       throw new Error('This job has not been registered in the workers')
@@ -48,7 +47,7 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
     // Process all job parameters if schema validation is needed
     const processedJobs = await Promise.all(
       jobs.map(async scheduleOptions => {
-        const params: any = jobDefinition.params
+        const params = jobDefinition.params
           ? await cleanAndValidate(jobDefinition.params, scheduleOptions.params)
           : scheduleOptions.params
 
