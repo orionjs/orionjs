@@ -4,6 +4,7 @@ import chalk from 'chalk'
 import envInit from './init'
 import envAdd from './add'
 import envRead from './read'
+import envMigrate from './migrate'
 
 const program = new Command()
 
@@ -36,6 +37,13 @@ program
   .option('--key <key>', 'Prints the value of a specific variable in plain text')
   .option('--secret <secret>', 'The password to decrypt the keys')
   .action(run(envRead))
+
+program
+  .command('migrate')
+  .description('Migrates the config file to a new keypair, re-encrypting all keys')
+  .option('--path <path>', 'Specify the env file name')
+  .option('--secret <secret>', 'The current secret key to decrypt existing keys')
+  .action(run(envMigrate))
 
 program.parse(process.argv)
 
