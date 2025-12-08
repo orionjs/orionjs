@@ -1,5 +1,12 @@
 # @orion-js/mongodb
 
+## 4.1.8
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/env@4.1.5
+
 ## 4.1.7
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/env",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
