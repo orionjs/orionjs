@@ -29,6 +29,43 @@ When asked to create a new repository, create a minimal repository, with the bas
 - Always use `typedId()` in schema definitions for document IDs
 - Use `InferSchemaType` to derive types from schemas
 
+## Read Preferences for Non-Critical Queries
+
+For queries that don't require strong consistency (eventually consistent reads), use the `preferSecondary` option to distribute read load across MongoDB replica set secondaries. This is especially important for:
+
+- **Aggregations**: Heavy aggregation pipelines should prefer secondary reads
+- **List queries**: Paginated lists or search results
+- **Reports and analytics**: Any read-heavy operations for dashboards or statistics
+- **Count operations**: Document counts for UI display
+
+Use `preferSecondary` by passing the option to collection methods:
+
+```typescript
+// For find operations
+async getCardsListCursor(params: CardsListQueryParamsType) {
+  const query = await this.getCardsListQuery(params)
+  return this.collection.find(query, {readPreference: 'secondaryPreferred'})
+}
+
+// For count operations
+async getCardsListCount(params: CardsListQueryParamsType) {
+  const query = await this.getCardsListQuery(params)
+  return this.collection.countDocuments(query, {readPreference: 'secondaryPreferred'})
+}
+
+// For aggregations
+async getCardsStats() {
+  return this.collection.aggregate([
+    {$group: {_id: '$type', count: {$sum: 1}}}
+  ], {readPreference: 'secondaryPreferred'})
+}
+```
+
+**When NOT to use `preferSecondary`:**
+- When reading data immediately after a write (use primary for read-after-write consistency)
+- For critical operations where stale data could cause issues
+- When the query result will be used to make a write decision
+
 ## Example
 
 In this example we have a `Card` entity and a `CardsRepo` repository.
