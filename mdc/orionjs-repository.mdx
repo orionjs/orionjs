@@ -19,7 +19,8 @@ When asked to create a new repository, create a minimal repository, with the bas
 
 ## Best Practices
 - Keep methods simple and focused on a single responsibility
-- If you need to create a new query or a new method, always do it inside the repository file. Other files should never access the collection directly.
+- **Never access the collection directly outside the repository.** All database interactions must go through repository methods. The only exception is during migrations, where direct collection access may be necessary for data transformations.
+- If you need to create a new query or a new method, always do it inside the repository file.
 - Collection name should be `component_name.prural_of_entity`. Component name is the name of the folder of the component.
 - Return plain objects or domain models, not database-specific structures
 - Use descriptive method names: `findById`, `findByEmail`, `create{EntityName}`, `update{EntityName}`, `delete{EntityName}`.
@@ -28,6 +29,7 @@ When asked to create a new repository, create a minimal repository, with the bas
 - Put the repository in `app/exampleComponent/repos/{EntityNameInPlural}Repo/index.ts`
 - Always use `typedId()` in schema definitions for document IDs
 - Use `InferSchemaType` to derive types from schemas
+- IMPORTANT NEW RULE: Use read preferences for non-critical queries.
 
 ## Read Preferences for Non-Critical Queries
 
@@ -78,12 +80,12 @@ import {CardsListQueryParamsType} from './ListQueryParams'
 
 @Repository()
 export class CardsRepo {
-  private collection = createCollection({
+  // Collection is public only to allow access during migrations.
+  // Never access this collection directly outside this repository.
+  collection = createCollection({
     name: 'gaming.pokemon_cards',
     schema: CardSchema,
-    indexes: [
-      
-    ],
+    indexes: [],
   })
 
 
