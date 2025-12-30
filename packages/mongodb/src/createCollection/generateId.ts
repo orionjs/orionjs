@@ -10,9 +10,7 @@ const getIdGenerator = <DocumentType extends ModelClassBase>(
     const idField = options.schema._id.type as FieldType
     if (idField.name?.startsWith('typedId:')) {
       return () => {
-        const prefix = idField.name.split(':')[1]
-        const random = generateUUID()
-        return `${prefix}-${random}`
+        return (idField as any).generateId()
       }
     }
   }

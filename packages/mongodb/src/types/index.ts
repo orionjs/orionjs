@@ -10,6 +10,7 @@ import {
 } from '@orion-js/schema'
 import {OrionMongoClient} from '../connect/connections'
 import {EnhancedOmit} from 'mongodb'
+import {generateUUIDWithPrefix} from '@orion-js/helpers'
 
 export {MongoDB}
 
@@ -346,10 +347,11 @@ export type TypedId<TPrefix extends string> = `${TPrefix}-${string}`
  */
 export function typedId<const TPrefix extends string>(
   prefix: TPrefix,
-): FieldType<TypedId<TPrefix>> {
+): FieldType<TypedId<TPrefix>> & {generateId: () => TypedId<TPrefix>} {
   return {
     ...fieldTypes.string,
     name: `typedId:${prefix}`,
     toSerializedType: async () => 'string',
+    generateId: () => generateUUIDWithPrefix(prefix),
   } as any
 }
