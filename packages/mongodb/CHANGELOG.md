@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.1.9
+
+### Patch Changes
+
+- Refactor ID generation in typedId function to utilize generateUUIDWithPrefix for improved consistency and clarity
+
 ## 4.1.8
 
 ### Patch Changes

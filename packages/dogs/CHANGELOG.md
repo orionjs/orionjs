@@ -1,5 +1,13 @@
 # @orion-js/dogs
 
+## 4.1.11
+
+### Patch Changes
+
+- Refactor job locking mechanism to introduce defaultLockTime; update related services and tests for consistency
+- Updated dependencies
+  - @orion-js/mongodb@4.1.9
+
 ## 4.1.10
 
 ### Patch Changes

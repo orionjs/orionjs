@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.1.6
+
+### Patch Changes
+
+- add migrations mdc
+
 ## 4.1.5
 
 ### Patch Changes
