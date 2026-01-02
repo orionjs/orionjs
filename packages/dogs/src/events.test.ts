@@ -103,7 +103,7 @@ describe('Event tests', () => {
       workersCount: 2,
       pollInterval: 10,
       cooldownPeriod: 10,
-      lockTime: 10,
+      defaultLockTime: 10,
     })
 
     await scheduleJob({

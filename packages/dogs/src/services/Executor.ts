@@ -16,8 +16,17 @@ export class Executor {
   @Inject(() => JobsHistoryRepo)
   private readonly jobsHistoryRepo: JobsHistoryRepo
 
+  /**
+   * Determines the effective lock time for a job execution.
+   * Job-specific lockTime takes precedence over the default lockTime from config.
+   */
+  getEffectiveLockTime(job: JobDefinition, jobToRun: JobToRun): number {
+    return job.lockTime ?? jobToRun.lockTime
+  }
+
   getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {
-    let staleTimeout = setTimeout(() => onStale(), jobToRun.lockTime)
+    const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
+    let staleTimeout = setTimeout(() => onStale(), effectiveLockTime)
     return {
       definition: job,
       record: jobToRun,
@@ -137,6 +146,12 @@ export class Executor {
   async executeJob(jobs: JobsDefinition, jobToRun: JobToRun, respawnWorker: Function) {
     const job = this.getJobDefinition(jobToRun, jobs)
     if (!job) return
+
+    // If job has a custom lockTime different from the default, update the database lock
+    const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
+    if (effectiveLockTime !== jobToRun.lockTime) {
+      await this.jobsRepo.updateLockTime(jobToRun.jobId, effectiveLockTime)
+    }
 
     const tracer = trace.getTracer('orionjs.dogs', '1.0')
 

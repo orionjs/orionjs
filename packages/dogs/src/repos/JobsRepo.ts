@@ -118,7 +118,15 @@ export class JobsRepo {
   }
 
   async extendLockTime(jobId: string, extraTime: number) {
-    const lockedUntil = new Date(Date.now() + extraTime)
+    await this.updateLockTime(jobId, extraTime)
+  }
+
+  /**
+   * Updates the lock time for a job to the specified duration from now.
+   * Can be used to both extend or shorten the lock time.
+   */
+  async updateLockTime(jobId: string, lockDuration: number) {
+    const lockedUntil = new Date(Date.now() + lockDuration)
     await this.jobs.updateOne(
       {
         _id: jobId,

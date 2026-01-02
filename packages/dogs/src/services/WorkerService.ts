@@ -34,7 +34,7 @@ export class WorkerService {
     logger.debug(
       `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
     )
-    const jobToRun = await this.jobsRepo.getJobAndLock(names, config.lockTime)
+    const jobToRun = await this.jobsRepo.getJobAndLock(names, config.defaultLockTime)
     if (!jobToRun) {
       logger.debug('No job to run')
       return false
@@ -134,7 +134,7 @@ export class WorkerService {
       cooldownPeriod: 100,
       pollInterval: 3000,
       workersCount: 4,
-      lockTime: 30 * 1000,
+      defaultLockTime: 30 * 1000,
     }
 
     const config = {

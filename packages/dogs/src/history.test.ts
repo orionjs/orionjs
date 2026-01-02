@@ -120,7 +120,7 @@ describe('Test Jobs History', () => {
       jobs: {[jobId]: job},
       workersCount: 3,
       pollInterval: 10,
-      lockTime: 10,
+      defaultLockTime: 10,
     })
 
     await scheduleJob({
