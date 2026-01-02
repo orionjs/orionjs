@@ -6,6 +6,7 @@ import chalk from 'chalk'
 const rules = [
   'orionjs.mdx',
   'orionjs-component.mdx',
+  'orionjs-migrations.mdx',
   'orionjs-repository.mdx',
   'orionjs-schema.mdx',
   'orionjs-services.mdx',
