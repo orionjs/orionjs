@@ -1,0 +1,172 @@
+---
+description: How to create and use migrations in Orionjs
+globs: *.ts
+alwaysApply: true
+---
+
+# How to create Migrations in Orionjs
+
+## Migration Overview
+
+Migrations in Orionjs are used to perform data transformations and schema updates on existing data. They run automatically via a background job and track completion state to ensure each migration runs only once.
+
+## Structure
+
+- Use `@MigrationService()` decorator from `@orion-js/migrations`
+- Each migration should be a separate class
+- Follow naming convention: `Migrate{Entity}{Action}.v{Version}` (e.g., `MigrateUsersPlanType.v1`)
+- Implement a `runMigration()` method that performs the migration logic
+- Version suffix (`.v1`, `.v2`) allows re-running modified migrations
+
+## Best Practices
+
+- **Idempotency**: Design migrations to be safely re-runnable when possible
+- **Progress logging**: Log progress every N documents for long-running migrations
+- **Query optimization**: Only fetch documents that need updating (use `$exists: false` or similar filters)
+- **Batch processing**: Process documents in a cursor loop, not loading all into memory
+- **Direct collection access**: Migrations are the exception where direct collection access is allowed
+- **Use `useMongoTransactions: false`** unless you specifically need transaction support
+- Use dependency injection to leverage existing services for business logic
+- Define local interfaces for document shapes to avoid tight coupling with schema changes
+- Put migrations in `app/{component}/migrations/Migrate{Entity}{Action}/index.ts`
+
+## Example Migration
+
+```typescript
+import {logger} from '@orion-js/logger'
+import {MigrationService} from '@orion-js/migrations'
+import {createCollection} from '@orion-js/mongodb'
+import {Inject} from '@orion-js/services'
+import {CalculateCallerPlanTypeService} from 'app/ai/services/CalculateCallerPlanType'
+
+/**
+ * Local interface for the document structure we're migrating.
+ * Keeps the migration decoupled from schema changes.
+ */
+interface GenerationLogCaller {
+  userId?: string
+  organizationId?: string
+  isAnonymous?: boolean
+}
+
+interface GenerationLogDoc {
+  _id: string
+  caller?: GenerationLogCaller
+}
+
+/**
+ * Migration to set planType and planId for all existing GenerationLogs.
+ * Uses current subscription status since all logs were generated recently.
+ */
+@MigrationService({
+  name: 'MigrateGenerationLogsPlanType.v1',
+  useMongoTransactions: false,
+})
+export class MigrateGenerationLogsPlanType {
+  // Direct collection access is allowed during migrations
+  private collection = createCollection({name: 'ai.generation_logs'})
+
+  @Inject(() => CalculateCallerPlanTypeService)
+  private calculateCallerPlanTypeService: CalculateCallerPlanTypeService
+
+  async runMigration() {
+    // Only fetch documents that need updating
+    const cursor = this.collection.find({
+      'caller.planType': {$exists: false},
+    })
+
+    let processed = 0
+    let updated = 0
+
+    // Process documents in a cursor loop to avoid memory issues
+    for await (const doc of cursor) {
+      const log = doc as GenerationLogDoc
+      const planInfo = await this.calculateCallerPlanTypeService.execute(log.caller)
+
+      await this.collection.updateOne(
+        {_id: log._id},
+        {
+          $set: {
+            'caller.planType': planInfo.planType,
+            ...(planInfo.planId && {'caller.planId': planInfo.planId}),
+          },
+        },
+      )
+
+      updated++
+      processed++
+
+      // Log progress every 500 documents
+      if (processed % 500 === 0) {
+        logger.info('Migration progress', {processed, updated})
+      }
+    }
+
+    logger.info('MigrateGenerationLogsPlanType complete', {processed, updated})
+  }
+}
+```
+
+## Loading Migrations
+
+Migrations must be registered using `loadMigrations()` to enable automatic execution:
+
+```typescript
+import {loadMigrations} from '@orion-js/migrations'
+import {MigrateGenerationLogsPlanType} from './migrations/MigrateGenerationLogsPlanType'
+import {MigrateUsersEmailFormat} from './migrations/MigrateUsersEmailFormat'
+
+// Register all migrations - they will run automatically via background job
+loadMigrations([
+  MigrateGenerationLogsPlanType,
+  MigrateUsersEmailFormat,
+])
+```
+
+## How Migrations Run
+
+- Migrations are executed by a background job that polls every 30 seconds
+- Only one migration runs at a time, in the order they are registered
+- Completed migrations are tracked in the `orionjs.migrations` collection
+- The migration name serves as the unique identifier for tracking completion
+- A lock prevents concurrent migration execution across multiple server instances
+
+## Simple Migration Example
+
+For simple field additions or transformations without external dependencies:
+
+```typescript
+import {logger} from '@orion-js/logger'
+import {MigrationService} from '@orion-js/migrations'
+import {createCollection} from '@orion-js/mongodb'
+
+/**
+ * Add default status field to all users without one.
+ */
+@MigrationService({
+  name: 'MigrateUsersAddDefaultStatus.v1',
+  useMongoTransactions: false,
+})
+export class MigrateUsersAddDefaultStatus {
+  private collection = createCollection({name: 'auth.users'})
+
+  async runMigration() {
+    const result = await this.collection.updateMany(
+      {status: {$exists: false}},
+      {$set: {status: 'active'}},
+    )
+
+    logger.info('MigrateUsersAddDefaultStatus complete', {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    })
+  }
+}
+```
+
+## When to Create a New Migration Version
+
+Create a new version (`.v2`, `.v3`, etc.) when:
+- The original migration logic had a bug that needs fixing
+- You need to re-run a migration with modified logic
+- The migration name must change to run again (completed names are tracked)
