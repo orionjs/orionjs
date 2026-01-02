@@ -16,7 +16,7 @@ const eventsService = getInstance(EventsService)
 const jobsHistoryRepo = getInstance(JobsHistoryRepo)
 const jobsRepo = getInstance(JobsRepo)
 
-const startWorkers = (config: Partial<StartWorkersConfig>) => {
+const startWorkers = (config: StartWorkersConfig) => {
   return workerService.startWorkers(config)
 }
 

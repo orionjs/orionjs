@@ -31,6 +31,13 @@ export interface BaseJobDefinition {
    * This is set automatically when the job is passed to startWorkers.
    */
   jobName?: string
+
+  /**
+   * Time in milliseconds to lock this specific job for execution.
+   * Overrides the defaultLockTime set in startWorkers config.
+   * If not set, the defaultLockTime from config will be used.
+   */
+  lockTime?: number
 }
 
 export interface RecurrentJobDefinition extends BaseJobDefinition {

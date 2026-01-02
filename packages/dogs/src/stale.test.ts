@@ -28,7 +28,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 10,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 20,
+      defaultLockTime: 20,
     })
 
     await scheduleJob({name: jobName1})
@@ -72,7 +72,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10,
+      defaultLockTime: 10,
     })
 
     await scheduleJob({name: jobName1})
@@ -107,7 +107,7 @@ describe('Stale Jobs Management', () => {
       workersCount: 1,
       pollInterval: 5,
       cooldownPeriod: 5,
-      lockTime: 10,
+      defaultLockTime: 10,
     })
 
     await sleep(150)
