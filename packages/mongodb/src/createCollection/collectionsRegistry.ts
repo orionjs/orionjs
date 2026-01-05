@@ -95,6 +95,27 @@ export function getRegisteredCollections(
 }
 
 /**
+ * Gets the merged indexes for a specific collection from the registry.
+ * This includes all indexes from all createCollection() calls for the same collection name.
+ * @param connectionName - The name of the MongoDB connection
+ * @param collectionName - The name of the collection
+ * @returns Array of merged index definitions, or empty array if collection not registered
+ */
+export function getMergedIndexes(connectionName: string, collectionName: string): CollectionIndex[] {
+  const connectionCollections = collectionsRegistry.get(connectionName)
+  if (!connectionCollections) {
+    return []
+  }
+
+  const collection = connectionCollections.get(collectionName)
+  if (!collection) {
+    return []
+  }
+
+  return collection.indexes || []
+}
+
+/**
  * Deletes unused indexes from all registered collections for a connection.
  * Iterates over all collections registered via createCollection() and
  * removes indexes that exist in MongoDB but are not defined in the collection configuration.

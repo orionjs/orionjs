@@ -3,6 +3,7 @@ import {Collection, ModelClassBase} from '..'
 import {logger} from '@orion-js/logger'
 import {isIndexDefined} from './deleteUnusedIndexes'
 import {getIndexOptions} from './getIndexOptions'
+import {getMergedIndexes} from './collectionsRegistry'
 
 export interface MongoDBIndex {
   key: Record<string, unknown>
@@ -11,6 +12,7 @@ export interface MongoDBIndex {
 
 /**
  * Checks for indexes in the database that are not defined in the collection configuration.
+ * Uses merged indexes from all createCollection() calls for the same collection name.
  * Logs a warning if unexpected indexes are found.
  */
 export async function checkIndexes<DocumentType extends ModelClassBase>(
@@ -27,15 +29,18 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
     return
   }
 
-  // If no indexes defined, skip the check (don't warn about all indexes)
-  if (!collection.indexes || collection.indexes.length === 0) {
+  // Get merged indexes from all createCollection() calls for this collection
+  const mergedIndexes = getMergedIndexes(collection.connectionName, collection.name)
+
+  // If no indexes defined anywhere, skip the check
+  if (mergedIndexes.length === 0) {
     return
   }
 
-  // Find unexpected indexes using the safer key-based matching
+  // Find unexpected indexes using the merged indexes from the registry
   const unexpectedIndexes = currentIndexes.filter(
-    index => index.name !== '_id_' && !isIndexDefined(collection.indexes, index),
-      )
+    index => index.name !== '_id_' && !isIndexDefined(mergedIndexes, index),
+  )
 
   if (unexpectedIndexes.length > 0) {
     logger.warn(

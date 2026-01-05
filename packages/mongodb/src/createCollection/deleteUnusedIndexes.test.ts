@@ -50,6 +50,27 @@ describe('isIndexDefined', () => {
     expect(isIndexDefined(definedIndexes, currentIndex)).toBe(true)
   })
 
+  it('should find text index by generated name (MongoDB stores text indexes with special keys)', () => {
+    // Text indexes are stored by MongoDB with _fts and _ftsx keys, not the original field names
+    const definedIndexes = [{keys: {'parts.text': 'text', userId: 1}}]
+    // MongoDB returns text indexes with special _fts/_ftsx keys
+    const currentIndex = {key: {_fts: 'text', _ftsx: 1}, name: 'parts.text_text_userId_1'}
+    expect(isIndexDefined(definedIndexes, currentIndex)).toBe(true)
+  })
+
+  it('should find compound text index', () => {
+    const definedIndexes = [{keys: {content: 'text', category: 1}}]
+    const currentIndex = {key: {_fts: 'text', _ftsx: 1}, name: 'content_text_category_1'}
+    expect(isIndexDefined(definedIndexes, currentIndex)).toBe(true)
+  })
+
+  it('should not match text index with different fields', () => {
+    const definedIndexes = [{keys: {title: 'text'}}]
+    // Different name means different fields
+    const currentIndex = {key: {_fts: 'text', _ftsx: 1}, name: 'content_text'}
+    expect(isIndexDefined(definedIndexes, currentIndex)).toBe(false)
+  })
+
   it('should find index by custom name using deprecated options format', () => {
     const definedIndexes = [{keys: {a: 1}, options: {name: 'my_custom_index'}}]
     const currentIndex = {key: {a: 1}, name: 'my_custom_index'}

@@ -11,8 +11,35 @@ interface MongoDBIndex {
 }
 
 /**
+ * Checks if an index definition contains a text index field.
+ * Text indexes have the value "text" for their field.
+ */
+function isTextIndexDefinition(keys: Record<string, unknown>): boolean {
+  return Object.values(keys).some(value => value === 'text')
+}
+
+/**
+ * Checks if a MongoDB index is a text index.
+ * Text indexes have special keys _fts and _ftsx.
+ */
+function isMongoDBTextIndex(key: Record<string, unknown>): boolean {
+  return '_fts' in key && '_ftsx' in key
+}
+
+/**
+ * Generates the expected MongoDB index name from a definition.
+ * MongoDB uses the pattern: field1_value1_field2_value2
+ */
+function generateIndexName(keys: Record<string, unknown>): string {
+  return Object.entries(keys)
+    .map(([field, value]) => `${field}_${value}`)
+    .join('_')
+}
+
+/**
  * Compares two index key specifications for equality.
- * Handles key order and special index types (text, 2dsphere, hashed, etc.)
+ * Handles key order and special index types (2dsphere, hashed, etc.)
+ * Note: Text indexes are handled separately due to their special structure.
  * @param definitionKeys - The keys from the collection index definition
  * @param currentIndexKey - The keys from the current MongoDB index
  * @returns true if the keys match exactly in order and values
@@ -40,7 +67,8 @@ export function keysMatch(
 /**
  * Checks if a current database index matches any of the defined indexes.
  * First checks by custom name if provided (supports both flat and deprecated formats),
- * then by key specification.
+ * then by key specification. Handles text indexes specially since MongoDB stores
+ * them with different key structure (_fts, _ftsx).
  * @param definedIndexes - Array of index definitions from the collection
  * @param currentIndex - The index from MongoDB to check
  * @returns true if the index is defined in the collection configuration
@@ -53,8 +81,18 @@ export function isIndexDefined(
     // Match by custom name if provided (handles both flat and deprecated options formats)
     const customName = getIndexName(defIndex)
     if (customName && customName === currentIndex.name) return true
-    // Match by key specification (safer than name comparison)
-    return keysMatch(defIndex.keys as Record<string, unknown>, currentIndex.key)
+
+    const defKeys = defIndex.keys as Record<string, unknown>
+
+    // Special handling for text indexes: MongoDB stores them with _fts/_ftsx keys
+    // instead of the original field names, so we compare by generated name
+    if (isTextIndexDefinition(defKeys) && isMongoDBTextIndex(currentIndex.key)) {
+      const expectedName = generateIndexName(defKeys)
+      return currentIndex.name === expectedName
+    }
+
+    // Match by key specification for regular indexes
+    return keysMatch(defKeys, currentIndex.key)
   })
 }
 
