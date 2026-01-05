@@ -29,6 +29,7 @@ import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
 import {loadIndexes} from './createIndexes'
 import {deleteUnusedIndexes} from './deleteUnusedIndexes'
+import {registerCollection} from './collectionsRegistry'
 import {getMongoConnection} from '..'
 import {getSchema} from './getSchemaAndModel'
 import {wrapMethods} from './wrapMethods'
@@ -169,6 +170,9 @@ export function createCollection(options: CreateCollectionOptions) {
 
   wrapMethods(mainCollection as any)
   wrapMethods(encryptedCollection as any)
+
+  // Register collection for deleteAllUnusedIndexes() support
+  registerCollection(connectionName, mainCollection as Collection<ModelClassBase>)
 
   return mainCollection as Collection<ModelClassBase>
 }

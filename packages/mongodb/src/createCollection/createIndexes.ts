@@ -35,7 +35,7 @@ export async function checkIndexes<DocumentType extends ModelClassBase>(
   // Find unexpected indexes using the safer key-based matching
   const unexpectedIndexes = currentIndexes.filter(
     index => index.name !== '_id_' && !isIndexDefined(collection.indexes, index),
-  )
+      )
 
   if (unexpectedIndexes.length > 0) {
     logger.warn(
