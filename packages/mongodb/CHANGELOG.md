@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.1.10
+
+### Patch Changes
+
+- Enhance MongoDB collection query by adding 'secondaryPreferred' read preference to distribute read load across replicas
+
 ## 4.1.9
 
 ### Patch Changes
