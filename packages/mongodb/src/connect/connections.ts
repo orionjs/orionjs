@@ -46,9 +46,6 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
 
   constructor(connectionName: string) {
     this.connectionName = connectionName
-    logger.info('New connection requested', {
-      connectionName,
-    })
 
     this.connectionEvent.setMaxListeners(Number.POSITIVE_INFINITY)
     this.connectionPromise = new Promise((resolve, reject) => {
@@ -97,11 +94,9 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
       return this
     }
     this.state = 'connecting'
-    const censoredURI = this.uri.replace(/\/\/.*:.*@/, '//') // remove user and password from URL
-    logger.info('Connecting to mongo', {
-      uri: censoredURI,
-      connectionName: this.connectionName,
-    })
+    // Remove user:password and protocol prefix (mongodb+srv:// or mongodb://) for logging
+    const censoredURI = this.uri.replace(/\/\/.*:.*@/, '//').replace(/^mongodb(\+srv)?:\/\//, '')
+    logger.info(`Starting MongoDB connection "${this.connectionName}" [${censoredURI}]`)
     if (this.encrypted.client) {
       await this.connectWithRetry(this.encrypted.client)
       logger.info('Successfully connected to encrypted mongo', {
@@ -112,10 +107,7 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
     await this.connectWithRetry(this.client)
     this.state = 'connected'
     this.connectionEvent.emit('connected', this.client)
-    logger.info('Successfully connected to mongo', {
-      uri: censoredURI,
-      connectionName: this.connectionName,
-    })
+
     nextTick(() => {
       this.connectionEvent.removeAllListeners()
       this.connectionEvent = null
