@@ -24,6 +24,7 @@ When asked to create a new repository, create a minimal repository, with the bas
 - Collection name should be `component_name.prural_of_entity`. Component name is the name of the folder of the component.
 - Return plain objects or domain models, not database-specific structures
 - Use descriptive method names: `findById`, `findByEmail`, `create{EntityName}`, `update{EntityName}`, `delete{EntityName}`.
+- **NEW RULE**: Use `load` prefix instead of `get` for methods where data freshness is not guaranteed. See "Naming Convention: get vs load" section below.
 - Avoid business logic in repositories (use services instead)
 - Add proper typing for all parameters and return values.
 - Put the repository in `app/exampleComponent/repos/{EntityNameInPlural}Repo/index.ts`
@@ -40,26 +41,52 @@ For queries that don't require strong consistency (eventually consistent reads),
 - **Reports and analytics**: Any read-heavy operations for dashboards or statistics
 - **Count operations**: Document counts for UI display
 
+### Naming Convention: get vs load
+
+> **⚠️ NEW RULE**: Use the **"load"** prefix instead of **"get"** for methods where data freshness is not guaranteed. The `load` prefix signals to consumers that the returned data may not reflect the most recent state of the database.
+>
+> **Migration Note**: Existing code in the project might still use "get" prefix for these methods. When you encounter methods that should use "load" based on the criteria below, suggest renaming them for consistency.
+
+**Use `load` prefix when the method:**
+- Uses `secondaryPreferred` read preference (eventually consistent reads from replica secondaries)
+- Uses DataLoader methods like `loadById`, `loadMany` (batched/deduplicated reads within request scope)
+- Reads from cache (in-memory, Redis, or any caching layer)
+
+**Use `get` prefix when the method:**
+- Reads directly from primary with no caching
+- Requires guaranteed data freshness (read-after-write scenarios)
+
+**Examples:**
+- `getCardsListCursor` → `loadCardsListCursor` (uses `secondaryPreferred`)
+- `getCardsListCount` → `loadCardsListCount` (uses `secondaryPreferred`)
+- `getCardById` → `loadCardById` (if using DataLoader or cache)
+- `getUserStats` → `loadUserStats` (if using cache or aggregation on secondary)
+
 Use `preferSecondary` by passing the option to collection methods:
 
 ```typescript
-// For find operations
-async getCardsListCursor(params: CardsListQueryParamsType) {
+// "load" prefix: uses secondaryPreferred (data may be slightly stale)
+async loadCardsListCursor(params: CardsListQueryParamsType) {
   const query = await this.getCardsListQuery(params)
   return this.collection.find(query, {readPreference: 'secondaryPreferred'})
 }
 
-// For count operations
-async getCardsListCount(params: CardsListQueryParamsType) {
+// "load" prefix: uses secondaryPreferred
+async loadCardsListCount(params: CardsListQueryParamsType) {
   const query = await this.getCardsListQuery(params)
   return this.collection.countDocuments(query, {readPreference: 'secondaryPreferred'})
 }
 
-// For aggregations
-async getCardsStats() {
+// "load" prefix: aggregation on secondary
+async loadCardsStats() {
   return this.collection.aggregate([
     {$group: {_id: '$type', count: {$sum: 1}}}
   ], {readPreference: 'secondaryPreferred'})
+}
+
+// "load" prefix: uses DataLoader (batched/deduplicated within request)
+async loadCardById(cardId: CardId) {
+  return this.collection.loadById(cardId)
 }
 ```
 
@@ -93,8 +120,14 @@ export class CardsRepo {
     return await this.collection.insertAndFind(doc)
   }
 
+  // "get" prefix: direct read from primary, guaranteed fresh data
   async getCardById(docId: CardId) {
     return await this.collection.findOne(docId)
+  }
+
+  // "load" prefix: uses DataLoader (batched/deduplicated, may return cached data within request)
+  async loadCardById(docId: CardId) {
+    return await this.collection.loadById(docId)
   }
 
   async updateCard(docId: CardId, doc: MongoDB.UpdateFilter<Card>['$set']) {
@@ -113,14 +146,16 @@ export class CardsRepo {
     }
   }
 
-  async getCardsListCursor(params: CardsListQueryParamsType) {
+  // "load" prefix: uses secondaryPreferred (data may be slightly stale)
+  async loadCardsListCursor(params: CardsListQueryParamsType) {
     const query = await this.getCardsListQuery(params)
-    return this.collection.find(query)
+    return this.collection.find(query, {readPreference: 'secondaryPreferred'})
   }
 
-  async getCardsListCount(params: CardsListQueryParamsType) {
+  // "load" prefix: uses secondaryPreferred
+  async loadCardsListCount(params: CardsListQueryParamsType) {
     const query = await this.getCardsListQuery(params)
-    return this.collection.countDocuments(query)
+    return this.collection.countDocuments(query, {readPreference: 'secondaryPreferred'})
   }
 }
 
