@@ -29,6 +29,82 @@ describe('collectionsRegistry', () => {
     const collections = getRegisteredCollections('nonexistent_connection')
     expect(collections).toEqual([])
   })
+
+  it('should merge indexes when same collection is registered multiple times', async () => {
+    const collectionName = generateId()
+    collectionsRegistry.clear()
+
+    // First createCollection call with one index
+    const collection1 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {email: 1}}],
+    })
+    await collection1.startConnection()
+
+    // Second createCollection call with a different index (same collection name)
+    const collection2 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {createdAt: -1}}],
+    })
+    await collection2.startConnection()
+
+    // Verify indexes are merged
+    const registeredCollections = getRegisteredCollections('main')
+    const found = registeredCollections.find(c => c.name === collectionName)
+
+    expect(found).toBeDefined()
+    expect(found.indexes).toHaveLength(2)
+    expect(found.indexes.some(i => 'email' in (i.keys as object))).toBe(true)
+    expect(found.indexes.some(i => 'createdAt' in (i.keys as object))).toBe(true)
+  })
+
+  it('should not duplicate indexes when same index is registered multiple times', async () => {
+    const collectionName = generateId()
+    collectionsRegistry.clear()
+
+    // First createCollection call
+    createCollection({
+      name: collectionName,
+      indexes: [{keys: {email: 1}}],
+    })
+
+    // Second createCollection call with the same index
+    createCollection({
+      name: collectionName,
+      indexes: [{keys: {email: 1}}],
+    })
+
+    // Verify no duplicates
+    const registeredCollections = getRegisteredCollections('main')
+    const found = registeredCollections.find(c => c.name === collectionName)
+
+    expect(found).toBeDefined()
+    expect(found.indexes).toHaveLength(1)
+  })
+
+  it('should not duplicate indexes with same custom name', async () => {
+    const collectionName = generateId()
+    collectionsRegistry.clear()
+
+    // First createCollection call
+    createCollection({
+      name: collectionName,
+      indexes: [{keys: {email: 1}, name: 'email_idx'}],
+    })
+
+    // Second createCollection call with same named index
+    createCollection({
+      name: collectionName,
+      indexes: [{keys: {email: 1}, name: 'email_idx'}],
+    })
+
+    // Verify no duplicates
+    const registeredCollections = getRegisteredCollections('main')
+    const found = registeredCollections.find(c => c.name === collectionName)
+
+    expect(found).toBeDefined()
+    expect(found.indexes).toHaveLength(1)
+  })
 })
 
 describe('deleteAllUnusedIndexes', () => {
@@ -116,5 +192,41 @@ describe('deleteAllUnusedIndexes', () => {
     // Filter to only check our test collection
     const ourResult = results.find(r => r.collectionName === collectionName)
     expect(ourResult).toBeUndefined() // No result because no indexes were deleted
+  })
+
+  it('should preserve indexes from multiple createCollection calls', async () => {
+    const collectionName = generateId()
+    collectionsRegistry.clear()
+
+    // First createCollection creates index {a: 1}
+    const collection1 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {a: 1}}],
+    })
+    await collection1.startConnection()
+    await collection1.createIndexesPromise
+
+    // Second createCollection creates index {b: 1} (simulating another module)
+    const collection2 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {b: 1}}],
+    })
+    await collection2.startConnection()
+    await collection2.createIndexesPromise
+
+    // Mock logger
+    logger.info = vi.fn()
+
+    // Delete unused indexes - neither a_1 nor b_1 should be deleted
+    const results = await deleteAllUnusedIndexes('main')
+
+    // Neither index should be deleted
+    const ourResult = results.find(r => r.collectionName === collectionName)
+    expect(ourResult).toBeUndefined()
+
+    // Verify both indexes still exist
+    const indexes = await collection1.rawCollection.indexes()
+    expect(indexes.map(i => i.name)).toContain('a_1')
+    expect(indexes.map(i => i.name)).toContain('b_1')
   })
 })
