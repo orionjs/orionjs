@@ -36,8 +36,26 @@ export type DocumentWithId<TSchema> = EnhancedOmit<TSchema, '_id'> & {
 
 export type ModelClassBase = DocumentWithId<MongoDB.Document>
 
-export interface CollectionIndex {
+/**
+ * Index definition for a MongoDB collection.
+ * Supports flat options (recommended) or nested options object (deprecated).
+ *
+ * @example New format (recommended):
+ * ```ts
+ * { keys: { email: 1 }, unique: true, sparse: true }
+ * ```
+ *
+ * @example Old format (deprecated):
+ * ```ts
+ * { keys: { email: 1 }, options: { unique: true, sparse: true } }
+ * ```
+ */
+export interface CollectionIndex extends Partial<MongoDB.CreateIndexesOptions> {
   keys: MongoDB.IndexSpecification
+  /**
+   * @deprecated Use flat options instead. Example: `{ keys: { email: 1 }, unique: true }`
+   * instead of `{ keys: { email: 1 }, options: { unique: true } }`
+   */
   options?: MongoDB.CreateIndexesOptions
 }
 
@@ -307,6 +325,12 @@ export class BaseCollection<ModelClass extends ModelClassBase = ModelClassBase> 
    */
   createIndexes: () => Promise<string[]>
   createIndexesPromise: Promise<string[]>
+  /**
+   * Deletes indexes that exist in MongoDB but are not defined in the collection configuration.
+   * This helps clean up stale indexes that are no longer needed.
+   * Always preserves the _id_ index.
+   */
+  deleteUnusedIndexes: () => Promise<{deletedIndexes: string[]; collectionName: string}>
   /**
    * @deprecated Use startConnection() instead. This property is not guaranteed to be resolved if the connection is not started.
    * When using async calls startConnection or connectionPromise is no longer needed. Orion will automatically start the connection if it is not already started.

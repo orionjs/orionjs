@@ -1,40 +1,47 @@
 import {MongoExpiredSessionError, MongoNotConnectedError} from 'mongodb'
 import {Collection, ModelClassBase} from '..'
 import {logger} from '@orion-js/logger'
+import {isIndexDefined} from './deleteUnusedIndexes'
+import {getIndexOptions} from './getIndexOptions'
 
-function matchingDefinition(defIndex, curIndex) {
-  if (defIndex.options && defIndex.options.name === curIndex.name) return true
-  const defIndexName = Object.keys(defIndex.keys)
-    .map(key => `${key}_${defIndex.keys[key]}`)
-    .join('_')
-  return defIndexName === curIndex.name
+export interface MongoDBIndex {
+  key: Record<string, unknown>
+  name: string
 }
 
+/**
+ * Checks for indexes in the database that are not defined in the collection configuration.
+ * Logs a warning if unexpected indexes are found.
+ */
 export async function checkIndexes<DocumentType extends ModelClassBase>(
   collection: Partial<Collection<DocumentType>>,
-) {
+): Promise<void> {
   await collection.connectionPromise
 
-  let currentIndexes = []
+  // Get current indexes from MongoDB
+  let currentIndexes: Array<{key: Record<string, unknown>; name: string}> = []
   try {
-    currentIndexes = await collection.rawCollection.indexes()
+    currentIndexes = (await collection.rawCollection.indexes()) as MongoDBIndex[]
   } catch (error) {
-    if (error.codeName !== 'NamespaceNotFound') throw error
+    if ((error as {codeName?: string}).codeName !== 'NamespaceNotFound') throw error
+    return
   }
 
-  const indexesToDelete = collection.indexes
-    ? currentIndexes.filter(
-        index =>
-          index.name !== '_id_' &&
-          !collection.indexes.find(definitionIndex => matchingDefinition(definitionIndex, index)),
-      )
-    : currentIndexes
+  // If no indexes defined, skip the check (don't warn about all indexes)
+  if (!collection.indexes || collection.indexes.length === 0) {
+    return
+  }
 
-  if (indexesToDelete.length > 0) {
+  // Find unexpected indexes using the safer key-based matching
+  const unexpectedIndexes = currentIndexes.filter(
+    index => index.name !== '_id_' && !isIndexDefined(collection.indexes, index),
+  )
+
+  if (unexpectedIndexes.length > 0) {
     logger.warn(
-      `${indexesToDelete.length} unexpected indexes found in collection "${
+      `${unexpectedIndexes.length} unexpected indexes found in collection "${
         collection.name
-      }": ${indexesToDelete
+      }": ${unexpectedIndexes
         .map(i => i.name)
         .join(', ')} | Delete the index or fix the collection definition`,
     )
@@ -49,7 +56,11 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
   await collection.connectionPromise
 
   const results = Promise.all(
-    collection.indexes.map(async ({keys, options}) => {
+    collection.indexes.map(async indexDef => {
+      const {keys} = indexDef
+      // Support both flat options and deprecated nested options
+      const options = getIndexOptions(indexDef)
+
       try {
         return await collection.rawCollection.createIndex(keys, options)
       } catch (error) {

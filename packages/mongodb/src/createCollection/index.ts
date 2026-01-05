@@ -28,6 +28,7 @@ import {
 import {loadById, loadOne, loadMany, loadData} from './getMethods/dataLoader'
 import getIdGenerator from './generateId'
 import {loadIndexes} from './createIndexes'
+import {deleteUnusedIndexes} from './deleteUnusedIndexes'
 import {getMongoConnection} from '..'
 import {getSchema} from './getSchemaAndModel'
 import {wrapMethods} from './wrapMethods'
@@ -157,6 +158,10 @@ export function createCollection(options: CreateCollectionOptions) {
   }
 
   mainCollection.createIndexes = createIndexes
+  mainCollection.deleteUnusedIndexes = async () => {
+    await orionConnection.startConnection()
+    return deleteUnusedIndexes(mainCollection)
+  }
 
   if (!process.env.DONT_CREATE_INDEXES_AUTOMATICALLY) {
     createIndexes()
