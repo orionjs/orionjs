@@ -1,5 +1,20 @@
 # @orion-js/typed-model
 
+## 4.2.0
+
+### Minor Changes
+
+- a551d92: version 4.2
+
+### Patch Changes
+
+- Updated dependencies [a551d92]
+  - @orion-js/logger@4.2.0
+  - @orion-js/models@4.2.0
+  - @orion-js/resolvers@4.2.0
+  - @orion-js/schema@4.2.0
+  - @orion-js/services@4.2.0
+
 ## 4.1.7
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 # @orion-js/dogs
 
+## 4.2.0
+
+### Minor Changes
+
+- 4943fde: Implement max tries functionality for job execution, including configuration updates and handling for when maximum attempts are reached. Update related tests to reflect new parameters and behaviors.
+- a551d92: version 4.2
+
+### Patch Changes
+
+- Updated dependencies [4943fde]
+- Updated dependencies [a551d92]
+  - @orion-js/mongodb@4.2.0
+  - @orion-js/helpers@4.2.0
+  - @orion-js/logger@4.2.0
+  - @orion-js/schema@4.2.0
+  - @orion-js/services@4.2.0
+  - @orion-js/typed-model@4.2.0
+
 ## 4.1.12
 
 ### Patch Changes

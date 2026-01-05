@@ -1,5 +1,19 @@
 # @orion-js/models
 
+## 4.2.0
+
+### Minor Changes
+
+- a551d92: version 4.2
+
+### Patch Changes
+
+- Updated dependencies [a551d92]
+  - @orion-js/helpers@4.2.0
+  - @orion-js/logger@4.2.0
+  - @orion-js/resolvers@4.2.0
+  - @orion-js/schema@4.2.0
+
 ## 4.1.7
 
 ### Patch Changes

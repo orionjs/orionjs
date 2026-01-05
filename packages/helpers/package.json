@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/helpers",
-  "version": "4.1.4",
+  "version": "4.2.0",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
