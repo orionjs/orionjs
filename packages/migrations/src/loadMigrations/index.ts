@@ -14,7 +14,7 @@ export function loadMigrations(migrationServices: any[], options?: Options) {
 
   startWorkers({
     cooldownPeriod: 1000,
-    lockTime: 1000 * 60 * 20, // 20 min
+    defaultLockTime: 1000 * 60 * 20, // 20 min
     workersCount: 1,
     pollInterval: 10 * 1000,
     jobs: {
