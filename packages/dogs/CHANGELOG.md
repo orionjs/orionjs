@@ -1,5 +1,12 @@
 # @orion-js/dogs
 
+## 4.2.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/mongodb@4.2.4
+
 ## 4.2.3
 
 ### Patch Changes

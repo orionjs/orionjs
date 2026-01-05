@@ -10,3 +10,5 @@ You must follow the steps:
 You must make sure to:
 - Execute all commands with permissions to access the files and internet for publish (without sandbox)
 - Ensure all changes are PATCH, not minor, not major
+
+* The only changes you need to worry about are the uncommited files
