@@ -1,5 +1,13 @@
 # @orion-js/dogs
 
+## 4.2.6
+
+### Patch Changes
+
+- Improve worker startup logging: instead of logging each worker start individually, now shows a consolidated message like "Starting 5 workers".
+- Updated dependencies [cad56e9]
+  - @orion-js/mongodb@4.2.6
+
 ## 4.2.5
 
 ### Patch Changes
