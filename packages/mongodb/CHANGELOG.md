@@ -1,5 +1,16 @@
 # @orion-js/mongodb
 
+## 4.2.2
+
+### Patch Changes
+
+- - Added `deleteUnusedIndexes()` method to collections to clean up indexes not defined in the collection configuration
+  - Added `deleteAllUnusedIndexes()` function to delete unused indexes from all collections on a connection
+  - Improved index matching to use direct key comparison instead of name-based matching for safer index detection
+  - Added support for flat index options format (e.g., `{ keys: { email: 1 }, unique: true }`) while maintaining backwards compatibility with nested options
+  - Added collections registry that merges indexes when the same collection is created multiple times
+  - Added race condition protection: `deleteAllUnusedIndexes()` now waits for pending index creation before deleting
+
 ## 4.2.1
 
 ### Patch Changes
