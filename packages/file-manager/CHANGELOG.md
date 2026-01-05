@@ -1,5 +1,13 @@
 # @orion-js/file-manager
 
+## 4.2.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/mongodb@4.2.3
+  - @orion-js/paginated-mongodb@4.2.3
+
 ## 4.2.2
 
 ### Patch Changes
