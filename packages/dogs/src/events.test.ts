@@ -17,6 +17,8 @@ describe('Event tests', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     expect(count).toBe(0)
@@ -63,6 +65,8 @@ describe('Event tests', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     expect(passes).toBe(false)
@@ -104,6 +108,8 @@ describe('Event tests', () => {
       pollInterval: 10,
       cooldownPeriod: 10,
       defaultLockTime: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({
@@ -133,6 +139,8 @@ describe('Event tests', () => {
       workersCount: 5,
       pollInterval: 50,
       cooldownPeriod: 50,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await Promise.all([

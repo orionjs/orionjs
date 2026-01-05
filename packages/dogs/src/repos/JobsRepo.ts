@@ -52,6 +52,9 @@ export class JobsRepo {
         jobName: {$in: jobNames},
         nextRunAt: {$lte: new Date()},
         $or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: new Date()}}],
+        // Exclude jobs that have reached max tries. Using $ne handles backwards compatibility
+        // since records without the status field will still match (undefined !== 'maxTriesReached')
+        status: {$ne: 'maxTriesReached'},
       },
       {
         $set: {lockedUntil, lastRunAt: new Date()},
@@ -115,6 +118,20 @@ export class JobsRepo {
 
   async deleteEventJob(jobId: string) {
     await this.jobs.deleteOne({_id: jobId, type: 'event'})
+  }
+
+  /**
+   * Marks a job as having reached its maximum tries limit.
+   * The job will remain in the database but won't be picked up for execution.
+   */
+  async markJobAsMaxTriesReached(jobId: string) {
+    await this.jobs.updateOne(
+      {_id: jobId},
+      {
+        $set: {status: 'maxTriesReached'},
+        $unset: {lockedUntil: ''},
+      },
+    )
   }
 
   async extendLockTime(jobId: string, extraTime: number) {

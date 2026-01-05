@@ -8,6 +8,15 @@ import {getNextRunDate} from './getNextRunDate'
 import {trace, SpanStatusCode} from '@opentelemetry/api'
 import {Blackbox} from '@orion-js/schema'
 
+/**
+ * Configuration for job execution including max tries settings.
+ */
+export interface ExecuteJobConfig {
+  jobs: JobsDefinition
+  maxTries: number
+  onMaxTriesReached: (job: JobToRun) => Promise<void>
+}
+
 @Service()
 export class Executor {
   @Inject(() => JobsRepo)
@@ -57,7 +66,48 @@ export class Executor {
     return job
   }
 
-  async onError(error: any, job: JobDefinition, jobToRun: JobToRun, context: ExecutionContext) {
+  /**
+   * Determines the effective max tries for a job.
+   * Job-specific maxTries takes precedence over the global maxTries from config.
+   */
+  getEffectiveMaxTries(job: JobDefinition, globalMaxTries: number): number {
+    return job.maxTries ?? globalMaxTries
+  }
+
+  /**
+   * Handles when a job has reached its maximum retry attempts.
+   * Marks the job in the database and invokes the onMaxTriesReached callback.
+   */
+  async handleMaxTriesReached(
+    jobToRun: JobToRun,
+    context: ExecutionContext,
+    onMaxTriesReached: (job: JobToRun) => Promise<void>,
+  ) {
+    context.logger.warn(
+      `Job "${jobToRun.name}" has reached max tries (${jobToRun.tries}). Marking as maxTriesReached.`,
+    )
+    await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId)
+
+    // Invoke the callback to notify administrators
+    try {
+      await onMaxTriesReached(jobToRun)
+    } catch (callbackError) {
+      context.logger.error(`Error in onMaxTriesReached callback for job "${jobToRun.name}"`, {
+        error: callbackError,
+      })
+    }
+  }
+
+  async onError(
+    error: unknown,
+    job: JobDefinition,
+    jobToRun: JobToRun,
+    context: ExecutionContext,
+    config: ExecuteJobConfig,
+  ) {
+    const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
+
+    // Helper to schedule next run for recurrent jobs (used when dismissing)
     const scheduleRecurrent = async () => {
       if (job.type === 'recurrent') {
         await this.jobsRepo.scheduleNextRun({
@@ -69,14 +119,42 @@ export class Executor {
       }
     }
 
+    // Helper to handle retry with max tries check
+    const handleRetry = async (nextRunAt: Date) => {
+      // Check if we've reached max tries before scheduling another retry
+      if (jobToRun.tries >= effectiveMaxTries) {
+        await this.handleMaxTriesReached(jobToRun, context, config.onMaxTriesReached)
+        return
+      }
+
+      await this.jobsRepo.scheduleNextRun({
+        jobId: jobToRun.jobId,
+        nextRunAt,
+        addTries: true,
+        priority: job.type === 'recurrent' ? job.priority : jobToRun.priority,
+      })
+    }
+
+    // If no custom error handler, check max tries and schedule recurrent if applicable
     if (!job.onError) {
       context.logger.error(`Error executing job "${jobToRun.name}"`, {error})
+
+      // For jobs without onError, check if max tries reached
+      if (jobToRun.tries >= effectiveMaxTries) {
+        await this.handleMaxTriesReached(jobToRun, context, config.onMaxTriesReached)
+        return
+      }
+
       await scheduleRecurrent()
       return
     }
-    context.logger.info(`Error executing job "${jobToRun.name}"`, {error})
 
-    const result = await job.onError(error, jobToRun.params, context)
+    context.logger.info(`Error executing job "${jobToRun.name}"`, {error})
+    const result = await job.onError(
+      error instanceof Error ? error : new Error(String(error)),
+      jobToRun.params,
+      context,
+    )
 
     if (result.action === 'dismiss') {
       await scheduleRecurrent()
@@ -84,12 +162,7 @@ export class Executor {
     }
 
     if (result.action === 'retry') {
-      await this.jobsRepo.scheduleNextRun({
-        jobId: jobToRun.jobId,
-        nextRunAt: getNextRunDate(result),
-        addTries: true,
-        priority: job.type === 'recurrent' ? job.priority : jobToRun.priority,
-      })
+      await handleRetry(getNextRunDate(result))
     }
   }
 
@@ -143,8 +216,8 @@ export class Executor {
     }
   }
 
-  async executeJob(jobs: JobsDefinition, jobToRun: JobToRun, respawnWorker: Function) {
-    const job = this.getJobDefinition(jobToRun, jobs)
+  async executeJob(config: ExecuteJobConfig, jobToRun: JobToRun, respawnWorker: () => void) {
+    const job = this.getJobDefinition(jobToRun, config.jobs)
     if (!job) return
 
     // If job has a custom lockTime different from the default, update the database lock
@@ -220,13 +293,13 @@ export class Executor {
               jobToRun,
             })
 
-            await this.onError(error, job, jobToRun, context)
+            await this.onError(error, job, jobToRun, context, config)
           }
         })
       } catch (error) {
         span.setStatus({
           code: SpanStatusCode.ERROR,
-          message: error.message,
+          message: (error as Error).message,
         })
         throw error
       } finally {

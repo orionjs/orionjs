@@ -29,6 +29,8 @@ describe('Parallel Event Jobs', () => {
       workersCount: 5, // Multiple workers to enable parallel execution
       pollInterval: 10,
       cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     // Schedule multiple jobs with the same name but different parameters
@@ -81,6 +83,8 @@ describe('Parallel Event Jobs', () => {
       workersCount: 3,
       pollInterval: 10,
       cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     // Schedule jobs with same name but different unique identifiers
@@ -131,6 +135,8 @@ describe('Parallel Event Jobs', () => {
       workersCount: 3,
       pollInterval: 10,
       cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     // Schedule multiple jobs with same unique identifier (should be deduplicated)
@@ -194,6 +200,8 @@ describe('Parallel Event Jobs', () => {
       workersCount: 10, // High worker count
       pollInterval: 5,
       cooldownPeriod: 5,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     // Schedule many jobs with the same name

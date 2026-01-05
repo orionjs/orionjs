@@ -10,6 +10,7 @@ describe('Executor async context', () => {
       scheduleNextRun: vi.fn(),
       deleteEventJob: vi.fn(),
       setJobRecordPriority: vi.fn(),
+      markJobAsMaxTriesReached: vi.fn(),
     }
     executor.jobsHistoryRepo = {
       saveExecution: vi.fn(),
@@ -30,7 +31,9 @@ describe('Executor async context', () => {
 
     await executor.executeJob(
       {
-        testJob: jobDefinition,
+        jobs: {testJob: jobDefinition},
+        maxTries: 10,
+        onMaxTriesReached: async () => {},
       },
       {
         jobId: 'id123',

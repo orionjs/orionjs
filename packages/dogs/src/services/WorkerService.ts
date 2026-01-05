@@ -4,7 +4,7 @@ import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {StartWorkersConfig} from '../types/StartConfig'
 import {sleep} from '@orion-js/helpers'
-import {Executor} from './Executor'
+import {Executor, ExecuteJobConfig} from './Executor'
 import {WorkerInstance, WorkersInstance} from '../types/Worker'
 import {logger} from '@orion-js/logger'
 
@@ -41,7 +41,15 @@ export class WorkerService {
     }
 
     logger.debug(`Got job [w${workerInstance.workerIndex}] to run:`, jobToRun)
-    await this.executor.executeJob(config.jobs, jobToRun, workerInstance.respawn)
+
+    // Build the execution config from the worker config
+    const executeConfig: ExecuteJobConfig = {
+      jobs: config.jobs,
+      maxTries: config.maxTries,
+      onMaxTriesReached: config.onMaxTriesReached,
+    }
+
+    await this.executor.executeJob(executeConfig, jobToRun, workerInstance.respawn)
 
     return true
   }
@@ -128,17 +136,17 @@ export class WorkerService {
     }
   }
 
-  startWorkers(userConfig: Partial<StartWorkersConfig>): WorkersInstance {
-    const defaultConfig: StartWorkersConfig = {
-      jobs: {},
+  /**
+   * Starts the job workers with the provided configuration.
+   * @param userConfig - Configuration for the workers. Required fields: jobs, maxTries, onMaxTriesReached
+   */
+  startWorkers(userConfig: StartWorkersConfig): WorkersInstance {
+    // Apply defaults for optional fields
+    const config: StartWorkersConfig = {
       cooldownPeriod: 100,
       pollInterval: 3000,
       workersCount: 4,
       defaultLockTime: 30 * 1000,
-    }
-
-    const config = {
-      ...defaultConfig,
       ...userConfig,
     }
 

@@ -19,6 +19,8 @@ describe('Test Jobs History', () => {
       jobs: {[jobId]: job},
       workersCount: 10,
       pollInterval: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({
@@ -69,6 +71,8 @@ describe('Test Jobs History', () => {
       jobs: {[jobId]: job},
       workersCount: 1,
       pollInterval: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({
@@ -121,6 +125,8 @@ describe('Test Jobs History', () => {
       workersCount: 3,
       pollInterval: 10,
       defaultLockTime: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({

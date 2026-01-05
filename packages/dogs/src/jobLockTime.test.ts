@@ -26,6 +26,8 @@ describe('Per-job lockTime', () => {
       pollInterval: 5,
       cooldownPeriod: 5,
       defaultLockTime: 10, // Very short default, but job overrides it
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({name: jobId})
@@ -65,6 +67,8 @@ describe('Per-job lockTime', () => {
       pollInterval: 5,
       cooldownPeriod: 5,
       defaultLockTime: 200, // Long default, but job uses shorter lockTime
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({name: jobId})
@@ -102,6 +106,8 @@ describe('Per-job lockTime', () => {
       pollInterval: 5,
       cooldownPeriod: 5,
       defaultLockTime: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({name: jobId})

@@ -1,4 +1,5 @@
 import {JobsDefinition} from './JobsDefinition'
+import {JobToRun} from './Worker'
 
 export type LogLevels = 'debug' | 'info' | 'warn' | 'error' | 'none'
 
@@ -7,6 +8,17 @@ export interface StartWorkersConfig {
    * Object map of the jobs that this workers will execute
    */
   jobs: JobsDefinition
+  /**
+   * Maximum number of tries for a job before it is marked as 'maxTriesReached'.
+   * This is a required global default that can be overridden per job definition.
+   */
+  maxTries: number
+  /**
+   * Callback invoked when a job reaches its maximum tries limit.
+   * Use this to notify administrators (e.g., send an email alert).
+   * The job will remain in the database with status 'maxTriesReached'.
+   */
+  onMaxTriesReached: (job: JobToRun) => Promise<void>
   /**
    * Time in milliseconds to wait between each look without results for a job
    * to run at the database. Default is 3000.

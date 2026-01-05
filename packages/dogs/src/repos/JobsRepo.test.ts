@@ -178,6 +178,8 @@ describe('JobsRepo', () => {
         workersCount: 1,
         pollInterval: 10,
         cooldownPeriod: 10,
+        maxTries: 10,
+        onMaxTriesReached: async () => {},
       })
 
       // Wait for job execution
@@ -225,6 +227,8 @@ describe('JobsRepo', () => {
         workersCount: 1,
         pollInterval: 10,
         cooldownPeriod: 10,
+        maxTries: 10,
+        onMaxTriesReached: async () => {},
       })
 
       // Wait for multiple executions
@@ -272,6 +276,8 @@ describe('JobsRepo', () => {
         workersCount: 1,
         pollInterval: 10,
         cooldownPeriod: 10,
+        maxTries: 10,
+        onMaxTriesReached: async () => {},
       })
 
       // Wait for executions

@@ -70,6 +70,8 @@ describe('Jobs (dogs) with service injections Orion v4 syntax', () => {
       workersCount: 3,
       pollInterval: 10,
       cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
     })
 
     const jobsServiceInstance = getInstance(ExampleJobsService)
