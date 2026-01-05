@@ -104,8 +104,6 @@ export class WorkerService {
   async startANewWorker(config: StartWorkersConfig, workersInstance: WorkersInstance) {
     const workerIndex = workersInstance.workers.length
 
-    logger.info(`Starting worker [w${workerIndex}]`)
-
     const workerInstance: WorkerInstance = {
       running: true,
       workerIndex,
@@ -131,7 +129,11 @@ export class WorkerService {
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
 
-    for (const _ of range(0, config.workersCount)) {
+    const workersCount = config.workersCount
+    const workerWord = workersCount === 1 ? 'worker' : 'workers'
+    logger.info(`Starting ${workersCount} ${workerWord}`)
+
+    for (const _ of range(0, workersCount)) {
       this.startANewWorker(config, workersInstance)
     }
   }

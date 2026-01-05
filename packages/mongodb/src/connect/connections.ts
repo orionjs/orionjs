@@ -96,7 +96,7 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
     this.state = 'connecting'
     // Remove user:password and protocol prefix (mongodb+srv:// or mongodb://) for logging
     const censoredURI = this.uri.replace(/\/\/.*:.*@/, '//').replace(/^mongodb(\+srv)?:\/\//, '')
-    logger.info(`Starting MongoDB connection "${this.connectionName}" [${censoredURI}]`)
+    logger.info(`Starting MongoDB connection ${this.connectionName} (${censoredURI})...`)
     if (this.encrypted.client) {
       await this.connectWithRetry(this.encrypted.client)
       logger.info('Successfully connected to encrypted mongo', {
