@@ -25,7 +25,8 @@ export default function <DocumentType extends ModelClassBase>(
           [options.key]: {$in: values},
         } as ModelToMongoSelector<DocumentType>
 
-        const cursor = collection.find(query)
+        // Use secondaryPreferred to distribute read load across replicas
+        const cursor = collection.find(query, {readPreference: 'secondaryPreferred'})
 
         if (options.sort) {
           cursor.sort(options.sort)
