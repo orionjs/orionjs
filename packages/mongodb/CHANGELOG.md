@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.2.1
+
+### Patch Changes
+
+- b7ebc5f: add a delete all unused indexes method
+
 ## 4.2.0
 
 ### Minor Changes

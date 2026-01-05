@@ -1,5 +1,13 @@
 # @orion-js/migrations
 
+## 4.2.1
+
+### Patch Changes
+
+- Updated dependencies [b7ebc5f]
+  - @orion-js/mongodb@4.2.1
+  - @orion-js/dogs@4.2.1
+
 ## 4.2.0
 
 ### Minor Changes
