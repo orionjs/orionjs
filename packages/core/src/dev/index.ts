@@ -2,6 +2,7 @@ import {getRunner, RunnerOptions} from './runner'
 import watchAndCompile from './watchAndCompile'
 import {copyCursorRule} from './copyCursorRule'
 import {copyMCP} from './copyMCP'
+import {setupKeyboardShortcuts} from './setupKeyboardShortcuts'
 import chalk from 'chalk'
 
 export default async function (options: RunnerOptions, command: any) {
@@ -21,5 +22,6 @@ export default async function (options: RunnerOptions, command: any) {
 
   const runner = getRunner(options, command)
 
+  setupKeyboardShortcuts(runner)
   watchAndCompile(runner)
 }
