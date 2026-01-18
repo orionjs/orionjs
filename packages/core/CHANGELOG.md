@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.2.2
+
+### Patch Changes
+
+- Revert keyboard shortcut to restart dev server feature
+
 ## 4.2.0
 
 ### Minor Changes
