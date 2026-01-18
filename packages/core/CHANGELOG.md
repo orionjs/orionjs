@@ -1,11 +1,5 @@
 # @orion-js/core
 
-## 4.2.1
-
-### Patch Changes
-
-- Add keyboard shortcut to restart dev server by pressing 'r' key
-
 ## 4.2.0
 
 ### Minor Changes
