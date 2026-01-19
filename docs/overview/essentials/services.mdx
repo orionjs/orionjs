@@ -1,99 +1,235 @@
 ---
 title: 'Services'
-description: 'Services are used to define the services for the controller'
+description: 'Services encapsulate business logic following the single responsibility principle'
 ---
 
-Services in Orionjs encapsulate business logic and provide a clean way to organize your application code. They follow the dependency injection pattern, making your code more modular and easier to test.
+Services in Orionjs encapsulate business logic, following the dependency injection pattern to make your code more modular, testable, and maintainable. They separate business logic from data access and controllers.
 
-## Basic Usage
+## Structure and Naming
+
+- Use `@Service()` decorator from `@orion-js/services`
+- Each service should focus on a **single** business operation
+- Follow verb-noun naming convention: `{Action}{Entity}Service` (e.g., `SendEmailService`, `CreatePostService`, `CallWebhookService`)
+- Service should typically have one main public method named like the action (e.g., `execute`, `send`, `create`)
+- Put services in `app/{component}/services/{Action}{Entity}/index.ts`
+
+## Best Practices
+
+- **Single Responsibility**: One service should do only one thing
+- **Meaningful Business Logic**: Services should contain meaningful business logic, not just pass-through to repositories
+- **Don't Over-Abstract**: Don't create services for simple repository interactions - call repositories directly from controllers or other services
+- **Keep Methods Short**: Divide logic into private methods within the same service
+- Use repositories for database operations
+- Use dependency injection with `@Inject(() => ServiceName)`
+- Add proper typing for all parameters and return values
+- Handle validation and error cases appropriately
+- Prefer throwing `ValidationError` when validation of data fails
+- Prefer throwing `UserError` when the error is not a system error
+
+## Basic Example
+
+Here's an example of a service that implements a single business operation with meaningful business logic:
 
 ```typescript
-import {Service} from '@orion-js/services'
+import {Service, Inject} from '@orion-js/services'
+import {CardsRepo} from '../repos/CardsRepo'
+import {Card, CardId} from '../schemas/Card'
+import {BadRequestError} from '@orion-js/http'
+import {NotificationsRepo} from '../repos/NotificationsRepo'
 
 @Service()
-export class UserService {
-  async findById(userId: string) {
-    // Implementation...
-    return user
+export class CreateCardService {
+  @Inject(() => CardsRepo)
+  private cardsRepo: CardsRepo
+
+  @Inject(() => NotificationsRepo)
+  private notificationsRepo: NotificationsRepo
+
+  async execute(data: Omit<Card, '_id'>, userId: string) {
+    // Business logic validation
+    if (data.name.toLowerCase().includes('invalid')) {
+      throw new BadRequestError('invalidCardName')
+    }
+
+    // Apply business rules
+    const enrichedData = {
+      ...data,
+      createdBy: userId,
+      status: this.determineInitialStatus(data),
+      priority: this.calculatePriority(data),
+      createdAt: new Date()
+    }
+
+    // Use repository for data access
+    const card = await this.cardsRepo.createCard(enrichedData)
+
+    // Additional business logic after creation
+    await this.notificationsRepo.createNotification({
+      type: 'card_created',
+      entityId: card._id,
+      userId,
+      message: `Card "${card.name}" was created`
+    })
+
+    return {
+      ...card,
+      isNew: true,
+      canEdit: true
+    }
   }
 
-  async create(userData: {name: string; email: string}) {
-    // Implementation...
-    return newUser
+  private determineInitialStatus(data: Omit<Card, '_id'>) {
+    if (data.dueDate && new Date(data.dueDate) < new Date()) {
+      return 'urgent'
+    }
+    return 'draft'
+  }
+
+  private calculatePriority(data: Omit<Card, '_id'>) {
+    let priority = 0
+
+    if (data.tags?.includes('important')) {
+      priority += 10
+    }
+
+    if (data.dueDate) {
+      const daysUntilDue = Math.floor(
+        (new Date(data.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (daysUntilDue < 3) {
+        priority += 20
+      } else if (daysUntilDue < 7) {
+        priority += 10
+      }
+    }
+
+    return priority
+  }
+}
+```
+
+## Complex Service Example
+
+A more complex example showing a service that orchestrates multiple operations:
+
+```typescript
+@Service()
+export class ProcessCardPaymentService {
+  @Inject(() => CardsRepo)
+  private cardsRepo: CardsRepo
+
+  @Inject(() => PaymentGatewayService)
+  private paymentGatewayService: PaymentGatewayService
+
+  @Inject(() => EmailService)
+  private emailService: EmailService
+
+  async execute(cardId: CardId, paymentDetails: PaymentDetails) {
+    // Get data directly from repository - no need for a dedicated service
+    const card = await this.cardsRepo.getCardById(cardId)
+
+    if (!card) {
+      throw new BadRequestError('cardNotFound')
+    }
+
+    if (card.status === 'paid') {
+      throw new BadRequestError('cardAlreadyPaid')
+    }
+
+    // Process payment through payment gateway
+    const paymentResult = await this.paymentGatewayService.processPayment({
+      amount: card.amount,
+      currency: card.currency,
+      ...paymentDetails
+    })
+
+    if (paymentResult.status === 'success') {
+      await this.handleSuccessfulPayment(card, paymentResult, paymentDetails)
+
+      return {
+        success: true,
+        paymentId: paymentResult.paymentId,
+        receiptUrl: paymentResult.receiptUrl
+      }
+    } else {
+      throw new BadRequestError('paymentFailed', {
+        reason: paymentResult.reason
+      })
+    }
+  }
+
+  private async handleSuccessfulPayment(card: Card, paymentResult: PaymentResult, paymentDetails: PaymentDetails) {
+    await this.cardsRepo.updateCard(card._id, {
+      status: 'paid',
+      paymentId: paymentResult.paymentId,
+      paidAt: new Date()
+    })
+
+    await this.emailService.sendEmail({
+      to: paymentDetails.email,
+      subject: 'Payment Confirmation',
+      template: 'payment-confirmation',
+      data: {
+        cardName: card.name,
+        amount: card.amount,
+        currency: card.currency,
+        paymentId: paymentResult.paymentId
+      }
+    })
   }
 }
 ```
 
 ## Dependency Injection
 
-Services can be injected into other services or controllers. In v4, you must use the factory function pattern for dependency injection:
+Services can be injected into other services or controllers. Always use the factory function pattern:
 
 ```typescript
 import {Service, Inject} from '@orion-js/services'
-import {UserService} from './UserService'
 
 @Service()
-export class AuthService {
-  // Use factory function for dependency injection
-  @Inject(() => UserService)
-  private userService: UserService
+export class AuthenticateUserService {
+  @Inject(() => UsersRepo)
+  private usersRepo: UsersRepo
 
-  async login(email: string, password: string) {
-    // Use injected service
-    const user = await this.userService.findByEmail(email)
-    // Implementation...
-    return token
-  }
-}
-```
+  @Inject(() => GenerateAuthTokenService)
+  private tokenService: GenerateAuthTokenService
 
-## Circular Dependencies
+  @Inject(() => SecurityService)
+  private securityService: SecurityService
 
-The factory function pattern used in v4 automatically handles circular dependencies:
+  async execute(email: string, password: string) {
+    const user = await this.usersRepo.findByEmail(email)
 
-```typescript
-import {Service, Inject} from '@orion-js/services'
-import {AuthService} from './AuthService'
+    if (!user) {
+      throw new BadRequestError('userNotFound')
+    }
 
-@Service()
-export class TokenService {
-  @Inject(() => AuthService)
-  private authService: AuthService
-
-  validateToken(token: string) {
-    // Implementation...
-  }
-}
-```
-
-## Testing
-
-Services are designed to be easily testable with Jest:
-
-```typescript
-// In your test
-import {mockService} from '@orion-js/services'
-import {UserService} from './UserService'
-import {AuthService} from './AuthService'
-
-describe('AuthService', () => {
-  it('should authenticate valid users', async () => {
-    // Mock the dependency
-    mockService(UserService, {
-      findByEmail: async () => ({
-        id: '123',
-        email: 'test@example.com',
-        password: 'hashed_password'
-      })
+    const isPasswordValid = await this.securityService.verifyPassword({
+      inputPassword: password,
+      storedHash: user.password,
+      salt: user.salt
     })
 
-    const authService = new AuthService()
-    const result = await authService.login('test@example.com', 'password')
-    
-    expect(result).toBeDefined()
-  })
-})
+    if (!isPasswordValid) {
+      await this.usersRepo.incrementFailedLoginAttempts(user._id)
+      throw new BadRequestError('invalidPassword')
+    }
+
+    if (user.failedLoginAttempts > 0) {
+      await this.usersRepo.resetFailedLoginAttempts(user._id)
+    }
+
+    return this.tokenService.execute({
+      userId: user._id,
+      roles: user.roles,
+      permissions: await this.securityService.calculateEffectivePermissions(user)
+    })
+  }
+}
 ```
+
+The factory function pattern `@Inject(() => ServiceName)` automatically handles circular dependencies.
 
 ## Getting Service Instances
 
@@ -101,14 +237,64 @@ You can get service instances from anywhere in your application:
 
 ```typescript
 import {getInstance} from '@orion-js/services'
-import {UserService} from './UserService'
+import {CreateCardService} from './CreateCardService'
 
-// Get an instance of the service
-const userService = getInstance(UserService)
-
-// Use the service
-await userService.findById('123')
+const createCardService = getInstance(CreateCardService)
+await createCardService.execute(cardData, userId)
 ```
 
-Services form the backbone of Orionjs applications, providing a structured way to organize business logic and maintain separation of concerns.
+## Testing
 
+Services are designed to be easily testable with mocks:
+
+```typescript
+import {mockService} from '@orion-js/services'
+import {AuthenticateUserService} from './AuthenticateUserService'
+import {GenerateAuthTokenService} from './GenerateAuthTokenService'
+import {SecurityService} from './SecurityService'
+import {UsersRepo} from '../repos/UsersRepo'
+
+describe('AuthenticateUserService', () => {
+  it('should authenticate valid users', async () => {
+    // Mock the repository directly
+    mockService(UsersRepo, {
+      findByEmail: async () => ({
+        _id: 'usr-123',
+        email: 'test@example.com',
+        password: 'hashed_password',
+        salt: 'salt123',
+        failedLoginAttempts: 0,
+        roles: ['user']
+      }),
+      resetFailedLoginAttempts: async () => true
+    })
+
+    // Mock services with complex business logic
+    mockService(SecurityService, {
+      verifyPassword: async () => true,
+      calculateEffectivePermissions: async () => ['read:profile', 'edit:profile']
+    })
+
+    mockService(GenerateAuthTokenService, {
+      execute: async () => ({
+        token: 'test-token',
+        expiresAt: new Date()
+      })
+    })
+
+    const authService = new AuthenticateUserService()
+    const result = await authService.execute('test@example.com', 'password')
+
+    expect(result.token).toBeDefined()
+  })
+})
+```
+
+## When NOT to Create a Service
+
+Don't create a service if you're just:
+- Calling a single repository method without additional business logic
+- Passing through data without transformation or validation
+- Creating a thin wrapper around an external API without business rules
+
+In these cases, call the repository or external service directly from your controller or another service.

@@ -1,83 +1,171 @@
 ---
 title: Migrations
+description: 'Data migrations and schema updates in Orionjs'
 ---
 
-The migrations module in Orion.js provides a way to perform and track database migrations or any other system changes that need to be executed only once in a sequential manner.
+Migrations in Orionjs are used to perform data transformations and schema updates on existing data. They run automatically via a background job and track completion state to ensure each migration runs only once.
 
 ## Installation
-
-First, install the package:
 
 ```bash
 pnpm add @orion-js/migrations
 ```
 
-## Basic Concepts
+## Structure and Naming
 
-Migrations in Orion.js:
+- Use `@MigrationService()` decorator from `@orion-js/migrations`
+- Each migration should be a separate class
+- Follow naming convention: `Migrate{Entity}{Action}.v{Version}` (e.g., `MigrateUsersPlanType.v1`)
+- Implement a `runMigration()` method that performs the migration logic
+- Version suffix (`.v1`, `.v2`) allows re-running modified migrations
+- Put migrations in `app/{component}/migrations/Migrate{Entity}{Action}/index.ts`
 
-- Run sequentially in the order they are defined
-- Execute only once (tracked in the database)
-- Can optionally run within MongoDB transactions
-- Automatically run through a background job that checks for pending migrations
+## Best Practices
 
-## Configuration
+- **Idempotency**: Design migrations to be safely re-runnable when possible
+- **Progress logging**: Log progress every N documents for long-running migrations
+- **Query optimization**: Only fetch documents that need updating (use `$exists: false` or similar filters)
+- **Batch processing**: Process documents in a cursor loop, not loading all into memory
+- **Direct collection access**: Migrations are the exception where direct collection access is allowed
+- **Use `useMongoTransactions: false`** unless you specifically need transaction support
+- Use dependency injection to leverage existing services for business logic
+- Define local interfaces for document shapes to avoid tight coupling with schema changes
 
-To set up migrations in your project, you need to:
-
-1. Create migration services
-2. Load them in your application
-
-### Setting Up Migrations
-
-Create a configuration file for migrations, typically at `app/config/migrations/index.ts`:
-
-```typescript
-import {loadMigrations} from '@orion-js/migrations'
-import {MigrationExample1} from './list/MigrationExample1'
-import {MigrationExample2} from './list/MigrationExample2'
-
-// Load migrations in the order they should execute
-loadMigrations([MigrationExample1, MigrationExample2])
-```
-
-### Creating Migration Files
-
-Migrations are defined as services using the `MigrationService` decorator. Each migration must have:
-
-- A unique name (typically including a version number)
-- A `runMigration` method containing the migration logic
-
-Example migration file (`app/config/migrations/list/MigrationExample1/index.ts`):
+## Complete Example
 
 ```typescript
-import {ExecutionContext} from '@orion-js/dogs'
 import {logger} from '@orion-js/logger'
 import {MigrationService} from '@orion-js/migrations'
+import {createCollection} from '@orion-js/mongodb'
+import {Inject} from '@orion-js/services'
+import {CalculateCallerPlanTypeService} from 'app/ai/services/CalculateCallerPlanType'
 
+/**
+ * Local interface for the document structure we're migrating.
+ * Keeps the migration decoupled from schema changes.
+ */
+interface GenerationLogCaller {
+  userId?: string
+  organizationId?: string
+  isAnonymous?: boolean
+}
+
+interface GenerationLogDoc {
+  _id: string
+  caller?: GenerationLogCaller
+}
+
+/**
+ * Migration to set planType and planId for all existing GenerationLogs.
+ * Uses current subscription status since all logs were generated recently.
+ */
 @MigrationService({
-  name: 'MigrationExample1.v1',
-  useMongoTransactions: false
+  name: 'MigrateGenerationLogsPlanType.v1',
+  useMongoTransactions: false,
 })
-export class MigrationExample1 {
-  async runMigration(context: ExecutionContext) {
-    // Extend lock time if needed for long-running migrations
-    context.extendLockTime(1000 * 60 * 60) // one hour
-    
-    logger.info('Running migration example 1')
-    
-    // Implement your migration logic here
-    // For example:
-    // - Update database records
-    // - Create new collections
-    // - Transform data
+export class MigrateGenerationLogsPlanType {
+  // Direct collection access is allowed during migrations
+  private collection = createCollection({name: 'ai.generation_logs'})
+
+  @Inject(() => CalculateCallerPlanTypeService)
+  private calculateCallerPlanTypeService: CalculateCallerPlanTypeService
+
+  async runMigration() {
+    // Only fetch documents that need updating
+    const cursor = this.collection.find({
+      'caller.planType': {$exists: false},
+    })
+
+    let processed = 0
+    let updated = 0
+
+    // Process documents in a cursor loop to avoid memory issues
+    for await (const doc of cursor) {
+      const log = doc as GenerationLogDoc
+      const planInfo = await this.calculateCallerPlanTypeService.execute(log.caller)
+
+      await this.collection.updateOne(
+        {_id: log._id},
+        {
+          $set: {
+            'caller.planType': planInfo.planType,
+            ...(planInfo.planId && {'caller.planId': planInfo.planId}),
+          },
+        },
+      )
+
+      updated++
+      processed++
+
+      // Log progress every 500 documents
+      if (processed % 500 === 0) {
+        logger.info('Migration progress', {processed, updated})
+      }
+    }
+
+    logger.info('MigrateGenerationLogsPlanType complete', {processed, updated})
   }
 }
 ```
 
-## Advanced Features
+## Simple Migration Example
 
-### MongoDB Transactions
+For simple field additions or transformations without external dependencies:
+
+```typescript
+import {logger} from '@orion-js/logger'
+import {MigrationService} from '@orion-js/migrations'
+import {createCollection} from '@orion-js/mongodb'
+
+/**
+ * Add default status field to all users without one.
+ */
+@MigrationService({
+  name: 'MigrateUsersAddDefaultStatus.v1',
+  useMongoTransactions: false,
+})
+export class MigrateUsersAddDefaultStatus {
+  private collection = createCollection({name: 'auth.users'})
+
+  async runMigration() {
+    const result = await this.collection.updateMany(
+      {status: {$exists: false}},
+      {$set: {status: 'active'}},
+    )
+
+    logger.info('MigrateUsersAddDefaultStatus complete', {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    })
+  }
+}
+```
+
+## Loading Migrations
+
+Migrations must be registered using `loadMigrations()` to enable automatic execution:
+
+```typescript
+import {loadMigrations} from '@orion-js/migrations'
+import {MigrateGenerationLogsPlanType} from './migrations/MigrateGenerationLogsPlanType'
+import {MigrateUsersEmailFormat} from './migrations/MigrateUsersEmailFormat'
+
+// Register all migrations - they will run automatically via background job
+loadMigrations([
+  MigrateGenerationLogsPlanType,
+  MigrateUsersEmailFormat,
+])
+```
+
+## How Migrations Run
+
+- Migrations are executed by a background job that polls every 30 seconds
+- Only one migration runs at a time, in the order they are registered
+- Completed migrations are tracked in the `orionjs.migrations` collection
+- The migration name serves as the unique identifier for tracking completion
+- A lock prevents concurrent migration execution across multiple server instances
+
+## MongoDB Transactions
 
 For operations that need to be atomic, you can use MongoDB transactions:
 
@@ -87,29 +175,29 @@ For operations that need to be atomic, you can use MongoDB transactions:
   useMongoTransactions: true
 })
 export class TransactionalMigration {
-  async runMigration(context: ExecutionContext) {
+  async runMigration() {
     // All database operations will be in a transaction
     // If any operation fails, all changes will be rolled back
   }
 }
 ```
 
-### Long-Running Migrations
+## Long-Running Migrations
 
-For migrations that take a long time to complete, extend the lock time to prevent the job from timing out:
+For migrations that take a long time, extend the lock time:
 
 ```typescript
 async runMigration(context: ExecutionContext) {
   // Extend lock time to two hours
   context.extendLockTime(1000 * 60 * 60 * 2)
-  
+
   // Long-running operations...
 }
 ```
 
-### Disabling Automatic Execution
+## Disabling Automatic Execution
 
-If you want to manually control when migrations run, you can disable the automatic job:
+If you want to manually control when migrations run:
 
 ```typescript
 loadMigrations([MigrationExample1, MigrationExample2], {
@@ -117,27 +205,21 @@ loadMigrations([MigrationExample1, MigrationExample2], {
 })
 ```
 
-Then you can manually trigger migrations using the `MigrationsService`:
+Then manually trigger migrations:
 
 ```typescript
 import {getInstance} from '@orion-js/services'
 import {MigrationsService} from '@orion-js/migrations'
 import {createContext} from '@orion-js/dogs'
 
-// To run migrations manually
 const migrationService = getInstance(MigrationsService)
 const context = createContext()
 await migrationService.runMigrations(migrations, context)
 ```
 
-## How It Works
+## When to Create a New Migration Version
 
-Migrations in Orion.js work using a background job that:
-
-1. Checks for pending migrations every 30 seconds
-2. Runs the next unexecuted migration
-3. Marks the migration as complete upon successful execution
-4. Continues until all migrations are executed
-
-Migrations are stored in the `orionjs.migrations` collection in MongoDB with their execution status.
-
+Create a new version (`.v2`, `.v3`, etc.) when:
+- The original migration logic had a bug that needs fixing
+- You need to re-run a migration with modified logic
+- The migration name must change to run again (completed names are tracked)

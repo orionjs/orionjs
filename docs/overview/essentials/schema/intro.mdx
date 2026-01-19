@@ -1,6 +1,6 @@
 ---
 title: 'Introduction'
-description: 'Schema is used to define the schema for the controller'
+description: 'Schemas define data structures with type safety and automatic integration'
 ---
 
 The schema package in Orionjs provides a powerful type-safe way to define data structures in your application. Schemas serve two main purposes:
@@ -8,83 +8,181 @@ The schema package in Orionjs provides a powerful type-safe way to define data s
 1. **Define data structures**: Schemas describe the structure, types, and validation rules for your data models.
 2. **Automatic integration**: Schemas automatically integrate with GraphQL for API generation and MongoDB for document validation.
 
-## Schema Definition
+## Structure and Naming
 
-The modern approach to define schemas in Orionjs uses the `schemaWithName` function to create type-safe data structures.
+- Use `schemaWithName()` function from `@orion-js/schema`
+- Follow naming conventions: `{EntityName}Schema` for the schema, `{EntityName}` for the type
+- Keep schemas focused on a single entity or concept
+- Put schemas in `app/{component}/schemas/{EntityName}/index.ts`
+- Prefer `createEnum` for enum types
+- Avoid big entities; split them into smaller ones and use composition
+- Use `typedId()` for MongoDB document IDs
+- Schema validation errors should be camelCase (e.g., `priceMustBePositive`)
 
-### Basic Usage
+## Basic Usage
+
+```typescript
+import {schemaWithName, InferSchemaType, createEnum} from '@orion-js/schema'
+import {typedId} from '@orion-js/mongodb'
+
+// Create a type-safe enum for product status
+export const ProductStatusEnum = createEnum('ProductStatusEnum', [
+  'draft',
+  'active',
+  'discontinued'
+] as const)
+
+// Create a typed ID for products
+export const typedProductId = typedId('prd')
+export type ProductId = typeof typedProductId.__tsFieldType
+
+export const ProductSchema = schemaWithName('Product', {
+  _id: {type: typedProductId},
+  name: {type: String, label: 'Product Name', min: 3, max: 100},
+  description: {type: String, optional: true},
+  status: {type: ProductStatusEnum, defaultValue: 'draft'},
+  price: {
+    type: Number,
+    validate: (value) => {
+      if (value < 0) return 'priceMustBePositive'
+    }
+  },
+  createdAt: {type: Date, defaultValue: () => new Date()}
+})
+
+// Infer the TypeScript type from your schema
+export type Product = InferSchemaType<typeof ProductSchema>
+
+// The type will be inferred as:
+// type Product = {
+//   _id: `prd-${string}`;
+//   name: string;
+//   description?: string;
+//   status: "draft" | "active" | "discontinued";
+//   price: number;
+//   createdAt: Date;
+// }
+```
+
+## Nested Schemas
+
+Create nested schemas for complex data structures:
 
 ```typescript
 import {schemaWithName, InferSchemaType} from '@orion-js/schema'
-import {typedId} from '@orion-js/mongodb'
 
-export const UserSchema = schemaWithName('UserSchema', {
-  _id: {type: typedId('user')},
-  name: {type: String, label: 'Full Name'},
-  email: {type: String, optional: true},
-  createdAt: {type: Date}
+// Create a nested schema for product variants
+export const ProductVariantSchema = schemaWithName('ProductVariant', {
+  name: {type: String, label: 'Variant Name', min: 2},
+  price: {type: Number, min: 0},
+  sku: {type: String, optional: true}
 })
 
-// You can infer the TypeScript type from your schema
-export type UserType = InferSchemaType<typeof UserSchema>
-```
+export type ProductVariant = InferSchemaType<typeof ProductVariantSchema>
 
-The `schemaWithName()` function creates an Orionjs schema with a name, which is required for GraphQL integration. Each property is defined with its type and options.
+export const ProductSchema = schemaWithName('Product', {
+  _id: {type: typedProductId},
+  name: {type: String},
+  variants: {type: [ProductVariantSchema], optional: true},
+  tags: {type: [String], optional: true}
+})
+
+export type Product = InferSchemaType<typeof ProductSchema>
+```
 
 ## Integration with GraphQL
 
-Schemas defined with `schemaWithName` are automatically converted to GraphQL types when used in your API, saving you from writing redundant type definitions.
+Schemas defined with `schemaWithName` are automatically converted to GraphQL types when used in your API:
 
 ```typescript
-import {createQuery, Resolvers} from '@orion-js/graphql'
-import {UserSchema} from '../schemas/UserSchema'
+import {Query, Resolvers, createQuery} from '@orion-js/graphql'
+import {ProductSchema} from '../schemas/Product'
 
 @Resolvers()
-export class UserResolvers {
+export class ProductResolvers {
   @Query()
-  getUser = createQuery({
+  product = createQuery({
     params: {
-      userId: {type: typedId('user')}
-    }
-    returns: UserSchema,
+      productId: {type: typedProductId}
+    },
+    returns: ProductSchema,
     resolve: async (params) => {
-      // Your implementation here
-      return user // Returns object that matches UserSchema
+      return product
     }
   })
 }
 ```
 
 When the above resolver is registered, Orionjs automatically:
-- Creates a GraphQL type for `UserSchema`
+- Creates a GraphQL type for `ProductSchema`
 - Sets up the appropriate field types based on your schema definition
 - Handles type conversions between your application and GraphQL
 
 ## Integration with MongoDB
 
-When using schemas with MongoDB collections, Orionjs automatically validates documents before insertion or updates:
+When using schemas with MongoDB collections, Orionjs automatically validates documents:
 
 ```typescript
 import {createCollection} from '@orion-js/mongodb'
-import {UserSchema} from '../schemas/UserSchema'
+import {ProductSchema} from '../schemas/Product'
 
-const Users = createCollection({
-  name: 'users',
-  schema: UserSchema
+const Products = createCollection({
+  name: 'store.products',
+  schema: ProductSchema
 })
 
-// Document will be automatically validated against UserSchema before insertion
-await Users.insertOne({
-  name: 'John Doe',
-  email: 'john@example.com',
+// Document will be automatically validated against ProductSchema
+await Products.insertOne({
+  name: 'Widget',
+  price: 29.99,
   createdAt: new Date()
 })
 ```
 
-The validation ensures:
-- All required fields are present
-- Types match those defined in the schema
-- Any custom validation rules are satisfied
+## Common Schema Types
+
+```typescript
+export const TypeExamplesSchema = schemaWithName('TypeExamples', {
+  stringField: {type: String},          // Text values
+  numberField: {type: Number},          // Numeric values (integers or floats)
+  integerField: {type: 'integer'},      // Force whole numbers only
+  booleanField: {type: Boolean},        // true/false values
+  dateField: {type: Date},              // Date and time values
+  emailField: {type: 'email'},          // Email with automatic validation
+  dynamicField: {type: 'blackbox'},     // Any object without specific schema
+  stringArrayField: {type: [String]}    // Array of strings
+})
+```
+
+## Property Options
+
+Properties can be configured with the following options:
+
+```typescript
+{
+  // Core options
+  type: String,                           // Required type definition
+  label: 'Human-readable label',          // For UI and error messages
+  description: 'Field description',       // For documentation
+  optional: true,                         // Make field optional (default: false)
+  private: true,                          // Hide from GraphQL API
+
+  // Validation options
+  min: 0,                                 // Min value/length
+  max: 100,                               // Max value/length
+  allowedValues: ['small', 'medium'],     // Restrict to allowed values
+
+  // Default and transformation
+  defaultValue: 'draft',                  // Static default
+  defaultValue: () => new Date(),         // Dynamic default
+  clean: (value) => value.trim(),         // Transform before validation
+
+  // Custom validation
+  validate: (value) => {
+    if (someCondition) return 'errorCode' // camelCase error codes
+  }
+}
+```
 
 ## Next Steps
 
@@ -96,5 +194,3 @@ Explore more about schemas:
 - [Advanced Schema Usage](./advanced) - Discover nested schemas, arrays, and schema inheritance
 - [Schema Serialization](./serialization) - Learn how schemas are serialized for client-side validation
 - [GraphQL Integration](./graphql) - Understand how schemas integrate with GraphQL
-
-

@@ -1,49 +1,168 @@
 ---
 title: 'Repositories'
-description: 'Repositories are used to interact with the database'
+description: 'Repositories handle data access operations following the repository pattern'
 ---
 
-Repositories in Orionjs are specialized services that handle data access operations. They follow the repository pattern, which separates data access logic from business logic, making your code more maintainable and testable.
+Repositories in Orionjs handle data access operations, separating data access logic from business logic. They should focus exclusively on database interactions.
 
-## Basic Usage
+## Structure and Naming
 
-Repositories use the `@Repository` decorator, which is a semantic distinction from `@Service` to clarify the component's purpose:
+- Use `@Repository()` decorator from `@orion-js/mongodb`
+- Each repository should manage a single entity type
+- Follow naming convention: `{EntityNameInPlural}Repo` (e.g., `UsersRepo`, `CardsRepo`)
+- Put repositories in `app/{component}/repos/{EntityNameInPlural}Repo/index.ts`
+- Collection name should be `{component_name}.{plural_of_entity}` (e.g., `gaming.pokemon_cards`)
+
+## Best Practices
+
+- Keep methods simple and focused on a single responsibility
+- **Never access the collection directly outside the repository.** All database interactions must go through repository methods. The only exception is during migrations.
+- Return plain objects or domain models, not database-specific structures
+- Use descriptive method names: `findById`, `findByEmail`, `create{EntityName}`, `update{EntityName}`, `delete{EntityName}`
+- Avoid business logic in repositories (use services instead)
+- Add proper typing for all parameters and return values
+- Always use `typedId()` in schema definitions for document IDs
+- Use `InferSchemaType` to derive types from schemas
+
+## Naming Convention: get vs load
+
+Use the `load` prefix instead of `get` for methods where data freshness is not guaranteed:
+
+**Use `load` prefix when the method:**
+- Uses `secondaryPreferred` read preference (eventually consistent reads from replica secondaries)
+- Uses DataLoader methods like `loadById`, `loadMany` (batched/deduplicated reads within request scope)
+- Reads from cache (in-memory, Redis, or any caching layer)
+
+**Use `get` prefix when the method:**
+- Reads directly from primary with no caching
+- Requires guaranteed data freshness (read-after-write scenarios)
+
+**Examples:**
+- `getCardsListCursor` → `loadCardsListCursor` (uses `secondaryPreferred`)
+- `getCardById` → `loadCardById` (if using DataLoader or cache)
+- `findById` stays as is (direct primary read)
+
+## Read Preferences for Non-Critical Queries
+
+For queries that don't require strong consistency, use the `readPreference: 'secondaryPreferred'` option to distribute read load across MongoDB replica set secondaries. This is especially important for:
+
+- **Aggregations**: Heavy aggregation pipelines
+- **List queries**: Paginated lists or search results
+- **Reports and analytics**: Read-heavy operations for dashboards
+- **Count operations**: Document counts for UI display
+
+**When NOT to use `secondaryPreferred`:**
+- When reading data immediately after a write (use primary for read-after-write consistency)
+- For critical operations where stale data could cause issues
+- When the query result will be used to make a write decision
+
+## Complete Example
 
 ```typescript
-import {Repository} from '@orion-js/mongodb'
-import {schemaWithName, InferSchemaType} from '@orion-js/schema'
-import {createCollection, typedId} from '@orion-js/mongodb'
+import {createCollection, MongoFilter, Repository, OptionalId, MongoDB} from '@orion-js/mongodb'
+import {InferSchemaType, schemaWithName, typedId} from '@orion-js/schema'
 
-// Define your schema with types
-const UserSchema = schemaWithName('User', {
-  _id: {
-    type: typedId('user')
-  },
-  name: {
-    type: String
-  },
-  email: {
-    type: String
-  }
+// Define the schema with typedId
+export const typedCardId = typedId('crd')
+export type CardId = typeof typedCardId.__tsFieldType
+
+export const CardSchema = schemaWithName('Card', {
+  _id: {type: typedCardId},
+  name: {type: String},
+  status: {type: String, optional: true},
+  createdAt: {type: Date}
 })
 
-// Infer the type from the schema
-type UserType = InferSchemaType<typeof UserSchema>
+export type Card = InferSchemaType<typeof CardSchema>
+
+// Define query params schema
+export const CardsListQueryParamsSchema = schemaWithName('CardsListQueryParams', {
+  filter: {type: String, optional: true},
+})
+
+export type CardsListQueryParamsType = InferSchemaType<typeof CardsListQueryParamsSchema>
 
 @Repository()
-export class UserRepository {
-  // Define your collection
-  private users = createCollection({
-    name: 'users',
-    schema: UserSchema
+export class CardsRepo {
+  // Collection is public only to allow access during migrations.
+  // Never access this collection directly outside this repository.
+  collection = createCollection({
+    name: 'gaming.pokemon_cards',
+    schema: CardSchema,
+    indexes: [],
   })
 
-  async findById(id: string): Promise<UserType | null> {
-    return await this.users.findOne({_id: id})
+  async createCard(doc: OptionalId<Card>) {
+    return await this.collection.insertAndFind(doc)
   }
 
-  async create(userData: Omit<UserType, '_id'>) {
-    return await this.users.insertAndFind(userData)
+  // "get" prefix: direct read from primary, guaranteed fresh data
+  async getCardById(docId: CardId) {
+    return await this.collection.findOne(docId)
+  }
+
+  // "load" prefix: uses DataLoader (batched/deduplicated, may return cached data within request)
+  async loadCardById(docId: CardId) {
+    return await this.collection.loadById(docId)
+  }
+
+  async updateCard(docId: CardId, doc: MongoDB.UpdateFilter<Card>['$set']) {
+    return await this.collection.updateAndFind(docId, {$set: doc})
+  }
+
+  async deleteCard(docId: CardId) {
+    await this.collection.updateOne(docId, {$set: {deletedAt: new Date()}})
+  }
+
+  private async getCardsListQuery(params: CardsListQueryParamsType) {
+    const queries: MongoFilter<Card>[] = []
+
+    if (params.filter) {
+      queries.push({name: {$regex: params.filter, $options: 'i'}})
+    }
+
+    return queries.length ? {$and: queries} : {}
+  }
+
+  // "load" prefix: uses secondaryPreferred (data may be slightly stale)
+  async loadCardsListCursor(params: CardsListQueryParamsType) {
+    const query = await this.getCardsListQuery(params)
+    return this.collection.find(query, {readPreference: 'secondaryPreferred'})
+  }
+
+  // "load" prefix: uses secondaryPreferred
+  async loadCardsListCount(params: CardsListQueryParamsType) {
+    const query = await this.getCardsListQuery(params)
+    return this.collection.countDocuments(query, {readPreference: 'secondaryPreferred'})
+  }
+
+  // "load" prefix: aggregation on secondary
+  async loadCardsStats() {
+    return this.collection.aggregate([
+      {$group: {_id: '$status', count: {$sum: 1}}}
+    ], {readPreference: 'secondaryPreferred'})
+  }
+}
+```
+
+## Integration with Services
+
+Services should inject repositories for data access:
+
+```typescript
+import {Service, Inject} from '@orion-js/services'
+import {CardsRepo} from '../repos/CardsRepo'
+import {CardId} from '../schemas/Card'
+
+@Service()
+export class GetCardDetailsService {
+  @Inject(() => CardsRepo)
+  private cardsRepo: CardsRepo
+
+  async execute(cardId: CardId) {
+    const card = await this.cardsRepo.getCardById(cardId)
+    // Process card data with business logic
+    return processedCardData
   }
 }
 ```
@@ -60,25 +179,3 @@ This separation of concerns leads to:
 - Easier testing
 - Better maintainability
 - Clearer dependencies
-
-## Dependency Injection
-
-Like services, repositories can be injected into other components using the factory function pattern:
-
-```typescript
-import {Service, Inject} from '@orion-js/services'
-import {UserRepository} from './UserRepository'
-
-@Service()
-export class UserService {
-  @Inject(() => UserRepository)
-  private userRepository: UserRepository
-
-  async validateAndCreateUser(userData: {name: string; email: string}) {
-    // Business logic and validation here
-    
-    // Use repository for data operations
-    return this.userRepository.create(userData)
-  }
-}
-```
