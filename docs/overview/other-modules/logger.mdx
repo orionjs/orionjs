@@ -20,9 +20,7 @@ import {logger} from '@orion-js/logger'
 logger.debug('Debug message', {customData: 'value'})
 logger.info('Info message', {userId: 123})
 logger.warn('Warning message', {attemptCount: 3})
-logger.error('Error occurred', {
-  error: new Error('Something went wrong')
-})
+logger.error('Error occurred', {error: new Error('Something went wrong')})
 
 // Add metadata to all subsequent logs from this logger instance
 const userLogger = logger.addMetadata({userId: 'user-123'})
@@ -32,6 +30,48 @@ userLogger.info('User action', {action: 'login'})
 const contextLogger = logger.addContext(module)
 contextLogger.info('Operation completed', {result: 'success'})
 ```
+
+## Critical Logging Pattern
+
+**The first argument must always be a static string.** All variables should be passed in the object as the second argument.
+
+```typescript
+// CORRECT - Static string first, variables in object
+logger.info('User created successfully', {userId: user._id, email: user.email})
+logger.warn('Rate limit approaching', {currentRate: rate, limit: maxRate})
+
+// INCORRECT - Variables in the message string
+logger.info(`User ${userId} created`) // DON'T DO THIS
+logger.info('User ' + userId + ' created') // DON'T DO THIS
+```
+
+This pattern is required because:
+- Log aggregation tools can group logs by the static message
+- Searching logs by message becomes predictable
+- Variable data is properly indexed and queryable
+
+## Error Logging Pattern
+
+When logging errors, **the error object must be in a parameter named `error` in the second argument object**:
+
+```typescript
+try {
+  await performOperation()
+} catch (error) {
+  // CORRECT - Error object in the 'error' property
+  logger.error('Operation failed', {error, userId, operationType})
+
+  // INCORRECT - Error as message or wrong property name
+  logger.error(error.message) // DON'T DO THIS
+  logger.error('Operation failed', {err: error}) // DON'T DO THIS
+  logger.error('Operation failed: ' + error.message) // DON'T DO THIS
+}
+```
+
+This ensures:
+- Stack traces are properly captured
+- Error serialization works correctly
+- Log analysis tools can extract error details
 
 ## Features
 
@@ -64,12 +104,6 @@ The logger supports two main output formats:
    - Structured JSON logs
    - Ideal for log aggregation and analysis
    - Default in production environments
-
-### Error Handling
-
-The logger has special handling for errors:
-- When an Error object is passed as the value, the stack trace is properly captured
-- Error messages are preserved for easy debugging
 
 ### OpenTelemetry Integration
 
@@ -122,34 +156,87 @@ configureLogger({
 
 ## Best Practices
 
-1. **Add Context**: Use `logger.addContext(module)` at the top of your files to automatically include file information.
-
-2. **Structured Data**: Pass structured objects instead of concatenating strings:
+1. **Use Static Message Strings**: The first argument must be a static string for proper log aggregation:
    ```typescript
    // Good
    logger.info('User created', {userId: '123', email: 'user@example.com'})
-   
+
    // Avoid
-   logger.info(`User created: userId=123, email=user@example.com`)
+   logger.info(`User ${userId} created with email ${email}`)
    ```
 
-3. **Error Handling**: Pass error objects directly instead of just their messages:
+2. **Pass Error Objects Correctly**: Use the `error` property name:
    ```typescript
    try {
-     // some operation
+     await someOperation()
    } catch (error) {
-     // Good - preserves stack trace
-     logger.error('Operation failed', {error})
-     
-     // Avoid - loses stack trace
+     // Good - preserves stack trace and uses correct property name
+     logger.error('Operation failed', {error, context: 'user-service'})
+
+     // Avoid
      logger.error('Operation failed', {message: error.message})
    }
    ```
 
-4. **Log Appropriate Levels**: Use the right log level for each message:
+3. **Add Context**: Use `logger.addContext(module)` at the top of your files to automatically include file information.
+
+4. **Use Appropriate Levels**:
    - `debug`: Detailed information useful during development
    - `info`: Normal application behavior, milestones
    - `warn`: Unexpected but handled issues
    - `error`: Errors that prevent proper operation
 
+5. **Include Relevant Data**: Pass structured objects with relevant context:
+   ```typescript
+   logger.info('Payment processed', {
+     orderId: order._id,
+     amount: payment.amount,
+     currency: payment.currency,
+     method: payment.method
+   })
+   ```
 
+## Common Patterns
+
+### Service Logging
+
+```typescript
+@Service()
+export class ProcessPaymentService {
+  async execute(orderId: OrderId, paymentData: PaymentData) {
+    logger.info('Processing payment', {orderId, amount: paymentData.amount})
+
+    try {
+      const result = await this.paymentGateway.charge(paymentData)
+      logger.info('Payment successful', {orderId, transactionId: result.id})
+      return result
+    } catch (error) {
+      logger.error('Payment failed', {error, orderId, amount: paymentData.amount})
+      throw error
+    }
+  }
+}
+```
+
+### Migration Logging
+
+```typescript
+@MigrationService({name: 'MigrateUsers.v1', useMongoTransactions: false})
+export class MigrateUsers {
+  async runMigration() {
+    let processed = 0
+
+    for await (const user of cursor) {
+      await this.processUser(user)
+      processed++
+
+      // Log progress every 500 documents
+      if (processed % 500 === 0) {
+        logger.info('Migration progress', {processed, migrationName: 'MigrateUsers.v1'})
+      }
+    }
+
+    logger.info('Migration complete', {processed, migrationName: 'MigrateUsers.v1'})
+  }
+}
+```

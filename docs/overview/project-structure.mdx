@@ -180,6 +180,61 @@ Component.md should contain organized "notes" as bullet points, where each note 
 
 **What NOT to include:** Avoid temporary information, detailed code explanations, or information easily derived from code structure.
 
+## Scripts Directory
+
+For one-off scripts or maintenance tasks, use the `temp/scripts` directory:
+
+```
+/
+├── app/
+├── temp/
+│   └── scripts/       # Temporary scripts for maintenance tasks
+│       ├── migrate-legacy-data.ts
+│       └── cleanup-orphaned-records.ts
+└── ...
+```
+
+Scripts should:
+- Use tsx for execution: `#!/usr/bin/env -S npx tsx`
+- Be named according to the task they perform
+- Be self-contained and documented
+
+Example script:
+
+```typescript
+#!/usr/bin/env -S npx tsx
+
+import {logger} from '@orion-js/logger'
+import {getMongoConnection} from '@orion-js/mongodb'
+
+async function main() {
+  logger.info('Starting cleanup script')
+
+  const connection = getMongoConnection({name: 'main'})
+  await connection.connectionPromise
+
+  // Script logic here
+
+  logger.info('Cleanup complete')
+  process.exit(0)
+}
+
+main().catch(error => {
+  logger.error('Script failed', {error})
+  process.exit(1)
+})
+```
+
+Run with: `npx tsx temp/scripts/cleanup-orphaned-records.ts`
+
+## Code Organization Guidelines
+
+- **File size limit**: Avoid files over 200-300 lines of code. Refactor at that point.
+- **Loop preferences**: Prefer `for of` or `for await of` over `.forEach`. Use `.map` for transformations.
+- **Mock data**: Mocking data is only needed for tests, never for dev or prod environments.
+- **Avoid any**: Always declare types for variables and function parameters/returns.
+- **Code duplication**: Check for existing similar code before writing new implementations.
+
 ## Basic Principles
 
 - Use component-based architecture
@@ -191,3 +246,5 @@ Component.md should contain organized "notes" as bullet points, where each note 
 - Follow the single responsibility principle for services
 - Use repositories for database operations
 - Handle validation and error cases appropriately
+  - Prefer throwing `ValidationError` when validation of data fails
+  - Prefer throwing `UserError` when the error is not a system error

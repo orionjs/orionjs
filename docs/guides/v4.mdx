@@ -443,6 +443,44 @@ Update your `tsconfig.json` to use modern settings:
 }
 ```
 
+## Testing
+
+We now recommend using **Vitest** instead of Jest for testing. Vitest provides better ESM support and faster test execution.
+
+### Migration Steps
+
+1. Replace Jest with Vitest:
+```bash
+pnpm remove jest @types/jest ts-jest @shelf/jest-mongodb
+pnpm add -D vitest @vitest/coverage-v8 mongodb-memory-server
+```
+
+2. Create `vitest.config.ts`:
+```typescript
+import {defineConfig} from 'vitest/config'
+import path from 'path'
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['app/**/*.test.ts', 'app/**/*.spec.ts'],
+    setupFiles: ['./app/config/tests/setup.ts'],
+  },
+  resolve: {
+    alias: {
+      app: path.resolve(__dirname, './app'),
+    },
+  },
+})
+```
+
+3. Update test setup file to use `MongoMemoryServer` directly instead of `@shelf/jest-mongodb`.
+
+4. Replace `jest.fn()` with `vi.fn()` in your tests.
+
+See the [Testing documentation](/testing) for complete setup instructions.
+
 ## Removed functionalities and packages
 
 ### `@orion-js/mailing`
