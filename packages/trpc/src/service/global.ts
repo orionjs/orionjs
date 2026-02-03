@@ -72,3 +72,56 @@ export function getTProcedures<T extends object>(target: new (...args: any[]) =>
 
   return (proceduresMetadata.get(instance) || {}) as ExtractProcedures<T>
 }
+
+type ProcedureClass = new (...args: any[]) => any
+
+/**
+ * Merges multiple @Procedures classes into a single typed procedures object.
+ * This preserves all TypeScript types for use with inferRouterInputs/inferRouterOutputs.
+ *
+ * @example
+ * const procedures = mergeProcedures([UserProcedures, PostProcedures])
+ * const router = buildRouter(procedures)
+ * export type AppRouter = typeof router
+ */
+export function mergeProcedures<T1 extends ProcedureClass>(classes: [T1]): ExtractProcedures<InstanceType<T1>>
+export function mergeProcedures<T1 extends ProcedureClass, T2 extends ProcedureClass>(
+  classes: [T1, T2],
+): ExtractProcedures<InstanceType<T1>> & ExtractProcedures<InstanceType<T2>>
+export function mergeProcedures<T1 extends ProcedureClass, T2 extends ProcedureClass, T3 extends ProcedureClass>(
+  classes: [T1, T2, T3],
+): ExtractProcedures<InstanceType<T1>> & ExtractProcedures<InstanceType<T2>> & ExtractProcedures<InstanceType<T3>>
+export function mergeProcedures<
+  T1 extends ProcedureClass,
+  T2 extends ProcedureClass,
+  T3 extends ProcedureClass,
+  T4 extends ProcedureClass,
+>(
+  classes: [T1, T2, T3, T4],
+): ExtractProcedures<InstanceType<T1>> &
+  ExtractProcedures<InstanceType<T2>> &
+  ExtractProcedures<InstanceType<T3>> &
+  ExtractProcedures<InstanceType<T4>>
+export function mergeProcedures<
+  T1 extends ProcedureClass,
+  T2 extends ProcedureClass,
+  T3 extends ProcedureClass,
+  T4 extends ProcedureClass,
+  T5 extends ProcedureClass,
+>(
+  classes: [T1, T2, T3, T4, T5],
+): ExtractProcedures<InstanceType<T1>> &
+  ExtractProcedures<InstanceType<T2>> &
+  ExtractProcedures<InstanceType<T3>> &
+  ExtractProcedures<InstanceType<T4>> &
+  ExtractProcedures<InstanceType<T5>>
+export function mergeProcedures(classes: ProcedureClass[]): TRPCRouterRecord {
+  const merged: TRPCRouterRecord = {}
+
+  for (const cls of classes) {
+    const procedures = getTProcedures(cls)
+    Object.assign(merged, procedures)
+  }
+
+  return merged
+}

@@ -1,7 +1,7 @@
 import {describe, it, expect, expectTypeOf} from 'vitest'
 import {Inject, Service} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {Procedures, TQuery, TMutation, getTProcedures} from './global'
+import {Procedures, TQuery, TMutation, getTProcedures, mergeProcedures} from './global'
 import {createTQuery} from '../createTQuery'
 import {createTMutation} from '../createTMutation'
 import {buildRouter} from '../buildRouter'
@@ -468,6 +468,78 @@ describe('Procedures with service injection', () => {
 
     // @ts-expect-error - features.darkMode should be boolean
     const _badConfig: RouterOutputs['getAppConfig'] = {appName: 'App', version: '1.0', features: {darkMode: 'yes', notifications: true}}
+
+    expect(router).toBeDefined()
+  })
+
+  it('should preserve types when using mergeProcedures with multiple classes', async () => {
+    @Procedures()
+    class UserProcedures {
+      @TQuery()
+      getUser = createTQuery({
+        params: {id: {type: 'ID'}},
+        resolve: async ({id}) => ({id, name: 'John', email: 'john@test.com'}),
+      })
+
+      @TMutation()
+      createUser = createTMutation({
+        params: {name: {type: 'string'}, email: {type: 'email'}},
+        resolve: async ({name, email}) => ({id: 'new-id', name, email}),
+      })
+    }
+
+    @Procedures()
+    class PostProcedures {
+      @TQuery()
+      getPost = createTQuery({
+        params: {postId: {type: 'ID'}},
+        resolve: async ({postId}) => ({id: postId, title: 'Hello', content: 'World'}),
+      })
+
+      @TQuery()
+      listPosts = createTQuery({
+        resolve: async () => [{id: '1', title: 'Post 1', content: 'Content 1'}],
+      })
+    }
+
+    // Merge procedures from multiple classes
+    const procedures = mergeProcedures([UserProcedures, PostProcedures])
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
+
+    // Runtime tests
+    const user = await caller.getUser({id: 'user-1'})
+    expect(user.name).toBe('John')
+    expect(user.email).toBe('john@test.com')
+
+    const post = await caller.getPost({postId: 'post-1'})
+    expect(post.title).toBe('Hello')
+
+    const posts = await caller.listPosts({})
+    expect(posts).toHaveLength(1)
+
+    const newUser = await caller.createUser({name: 'Jane', email: 'jane@test.com'})
+    expect(newUser.id).toBe('new-id')
+
+    // Type tests - verify types are preserved from both classes
+    type RouterInputs = inferRouterInputs<typeof router>
+    type RouterOutputs = inferRouterOutputs<typeof router>
+
+    // User procedure types
+    const _userInput: RouterInputs['getUser'] = {id: 'test'}
+    const _userOutput: RouterOutputs['getUser'] = {id: '1', name: 'Test', email: 'test@test.com'}
+    const _createUserInput: RouterInputs['createUser'] = {name: 'Test', email: 'test@test.com'}
+
+    // Post procedure types
+    const _postInput: RouterInputs['getPost'] = {postId: 'test'}
+    const _postOutput: RouterOutputs['getPost'] = {id: '1', title: 'Test', content: 'Content'}
+    const _postsOutput: RouterOutputs['listPosts'] = [{id: '1', title: 'Test', content: 'Content'}]
+
+    // Type errors should be caught
+    // @ts-expect-error - email should be string, not number
+    const _badUser: RouterOutputs['getUser'] = {id: '1', name: 'Test', email: 123}
+    // @ts-expect-error - content should be string, not number
+    const _badPost: RouterOutputs['getPost'] = {id: '1', title: 'Test', content: 123}
 
     expect(router).toBeDefined()
   })
