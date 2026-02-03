@@ -62,6 +62,7 @@
               "overview/controllers/routes",
               "overview/controllers/resolvers",
               "overview/controllers/modelResolvers",
+              "overview/controllers/trpc",
               "overview/controllers/jobs",
               "overview/controllers/echoes"
             ]

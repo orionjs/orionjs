@@ -1,0 +1,334 @@
+---
+title: 'tRPC'
+description: 'Creating type-safe APIs with tRPC in Orionjs'
+---
+
+Orionjs provides seamless integration with [tRPC](https://trpc.io/) for building end-to-end type-safe APIs. The `@orion-js/trpc` package offers decorators and utilities that work with Orionjs schemas and the service injection system.
+
+## Installation
+
+```bash
+pnpm add @orion-js/trpc @trpc/server @trpc/client
+```
+
+## Key Features
+
+- Full TypeScript type inference from server to client
+- Integration with Orionjs schema validation
+- Service injection support via `@Inject()`
+- Compatible with the Orionjs component system
+- Works with `inferRouterInputs` and `inferRouterOutputs` for client-side types
+
+## Basic Setup
+
+### 1. Create Procedures
+
+Create a procedures class using the `@Procedures()` decorator:
+
+```typescript
+// app/exampleComponent/controllers/trpc/ExampleProcedures/index.ts
+import {Procedures, TQuery, TMutation, createTQuery, createTMutation} from '@orion-js/trpc'
+import {Inject} from '@orion-js/services'
+import {ExampleSchema} from 'app/exampleComponent/schemas/ExampleSchema'
+import {ExampleService} from 'app/exampleComponent/services/ExampleService'
+
+@Procedures()
+export class ExampleProcedures {
+  @Inject(() => ExampleService)
+  private exampleService: ExampleService
+
+  @TQuery()
+  getExample = createTQuery({
+    params: {exampleId: {type: String}},
+    returns: ExampleSchema,
+    resolve: async ({exampleId}) => {
+      return await this.exampleService.getExample(exampleId)
+    },
+  })
+
+  @TQuery()
+  listExamples = createTQuery({
+    returns: [ExampleSchema],
+    resolve: async () => {
+      return await this.exampleService.getExamples()
+    },
+  })
+
+  @TMutation()
+  createExample = createTMutation({
+    params: {name: {type: String}},
+    returns: {message: {type: String}},
+    resolve: async ({name}) => {
+      await this.exampleService.createExample(name)
+      return {message: 'Created successfully'}
+    },
+  })
+}
+```
+
+### 2. Create a Typed Router
+
+Create a router file that exports the typed router for client usage:
+
+```typescript
+// app/router.ts
+import {buildRouter, mergeProcedures} from '@orion-js/trpc'
+import {ExampleProcedures} from './exampleComponent/controllers/trpc/ExampleProcedures'
+import {UserProcedures} from './userComponent/controllers/trpc/UserProcedures'
+
+// Merge all procedure classes with preserved types
+const procedures = mergeProcedures([ExampleProcedures, UserProcedures])
+
+// Build the router
+export const appRouter = buildRouter(procedures)
+
+// Export the router type for client usage
+export type AppRouter = typeof appRouter
+```
+
+### 3. Start the tRPC Server
+
+```typescript
+// app/config/trpc/index.ts
+import {startTRPCWithRouter} from '@orion-js/trpc'
+import {logger} from '@orion-js/logger'
+import {appRouter} from 'app/router'
+
+export default async function startTrpc() {
+  await startTRPCWithRouter({
+    router: appRouter,
+    path: '/trpc',
+  })
+
+  logger.info('tRPC started at /trpc')
+
+  return {router: appRouter}
+}
+```
+
+## Client Usage
+
+On the client side, import the `AppRouter` type to get full type inference:
+
+```typescript
+import type {AppRouter} from 'app/router'
+import {createTRPCClient, httpBatchLink} from '@trpc/client'
+
+const client = createTRPCClient<AppRouter>({
+  links: [
+    httpBatchLink({
+      url: 'http://localhost:3010/trpc',
+    }),
+  ],
+})
+
+// Full type inference!
+const example = await client.getExample.query({exampleId: '123'})
+const examples = await client.listExamples.query()
+const result = await client.createExample.mutate({name: 'New Example'})
+```
+
+## Type Inference Utilities
+
+Use tRPC's type inference utilities for advanced typing:
+
+```typescript
+import type {AppRouter} from 'app/router'
+import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
+
+type RouterInputs = inferRouterInputs<AppRouter>
+type RouterOutputs = inferRouterOutputs<AppRouter>
+
+// Get specific procedure types
+type GetExampleInput = RouterInputs['getExample']
+type GetExampleOutput = RouterOutputs['getExample']
+```
+
+## Decorators Reference
+
+### @Procedures()
+
+Marks a class as a tRPC procedures container. This decorator also applies `@Service()` for dependency injection.
+
+```typescript
+@Procedures()
+export class MyProcedures {
+  // procedures here
+}
+```
+
+### @TQuery()
+
+Marks a field as a tRPC query procedure.
+
+```typescript
+@TQuery()
+myQuery = createTQuery({
+  params: {...},
+  returns: {...},
+  resolve: async (params) => {...}
+})
+```
+
+### @TMutation()
+
+Marks a field as a tRPC mutation procedure.
+
+```typescript
+@TMutation()
+myMutation = createTMutation({
+  params: {...},
+  returns: {...},
+  resolve: async (params) => {...}
+})
+```
+
+## Procedure Options
+
+Both `createTQuery` and `createTMutation` accept the same options:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `params` | Schema | Input validation schema (optional) |
+| `returns` | Schema | Output schema for documentation (optional) |
+| `resolve` | Function | The resolver function |
+
+### Schema Types
+
+You can use Orionjs schema definitions:
+
+```typescript
+// Inline schema
+createTQuery({
+  params: {
+    userId: {type: String},
+    includeDetails: {type: Boolean, optional: true}
+  },
+  returns: UserSchema,
+  resolve: async ({userId, includeDetails}) => {...}
+})
+
+// Array returns
+createTQuery({
+  returns: [UserSchema],
+  resolve: async () => {...}
+})
+```
+
+## Merging Procedures
+
+Use `mergeProcedures` to combine multiple procedure classes while preserving types:
+
+```typescript
+import {mergeProcedures} from '@orion-js/trpc'
+
+// Supports up to 5 procedure classes with full type inference
+const procedures = mergeProcedures([
+  UserProcedures,
+  PostProcedures,
+  CommentProcedures,
+])
+```
+
+## Server-Side Caller
+
+Create a server-side caller for testing or internal use:
+
+```typescript
+const {router} = await startApp([...components])
+
+const caller = router.createCaller({})
+
+// Call procedures directly
+const example = await caller.getExample({exampleId: '123'})
+```
+
+## Startup Functions
+
+### startTRPC
+
+Starts tRPC with procedures (builds router internally):
+
+```typescript
+import {startTRPC} from '@orion-js/trpc'
+
+const {router} = await startTRPC({
+  procedures: myProcedures,
+  path: '/trpc',
+  bodyParserOptions: {limit: '10mb'}
+})
+```
+
+### startTRPCWithRouter
+
+Starts tRPC with a pre-built router (preserves exact types):
+
+```typescript
+import {startTRPCWithRouter} from '@orion-js/trpc'
+import {appRouter} from 'app/router'
+
+const {router} = await startTRPCWithRouter({
+  router: appRouter,
+  path: '/trpc',
+})
+```
+
+## Context and Viewer
+
+The tRPC context includes the Orionjs viewer:
+
+```typescript
+createTQuery({
+  resolve: async (params, viewer) => {
+    if (!viewer.user) {
+      throw new Error('Unauthorized')
+    }
+    return await this.service.getData(viewer.user._id)
+  }
+})
+```
+
+## Error Handling
+
+Throw errors normally - they'll be properly serialized by tRPC:
+
+```typescript
+import {TRPCError} from '@trpc/server'
+
+createTMutation({
+  resolve: async (params) => {
+    const item = await this.repo.findOne(params.id)
+
+    if (!item) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Item not found'
+      })
+    }
+
+    return item
+  }
+})
+```
+
+## File Organization
+
+Recommended structure for tRPC procedures:
+
+```
+app/
+└── exampleComponent/
+    └── controllers/
+        └── trpc/
+            ├── ExampleProcedures/
+            │   └── index.ts
+            └── index.ts  # Exports procedure classes as array
+```
+
+The `controllers/trpc/index.ts`:
+
+```typescript
+import {ExampleProcedures} from './ExampleProcedures'
+
+export default [ExampleProcedures]
+```
