@@ -8,13 +8,7 @@ export {createTMutation} from './createTMutation'
 export type {TMutationOptions} from './createTMutation'
 
 // Service decorators
-export {
-  Procedures,
-  TProcedures,
-  TQuery as TQueryDecorator,
-  TMutation as TMutationDecorator,
-  getTProcedures,
-} from './service'
+export {Procedures, TProcedures, TQuery, TMutation, getTProcedures} from './service'
 export type {ExtractProcedures} from './service'
 
 // Router building
