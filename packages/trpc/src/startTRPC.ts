@@ -1,59 +1,29 @@
 import {createExpressMiddleware} from '@trpc/server/adapters/express'
-import {TRPCRouterRecord, AnyRouter} from '@trpc/server'
+import {AnyRouter} from '@trpc/server'
 import {getApp, registerRoute, createRoute, express} from '@orion-js/http'
-import {buildRouter} from './buildRouter'
 import {TRPCContext} from './trpc'
 
-export interface StartTRPCOptions<T extends TRPCRouterRecord = TRPCRouterRecord> {
-  procedures: T
-  app?: express.Application
-  path?: string
-  bodyParserOptions?: {limit?: number | string}
-}
-
-export interface StartTRPCWithRouterOptions<T extends AnyRouter = AnyRouter> {
+export interface StartTRPCOptions<T extends AnyRouter = AnyRouter> {
   router: T
   app?: express.Application
   path?: string
   bodyParserOptions?: {limit?: number | string}
 }
 
-export async function startTRPC<T extends TRPCRouterRecord>(options: StartTRPCOptions<T>) {
-  const {procedures, path = '/trpc', bodyParserOptions} = options
-  const app = options.app || getApp()
-
-  const appRouter = buildRouter(procedures)
-
-  const middleware = createExpressMiddleware({
-    router: appRouter as AnyRouter,
-    createContext: ({req}): TRPCContext => ({
-      viewer: (req as any)._viewer,
-    }),
-  })
-
-  registerRoute(
-    createRoute({
-      app,
-      method: 'all',
-      path: `${path}/:trpcPath*`,
-      bodyParser: 'json',
-      bodyParserOptions,
-      async resolve(req, res, viewer) {
-        ;(req as any)._viewer = viewer
-        ;(req as any).url = req.url.replace(path, '')
-        return middleware(req, res, () => {})
-      },
-    }),
-  )
-
-  return {router: appRouter}
-}
-
 /**
- * Start tRPC with a pre-built router. Use this when you need to preserve
- * exact router types for client-side type inference.
+ * Start tRPC server with a pre-built router.
+ *
+ * @example
+ * import {startTRPC, buildRouter, mergeProcedures} from '@orion-js/trpc'
+ *
+ * const procedures = mergeProcedures([UserProcedures, PostProcedures])
+ * const appRouter = buildRouter(procedures)
+ *
+ * await startTRPC({router: appRouter, path: '/trpc'})
+ *
+ * export type AppRouter = typeof appRouter
  */
-export async function startTRPCWithRouter<T extends AnyRouter>(options: StartTRPCWithRouterOptions<T>) {
+export async function startTRPC<T extends AnyRouter>(options: StartTRPCOptions<T>) {
   const {router, path = '/trpc', bodyParserOptions} = options
   const app = options.app || getApp()
 

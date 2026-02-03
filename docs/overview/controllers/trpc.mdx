@@ -90,12 +90,12 @@ export type AppRouter = typeof appRouter
 
 ```typescript
 // app/config/trpc/index.ts
-import {startTRPCWithRouter} from '@orion-js/trpc'
+import {startTRPC} from '@orion-js/trpc'
 import {logger} from '@orion-js/logger'
 import {appRouter} from 'app/router'
 
 export default async function startTrpc() {
-  await startTRPCWithRouter({
+  await startTRPC({
     router: appRouter,
     path: '/trpc',
   })
@@ -243,33 +243,18 @@ const caller = router.createCaller({})
 const example = await caller.getExample({exampleId: '123'})
 ```
 
-## Startup Functions
-
-### startTRPC
-
-Starts tRPC with procedures (builds router internally):
+## startTRPC Options
 
 ```typescript
 import {startTRPC} from '@orion-js/trpc'
-
-const {router} = await startTRPC({
-  procedures: myProcedures,
-  path: '/trpc',
-  bodyParserOptions: {limit: '10mb'}
-})
-```
-
-### startTRPCWithRouter
-
-Starts tRPC with a pre-built router (preserves exact types):
-
-```typescript
-import {startTRPCWithRouter} from '@orion-js/trpc'
 import {appRouter} from 'app/router'
 
-const {router} = await startTRPCWithRouter({
-  router: appRouter,
-  path: '/trpc',
+await startTRPC({
+  router: appRouter,        // Required: your tRPC router
+  path: '/trpc',            // Optional: endpoint path (default: '/trpc')
+  bodyParserOptions: {      // Optional: body parser config
+    limit: '10mb'
+  }
 })
 ```
 
