@@ -8,16 +8,15 @@ Orionjs provides seamless integration with [tRPC](https://trpc.io/) for building
 ## Installation
 
 ```bash
-pnpm add @orion-js/trpc @trpc/server @trpc/client
+pnpm add @orion-js/trpc @trpc/server
 ```
 
 ## Key Features
 
-- Full TypeScript type inference from server to client
+- Full TypeScript type inference
 - Integration with Orionjs schema validation
 - Service injection support via `@Inject()`
 - Compatible with the Orionjs component system
-- Works with `inferRouterInputs` and `inferRouterOutputs` for client-side types
 
 ## Basic Setup
 
@@ -68,7 +67,7 @@ export class ExampleProcedures {
 
 ### 2. Create a Typed Router
 
-Create a router file that exports the typed router for client usage:
+Create a router file that exports the typed router:
 
 ```typescript
 // app/router.ts
@@ -82,7 +81,7 @@ const procedures = mergeProcedures([ExampleProcedures, UserProcedures])
 // Build the router
 export const appRouter = buildRouter(procedures)
 
-// Export the router type for client usage
+// Export the router type
 export type AppRouter = typeof appRouter
 ```
 
@@ -104,44 +103,6 @@ export default async function startTrpc() {
 
   return {router: appRouter}
 }
-```
-
-## Client Usage
-
-On the client side, import the `AppRouter` type to get full type inference:
-
-```typescript
-import type {AppRouter} from 'app/router'
-import {createTRPCClient, httpBatchLink} from '@trpc/client'
-
-const client = createTRPCClient<AppRouter>({
-  links: [
-    httpBatchLink({
-      url: 'http://localhost:3010/trpc',
-    }),
-  ],
-})
-
-// Full type inference!
-const example = await client.getExample.query({exampleId: '123'})
-const examples = await client.listExamples.query()
-const result = await client.createExample.mutate({name: 'New Example'})
-```
-
-## Type Inference Utilities
-
-Use tRPC's type inference utilities for advanced typing:
-
-```typescript
-import type {AppRouter} from 'app/router'
-import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
-
-type RouterInputs = inferRouterInputs<AppRouter>
-type RouterOutputs = inferRouterOutputs<AppRouter>
-
-// Get specific procedure types
-type GetExampleInput = RouterInputs['getExample']
-type GetExampleOutput = RouterOutputs['getExample']
 ```
 
 ## Decorators Reference
