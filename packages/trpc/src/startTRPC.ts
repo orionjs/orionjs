@@ -11,6 +11,13 @@ export interface StartTRPCOptions<T extends TRPCRouterRecord = TRPCRouterRecord>
   bodyParserOptions?: {limit?: number | string}
 }
 
+export interface StartTRPCWithRouterOptions<T extends AnyRouter = AnyRouter> {
+  router: T
+  app?: express.Application
+  path?: string
+  bodyParserOptions?: {limit?: number | string}
+}
+
 export async function startTRPC<T extends TRPCRouterRecord>(options: StartTRPCOptions<T>) {
   const {procedures, path = '/trpc', bodyParserOptions} = options
   const app = options.app || getApp()
@@ -40,4 +47,37 @@ export async function startTRPC<T extends TRPCRouterRecord>(options: StartTRPCOp
   )
 
   return {router: appRouter}
+}
+
+/**
+ * Start tRPC with a pre-built router. Use this when you need to preserve
+ * exact router types for client-side type inference.
+ */
+export async function startTRPCWithRouter<T extends AnyRouter>(options: StartTRPCWithRouterOptions<T>) {
+  const {router, path = '/trpc', bodyParserOptions} = options
+  const app = options.app || getApp()
+
+  const middleware = createExpressMiddleware({
+    router,
+    createContext: ({req}): TRPCContext => ({
+      viewer: (req as any)._viewer,
+    }),
+  })
+
+  registerRoute(
+    createRoute({
+      app,
+      method: 'all',
+      path: `${path}/:trpcPath*`,
+      bodyParser: 'json',
+      bodyParserOptions,
+      async resolve(req, res, viewer) {
+        ;(req as any)._viewer = viewer
+        ;(req as any).url = req.url.replace(path, '')
+        return middleware(req, res, () => {})
+      },
+    }),
+  )
+
+  return {router}
 }

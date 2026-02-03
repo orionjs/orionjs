@@ -12,8 +12,8 @@ export {Procedures, TProcedures, TQuery, TMutation, getTProcedures, mergeProcedu
 export type {ExtractProcedures} from './service'
 
 // Router building
-export {startTRPC} from './startTRPC'
-export type {StartTRPCOptions} from './startTRPC'
+export {startTRPC, startTRPCWithRouter} from './startTRPC'
+export type {StartTRPCOptions, StartTRPCWithRouterOptions} from './startTRPC'
 export {buildRouter} from './buildRouter'
 
 // Re-export useful tRPC types
