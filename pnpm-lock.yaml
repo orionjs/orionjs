@@ -70,6 +70,12 @@ importers:
       '@orion-js/services':
         specifier: workspace:*
         version: link:../services
+      '@orion-js/trpc':
+        specifier: workspace:*
+        version: link:../trpc
+      '@trpc/server':
+        specifier: ^11.0.0
+        version: 11.9.0(typescript@5.8.2)
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.80

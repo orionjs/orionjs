@@ -21,7 +21,17 @@
     "@orion-js/logger": "workspace:*",
     "@orion-js/models": "workspace:*",
     "@orion-js/mongodb": "workspace:*",
-    "@orion-js/services": "workspace:*"
+    "@orion-js/services": "workspace:*",
+    "@orion-js/trpc": "workspace:*",
+    "@trpc/server": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@orion-js/trpc": {
+      "optional": true
+    },
+    "@trpc/server": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@orion-js/dogs": "workspace:*",
@@ -31,6 +41,8 @@
     "@orion-js/http": "workspace:*",
     "@orion-js/models": "workspace:*",
     "@orion-js/services": "workspace:*",
+    "@orion-js/trpc": "workspace:*",
+    "@trpc/server": "^11.0.0",
     "typescript": "^5.4.5",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",

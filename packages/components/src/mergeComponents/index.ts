@@ -11,6 +11,8 @@ import {getServiceRoutes, RoutesMap} from '@orion-js/http'
 import {getServiceJobs, JobsDefinition} from '@orion-js/dogs'
 import {GlobalResolversMap} from '@orion-js/models'
 import {generateId} from '@orion-js/helpers'
+import {getTProcedures} from '@orion-js/trpc'
+import type {TRPCRouterRecord} from '@trpc/server'
 
 export interface MergedComponentControllers {
   echoes: EchoesMap
@@ -19,6 +21,7 @@ export interface MergedComponentControllers {
   subscriptions: OrionSubscriptionsMap
   routes: RoutesMap
   jobs: JobsDefinition
+  trpc: TRPCRouterRecord
 }
 
 export function mergeComponentControllers(component: Component): MergedComponentControllers {
@@ -101,6 +104,18 @@ export function mergeComponentControllers(component: Component): MergedComponent
     })
   }
 
+  const trpc: TRPCRouterRecord = {}
+
+  if (component.controllers.trpc) {
+    component.controllers.trpc.forEach(Controller => {
+      const serviceProcedures = getTProcedures(Controller)
+      for (const procedureName in serviceProcedures) {
+        const procedure = serviceProcedures[procedureName]
+        trpc[procedureName] = procedure
+      }
+    })
+  }
+
   return {
     echoes,
     resolvers,
@@ -108,6 +123,7 @@ export function mergeComponentControllers(component: Component): MergedComponent
     subscriptions,
     routes,
     jobs,
+    trpc,
   }
 }
 
@@ -119,6 +135,7 @@ export function mergeComponents(components: Component[]): MergedComponentControl
     subscriptions: {},
     routes: {},
     jobs: {},
+    trpc: {},
   }
 
   components.forEach(component => {
@@ -146,6 +163,10 @@ export function mergeComponents(components: Component[]): MergedComponentControl
     mergedControllers.jobs = {
       ...mergedControllers.jobs,
       ...componentControllers.jobs,
+    }
+    mergedControllers.trpc = {
+      ...mergedControllers.trpc,
+      ...componentControllers.trpc,
     }
   })
 
