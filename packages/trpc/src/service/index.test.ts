@@ -1,11 +1,12 @@
-import {describe, it, expect} from 'vitest'
+import {describe, it, expect, expectTypeOf} from 'vitest'
 import {Inject, Service} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {TProcedures, TQuery, TMutation, getTProcedures} from './global'
+import {Procedures, TQuery, TMutation, getTProcedures} from './global'
 import {createTQuery} from '../createTQuery'
 import {createTMutation} from '../createTMutation'
+import {buildRouter} from '../buildRouter'
 
-describe('TProcedures with service injection', () => {
+describe('Procedures with service injection', () => {
   it('should work with the v4 syntax', async () => {
     @Service()
     class DataService {
@@ -14,7 +15,7 @@ describe('TProcedures with service injection', () => {
       }
     }
 
-    @TProcedures()
+    @Procedures()
     class ExampleProcedures {
       @Inject(() => DataService)
       private dataService: DataService
@@ -57,7 +58,7 @@ describe('TProcedures with service injection', () => {
       fullName: {type: 'string'},
     })
 
-    @TProcedures()
+    @Procedures()
     class ProceduresWithSchema {
       @TQuery()
       greet = createTQuery({
@@ -76,9 +77,9 @@ describe('TProcedures with service injection', () => {
     expect(result?.fullName).toBe('Hello World')
   })
 
-  it('should throw error when class is not decorated with @TProcedures', () => {
+  it('should throw error when class is not decorated with @Procedures', () => {
     @Service()
-    class NotTProcedures {
+    class NotProcedures {
       @TQuery()
       test = createTQuery({
         returns: 'string',
@@ -86,13 +87,13 @@ describe('TProcedures with service injection', () => {
       })
     }
 
-    expect(() => getTProcedures(NotTProcedures)).toThrow(
-      'You must pass a class decorated with @TProcedures',
+    expect(() => getTProcedures(NotProcedures)).toThrow(
+      'You must pass a class decorated with @Procedures',
     )
   })
 
   it('should validate input params', async () => {
-    @TProcedures()
+    @Procedures()
     class ValidationProcedures {
       @TQuery()
       validate = createTQuery({
@@ -115,7 +116,7 @@ describe('TProcedures with service injection', () => {
   })
 
   it('should pass viewer to resolve function', async () => {
-    @TProcedures()
+    @Procedures()
     class ViewerProcedures {
       @TQuery()
       getUser = createTQuery({
@@ -133,5 +134,38 @@ describe('TProcedures with service injection', () => {
 
     const result2 = await procedures.getUser.execute({params: {}, viewer: null})
     expect(result2?.userId).toBe('no-user')
+  })
+
+  it('should preserve types for client-side router usage', async () => {
+    @Procedures()
+    class TypedProcedures {
+      @TQuery()
+      getUser = createTQuery({
+        params: {id: {type: 'ID'}},
+        returns: {name: {type: 'string'}},
+        resolve: async ({id}) => ({name: 'John'}),
+      })
+
+      @TMutation()
+      createUser = createTMutation({
+        params: {name: {type: 'string'}},
+        returns: {id: {type: 'ID'}, name: {type: 'string'}},
+        resolve: async ({name}) => ({id: '123', name}),
+      })
+    }
+
+    const procedures = getTProcedures(TypedProcedures)
+
+    // Verify the procedures object has the correct keys
+    expectTypeOf(procedures).toHaveProperty('getUser')
+    expectTypeOf(procedures).toHaveProperty('createUser')
+
+    // Build router and verify it can be used for type exports
+    const router = buildRouter(procedures)
+    type AppRouter = typeof router
+
+    // The router should have the procedure keys
+    expectTypeOf(router).toHaveProperty('getUser')
+    expectTypeOf(router).toHaveProperty('createUser')
   })
 })

@@ -1,15 +1,20 @@
 import {getInstance, Service} from '@orion-js/services'
-import {TRPCProceduresMap} from '../types'
+import {TRPCProcedure, TRPCProceduresMap} from '../types'
 
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const proceduresMetadata = new WeakMap<any, Record<string, any>>()
 
-export function TProcedures() {
+export function Procedures() {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
     serviceMetadata.set(target, {_serviceType: 'trpc-procedures'})
   }
 }
+
+/**
+ * @deprecated Use `Procedures` instead
+ */
+export const TProcedures = Procedures
 
 export function TQuery() {
   return (method: any, context: ClassFieldDecoratorContext) => {
@@ -39,11 +44,22 @@ export function TMutation() {
   }
 }
 
-export function getTProcedures(target: any): TRPCProceduresMap {
+/**
+ * Extracts only the TRPCProcedure fields from a class instance type
+ */
+export type ExtractProcedures<T> = {
+  [K in keyof T as T[K] extends TRPCProcedure ? K : never]: T[K]
+}
+
+/**
+ * Gets the procedures from a class decorated with @TProcedures.
+ * Preserves the type information for use with buildRouter/startTRPC.
+ */
+export function getTProcedures<T extends object>(target: new (...args: any[]) => T): ExtractProcedures<T> {
   const instance = getInstance(target)
 
   const className = instance.constructor.name
-  const errorMessage = `You must pass a class decorated with @TProcedures to getTProcedures. Check the class ${className}`
+  const errorMessage = `You must pass a class decorated with @Procedures to getTProcedures. Check the class ${className}`
 
   if (!serviceMetadata.has(instance.constructor)) {
     throw new Error(errorMessage)
@@ -54,5 +70,5 @@ export function getTProcedures(target: any): TRPCProceduresMap {
     throw new Error(`${errorMessage}. Got class type ${instanceMetadata._serviceType}`)
   }
 
-  return proceduresMetadata.get(instance) || {}
+  return (proceduresMetadata.get(instance) || {}) as ExtractProcedures<T>
 }

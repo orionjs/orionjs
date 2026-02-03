@@ -3,14 +3,14 @@ import {getApp, registerRoute, createRoute, express} from '@orion-js/http'
 import {TRPCProceduresMap} from './types'
 import {buildRouter} from './buildRouter'
 
-export interface StartTRPCOptions {
-  procedures: TRPCProceduresMap
+export interface StartTRPCOptions<T extends TRPCProceduresMap = TRPCProceduresMap> {
+  procedures: T
   app?: express.Application
   path?: string
   bodyParserOptions?: {limit?: number | string}
 }
 
-export async function startTRPC(options: StartTRPCOptions) {
+export async function startTRPC<T extends TRPCProceduresMap>(options: StartTRPCOptions<T>) {
   const {procedures, path = '/trpc', bodyParserOptions} = options
   const app = options.app || getApp()
 

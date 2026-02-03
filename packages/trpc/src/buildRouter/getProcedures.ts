@@ -1,4 +1,9 @@
-import {initTRPC} from '@trpc/server'
+import {
+  initTRPC,
+  TRPCRouterRecord,
+  TRPCQueryProcedure,
+  TRPCMutationProcedure,
+} from '@trpc/server'
 import {TRPCProcedure, TRPCProceduresMap} from '../types'
 import {getErrorData, mapErrorToTRPCError} from '../errorHandler'
 
@@ -21,6 +26,35 @@ const t = initTRPC.context<TRPCContext>().create({
 
 export const router = t.router
 export const publicProcedure = t.procedure
+
+/**
+ * Extract the input type from a procedure's resolve function
+ */
+export type ExtractInput<T> = T extends {resolve: (params: infer P, viewer: any) => any} ? P : void
+
+/**
+ * Extract the output type from a procedure's resolve function
+ */
+export type ExtractOutput<T> = T extends {resolve: (params: any, viewer: any) => Promise<infer R>} ? R : void
+
+/**
+ * Maps a procedures map to tRPC procedures record type
+ */
+export type MapProceduresToTRPC<T extends TRPCProceduresMap> = {
+  [K in keyof T]: T[K] extends {mutation: false}
+    ? TRPCQueryProcedure<{
+        input: ExtractInput<T[K]>
+        output: ExtractOutput<T[K]>
+        meta: unknown
+      }>
+    : T[K] extends {mutation: true}
+      ? TRPCMutationProcedure<{
+          input: ExtractInput<T[K]>
+          output: ExtractOutput<T[K]>
+          meta: unknown
+        }>
+      : never
+}
 
 function createProcedure(procedure: TRPCProcedure) {
   const handler = async ({ctx}: {ctx: TRPCContext; input?: any}) => {
@@ -50,14 +84,10 @@ function createProcedure(procedure: TRPCProcedure) {
     : publicProcedure.query(handler)
 }
 
-export function getProcedures(procedures: TRPCProceduresMap) {
-  const trpcProcedures: Record<string, any> = {}
+export function getProcedures<T extends TRPCProceduresMap>(procedures: T): TRPCRouterRecord {
+  const trpcProcedures: TRPCRouterRecord = {}
 
   for (const [name, procedure] of Object.entries(procedures)) {
-    if (procedure.private) {
-      continue
-    }
-
     trpcProcedures[name] = createProcedure(procedure)
   }
 

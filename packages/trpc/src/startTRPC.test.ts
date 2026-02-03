@@ -1,9 +1,11 @@
-import {describe, it, expect} from 'vitest'
+import {describe, it, expect, expectTypeOf} from 'vitest'
 import request from 'supertest'
 import {express} from '@orion-js/http'
+import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
 import {startTRPC} from './startTRPC'
 import {createTQuery} from './createTQuery'
 import {createTMutation} from './createTMutation'
+import {buildRouter, BuildRouter, MapProceduresToTRPC} from './buildRouter'
 
 describe('startTRPC', () => {
   it('should start tRPC and make a query request', async () => {
@@ -81,29 +83,6 @@ describe('startTRPC', () => {
     expect(response.body.result.data).toBe('ok')
   })
 
-  it('should filter out private procedures', async () => {
-    const procedures = {
-      publicQuery: createTQuery({
-        returns: 'string',
-        resolve: async () => 'public',
-      }),
-      privateQuery: createTQuery({
-        private: true,
-        returns: 'string',
-        resolve: async () => 'private',
-      }),
-    }
-
-    const app = express()
-    await startTRPC({procedures, app})
-
-    const publicResponse = await request(app).get('/trpc/publicQuery')
-    expect(publicResponse.body.result.data).toBe('public')
-
-    const privateResponse = await request(app).get('/trpc/privateQuery')
-    expect(privateResponse.status).toBe(404)
-  })
-
   it('should use custom path', async () => {
     const procedures = {
       test: createTQuery({
@@ -152,5 +131,61 @@ describe('startTRPC', () => {
     const response = await request(app).get('/trpc/getViewer')
 
     expect(response.body.result.data.userId).toBe('anonymous')
+  })
+
+  it('should return typed router for client usage', async () => {
+    const procedures = {
+      getUser: createTQuery({
+        params: {id: {type: 'ID'}},
+        returns: {name: {type: 'string'}},
+        resolve: async ({id}) => ({name: 'John'}),
+      }),
+      createUser: createTMutation({
+        params: {name: {type: 'string'}},
+        returns: {id: {type: 'ID'}, name: {type: 'string'}},
+        resolve: async ({name}) => ({id: '123', name}),
+      }),
+    }
+
+    const app = express()
+    const {router} = await startTRPC({procedures, app})
+
+    // Verify the router type can be exported for client usage
+    type AppRouter = typeof router
+
+    // The router should have the procedure keys
+    expectTypeOf(router).toHaveProperty('getUser')
+    expectTypeOf(router).toHaveProperty('createUser')
+
+    // Verify buildRouter also works
+    const router2 = buildRouter(procedures)
+    type AppRouter2 = typeof router2
+    expectTypeOf(router2).toHaveProperty('getUser')
+    expectTypeOf(router2).toHaveProperty('createUser')
+  })
+
+  it('should correctly infer input and output types from router', () => {
+    const getUser = createTQuery({
+      params: {id: {type: 'ID'}},
+      returns: {name: {type: 'string'}, age: {type: 'integer', optional: true}},
+      resolve: async ({id}) => ({name: 'John', age: 30}),
+    })
+
+    // Test the type of the resolve function parameters
+    type ResolveFunc = typeof getUser.resolve
+    type Input = Parameters<ResolveFunc>[0]
+    type Output = Awaited<ReturnType<ResolveFunc>>
+
+    // Type test using assignment - this will fail at compile time if types don't match
+    const _inputTest: Input = {id: 'test'}
+    const _outputTest: Output = {name: 'test', age: 30}
+
+    // Build router for client usage
+    const procedures = {getUser}
+    const router = buildRouter(procedures)
+
+    expect(router).toBeDefined()
+    expect(_inputTest.id).toBe('test')
+    expect(_outputTest.name).toBe('test')
   })
 })

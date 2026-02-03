@@ -20,7 +20,6 @@ export function createTQuery<
     params: params as TParams,
     returns: returns as TReturns,
     mutation: false,
-    private: options.private,
     resolve: options.resolve,
     execute,
   }

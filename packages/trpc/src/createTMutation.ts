@@ -20,7 +20,6 @@ export function createTMutation<
     params: params as TParams,
     returns: returns as TReturns,
     mutation: true,
-    private: options.private,
     resolve: options.resolve,
     execute,
   }
