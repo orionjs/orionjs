@@ -6,6 +6,7 @@ import {createTQuery} from '../createTQuery'
 import {createTMutation} from '../createTMutation'
 import {buildRouter} from '../buildRouter'
 import {t} from '../trpc'
+import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
 
 describe('Procedures with service injection', () => {
   it('should work with the v4 syntax', async () => {
@@ -179,5 +180,295 @@ describe('Procedures with service injection', () => {
     // The router should have the procedure keys
     expectTypeOf(router).toHaveProperty('getUser')
     expectTypeOf(router).toHaveProperty('createUser')
+  })
+
+  it('should infer output types from resolve when no returns schema in @Procedures class', async () => {
+    @Procedures()
+    class InferredOutputProcedures {
+      @TQuery()
+      getStatus = createTQuery({
+        resolve: async () => ({status: 'healthy', uptime: 12345}),
+      })
+
+      @TQuery()
+      getUserData = createTQuery({
+        params: {userId: {type: 'ID'}},
+        resolve: async ({userId}) => ({
+          id: userId,
+          name: 'John Doe',
+          metadata: {lastLogin: new Date().toISOString(), visits: 42},
+        }),
+      })
+
+      @TMutation()
+      updateConfig = createTMutation({
+        params: {key: {type: 'string'}, value: {type: 'string'}},
+        resolve: async ({key, value}) => ({
+          success: true,
+          updatedKey: key,
+          previousValue: null as string | null,
+        }),
+      })
+    }
+
+    const procedures = getTProcedures(InferredOutputProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
+
+    // Runtime tests
+    const statusResult = await caller.getStatus({})
+    expect(statusResult.status).toBe('healthy')
+    expect(statusResult.uptime).toBe(12345)
+
+    const userData = await caller.getUserData({userId: 'user-1'})
+    expect(userData.id).toBe('user-1')
+    expect(userData.name).toBe('John Doe')
+    expect(userData.metadata.visits).toBe(42)
+
+    const configResult = await caller.updateConfig({key: 'theme', value: 'dark'})
+    expect(configResult.success).toBe(true)
+    expect(configResult.updatedKey).toBe('theme')
+
+    // Type inference tests
+    type RouterOutputs = inferRouterOutputs<typeof router>
+
+    // Valid assignments
+    const _status: RouterOutputs['getStatus'] = {status: 'ok', uptime: 100}
+    const _user: RouterOutputs['getUserData'] = {
+      id: '1',
+      name: 'Jane',
+      metadata: {lastLogin: '2024-01-01', visits: 10},
+    }
+    const _config: RouterOutputs['updateConfig'] = {
+      success: false,
+      updatedKey: 'x',
+      previousValue: 'old',
+    }
+
+    // @ts-expect-error - uptime should be number
+    const _badStatus: RouterOutputs['getStatus'] = {status: 'ok', uptime: '100'}
+    // @ts-expect-error - metadata.visits should be number
+    const _badUser: RouterOutputs['getUserData'] = {id: '1', name: 'Jane', metadata: {lastLogin: '2024-01-01', visits: 'many'}}
+    // @ts-expect-error - success should be boolean
+    const _badConfig: RouterOutputs['updateConfig'] = {success: 'yes', updatedKey: 'x', previousValue: null}
+
+    expect(router).toBeDefined()
+  })
+
+  it('should handle @Procedures with mixed schema and inferred types', async () => {
+    @Procedures()
+    class MixedProcedures {
+      // With both schemas - output cleaned by schema
+      @TQuery()
+      withBothSchemas = createTQuery({
+        params: {id: {type: 'ID'}},
+        returns: {name: {type: 'string'}},
+        resolve: async ({id}) => ({name: 'Test', extra: 'removed'}),
+      })
+
+      // With only params schema - output inferred from resolve
+      @TQuery()
+      withOnlyParams = createTQuery({
+        params: {search: {type: 'string'}},
+        resolve: async ({search}) => ({
+          results: [{id: '1', title: `Result for ${search}`}],
+          totalCount: 1,
+        }),
+      })
+
+      // With only returns schema - input accepts anything
+      @TMutation()
+      withOnlyReturns = createTMutation({
+        returns: {success: {type: 'boolean'}},
+        resolve: async () => ({success: true, extra: 'will be removed'}),
+      })
+
+      // With no schemas - fully inferred
+      @TQuery()
+      fullyInferred = createTQuery({
+        resolve: async () => ({
+          serverTime: Date.now(),
+          version: '1.0.0',
+        }),
+      })
+    }
+
+    const procedures = getTProcedures(MixedProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
+
+    // Runtime tests for schema cleaning
+    const withBoth = await caller.withBothSchemas({id: '123'})
+    expect(withBoth.name).toBe('Test')
+    expect((withBoth as any).extra).toBeUndefined() // cleaned by returns schema
+
+    const withReturns = await caller.withOnlyReturns({})
+    expect(withReturns.success).toBe(true)
+    expect((withReturns as any).extra).toBeUndefined() // cleaned by returns schema
+
+    // Runtime tests for non-schema procedures
+    const withParams = await caller.withOnlyParams({search: 'test'})
+    expect(withParams.results[0].title).toBe('Result for test')
+    expect(withParams.totalCount).toBe(1)
+
+    const inferred = await caller.fullyInferred({})
+    expect(inferred.version).toBe('1.0.0')
+    expect(typeof inferred.serverTime).toBe('number')
+
+    // Type tests
+    type RouterOutputs = inferRouterOutputs<typeof router>
+    type RouterInputs = inferRouterInputs<typeof router>
+
+    // Output types
+    const _withParams: RouterOutputs['withOnlyParams'] = {
+      results: [{id: '1', title: 'test'}],
+      totalCount: 5,
+    }
+    const _inferred: RouterOutputs['fullyInferred'] = {serverTime: 123, version: '2.0'}
+
+    // Input types
+    const _paramsInput: RouterInputs['withOnlyParams'] = {search: 'query'}
+    const _bothInput: RouterInputs['withBothSchemas'] = {id: 'abc'}
+
+    // @ts-expect-error - results should be array
+    const _badWithParams: RouterOutputs['withOnlyParams'] = {results: 'not array', totalCount: 1}
+    // @ts-expect-error - search is required
+    const _badInput: RouterInputs['withOnlyParams'] = {}
+
+    expect(router).toBeDefined()
+  })
+
+  it('should correctly infer array return types in @Procedures', async () => {
+    @Procedures()
+    class ArrayProcedures {
+      @TQuery()
+      getItems = createTQuery({
+        resolve: async () => [
+          {id: '1', name: 'Item 1', tags: ['a', 'b']},
+          {id: '2', name: 'Item 2', tags: ['c']},
+        ],
+      })
+
+      @TQuery()
+      getNumbers = createTQuery({
+        resolve: async () => [1, 2, 3, 4, 5],
+      })
+
+      @TQuery()
+      getStrings = createTQuery({
+        resolve: async () => ['hello', 'world'],
+      })
+    }
+
+    const procedures = getTProcedures(ArrayProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
+
+    // Runtime tests
+    const items = await caller.getItems({})
+    expect(items).toHaveLength(2)
+    expect(items[0].tags).toContain('a')
+
+    const numbers = await caller.getNumbers({})
+    expect(numbers).toEqual([1, 2, 3, 4, 5])
+
+    // Type tests
+    type RouterOutputs = inferRouterOutputs<typeof router>
+
+    const _items: RouterOutputs['getItems'] = [{id: 'x', name: 'y', tags: []}]
+    const _nums: RouterOutputs['getNumbers'] = [10, 20]
+    const _strs: RouterOutputs['getStrings'] = ['a', 'b', 'c']
+
+    // @ts-expect-error - should be array of objects with id, name, tags
+    const _badItems: RouterOutputs['getItems'] = [{id: 'x', name: 'y'}]
+    // @ts-expect-error - should be array of numbers
+    const _badNums: RouterOutputs['getNumbers'] = ['1', '2']
+
+    expect(router).toBeDefined()
+  })
+
+  it('should work with dependency injection and inferred types', async () => {
+    @Service()
+    class ConfigService {
+      getConfig() {
+        return {
+          appName: 'TestApp',
+          version: '2.0.0',
+          features: {darkMode: true, notifications: false},
+        }
+      }
+    }
+
+    @Service()
+    class UserService {
+      getUsers() {
+        return [
+          {id: '1', email: 'user1@test.com', role: 'admin' as const},
+          {id: '2', email: 'user2@test.com', role: 'user' as const},
+        ]
+      }
+    }
+
+    @Procedures()
+    class InjectedProcedures {
+      @Inject(() => ConfigService)
+      private configService: ConfigService
+
+      @Inject(() => UserService)
+      private userService: UserService
+
+      @TQuery()
+      getAppConfig = createTQuery({
+        resolve: async () => this.configService.getConfig(),
+      })
+
+      @TQuery()
+      listUsers = createTQuery({
+        resolve: async () => ({
+          users: this.userService.getUsers(),
+          total: this.userService.getUsers().length,
+        }),
+      })
+
+      @TQuery()
+      getUsersByRole = createTQuery({
+        params: {role: {type: 'string'}},
+        resolve: async ({role}) => {
+          const users = this.userService.getUsers()
+          return users.filter(u => u.role === role)
+        },
+      })
+    }
+
+    const procedures = getTProcedures(InjectedProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
+
+    // Runtime tests
+    const config = await caller.getAppConfig({})
+    expect(config.appName).toBe('TestApp')
+    expect(config.features.darkMode).toBe(true)
+
+    const userList = await caller.listUsers({})
+    expect(userList.users).toHaveLength(2)
+    expect(userList.total).toBe(2)
+
+    const admins = await caller.getUsersByRole({role: 'admin'})
+    expect(admins).toHaveLength(1)
+    expect(admins[0].email).toBe('user1@test.com')
+
+    // Type tests
+    type RouterOutputs = inferRouterOutputs<typeof router>
+
+    const _config: RouterOutputs['getAppConfig'] = {
+      appName: 'App',
+      version: '1.0',
+      features: {darkMode: false, notifications: true},
+    }
+
+    // @ts-expect-error - features.darkMode should be boolean
+    const _badConfig: RouterOutputs['getAppConfig'] = {appName: 'App', version: '1.0', features: {darkMode: 'yes', notifications: true}}
+
+    expect(router).toBeDefined()
   })
 })
