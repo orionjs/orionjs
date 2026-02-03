@@ -5,6 +5,7 @@ import {Procedures, TQuery, TMutation, getTProcedures} from './global'
 import {createTQuery} from '../createTQuery'
 import {createTMutation} from '../createTMutation'
 import {buildRouter} from '../buildRouter'
+import {t} from '../trpc'
 
 describe('Procedures with service injection', () => {
   it('should work with the v4 syntax', async () => {
@@ -33,20 +34,24 @@ describe('Procedures with service injection', () => {
       example2 = createTMutation({
         params: {name: {type: 'string'}},
         returns: {name: {type: 'string'}},
-        resolve: async (params, viewer) => this.example.resolve(params, viewer),
+        resolve: async (params, viewer) => ({
+          name: `${params.name} ${this.dataService.getLastName()}`,
+        }),
       })
     }
 
     const procedures = getTProcedures(ExampleProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
 
     expect(procedures.example).toBeDefined()
-    expect(procedures.example.mutation).toBe(false)
+    expect(procedures.example2).toBeDefined()
 
-    const result = await procedures.example.execute({params: {name: 'Orion'}, viewer: null})
+    const result = await caller.example({name: 'Orion'})
     expect(result?.name).toBe('Orion Lopez')
 
-    expect(procedures.example2).toBeDefined()
-    expect(procedures.example2.mutation).toBe(true)
+    const result2 = await caller.example2({name: 'Test'})
+    expect(result2?.name).toBe('Test Lopez')
   })
 
   it('should work with schemaWithName', async () => {
@@ -71,9 +76,11 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ProceduresWithSchema)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
 
     expect(procedures.greet).toBeDefined()
-    const result = await procedures.greet.execute({params: {name: 'World'}, viewer: null})
+    const result = await caller.greet({name: 'World'})
     expect(result?.fullName).toBe('Hello World')
   })
 
@@ -106,12 +113,12 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ValidationProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
 
-    await expect(
-      procedures.validate.execute({params: {email: 'not-an-email'}, viewer: null}),
-    ).rejects.toThrow()
+    await expect(caller.validate({email: 'not-an-email'})).rejects.toThrow()
 
-    const result = await procedures.validate.execute({params: {email: 'test@example.com'}, viewer: null})
+    const result = await caller.validate({email: 'test@example.com'})
     expect(result).toBe('test@example.com')
   })
 
@@ -128,11 +135,16 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ViewerProcedures)
+    const router = buildRouter(procedures)
 
-    const result1 = await procedures.getUser.execute({params: {}, viewer: {userId: 'user-123'}})
+    // Test with viewer
+    const callerWithViewer = t.createCallerFactory(router)({viewer: {userId: 'user-123'}})
+    const result1 = await callerWithViewer.getUser({})
     expect(result1?.userId).toBe('user-123')
 
-    const result2 = await procedures.getUser.execute({params: {}, viewer: null})
+    // Test without viewer
+    const callerNoViewer = t.createCallerFactory(router)({viewer: null})
+    const result2 = await callerNoViewer.getUser({})
     expect(result2?.userId).toBe('no-user')
   })
 

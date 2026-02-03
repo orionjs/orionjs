@@ -5,7 +5,7 @@ import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
 import {startTRPC} from './startTRPC'
 import {createTQuery} from './createTQuery'
 import {createTMutation} from './createTMutation'
-import {buildRouter, BuildRouter, MapProceduresToTRPC} from './buildRouter'
+import {buildRouter} from './buildRouter'
 
 describe('startTRPC', () => {
   it('should start tRPC and make a query request', async () => {
@@ -159,33 +159,39 @@ describe('startTRPC', () => {
 
     // Verify buildRouter also works
     const router2 = buildRouter(procedures)
-    type AppRouter2 = typeof router2
     expectTypeOf(router2).toHaveProperty('getUser')
     expectTypeOf(router2).toHaveProperty('createUser')
   })
 
   it('should correctly infer input and output types from router', () => {
-    const getUser = createTQuery({
-      params: {id: {type: 'ID'}},
-      returns: {name: {type: 'string'}, age: {type: 'integer', optional: true}},
-      resolve: async ({id}) => ({name: 'John', age: 30}),
-    })
+    const procedures = {
+      getUser: createTQuery({
+        params: {id: {type: 'ID'}},
+        returns: {name: {type: 'string'}, age: {type: 'integer', optional: true}},
+        resolve: async ({id}) => ({name: 'John', age: 30}),
+      }),
+      createUser: createTMutation({
+        params: {name: {type: 'string'}, email: {type: 'email'}},
+        returns: {id: {type: 'ID'}, name: {type: 'string'}},
+        resolve: async ({name, email}) => ({id: '123', name}),
+      }),
+    }
 
-    // Test the type of the resolve function parameters
-    type ResolveFunc = typeof getUser.resolve
-    type Input = Parameters<ResolveFunc>[0]
-    type Output = Awaited<ReturnType<ResolveFunc>>
-
-    // Type test using assignment - this will fail at compile time if types don't match
-    const _inputTest: Input = {id: 'test'}
-    const _outputTest: Output = {name: 'test', age: 30}
-
-    // Build router for client usage
-    const procedures = {getUser}
     const router = buildRouter(procedures)
+    type AppRouter = typeof router
+    type RouterInputs = inferRouterInputs<AppRouter>
+    type RouterOutputs = inferRouterOutputs<AppRouter>
+
+    // Type test using assignment - these will fail at compile time if types don't match
+    const _getUserInput: RouterInputs['getUser'] = {id: 'test'}
+    const _getUserOutput: RouterOutputs['getUser'] = {name: 'test', age: 30}
+    const _createUserInput: RouterInputs['createUser'] = {name: 'test', email: 'test@test.com'}
+    const _createUserOutput: RouterOutputs['createUser'] = {id: '123', name: 'test'}
 
     expect(router).toBeDefined()
-    expect(_inputTest.id).toBe('test')
-    expect(_outputTest.name).toBe('test')
+    expect(_getUserInput.id).toBe('test')
+    expect(_getUserOutput.name).toBe('test')
+    expect(_createUserInput.email).toBe('test@test.com')
+    expect(_createUserOutput.id).toBe('123')
   })
 })

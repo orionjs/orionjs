@@ -1,11 +1,6 @@
-import {TRPCProceduresMap} from '../types'
-import {getProcedures, router, MapProceduresToTRPC} from './getProcedures'
+import {TRPCRouterRecord} from '@trpc/server'
+import {router} from '../trpc'
 
-export function buildRouter<T extends TRPCProceduresMap>(procedures: T) {
-  const trpcProcedures = getProcedures(procedures)
-  return router(trpcProcedures)
+export function buildRouter<T extends TRPCRouterRecord>(procedures: T) {
+  return router(procedures)
 }
-
-export type BuildRouter<T extends TRPCProceduresMap> = ReturnType<typeof router<MapProceduresToTRPC<T>>>
-
-export type {MapProceduresToTRPC, ExtractInput, ExtractOutput} from './getProcedures'

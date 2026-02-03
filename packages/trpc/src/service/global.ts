@@ -1,5 +1,5 @@
 import {getInstance, Service} from '@orion-js/services'
-import {TRPCProcedure, TRPCProceduresMap} from '../types'
+import {AnyProcedure, TRPCRouterRecord} from '@trpc/server'
 
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const proceduresMetadata = new WeakMap<any, Record<string, any>>()
@@ -20,7 +20,7 @@ export function TQuery() {
   return (method: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
+    context.addInitializer(function (this: any) {
       const procedures = proceduresMetadata.get(this) || {}
       procedures[propertyKey] = this[propertyKey]
       proceduresMetadata.set(this, procedures)
@@ -34,7 +34,7 @@ export function TMutation() {
   return (method: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
+    context.addInitializer(function (this: any) {
       const procedures = proceduresMetadata.get(this) || {}
       procedures[propertyKey] = this[propertyKey]
       proceduresMetadata.set(this, procedures)
@@ -45,15 +45,15 @@ export function TMutation() {
 }
 
 /**
- * Extracts only the TRPCProcedure fields from a class instance type
+ * Extracts only the tRPC procedure fields from a class instance type
  */
 export type ExtractProcedures<T> = {
-  [K in keyof T as T[K] extends TRPCProcedure ? K : never]: T[K]
+  [K in keyof T as T[K] extends AnyProcedure ? K : never]: T[K]
 }
 
 /**
- * Gets the procedures from a class decorated with @TProcedures.
- * Preserves the type information for use with buildRouter/startTRPC.
+ * Gets the procedures from a class decorated with @Procedures.
+ * Returns a TRPCRouterRecord that can be passed to buildRouter/startTRPC.
  */
 export function getTProcedures<T extends object>(target: new (...args: any[]) => T): ExtractProcedures<T> {
   const instance = getInstance(target)
@@ -66,8 +66,8 @@ export function getTProcedures<T extends object>(target: new (...args: any[]) =>
   }
 
   const instanceMetadata = serviceMetadata.get(instance.constructor)
-  if (instanceMetadata._serviceType !== 'trpc-procedures') {
-    throw new Error(`${errorMessage}. Got class type ${instanceMetadata._serviceType}`)
+  if (instanceMetadata?._serviceType !== 'trpc-procedures') {
+    throw new Error(`${errorMessage}. Got class type ${instanceMetadata?._serviceType}`)
   }
 
   return (proceduresMetadata.get(instance) || {}) as ExtractProcedures<T>
