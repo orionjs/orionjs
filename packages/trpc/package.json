@@ -1,0 +1,47 @@
+{
+  "name": "@orion-js/trpc",
+  "version": "4.0.0",
+  "main": "./dist/index.cjs",
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "vitest run",
+    "prepare": "pnpm build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "upgrade-interactive": "pnpm upgrade --interactive",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@orion-js/helpers": "workspace:*",
+    "@orion-js/http": "workspace:*",
+    "@orion-js/schema": "workspace:*",
+    "@orion-js/services": "workspace:*",
+    "@trpc/server": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/supertest": "2.0.12",
+    "supertest": "^6.3.3",
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.5",
+    "vitest": "^3.0.8"
+  },
+  "peerDependencies": {
+    "@orion-js/logger": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ]
+}
