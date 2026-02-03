@@ -1,5 +1,13 @@
 # @orion-js/components
 
+## 4.2.7
+
+### Patch Changes
+
+- Add @orion-js/trpc package for type-safe tRPC APIs with Orionjs integration
+- Updated dependencies
+  - @orion-js/trpc@4.0.1
+
 ## 4.2.6
 
 ### Patch Changes
