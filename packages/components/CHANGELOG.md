@@ -1,5 +1,13 @@
 # @orion-js/components
 
+## 4.2.8
+
+### Patch Changes
+
+- startTRPC now accepts procedures instead of a pre-built router. Component and mergeComponents are generic to preserve tRPC procedure types through the component system.
+- Updated dependencies
+  - @orion-js/trpc@4.0.2
+
 ## 4.2.7
 
 ### Patch Changes
