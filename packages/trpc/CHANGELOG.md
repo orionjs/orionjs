@@ -1,5 +1,11 @@
 # @orion-js/trpc
 
+## 4.0.6
+
+### Patch Changes
+
+- Simplify PaginatedResponse to a single type with optional fields instead of a union type. This makes client-side usage simpler.
+
 ## 4.0.5
 
 ### Patch Changes
