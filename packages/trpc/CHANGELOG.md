@@ -1,5 +1,11 @@
 # @orion-js/trpc
 
+## 4.0.5
+
+### Patch Changes
+
+- Fix void type issue when params is undefined in createTPaginatedQuery. Now params accepts {} instead of void when no params schema is defined.
+
 ## 4.0.4
 
 ### Patch Changes
