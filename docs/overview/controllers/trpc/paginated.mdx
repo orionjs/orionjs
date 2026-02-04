@@ -171,6 +171,8 @@ listUsers = createTPaginatedQuery({
 
 ## Client Usage Example
 
+The response is a discriminated union type based on the action. Use type narrowing to access the data:
+
 ```typescript
 // In your paginated table component
 const [page, setPage] = useState(1)
@@ -199,10 +201,12 @@ const {data: descriptionResult} = trpc.listUsers.useQuery({
   params: {},
 })
 
-// Access data directly - all fields are optional
-const items = itemsResult?.items ?? []
-const totalCount = countResult?.totalCount ?? 0
-const allowedSorts = descriptionResult?.allowedSorts ?? []
+// Type narrowing - check for the property you need
+const items = itemsResult && 'items' in itemsResult ? itemsResult.items : []
+const totalCount = countResult && 'totalCount' in countResult ? countResult.totalCount : 0
+const allowedSorts = descriptionResult && 'allowedSorts' in descriptionResult
+  ? descriptionResult.allowedSorts
+  : []
 
 const totalPages = Math.ceil(totalCount / 10)
 ```
