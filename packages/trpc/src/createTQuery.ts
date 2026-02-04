@@ -35,7 +35,9 @@ export function createTQuery<
     .input((val: unknown) => val as Input)
     .query(async ({ctx, input}): Promise<Output> => {
       try {
-        const cleanedInput = paramsSchema ? await cleanAndValidate(paramsSchema, input) : input
+        const cleanedInput = paramsSchema
+          ? await cleanAndValidate(paramsSchema, input)
+          : (input ?? {})
         const result = await options.resolve(cleanedInput, ctx.viewer as TViewer)
         const cleanedResult = returnsSchema ? await clean(returnsSchema, result) : result
         return cleanedResult as Output

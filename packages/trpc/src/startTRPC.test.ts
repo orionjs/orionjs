@@ -362,6 +362,40 @@ describe('startTRPC', () => {
     expect(router).toBeDefined()
   })
 
+  it('should default input to empty object when query has no params and is called without input', async () => {
+    const procedures = {
+      getStatus: createTQuery({
+        resolve: async params => {
+          return {params}
+        },
+      }),
+    }
+
+    const app = express()
+    await startTRPC({procedures, app})
+
+    const response = await request(app).get('/trpc/getStatus')
+
+    expect(response.body.result.data.params).toEqual({})
+  })
+
+  it('should default input to empty object when mutation has no params and is called without input', async () => {
+    const procedures = {
+      doSomething: createTMutation({
+        resolve: async params => {
+          return {params}
+        },
+      }),
+    }
+
+    const app = express()
+    await startTRPC({procedures, app})
+
+    const response = await request(app).post('/trpc/doSomething').send({})
+
+    expect(response.body.result.data.params).toEqual({})
+  })
+
   it('should work with mutation type inference without returns schema', async () => {
     const procedures = {
       createItem: createTMutation({
