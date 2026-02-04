@@ -1,7 +1,7 @@
 import getFieldValidator from './getValidationErrors/getError/getFieldValidator'
 import {Schema, SchemaFieldType, SchemaFieldTypeNonSchema, SchemaWithMetadata} from './types'
 
-// @ts-ignore polyfill for Symbol.metadata
+// @ts-expect-error polyfill for Symbol.metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
 
 export function isSchemaLike(type: any): boolean {
@@ -66,8 +66,57 @@ export function getSchemaFromAnyOrionForm(type: any): SchemaFieldType {
   return type
 }
 
+// Known properties that can exist on a SchemaNode (field definition)
+const schemaNodeProperties = new Set([
+  'type',
+  'optional',
+  'validate',
+  'clean',
+  'min',
+  'max',
+  'allowedValues',
+  'defaultValue',
+  'isBlackboxChild',
+  'private',
+  'graphQLResolver',
+  'key',
+  'label',
+  'description',
+  'placeholder',
+  'fieldType',
+  'fieldOptions',
+])
+
+/**
+ * Checks if an object looks like a SchemaNode (field definition)
+ * A SchemaNode has a 'type' property and only known field-related properties
+ */
+function looksLikeSchemaNode(object: any): boolean {
+  if (!object || typeof object !== 'object') return false
+
+  // Must have a 'type' property to be a field definition
+  if (!('type' in object)) return false
+
+  // Check if all properties are known SchemaNode properties
+  for (const key of Object.keys(object)) {
+    // Skip special properties
+    if (key.startsWith('__')) continue
+
+    // If there's a property that's not a known SchemaNode property,
+    // it's likely a Schema with custom field names, not a SchemaNode
+    if (!schemaNodeProperties.has(key)) {
+      return false
+    }
+  }
+
+  return true
+}
+
 function objectHasSubObjectWithKey(object: any, key: string) {
   if (!object || typeof object !== 'object') return false
+
+  // If the object looks like a field definition (SchemaNode), it's not a Schema
+  if (looksLikeSchemaNode(object)) return false
 
   for (const key1 in object) {
     const value = object[key1]
