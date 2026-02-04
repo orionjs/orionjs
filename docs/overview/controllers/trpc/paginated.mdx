@@ -171,8 +171,6 @@ listUsers = createTPaginatedQuery({
 
 ## Client Usage Example
 
-Since all actions return a union type, you need to narrow the type when accessing the data:
-
 ```typescript
 // In your paginated table component
 const [page, setPage] = useState(1)
@@ -201,27 +199,10 @@ const {data: descriptionResult} = trpc.listUsers.useQuery({
   params: {},
 })
 
-// Type narrowing - check which response shape you have
-const items = itemsResult && 'items' in itemsResult ? itemsResult.items : []
-const totalCount = countResult && 'totalCount' in countResult ? countResult.totalCount : 0
-const allowedSorts = descriptionResult && 'allowedSorts' in descriptionResult
-  ? descriptionResult.allowedSorts
-  : []
+// Access data directly - all fields are optional
+const items = itemsResult?.items ?? []
+const totalCount = countResult?.totalCount ?? 0
+const allowedSorts = descriptionResult?.allowedSorts ?? []
 
 const totalPages = Math.ceil(totalCount / 10)
-```
-
-Alternatively, you can create a typed wrapper hook:
-
-```typescript
-function useListUsers(input: {page: number; limit: number; sortBy?: string; sortType?: 'asc' | 'desc'; params: {}}) {
-  const itemsQuery = trpc.listUsers.useQuery({action: 'getItems', ...input})
-  const countQuery = trpc.listUsers.useQuery({action: 'getCount', params: input.params})
-
-  return {
-    items: itemsQuery.data && 'items' in itemsQuery.data ? itemsQuery.data.items : [],
-    totalCount: countQuery.data && 'totalCount' in countQuery.data ? countQuery.data.totalCount : 0,
-    isLoading: itemsQuery.isLoading || countQuery.isLoading,
-  }
-}
 ```

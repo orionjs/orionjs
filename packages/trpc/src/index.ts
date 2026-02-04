@@ -7,10 +7,7 @@ export type {TMutationOptions} from './createTMutation'
 export {createTMutation} from './createTMutation'
 export type {
   PaginatedAction,
-  PaginatedCountResponse,
   PaginatedCursor,
-  PaginatedDescription,
-  PaginatedItemsResponse,
   PaginatedQueryInput,
   PaginatedResponse,
   TPaginatedQueryOptions,

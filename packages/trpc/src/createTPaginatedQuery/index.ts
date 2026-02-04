@@ -50,28 +50,14 @@ export interface PaginatedQueryInput<TParams extends SchemaFieldType | undefined
   params: ResolveParamsType<TParams>
 }
 
-// Description response
-export interface PaginatedDescription {
-  allowedSorts: string[]
+// Response with all optional fields
+export interface PaginatedResponse<TItem> {
+  items?: TItem[]
+  totalCount?: number
+  allowedSorts?: string[]
   defaultSortBy?: string
   defaultSortType?: 'asc' | 'desc'
 }
-
-// Items response
-export interface PaginatedItemsResponse<TItem> {
-  items: TItem[]
-}
-
-// Count response
-export interface PaginatedCountResponse {
-  totalCount: number
-}
-
-// Union of all responses
-export type PaginatedResponse<TItem> =
-  | PaginatedItemsResponse<TItem>
-  | PaginatedCountResponse
-  | PaginatedDescription
 
 // Options interface with getCursor as the source of TItem inference
 export interface TPaginatedQueryOptions<
@@ -129,7 +115,7 @@ export function createTPaginatedQuery<
             allowedSorts: options.allowedSorts || [],
             defaultSortBy: options.defaultSortBy,
             defaultSortType: options.defaultSortType,
-          } satisfies PaginatedDescription
+          }
         }
 
         // Validate and clean pagination fields
@@ -150,7 +136,7 @@ export function createTPaginatedQuery<
         // Handle getCount action
         if (action === 'getCount') {
           const totalCount = await options.getCount(userParams, ctx.viewer as TViewer)
-          return {totalCount} satisfies PaginatedCountResponse
+          return {totalCount}
         }
 
         // Handle getItems action
@@ -182,9 +168,7 @@ export function createTPaginatedQuery<
             cleanedItems = items as TItem[]
           }
 
-          return {
-            items: cleanedItems,
-          } satisfies PaginatedItemsResponse<TItem>
+          return {items: cleanedItems}
         }
 
         throw new Error(`Unknown action: ${action}`)
