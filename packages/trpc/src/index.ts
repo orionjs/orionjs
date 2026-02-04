@@ -6,11 +6,10 @@ export {buildRouter} from './buildRouter'
 export type {TMutationOptions} from './createTMutation'
 export {createTMutation} from './createTMutation'
 export type {
-  ExtractCursorItem,
   PaginatedAction,
-  PaginatedCursor,
   PaginatedQueryInput,
   PaginatedResponse,
+  PaginationParams,
   TPaginatedQueryOptions,
 } from './createTPaginatedQuery'
 export {createTPaginatedQuery} from './createTPaginatedQuery'

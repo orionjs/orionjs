@@ -1,47 +1,30 @@
 import {schemaWithName} from '@orion-js/schema'
 import {Inject, Service} from '@orion-js/services'
-import {inferRouterOutputs} from '@trpc/server'
 import {describe, expect, it} from 'vitest'
 import {buildRouter} from './buildRouter'
-import {createTPaginatedQuery, PaginatedCursor} from './createTPaginatedQuery'
+import {createTPaginatedQuery, PaginationParams} from './createTPaginatedQuery'
 import {getTProcedures, Procedures, TPaginatedQuery} from './service'
 import {t} from './trpc'
+import {InferRouterOutputs} from './types'
 
-// Helper to create a mock cursor from an array
-function createMockCursor<T>(data: T[]): PaginatedCursor<T> {
-  let _skip = 0
-  let _limit = data.length
-  let _sort: {[key: string]: 1 | -1} | null = null
+// Helper to apply pagination to an array (simulates MongoDB behavior)
+function applyPagination<T>(data: T[], {skip, limit, sort}: PaginationParams): T[] {
+  const result = [...data]
 
-  return {
-    skip(value: number) {
-      _skip = value
-    },
-    limit(value: number) {
-      _limit = value
-    },
-    sort(value: {[key: string]: 1 | -1}) {
-      _sort = value
-    },
-    async toArray(): Promise<T[]> {
-      const result = [...data]
-
-      // Apply sort
-      if (_sort) {
-        const [key, direction] = Object.entries(_sort)[0]
-        result.sort((a, b) => {
-          const aVal = (a as any)[key]
-          const bVal = (b as any)[key]
-          if (aVal < bVal) return direction === 1 ? -1 : 1
-          if (aVal > bVal) return direction === 1 ? 1 : -1
-          return 0
-        })
-      }
-
-      // Apply skip and limit
-      return result.slice(_skip, _skip + _limit)
-    },
+  // Apply sort
+  if (Object.keys(sort).length > 0) {
+    const [key, direction] = Object.entries(sort)[0]
+    result.sort((a, b) => {
+      const aVal = (a as any)[key]
+      const bVal = (b as any)[key]
+      if (aVal < bVal) return direction === 1 ? -1 : 1
+      if (aVal > bVal) return direction === 1 ? 1 : -1
+      return 0
+    })
   }
+
+  // Apply skip and limit
+  return result.slice(skip, skip + limit)
 }
 
 describe('createTPaginatedQuery', () => {
@@ -58,7 +41,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listUsers = createTPaginatedQuery({
-        getCursor: async () => createMockCursor(allItems),
+        getItems: async paginationParams => applyPagination(allItems, paginationParams),
         getCount: async () => allItems.length,
       })
     }
@@ -89,7 +72,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () => createMockCursor(allItems),
+        getItems: async paginationParams => applyPagination(allItems, paginationParams),
         getCount: async () => allItems.length,
       })
     }
@@ -111,7 +94,7 @@ describe('createTPaginatedQuery', () => {
         allowedSorts: ['name', 'createdAt'],
         defaultSortBy: 'createdAt',
         defaultSortType: 'desc',
-        getCursor: async () => createMockCursor([]),
+        getItems: async () => [],
         getCount: async () => 0,
       })
     }
@@ -136,7 +119,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () => createMockCursor(allItems),
+        getItems: async paginationParams => applyPagination(allItems, paginationParams),
         getCount: async () => allItems.length,
       })
     }
@@ -184,9 +167,9 @@ describe('createTPaginatedQuery', () => {
       @TPaginatedQuery()
       listUsersByRole = createTPaginatedQuery({
         params: {role: {type: 'string', optional: true}},
-        getCursor: async ({role}) => {
+        getItems: async (paginationParams, {role}) => {
           const filtered = role ? allItems.filter(i => i.role === role) : allItems
-          return createMockCursor(filtered)
+          return applyPagination(filtered, paginationParams)
         },
         getCount: async ({role}) => {
           const filtered = role ? allItems.filter(i => i.role === role) : allItems
@@ -226,7 +209,7 @@ describe('createTPaginatedQuery', () => {
         allowedSorts: ['name', 'age'],
         defaultSortBy: 'name',
         defaultSortType: 'asc',
-        getCursor: async () => createMockCursor(allItems),
+        getItems: async paginationParams => applyPagination(allItems, paginationParams),
         getCount: async () => allItems.length,
       })
     }
@@ -271,7 +254,7 @@ describe('createTPaginatedQuery', () => {
       listItems = createTPaginatedQuery({
         defaultLimit: 5,
         maxLimit: 10,
-        getCursor: async () => createMockCursor(allItems),
+        getItems: async paginationParams => applyPagination(allItems, paginationParams),
         getCount: async () => allItems.length,
       })
     }
@@ -296,13 +279,13 @@ describe('createTPaginatedQuery', () => {
     await expect(caller.listItems({action: 'getItems', limit: 15, params: {}})).rejects.toThrow()
   })
 
-  it('should pass viewer to getCursor and getCount', async () => {
+  it('should pass viewer to getItems and getCount', async () => {
     @Procedures()
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async (params, viewer) => {
-          return createMockCursor([{id: '1', ownerId: viewer?.userId || 'anonymous'}])
+        getItems: async (paginationParams, params, viewer) => {
+          return [{id: '1', ownerId: viewer?.userId || 'anonymous'}]
         },
         getCount: async () => 1,
       })
@@ -342,7 +325,8 @@ describe('createTPaginatedQuery', () => {
 
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () => createMockCursor(this.dataService.getItems()),
+        getItems: async paginationParams =>
+          applyPagination(this.dataService.getItems(), paginationParams),
         getCount: async () => this.dataService.getItems().length,
       })
     }
@@ -364,8 +348,7 @@ describe('createTPaginatedQuery', () => {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
         returns: {id: {type: 'ID'}, name: {type: 'string'}},
-        getCursor: async () =>
-          createMockCursor([{id: '1', name: 'Test', extraField: 'should be removed'}]),
+        getItems: async () => [{id: '1', name: 'Test', extraField: 'should be removed'}],
         getCount: async () => 1,
       })
     }
@@ -386,8 +369,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () =>
-          createMockCursor([{id: '1', name: 'Test', extraField: 'should be kept'}]),
+        getItems: async () => [{id: '1', name: 'Test', extraField: 'should be kept'}],
         getCount: async () => 1,
       })
     }
@@ -410,7 +392,7 @@ describe('createTPaginatedQuery', () => {
         params: {
           search: {type: 'string', min: 3},
         },
-        getCursor: async () => createMockCursor([]),
+        getItems: async () => [],
         getCount: async () => 0,
       })
     }
@@ -430,7 +412,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () => createMockCursor([] as {id: string}[]),
+        getItems: async () => [] as {id: string}[],
         getCount: async () => 0,
       })
     }
@@ -453,7 +435,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () => createMockCursor([{id: '1'}]),
+        getItems: async () => [{id: '1'}],
         getCount: async () => 1,
       })
     }
@@ -471,7 +453,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getCursor: async () => createMockCursor([]),
+        getItems: async () => [],
         getCount: async () => 0,
       })
     }
@@ -489,7 +471,7 @@ describe('createTPaginatedQuery', () => {
     })
   })
 
-  it('should automatically infer item types from getCursor return type without manual annotation', async () => {
+  it('should automatically infer item types from getItems return type', async () => {
     interface User {
       id: string
       name: string
@@ -501,12 +483,12 @@ describe('createTPaginatedQuery', () => {
       {id: '2', name: 'Bob', email: 'bob@example.com'},
     ]
 
-    // NO manual type annotation - types should be inferred from getCursor return
+    // NO manual type annotation - types should be inferred from getItems return
     @Procedures()
     class TestProcedures {
       @TPaginatedQuery()
       listUsers = createTPaginatedQuery({
-        getCursor: async () => createMockCursor(users),
+        getItems: async paginationParams => applyPagination(users, paginationParams),
         getCount: async () => users.length,
       })
     }
@@ -522,13 +504,12 @@ describe('createTPaginatedQuery', () => {
       expect(result.items[0].email).toBe('alice@example.com')
     }
 
-    // Type inference test - verify types are correctly inferred
-    type RouterOutputs = inferRouterOutputs<typeof router>
+    // Type inference test - verify types are correctly inferred with our custom InferRouterOutputs
+    type RouterOutputs = InferRouterOutputs<typeof router>
     type ListUsersOutput = RouterOutputs['listUsers']
 
-    // The output is a union type, but items should be User[]
     const _checkType = (output: ListUsersOutput) => {
-      if ('items' in output) {
+      if (output.items) {
         const item = output.items[0]
         // These should compile without errors - types are inferred
         const _id: string = item.id
@@ -553,7 +534,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listProducts = createTPaginatedQuery({
-        getCursor: async () => createMockCursor(products),
+        getItems: async paginationParams => applyPagination(products, paginationParams),
         getCount: async () => products.length,
       })
     }
@@ -561,12 +542,12 @@ describe('createTPaginatedQuery', () => {
     const procedures = getTProcedures(TestProcedures)
     const router = buildRouter(procedures)
 
-    type RouterOutputs = inferRouterOutputs<typeof router>
+    type RouterOutputs = InferRouterOutputs<typeof router>
     type ListProductsOutput = RouterOutputs['listProducts']
 
     // Type checking - should correctly infer Product type
     const _checkTypes = (output: ListProductsOutput) => {
-      if ('items' in output) {
+      if (output.items) {
         const item = output.items[0]
         // Valid properties
         const _id: string = item.id
@@ -595,7 +576,7 @@ describe('createTPaginatedQuery', () => {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
         returns: ItemSchema,
-        getCursor: async () => createMockCursor([{id: '1', name: 'Test', extra: 'removed'}]),
+        getItems: async () => [{id: '1', name: 'Test', extra: 'removed'}],
         getCount: async () => 1,
       })
     }
@@ -609,5 +590,41 @@ describe('createTPaginatedQuery', () => {
       expect(result.items[0].name).toBe('Test')
       expect((result.items[0] as any).extra).toBeUndefined()
     }
+  })
+
+  it('should pass pagination params ready for MongoDB', async () => {
+    let receivedPaginationParams: PaginationParams | null = null
+
+    @Procedures()
+    class TestProcedures {
+      @TPaginatedQuery()
+      listItems = createTPaginatedQuery({
+        allowedSorts: ['name', 'createdAt'],
+        getItems: async paginationParams => {
+          receivedPaginationParams = paginationParams
+          return []
+        },
+        getCount: async () => 0,
+      })
+    }
+
+    const procedures = getTProcedures(TestProcedures)
+    const router = buildRouter(procedures)
+    const caller = t.createCallerFactory(router)({viewer: null})
+
+    await caller.listItems({
+      action: 'getItems',
+      page: 2,
+      limit: 10,
+      sortBy: 'name',
+      sortType: 'desc',
+      params: {},
+    })
+
+    expect(receivedPaginationParams).toEqual({
+      skip: 10, // page 2 with limit 10 = skip 10
+      limit: 10,
+      sort: {name: -1}, // desc = -1
+    })
   })
 })

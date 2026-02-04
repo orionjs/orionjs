@@ -11,21 +11,17 @@ import {t} from '../trpc'
 import {computeSkip} from './computePagination'
 import {getPaginationSchema, getUserParamsSchema} from './params'
 
-// Cursor interface - must have skip, limit, sort, and toArray
-export interface PaginatedCursor<TItem = any> {
-  skip: (value: number) => void
-  limit: (value: number) => void
-  sort: (value: {[key: string]: 1 | -1}) => void
-  toArray: () => Promise<TItem[]>
-}
-
-// Helper type to extract TItem from PaginatedCursor
-export type ExtractCursorItem<T> = T extends PaginatedCursor<infer U> ? U : never
-
 // Action types
 export type PaginatedAction = 'getItems' | 'getCount' | 'getDescription'
 
-// Pagination fields (top-level)
+// Pagination params passed to getItems - ready to use with MongoDB
+export interface PaginationParams {
+  skip: number
+  limit: number
+  sort: {[key: string]: 1 | -1}
+}
+
+// Pagination fields from input
 type PaginationFields = {
   page?: number
   limit?: number
@@ -59,21 +55,23 @@ export interface PaginatedResponse<TItem> {
   defaultSortType?: 'asc' | 'desc'
 }
 
-// Options interface - captures getCursor function type for type extraction
+// Options interface - captures getItems function type for type extraction
 export interface TPaginatedQueryOptions<
   TParams extends SchemaFieldType | undefined = undefined,
-  TGetCursor extends (
+  TGetItems extends (
+    paginationParams: PaginationParams,
     params: any,
     viewer: any,
-  ) => Promise<PaginatedCursor<any>> | PaginatedCursor<any> = (
+  ) => Promise<any[]> | any[] = (
+    paginationParams: PaginationParams,
     params: any,
     viewer: any,
-  ) => PaginatedCursor<any>,
+  ) => any[],
   TViewer = any,
 > {
   params?: TParams
   returns?: SchemaFieldType
-  getCursor: TGetCursor
+  getItems: TGetItems
   getCount: (params: ResolveParamsType<TParams>, viewer: TViewer) => Promise<number> | number
   allowedSorts?: string[]
   defaultSortBy?: string
@@ -84,18 +82,20 @@ export interface TPaginatedQueryOptions<
 
 export function createTPaginatedQuery<
   TParams extends SchemaFieldType | undefined = undefined,
-  TGetCursor extends (
+  TGetItems extends (
+    paginationParams: PaginationParams,
     params: ResolveParamsType<TParams>,
     viewer: any,
-  ) => Promise<PaginatedCursor<any>> | PaginatedCursor<any> = (
+  ) => Promise<any[]> | any[] = (
+    paginationParams: PaginationParams,
     params: ResolveParamsType<TParams>,
     viewer: any,
-  ) => PaginatedCursor<any>,
+  ) => any[],
   TViewer = any,
->(options: TPaginatedQueryOptions<TParams, TGetCursor, TViewer>) {
-  // Extract TItem using only built-in utility types (like createTQuery does)
-  // Chain: getCursor return -> await -> toArray method -> return -> await -> array element
-  type TItem = Awaited<ReturnType<Awaited<ReturnType<TGetCursor>>['toArray']>>[number]
+>(options: TPaginatedQueryOptions<TParams, TGetItems, TViewer>) {
+  // Extract TItem from getItems return type - simple and direct
+  type TItem = Awaited<ReturnType<TGetItems>>[number]
+
   const paginationSchema = getPaginationSchema({
     allowedSorts: options.allowedSorts,
     defaultSortBy: options.defaultSortBy,
@@ -156,18 +156,17 @@ export function createTPaginatedQuery<
           const skip = computeSkip(page, limit)
           const {sortBy, sortType} = paginationFields
 
-          // Get cursor and apply pagination
-          const cursor = await options.getCursor(userParams, ctx.viewer as TViewer)
-
-          cursor.skip(skip)
-          cursor.limit(limit)
-
+          // Build sort object
+          const sort: {[key: string]: 1 | -1} = {}
           if (sortBy && sortType) {
-            cursor.sort({[sortBy]: sortType === 'asc' ? 1 : -1})
+            sort[sortBy] = sortType === 'asc' ? 1 : -1
           }
 
-          // Get items
-          const items = await cursor.toArray()
+          // Build pagination params ready for MongoDB
+          const paginationParams: PaginationParams = {skip, limit, sort}
+
+          // Get items directly
+          const items = await options.getItems(paginationParams, userParams, ctx.viewer as TViewer)
 
           // Clean items if returns schema is provided
           let cleanedItems: TItem[]
