@@ -1,5 +1,11 @@
 # @orion-js/trpc
 
+## 4.0.4
+
+### Patch Changes
+
+- Separate pagination fields from user params in createTPaginatedQuery. The page, limit, sortBy, and sortType fields are now top-level input fields alongside action, while params contains only user-defined parameters.
+
 ## 4.0.3
 
 ### Patch Changes
