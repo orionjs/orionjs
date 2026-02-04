@@ -1,5 +1,16 @@
 # @orion-js/trpc
 
+## 4.0.8
+
+### Patch Changes
+
+- refactor(trpc): simplify createTPaginatedQuery API with getItems
+
+  - Replace `getCursor` with `getItems` that receives `{skip, limit, sort}` ready for MongoDB
+  - Remove `PaginatedCursor` interface - no longer needed
+  - Export new `PaginationParams` type
+  - Better type inference from `getItems` return type
+
 ## 4.0.7
 
 ### Patch Changes

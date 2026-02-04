@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/trpc",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
