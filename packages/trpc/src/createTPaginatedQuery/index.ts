@@ -20,7 +20,7 @@ export interface PaginatedCursor<TItem = any> {
 }
 
 // Helper type to extract TItem from PaginatedCursor
-type ExtractCursorItem<T> = T extends PaginatedCursor<infer U> ? U : never
+export type ExtractCursorItem<T> = T extends PaginatedCursor<infer U> ? U : never
 
 // Action types
 export type PaginatedAction = 'getItems' | 'getCount' | 'getDescription'
@@ -50,36 +50,30 @@ export interface PaginatedQueryInput<TParams extends SchemaFieldType | undefined
   params: ResolveParamsType<TParams>
 }
 
-// Response types for each action
-export interface PaginatedItemsResponse<TItem> {
-  items: TItem[]
-}
-
-export interface PaginatedCountResponse {
-  totalCount: number
-}
-
-export interface PaginatedDescriptionResponse {
-  allowedSorts: string[]
+// Response with all optional fields
+export interface PaginatedResponse<TItem> {
+  items?: TItem[]
+  totalCount?: number
+  allowedSorts?: string[]
   defaultSortBy?: string
   defaultSortType?: 'asc' | 'desc'
 }
 
-// Union of all responses
-export type PaginatedResponse<TItem> =
-  | PaginatedItemsResponse<TItem>
-  | PaginatedCountResponse
-  | PaginatedDescriptionResponse
-
-// Options interface with getCursor as the source of TItem inference
+// Options interface - captures getCursor function type for type extraction
 export interface TPaginatedQueryOptions<
   TParams extends SchemaFieldType | undefined = undefined,
-  TCursor extends PaginatedCursor = PaginatedCursor,
+  TGetCursor extends (
+    params: any,
+    viewer: any,
+  ) => Promise<PaginatedCursor<any>> | PaginatedCursor<any> = (
+    params: any,
+    viewer: any,
+  ) => PaginatedCursor<any>,
   TViewer = any,
 > {
   params?: TParams
   returns?: SchemaFieldType
-  getCursor: (params: ResolveParamsType<TParams>, viewer: TViewer) => Promise<TCursor> | TCursor
+  getCursor: TGetCursor
   getCount: (params: ResolveParamsType<TParams>, viewer: TViewer) => Promise<number> | number
   allowedSorts?: string[]
   defaultSortBy?: string
@@ -90,9 +84,18 @@ export interface TPaginatedQueryOptions<
 
 export function createTPaginatedQuery<
   TParams extends SchemaFieldType | undefined = undefined,
-  TCursor extends PaginatedCursor = PaginatedCursor,
+  TGetCursor extends (
+    params: ResolveParamsType<TParams>,
+    viewer: any,
+  ) => Promise<PaginatedCursor<any>> | PaginatedCursor<any> = (
+    params: ResolveParamsType<TParams>,
+    viewer: any,
+  ) => PaginatedCursor<any>,
   TViewer = any,
->(options: TPaginatedQueryOptions<TParams, TCursor, TViewer>) {
+>(options: TPaginatedQueryOptions<TParams, TGetCursor, TViewer>) {
+  // Extract TItem using only built-in utility types (like createTQuery does)
+  // Chain: getCursor return -> await -> toArray method -> return -> await -> array element
+  type TItem = Awaited<ReturnType<Awaited<ReturnType<TGetCursor>>['toArray']>>[number]
   const paginationSchema = getPaginationSchema({
     allowedSorts: options.allowedSorts,
     defaultSortBy: options.defaultSortBy,
@@ -110,13 +113,10 @@ export function createTPaginatedQuery<
       }
     : undefined
 
-  // Extract TItem from TCursor
-  type TItem = ExtractCursorItem<TCursor>
-  type Input = PaginatedQueryInput<TParams>
   type Output = PaginatedResponse<TItem>
 
   return t.procedure
-    .input((val: unknown) => val as Input)
+    .input((val: unknown) => val as PaginatedQueryInput<TParams>)
     .query(async ({ctx, input}): Promise<Output> => {
       try {
         const {action, params: rawUserParams, ...rawPaginationFields} = input
@@ -127,7 +127,7 @@ export function createTPaginatedQuery<
             allowedSorts: options.allowedSorts || [],
             defaultSortBy: options.defaultSortBy,
             defaultSortType: options.defaultSortType,
-          } satisfies PaginatedDescriptionResponse
+          }
         }
 
         // Validate and clean pagination fields
@@ -148,7 +148,7 @@ export function createTPaginatedQuery<
         // Handle getCount action
         if (action === 'getCount') {
           const totalCount = await options.getCount(userParams, ctx.viewer as TViewer)
-          return {totalCount} satisfies PaginatedCountResponse
+          return {totalCount}
         }
 
         // Handle getItems action
@@ -180,7 +180,7 @@ export function createTPaginatedQuery<
             cleanedItems = items as TItem[]
           }
 
-          return {items: cleanedItems} satisfies PaginatedItemsResponse<TItem>
+          return {items: cleanedItems}
         }
 
         throw new Error(`Unknown action: ${action}`)

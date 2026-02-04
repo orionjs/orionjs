@@ -1,16 +1,14 @@
 // Core tRPC exports
 
-// Re-export useful tRPC types
+// Re-export useful tRPC types (including our improved InferRouterOutputs)
 export type {inferRouterInputs, inferRouterOutputs, TRPCRouterRecord} from '@trpc/server'
 export {buildRouter} from './buildRouter'
 export type {TMutationOptions} from './createTMutation'
 export {createTMutation} from './createTMutation'
 export type {
+  ExtractCursorItem,
   PaginatedAction,
-  PaginatedCountResponse,
   PaginatedCursor,
-  PaginatedDescriptionResponse,
-  PaginatedItemsResponse,
   PaginatedQueryInput,
   PaginatedResponse,
   TPaginatedQueryOptions,
@@ -35,3 +33,4 @@ export type {StartTRPCOptions} from './startTRPC'
 // Router building
 export {startTRPC} from './startTRPC'
 export {procedure, router, TRPCContext, t} from './trpc'
+export type {InferRouterInputs, InferRouterOutputs} from './types'
