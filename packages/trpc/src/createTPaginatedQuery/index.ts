@@ -33,14 +33,21 @@ type PaginationFields = {
   sortType?: 'asc' | 'desc'
 }
 
+// Helper to determine params type - use empty object when no params defined
+type ResolveParamsType<TParams> = TParams extends undefined
+  ? Record<string, never>
+  : InferSchemaType<TParams> extends void
+    ? Record<string, never>
+    : InferSchemaType<TParams>
+
 // Input for the query - pagination fields are top-level, user params are in params
-export interface PaginatedQueryInput<TParams extends SchemaFieldType = any> {
+export interface PaginatedQueryInput<TParams extends SchemaFieldType | undefined = undefined> {
   action: PaginatedAction
   page?: number
   limit?: number
   sortBy?: string
   sortType?: 'asc' | 'desc'
-  params: InferSchemaType<TParams>
+  params: ResolveParamsType<TParams>
 }
 
 // Description response
@@ -68,14 +75,14 @@ export type PaginatedResponse<TItem> =
 
 // Options interface with getCursor as the source of TItem inference
 export interface TPaginatedQueryOptions<
-  TParams extends SchemaFieldType = any,
+  TParams extends SchemaFieldType | undefined = undefined,
   TCursor extends PaginatedCursor = PaginatedCursor,
   TViewer = any,
 > {
   params?: TParams
   returns?: SchemaFieldType
-  getCursor: (params: InferSchemaType<TParams>, viewer: TViewer) => Promise<TCursor> | TCursor
-  getCount: (params: InferSchemaType<TParams>, viewer: TViewer) => Promise<number> | number
+  getCursor: (params: ResolveParamsType<TParams>, viewer: TViewer) => Promise<TCursor> | TCursor
+  getCount: (params: ResolveParamsType<TParams>, viewer: TViewer) => Promise<number> | number
   allowedSorts?: string[]
   defaultSortBy?: string
   defaultSortType?: 'asc' | 'desc'
@@ -84,8 +91,8 @@ export interface TPaginatedQueryOptions<
 }
 
 export function createTPaginatedQuery<
-  TParams extends SchemaFieldType,
-  TCursor extends PaginatedCursor,
+  TParams extends SchemaFieldType | undefined = undefined,
+  TCursor extends PaginatedCursor = PaginatedCursor,
   TViewer = any,
 >(options: TPaginatedQueryOptions<TParams, TCursor, TViewer>) {
   const paginationSchema = getPaginationSchema({
@@ -135,7 +142,7 @@ export function createTPaginatedQuery<
         const userParams = (await cleanAndValidate(
           userParamsSchema,
           rawUserParams || {},
-        )) as InferSchemaType<TParams>
+        )) as ResolveParamsType<TParams>
 
         const page = paginationFields.page ?? 1
         const limit = paginationFields.limit ?? 20
