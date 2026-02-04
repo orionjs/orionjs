@@ -65,44 +65,63 @@ export class ExampleProcedures {
 }
 ```
 
-### 2. Create a Typed Router
+### 2. Register in a Component
 
-Create a router file that exports the typed router:
+Add your procedure classes to a component's `trpc` controllers:
 
 ```typescript
-// app/router.ts
-import {buildRouter, mergeProcedures} from '@orion-js/trpc'
-import {ExampleProcedures} from './exampleComponent/controllers/trpc/ExampleProcedures'
-import {UserProcedures} from './userComponent/controllers/trpc/UserProcedures'
+// app/exampleComponent/index.ts
+import {component} from '@orion-js/components'
+import trpc from './controllers/trpc'
 
-// Merge all procedure classes with preserved types
-const procedures = mergeProcedures([ExampleProcedures, UserProcedures])
-
-// Build the router
-export const appRouter = buildRouter(procedures)
-
-// Export the router type
-export type AppRouter = typeof appRouter
+export default component({
+  trpc,
+  // ...other controllers
+})
 ```
 
 ### 3. Start the tRPC Server
+
+`startTRPC` accepts a `procedures` object (a `TRPCRouterRecord`) and builds the router internally:
 
 ```typescript
 // app/config/trpc/index.ts
 import {startTRPC} from '@orion-js/trpc'
 import {logger} from '@orion-js/logger'
-import {appRouter} from 'app/router'
+import type {TRPCRouterRecord} from '@trpc/server'
 
-export default async function startTrpc() {
-  await startTRPC({
-    router: appRouter,
-    path: '/trpc',
-  })
-
+export default async function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
+  const {router} = await startTRPC({procedures, path: '/trpc'})
   logger.info('tRPC started at /trpc')
-
-  return {router: appRouter}
+  return {router}
 }
+```
+
+### 4. Wire Everything Together
+
+The `component()` and `mergeComponents()` functions are generic, so tRPC procedure types flow through automatically:
+
+```typescript
+// app/config/index.ts
+import {type Component, mergeComponents} from '@orion-js/components'
+
+export async function startApp<T extends Component<any>[]>(components: [...T]) {
+  const controllers = mergeComponents(components)
+  // controllers.trpc is fully typed!
+  const {router} = await startTrpc(controllers.trpc)
+  return {router}
+}
+```
+
+```typescript
+// app/index.ts
+import {startApp} from './config'
+import exampleComponent from './exampleComponent'
+
+const {router} = await startApp([exampleComponent])
+
+// Export the router type for client usage
+export type AppRouter = typeof router
 ```
 
 ## Decorators Reference
@@ -178,7 +197,7 @@ createTQuery({
 
 ## Merging Procedures
 
-Use `mergeProcedures` to combine multiple procedure classes while preserving types:
+When using the component system, procedures are merged automatically via `mergeComponents()`. For standalone usage, you can use `mergeProcedures` to combine multiple procedure classes while preserving types:
 
 ```typescript
 import {mergeProcedures} from '@orion-js/trpc'
@@ -196,7 +215,7 @@ const procedures = mergeProcedures([
 Create a server-side caller for testing or internal use:
 
 ```typescript
-const {router} = await startApp([...components])
+const {router} = await startApp([exampleComponent])
 
 const caller = router.createCaller({})
 
@@ -208,10 +227,9 @@ const example = await caller.getExample({exampleId: '123'})
 
 ```typescript
 import {startTRPC} from '@orion-js/trpc'
-import {appRouter} from 'app/router'
 
 await startTRPC({
-  router: appRouter,        // Required: your tRPC router
+  procedures,               // Required: TRPCRouterRecord (from components or mergeProcedures)
   path: '/trpc',            // Optional: endpoint path (default: '/trpc')
   bodyParserOptions: {      // Optional: body parser config
     limit: '10mb'

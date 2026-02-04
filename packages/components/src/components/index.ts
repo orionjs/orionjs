@@ -6,20 +6,22 @@ export type RoutesController = {new (...args: any[]): any}
 export type ModelResolversController = {new (...args: any[]): any}
 export type TrpcController = {new (...args: any[]): any}
 
-export interface ComponentControllers {
+export interface ComponentControllers<TTrpc extends TrpcController[] = TrpcController[]> {
   echoes?: EchoesController[]
   routes?: RoutesController[]
   jobs?: JobsController[]
   resolvers?: ResolversController[]
   subscriptions?: SubscriptionsController[]
   modelResolvers?: ModelResolversController[]
-  trpc?: TrpcController[]
+  trpc?: TTrpc
 }
 
-export interface Component {
-  controllers: ComponentControllers
+export interface Component<TTrpc extends TrpcController[] = TrpcController[]> {
+  controllers: ComponentControllers<TTrpc>
 }
 
-export function component(controllers: ComponentControllers): Component {
+export function component<TTrpc extends TrpcController[] = TrpcController[]>(
+  controllers: ComponentControllers<TTrpc>,
+): Component<TTrpc> {
   return {controllers}
 }

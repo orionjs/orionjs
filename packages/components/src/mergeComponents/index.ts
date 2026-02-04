@@ -1,4 +1,4 @@
-import {Component} from '../components'
+import {Component, TrpcController} from '../components'
 import {EchoesMap, getServiceEchoes} from '@orion-js/echoes'
 import {
   getServiceModelResolvers,
@@ -12,16 +12,36 @@ import {getServiceJobs, JobsDefinition} from '@orion-js/dogs'
 import {GlobalResolversMap} from '@orion-js/models'
 import {generateId} from '@orion-js/helpers'
 import {getTProcedures} from '@orion-js/trpc'
+import type {ExtractProcedures} from '@orion-js/trpc'
 import type {TRPCRouterRecord} from '@trpc/server'
 
-export interface MergedComponentControllers {
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
+  ? I
+  : never
+
+type ExtractTrpcFromClasses<T extends TrpcController[]> = UnionToIntersection<
+  T[number] extends infer C ? (C extends TrpcController ? ExtractProcedures<InstanceType<C>> : never) : never
+>
+
+type ExtractTrpcFromComponent<C> = C extends Component<infer Classes>
+  ? ExtractTrpcFromClasses<Classes>
+  : TRPCRouterRecord
+
+type MergeTrpcResult<T extends Component<any>[]> = UnionToIntersection<
+  {[K in keyof T]: ExtractTrpcFromComponent<T[K]>}[number]
+>
+
+export type MergeTrpcFromComponents<T extends Component<any>[]> =
+  MergeTrpcResult<T> extends TRPCRouterRecord ? MergeTrpcResult<T> : TRPCRouterRecord
+
+export interface MergedComponentControllers<TTrpc extends TRPCRouterRecord = TRPCRouterRecord> {
   echoes: EchoesMap
   resolvers: GlobalResolversMap
   modelResolvers: ModelsResolversMap
   subscriptions: OrionSubscriptionsMap
   routes: RoutesMap
   jobs: JobsDefinition
-  trpc: TRPCRouterRecord
+  trpc: TTrpc
 }
 
 export function mergeComponentControllers(component: Component): MergedComponentControllers {
@@ -127,6 +147,10 @@ export function mergeComponentControllers(component: Component): MergedComponent
   }
 }
 
+export function mergeComponents<T extends Component<any>[]>(
+  components: [...T],
+): MergedComponentControllers<MergeTrpcFromComponents<T>>
+export function mergeComponents(components: Component[]): MergedComponentControllers
 export function mergeComponents(components: Component[]): MergedComponentControllers {
   const mergedControllers: MergedComponentControllers = {
     echoes: {},

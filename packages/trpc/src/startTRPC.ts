@@ -1,34 +1,36 @@
 import {createExpressMiddleware} from '@trpc/server/adapters/express'
-import {AnyRouter} from '@trpc/server'
+import {TRPCRouterRecord} from '@trpc/server'
 import {getApp, registerRoute, createRoute, express} from '@orion-js/http'
 import {TRPCContext} from './trpc'
+import {buildRouter} from './buildRouter'
 
-export interface StartTRPCOptions<T extends AnyRouter = AnyRouter> {
-  router: T
+export interface StartTRPCOptions<T extends TRPCRouterRecord = TRPCRouterRecord> {
+  procedures: T
   app?: express.Application
   path?: string
   bodyParserOptions?: {limit?: number | string}
 }
 
 /**
- * Start tRPC server with a pre-built router.
+ * Start tRPC server with procedures.
  *
  * @example
- * import {startTRPC, buildRouter, mergeProcedures} from '@orion-js/trpc'
+ * import {startTRPC, mergeProcedures} from '@orion-js/trpc'
  *
  * const procedures = mergeProcedures([UserProcedures, PostProcedures])
- * const appRouter = buildRouter(procedures)
+ * await startTRPC({procedures, path: '/trpc'})
  *
- * await startTRPC({router: appRouter, path: '/trpc'})
- *
- * export type AppRouter = typeof appRouter
+ * // Or with component-extracted procedures:
+ * const controllers = mergeComponents(components)
+ * await startTRPC({procedures: controllers.trpc})
  */
-export async function startTRPC<T extends AnyRouter>(options: StartTRPCOptions<T>) {
-  const {router, path = '/trpc', bodyParserOptions} = options
+export async function startTRPC<T extends TRPCRouterRecord>(options: StartTRPCOptions<T>) {
+  const {procedures, path = '/trpc', bodyParserOptions} = options
   const app = options.app || getApp()
+  const router = buildRouter(procedures)
 
   const middleware = createExpressMiddleware({
-    router,
+    router: router as any,
     createContext: ({req}): TRPCContext => ({
       viewer: (req as any)._viewer,
     }),
