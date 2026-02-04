@@ -1,5 +1,14 @@
 # @orion-js/dogs
 
+## 4.2.7
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/schema@4.2.1
+  - @orion-js/mongodb@4.2.7
+  - @orion-js/typed-model@4.2.1
+
 ## 4.2.6
 
 ### Patch Changes

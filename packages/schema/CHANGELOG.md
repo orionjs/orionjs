@@ -1,5 +1,12 @@
 # @orion-js/schema
 
+## 4.2.1
+
+### Patch Changes
+
+- feat(trpc): add createTPaginatedQuery for paginated table support
+  fix(schema): handle schemas with field named "type" in isSchemaLike
+
 ## 4.2.0
 
 ### Minor Changes
