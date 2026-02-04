@@ -44,6 +44,20 @@ export function TMutation() {
   }
 }
 
+export function TPaginatedQuery() {
+  return (method: any, context: ClassFieldDecoratorContext) => {
+    const propertyKey = String(context.name)
+
+    context.addInitializer(function (this: any) {
+      const procedures = proceduresMetadata.get(this) || {}
+      procedures[propertyKey] = this[propertyKey]
+      proceduresMetadata.set(this, procedures)
+    })
+
+    return method
+  }
+}
+
 /**
  * Extracts only the tRPC procedure fields from a class instance type
  */
@@ -55,7 +69,9 @@ export type ExtractProcedures<T> = {
  * Gets the procedures from a class decorated with @Procedures.
  * Returns a TRPCRouterRecord that can be passed to buildRouter/startTRPC.
  */
-export function getTProcedures<T extends object>(target: new (...args: any[]) => T): ExtractProcedures<T> {
+export function getTProcedures<T extends object>(
+  target: new (...args: any[]) => T,
+): ExtractProcedures<T> {
   const instance = getInstance(target)
 
   const className = instance.constructor.name
@@ -84,13 +100,21 @@ type ProcedureClass = new (...args: any[]) => any
  * const router = buildRouter(procedures)
  * export type AppRouter = typeof router
  */
-export function mergeProcedures<T1 extends ProcedureClass>(classes: [T1]): ExtractProcedures<InstanceType<T1>>
+export function mergeProcedures<T1 extends ProcedureClass>(
+  classes: [T1],
+): ExtractProcedures<InstanceType<T1>>
 export function mergeProcedures<T1 extends ProcedureClass, T2 extends ProcedureClass>(
   classes: [T1, T2],
 ): ExtractProcedures<InstanceType<T1>> & ExtractProcedures<InstanceType<T2>>
-export function mergeProcedures<T1 extends ProcedureClass, T2 extends ProcedureClass, T3 extends ProcedureClass>(
+export function mergeProcedures<
+  T1 extends ProcedureClass,
+  T2 extends ProcedureClass,
+  T3 extends ProcedureClass,
+>(
   classes: [T1, T2, T3],
-): ExtractProcedures<InstanceType<T1>> & ExtractProcedures<InstanceType<T2>> & ExtractProcedures<InstanceType<T3>>
+): ExtractProcedures<InstanceType<T1>> &
+  ExtractProcedures<InstanceType<T2>> &
+  ExtractProcedures<InstanceType<T3>>
 export function mergeProcedures<
   T1 extends ProcedureClass,
   T2 extends ProcedureClass,
