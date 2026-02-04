@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,24 +7,38 @@
     "defaultBranch": "master"
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      "dist"
-    ]
+    "includes": ["**", "!**/node_modules", "!**/dist"]
   },
   "formatter": {
     "enabled": true,
     "indentWidth": 2,
     "lineWidth": 100
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
-      "nursery": {
+      "nursery": {},
+      "complexity": {
+        "noBannedTypes": "off",
+        "noUselessTypeConstraint": "error",
+        "noForEach": "warn"
+      },
+      "correctness": {
+        "noPrecisionLoss": "error",
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "safe"
+        },
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "off",
+        "useJsxKeyInIterable": "error"
+      },
+      "style": {
+        "noNamespace": "off",
+        "useImportType": "off",
+        "noParameterAssign": "off",
         "noRestrictedImports": {
           "level": "error",
           "options": {
@@ -35,23 +49,6 @@
             }
           }
         }
-      },
-      "complexity": {
-        "noBannedTypes": "off",
-        "noUselessTypeConstraint": "error",
-        "noForEach": "warn"
-      },
-      "correctness": {
-        "noPrecisionLoss": "error",
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "off",
-        "useJsxKeyInIterable": "error"
-      },
-      "style": {
-        "noNamespace": "off",
-        "useImportType": "off",
-        "noParameterAssign": "off"
       },
       "suspicious": {
         "noEmptyBlockStatements": "off",

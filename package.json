@@ -8,12 +8,15 @@
   "scripts": {
     "test": "pnpm --filter=* --workspace-concurrency=1 test",
     "build": "pnpm recursive --sort run build",
-    "first-install": "pnpm install --ignore-scripts"
+    "first-install": "pnpm install --ignore-scripts",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.3.14",
     "@changesets/cli": "^2.28.1",
     "@types/node": "^22.13.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "mongodb-memory-server": "^10.1.4",
     "oxc-transform": "^0.56.5",
     "tsx": "^4.19.3",
@@ -23,5 +26,10 @@
   },
   "dependencies": {
     "rambdax": "^11.3.1"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   }
 }
