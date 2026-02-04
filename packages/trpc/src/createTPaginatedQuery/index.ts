@@ -9,7 +9,7 @@ import {
 import {mapErrorToTRPCError} from '../errorHandler'
 import {t} from '../trpc'
 import {computeSkip} from './computePagination'
-import {getPaginatedParams} from './params'
+import {getPaginationSchema, getUserParamsSchema} from './params'
 
 // Cursor interface - must have skip, limit, sort, and toArray
 export interface PaginatedCursor<TItem = any> {
@@ -25,20 +25,22 @@ type ExtractCursorItem<T> = T extends PaginatedCursor<infer U> ? U : never
 // Action types
 export type PaginatedAction = 'getItems' | 'getCount' | 'getDescription'
 
-// Base params that are always available
-type BaseParams = {
+// Pagination fields (top-level)
+type PaginationFields = {
   page?: number
   limit?: number
   sortBy?: string
   sortType?: 'asc' | 'desc'
 }
 
-type MergedParams<TParams extends SchemaFieldType> = BaseParams & InferSchemaType<TParams>
-
-// Input for the query
+// Input for the query - pagination fields are top-level, user params are in params
 export interface PaginatedQueryInput<TParams extends SchemaFieldType = any> {
   action: PaginatedAction
-  params: MergedParams<TParams>
+  page?: number
+  limit?: number
+  sortBy?: string
+  sortType?: 'asc' | 'desc'
+  params: InferSchemaType<TParams>
 }
 
 // Description response
@@ -72,8 +74,8 @@ export interface TPaginatedQueryOptions<
 > {
   params?: TParams
   returns?: SchemaFieldType
-  getCursor: (params: MergedParams<TParams>, viewer: TViewer) => Promise<TCursor> | TCursor
-  getCount: (params: MergedParams<TParams>, viewer: TViewer) => Promise<number> | number
+  getCursor: (params: InferSchemaType<TParams>, viewer: TViewer) => Promise<TCursor> | TCursor
+  getCount: (params: InferSchemaType<TParams>, viewer: TViewer) => Promise<number> | number
   allowedSorts?: string[]
   defaultSortBy?: string
   defaultSortType?: 'asc' | 'desc'
@@ -86,14 +88,14 @@ export function createTPaginatedQuery<
   TCursor extends PaginatedCursor,
   TViewer = any,
 >(options: TPaginatedQueryOptions<TParams, TCursor, TViewer>) {
-  const paginatedParamsSchema = getPaginatedParams({
-    params: options.params,
+  const paginationSchema = getPaginationSchema({
     allowedSorts: options.allowedSorts,
     defaultSortBy: options.defaultSortBy,
     defaultSortType: options.defaultSortType,
     defaultLimit: options.defaultLimit,
     maxLimit: options.maxLimit,
   })
+  const userParamsSchema = getUserParamsSchema(options.params)
   const returnsSchema = options.returns ? getSchemaFromAnyOrionForm(options.returns) : undefined
 
   // Schema for cleaning items array (only used if returns schema is provided)
@@ -112,7 +114,7 @@ export function createTPaginatedQuery<
     .input((val: unknown) => val as Input)
     .query(async ({ctx, input}): Promise<Output> => {
       try {
-        const {action, params: rawParams} = input
+        const {action, params: rawUserParams, ...rawPaginationFields} = input
 
         // Handle getDescription action - doesn't need params validation
         if (action === 'getDescription') {
@@ -123,28 +125,34 @@ export function createTPaginatedQuery<
           } satisfies PaginatedDescription
         }
 
-        // Validate and clean params
-        const cleanedParams = (await cleanAndValidate(
-          paginatedParamsSchema,
-          rawParams,
-        )) as MergedParams<TParams>
+        // Validate and clean pagination fields
+        const paginationFields = (await cleanAndValidate(
+          paginationSchema,
+          rawPaginationFields,
+        )) as PaginationFields
 
-        const page = cleanedParams.page ?? 1
-        const limit = cleanedParams.limit ?? 20
+        // Validate and clean user params
+        const userParams = (await cleanAndValidate(
+          userParamsSchema,
+          rawUserParams || {},
+        )) as InferSchemaType<TParams>
+
+        const page = paginationFields.page ?? 1
+        const limit = paginationFields.limit ?? 20
 
         // Handle getCount action
         if (action === 'getCount') {
-          const totalCount = await options.getCount(cleanedParams, ctx.viewer as TViewer)
+          const totalCount = await options.getCount(userParams, ctx.viewer as TViewer)
           return {totalCount} satisfies PaginatedCountResponse
         }
 
         // Handle getItems action
         if (action === 'getItems') {
           const skip = computeSkip(page, limit)
-          const {sortBy, sortType} = cleanedParams
+          const {sortBy, sortType} = paginationFields
 
           // Get cursor and apply pagination
-          const cursor = await options.getCursor(cleanedParams, ctx.viewer as TViewer)
+          const cursor = await options.getCursor(userParams, ctx.viewer as TViewer)
 
           cursor.skip(skip)
           cursor.limit(limit)

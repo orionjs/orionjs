@@ -1,0 +1,147 @@
+---
+title: 'Introduction'
+description: 'Creating type-safe APIs with tRPC in Orionjs'
+---
+
+Orionjs provides seamless integration with [tRPC](https://trpc.io/) for building end-to-end type-safe APIs. The `@orion-js/trpc` package offers decorators and utilities that work with Orionjs schemas and the service injection system.
+
+## Installation
+
+```bash
+pnpm add @orion-js/trpc @trpc/server
+```
+
+## Key Features
+
+- Full TypeScript type inference
+- Integration with Orionjs schema validation
+- Service injection support via `@Inject()`
+- Compatible with the Orionjs component system
+
+## Basic Setup
+
+### 1. Create Procedures
+
+Create a procedures class using the `@Procedures()` decorator:
+
+```typescript
+// app/exampleComponent/controllers/trpc/ExampleProcedures/index.ts
+import {Procedures, TQuery, TMutation, createTQuery, createTMutation} from '@orion-js/trpc'
+import {Inject} from '@orion-js/services'
+import {ExampleSchema} from 'app/exampleComponent/schemas/ExampleSchema'
+import {ExampleService} from 'app/exampleComponent/services/ExampleService'
+
+@Procedures()
+export class ExampleProcedures {
+  @Inject(() => ExampleService)
+  private exampleService: ExampleService
+
+  @TQuery()
+  getExample = createTQuery({
+    params: {exampleId: {type: String}},
+    returns: ExampleSchema,
+    resolve: async ({exampleId}) => {
+      return await this.exampleService.getExample(exampleId)
+    },
+  })
+
+  @TQuery()
+  listExamples = createTQuery({
+    returns: [ExampleSchema],
+    resolve: async () => {
+      return await this.exampleService.getExamples()
+    },
+  })
+
+  @TMutation()
+  createExample = createTMutation({
+    params: {name: {type: String}},
+    returns: {message: {type: String}},
+    resolve: async ({name}) => {
+      await this.exampleService.createExample(name)
+      return {message: 'Created successfully'}
+    },
+  })
+}
+```
+
+### 2. Register in a Component
+
+Add your procedure classes to a component's `trpc` controllers:
+
+```typescript
+// app/exampleComponent/index.ts
+import {component} from '@orion-js/components'
+import trpc from './controllers/trpc'
+
+export default component({
+  trpc,
+  // ...other controllers
+})
+```
+
+### 3. Start the tRPC Server
+
+`startTRPC` accepts a `procedures` object (a `TRPCRouterRecord`) and builds the router internally:
+
+```typescript
+// app/config/trpc/index.ts
+import {startTRPC} from '@orion-js/trpc'
+import {logger} from '@orion-js/logger'
+import type {TRPCRouterRecord} from '@trpc/server'
+
+export default async function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
+  const {router} = await startTRPC({procedures, path: '/trpc'})
+  logger.info('tRPC started at /trpc')
+  return {router}
+}
+```
+
+### 4. Wire Everything Together
+
+The `component()` and `mergeComponents()` functions are generic, so tRPC procedure types flow through automatically:
+
+```typescript
+// app/config/index.ts
+import {type Component, mergeComponents} from '@orion-js/components'
+
+export async function startApp<T extends Component<any>[]>(components: [...T]) {
+  const controllers = mergeComponents(components)
+  // controllers.trpc is fully typed!
+  const {router} = await startTrpc(controllers.trpc)
+  return {router}
+}
+```
+
+```typescript
+// app/index.ts
+import {startApp} from './config'
+import exampleComponent from './exampleComponent'
+
+const {router} = await startApp([exampleComponent])
+
+// Export the router type for client usage
+export type AppRouter = typeof router
+```
+
+## File Organization
+
+Recommended structure for tRPC procedures:
+
+```
+app/
+└── exampleComponent/
+    └── controllers/
+        └── trpc/
+            ├── ExampleProcedures/
+            │   └── index.ts
+            └── index.ts  # Exports procedure classes as array
+```
+
+The `controllers/trpc/index.ts`:
+
+```typescript
+import {ExampleProcedures} from './ExampleProcedures'
+
+export default [ExampleProcedures]
+```

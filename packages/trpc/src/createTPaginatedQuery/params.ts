@@ -10,7 +10,8 @@ export interface PaginatedParamsOptions {
   maxLimit?: number
 }
 
-export const paginatedBaseParamsSchema = {
+// Schema for pagination fields (top-level, not inside params)
+export const paginationFieldsSchema = {
   page: {
     type: 'integer',
     defaultValue: 1,
@@ -35,36 +36,25 @@ export const paginatedBaseParamsSchema = {
   },
 } as const
 
-export function getPaginatedParams<const TDefinedParams extends Schema>(
-  options: PaginatedParamsOptions,
-): typeof paginatedBaseParamsSchema & TDefinedParams {
-  const {params, allowedSorts, defaultSortBy, defaultSortType, defaultLimit, maxLimit} = options
-  const paramsSchema = (params ? getSchemaFromAnyOrionForm(params) : {}) as Schema
+export function getPaginationSchema(options: PaginatedParamsOptions): Schema {
+  const {allowedSorts, defaultSortBy, defaultSortType, defaultLimit, maxLimit} = options
 
-  const schema = clone({
-    ...paginatedBaseParamsSchema,
-    ...(paramsSchema || {}),
-  })
+  const schema: any = clone({...paginationFieldsSchema})
 
   if (defaultLimit) {
-    // @ts-expect-error
     schema.limit.defaultValue = defaultLimit
   }
 
   if (maxLimit) {
-    // @ts-expect-error
     schema.limit.max = maxLimit
   }
 
   if (allowedSorts?.length) {
-    // @ts-expect-error
     schema.sortBy.allowedValues = allowedSorts
     if (defaultSortBy) {
-      // @ts-expect-error
       schema.sortBy.defaultValue = defaultSortBy
     }
     if (defaultSortType) {
-      // @ts-expect-error
       schema.sortType.defaultValue = defaultSortType
     }
   } else {
@@ -72,5 +62,9 @@ export function getPaginatedParams<const TDefinedParams extends Schema>(
     delete schema.sortType
   }
 
-  return schema as any
+  return schema
+}
+
+export function getUserParamsSchema(params?: SchemaFieldType): Schema {
+  return params ? (getSchemaFromAnyOrionForm(params) as Schema) : {}
 }

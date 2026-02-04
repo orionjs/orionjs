@@ -62,7 +62,15 @@
               "overview/controllers/routes",
               "overview/controllers/resolvers",
               "overview/controllers/modelResolvers",
-              "overview/controllers/trpc",
+              {
+                "group": "tRPC",
+                "pages": [
+                  "overview/controllers/trpc/intro",
+                  "overview/controllers/trpc/procedures",
+                  "overview/controllers/trpc/server",
+                  "overview/controllers/trpc/paginated"
+                ]
+              },
               "overview/controllers/jobs",
               "overview/controllers/echoes"
             ]
@@ -84,9 +92,7 @@
       },
       {
         "tab": "Guides",
-        "pages": [
-          "guides/v4"
-        ]
+        "pages": ["guides/v4"]
       }
     ],
     "global": {

@@ -1,0 +1,227 @@
+---
+title: 'Paginated Queries'
+description: 'Creating paginated table queries with tRPC'
+---
+
+The `createTPaginatedQuery` function creates a query procedure designed for paginated tables. It provides a single endpoint with three actions: `getItems`, `getCount`, and `getDescription`.
+
+## Basic Usage
+
+```typescript
+import {Procedures, TPaginatedQuery, createTPaginatedQuery} from '@orion-js/trpc'
+import {Inject} from '@orion-js/services'
+import {UsersRepo} from 'app/users/repos/UsersRepo'
+
+@Procedures()
+export class UserProcedures {
+  @Inject(() => UsersRepo)
+  private usersRepo: UsersRepo
+
+  @TPaginatedQuery()
+  listUsers = createTPaginatedQuery({
+    params: {
+      search: {type: String, optional: true},
+    },
+    allowedSorts: ['name', 'createdAt'],
+    defaultSortBy: 'createdAt',
+    defaultSortType: 'desc',
+    getCursor: async ({search}, viewer) => {
+      const query = search ? {name: {$regex: search, $options: 'i'}} : {}
+      return this.usersRepo.find(query)
+    },
+    getCount: async ({search}, viewer) => {
+      const query = search ? {name: {$regex: search, $options: 'i'}} : {}
+      return this.usersRepo.countDocuments(query)
+    },
+  })
+}
+```
+
+## Cursor Interface
+
+The `getCursor` function must return a cursor-like object with the following methods:
+
+```typescript
+interface PaginatedCursor<TItem> {
+  skip: (value: number) => void
+  limit: (value: number) => void
+  sort: (value: {[key: string]: 1 | -1}) => void
+  toArray: () => Promise<TItem[]>
+}
+```
+
+MongoDB cursors from Orionjs collections implement this interface automatically.
+
+## Input Structure
+
+The query input has a flat structure where pagination fields are top-level:
+
+```typescript
+{
+  action: 'getItems' | 'getCount' | 'getDescription',
+  page?: number,      // Pagination field
+  limit?: number,     // Pagination field
+  sortBy?: string,    // Pagination field
+  sortType?: 'asc' | 'desc',  // Pagination field
+  params: {...}       // Your custom params only
+}
+```
+
+## Actions
+
+### getItems
+
+Returns the paginated items:
+
+```typescript
+const result = await caller.listUsers({
+  action: 'getItems',
+  page: 1,
+  limit: 10,
+  sortBy: 'name',
+  sortType: 'asc',
+  params: {search: 'john'},
+})
+// Returns: { items: User[] }
+```
+
+### getCount
+
+Returns the total count (for calculating total pages on the client):
+
+```typescript
+const result = await caller.listUsers({
+  action: 'getCount',
+  params: {search: 'john'},
+})
+// Returns: { totalCount: number }
+```
+
+### getDescription
+
+Returns the sorting configuration:
+
+```typescript
+const result = await caller.listUsers({
+  action: 'getDescription',
+  params: {},
+})
+// Returns: { allowedSorts: string[], defaultSortBy?: string, defaultSortType?: 'asc' | 'desc' }
+```
+
+## Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `params` | Schema | Custom input params schema (optional) |
+| `returns` | Schema | Output item schema for cleaning (optional) |
+| `getCursor` | Function | Returns a cursor with `skip`, `limit`, `sort`, `toArray` methods |
+| `getCount` | Function | Returns the total count for the query |
+| `allowedSorts` | string[] | List of allowed sort fields (optional) |
+| `defaultSortBy` | string | Default sort field (optional) |
+| `defaultSortType` | 'asc' \| 'desc' | Default sort direction (optional) |
+| `defaultLimit` | number | Default page size (default: 20) |
+| `maxLimit` | number | Maximum allowed page size (default: 200) |
+
+## Pagination Fields
+
+The following fields are automatically available at the top level of the input:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | integer | 1 | Page number (min: 1) |
+| `limit` | integer | 20 | Items per page (min: 0, max: 200) |
+| `sortBy` | string | - | Sort field (only if `allowedSorts` is configured) |
+| `sortType` | 'asc' \| 'desc' | - | Sort direction |
+
+## Type Inference
+
+Item types are automatically inferred from the `getCursor` return type - no manual type annotations needed:
+
+```typescript
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+@TPaginatedQuery()
+listUsers = createTPaginatedQuery({
+  getCursor: async () => {
+    // Returns PaginatedCursor<User> - type is inferred automatically
+    return this.usersRepo.find({})
+  },
+  getCount: async () => this.usersRepo.countDocuments({}),
+})
+```
+
+## Schema Cleaning
+
+If you provide a `returns` schema, items will be cleaned/filtered according to that schema:
+
+```typescript
+@TPaginatedQuery()
+listUsers = createTPaginatedQuery({
+  returns: {id: {type: 'ID'}, name: {type: String}},
+  getCursor: async () => this.usersRepo.find({}),
+  getCount: async () => this.usersRepo.countDocuments({}),
+})
+// Only 'id' and 'name' fields will be returned, extra fields are stripped
+```
+
+## Client Usage Example
+
+Since all actions return a union type, you need to narrow the type when accessing the data:
+
+```typescript
+// In your paginated table component
+const [page, setPage] = useState(1)
+const [sortBy, setSortBy] = useState<string>()
+const [sortType, setSortType] = useState<'asc' | 'desc'>()
+
+// Fetch items
+const {data: itemsResult} = trpc.listUsers.useQuery({
+  action: 'getItems',
+  page,
+  limit: 10,
+  sortBy,
+  sortType,
+  params: {},
+})
+
+// Fetch count for pagination
+const {data: countResult} = trpc.listUsers.useQuery({
+  action: 'getCount',
+  params: {},
+})
+
+// Fetch description for sort options
+const {data: descriptionResult} = trpc.listUsers.useQuery({
+  action: 'getDescription',
+  params: {},
+})
+
+// Type narrowing - check which response shape you have
+const items = itemsResult && 'items' in itemsResult ? itemsResult.items : []
+const totalCount = countResult && 'totalCount' in countResult ? countResult.totalCount : 0
+const allowedSorts = descriptionResult && 'allowedSorts' in descriptionResult
+  ? descriptionResult.allowedSorts
+  : []
+
+const totalPages = Math.ceil(totalCount / 10)
+```
+
+Alternatively, you can create a typed wrapper hook:
+
+```typescript
+function useListUsers(input: {page: number; limit: number; sortBy?: string; sortType?: 'asc' | 'desc'; params: {}}) {
+  const itemsQuery = trpc.listUsers.useQuery({action: 'getItems', ...input})
+  const countQuery = trpc.listUsers.useQuery({action: 'getCount', params: input.params})
+
+  return {
+    items: itemsQuery.data && 'items' in itemsQuery.data ? itemsQuery.data.items : [],
+    totalCount: countQuery.data && 'totalCount' in countQuery.data ? countQuery.data.totalCount : 0,
+    isLoading: itemsQuery.isLoading || countQuery.isLoading,
+  }
+}
+```

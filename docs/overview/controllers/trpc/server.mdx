@@ -1,0 +1,31 @@
+---
+title: 'Server Configuration'
+description: 'Configuring and starting the tRPC server'
+---
+
+## startTRPC Options
+
+```typescript
+import {startTRPC} from '@orion-js/trpc'
+
+await startTRPC({
+  procedures,               // Required: TRPCRouterRecord (from components or mergeProcedures)
+  path: '/trpc',            // Optional: endpoint path (default: '/trpc')
+  bodyParserOptions: {      // Optional: body parser config
+    limit: '10mb'
+  }
+})
+```
+
+## Server-Side Caller
+
+Create a server-side caller for testing or internal use:
+
+```typescript
+const {router} = await startApp([exampleComponent])
+
+const caller = router.createCaller({})
+
+// Call procedures directly
+const example = await caller.getExample({exampleId: '123'})
+```

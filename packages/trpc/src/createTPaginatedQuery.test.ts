@@ -67,7 +67,7 @@ describe('createTPaginatedQuery', () => {
     const router = buildRouter(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
-    const result = await caller.listUsers({action: 'getItems', params: {page: 1, limit: 2}})
+    const result = await caller.listUsers({action: 'getItems', page: 1, limit: 2, params: {}})
 
     expect(result).toHaveProperty('items')
     if ('items' in result) {
@@ -146,21 +146,21 @@ describe('createTPaginatedQuery', () => {
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // First page
-    const page1 = await caller.listItems({action: 'getItems', params: {page: 1, limit: 10}})
+    const page1 = await caller.listItems({action: 'getItems', page: 1, limit: 10, params: {}})
     if ('items' in page1) {
       expect(page1.items[0].value).toBe(1)
       expect(page1.items).toHaveLength(10)
     }
 
     // Second page
-    const page2 = await caller.listItems({action: 'getItems', params: {page: 2, limit: 10}})
+    const page2 = await caller.listItems({action: 'getItems', page: 2, limit: 10, params: {}})
     if ('items' in page2) {
       expect(page2.items[0].value).toBe(11)
       expect(page2.items).toHaveLength(10)
     }
 
     // Last page
-    const page3 = await caller.listItems({action: 'getItems', params: {page: 3, limit: 10}})
+    const page3 = await caller.listItems({action: 'getItems', page: 3, limit: 10, params: {}})
     if ('items' in page3) {
       expect(page3.items[0].value).toBe(21)
       expect(page3.items).toHaveLength(5)
@@ -238,7 +238,9 @@ describe('createTPaginatedQuery', () => {
     // Sort by name asc
     const byNameAsc = await caller.listUsers({
       action: 'getItems',
-      params: {sortBy: 'name', sortType: 'asc'},
+      sortBy: 'name',
+      sortType: 'asc',
+      params: {},
     })
     if ('items' in byNameAsc) {
       expect(byNameAsc.items[0].name).toBe('Alice')
@@ -249,7 +251,9 @@ describe('createTPaginatedQuery', () => {
     // Sort by age desc
     const byAgeDesc = await caller.listUsers({
       action: 'getItems',
-      params: {sortBy: 'age', sortType: 'desc'},
+      sortBy: 'age',
+      sortType: 'desc',
+      params: {},
     })
     if ('items' in byAgeDesc) {
       expect(byAgeDesc.items[0].age).toBe(35)
@@ -283,13 +287,13 @@ describe('createTPaginatedQuery', () => {
     }
 
     // Custom limit within max
-    const customResult = await caller.listItems({action: 'getItems', params: {limit: 8}})
+    const customResult = await caller.listItems({action: 'getItems', limit: 8, params: {}})
     if ('items' in customResult) {
       expect(customResult.items).toHaveLength(8)
     }
 
     // Limit exceeding max should be validated
-    await expect(caller.listItems({action: 'getItems', params: {limit: 15}})).rejects.toThrow()
+    await expect(caller.listItems({action: 'getItems', limit: 15, params: {}})).rejects.toThrow()
   })
 
   it('should pass viewer to getCursor and getCount', async () => {
@@ -398,7 +402,7 @@ describe('createTPaginatedQuery', () => {
     }
   })
 
-  it('should validate params', async () => {
+  it('should validate user params', async () => {
     @Procedures()
     class TestProcedures {
       @TPaginatedQuery()
@@ -458,8 +462,8 @@ describe('createTPaginatedQuery', () => {
     const router = buildRouter(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
-    await expect(caller.listItems({action: 'getItems', params: {page: 0}})).rejects.toThrow()
-    await expect(caller.listItems({action: 'getItems', params: {page: -1}})).rejects.toThrow()
+    await expect(caller.listItems({action: 'getItems', page: 0, params: {}})).rejects.toThrow()
+    await expect(caller.listItems({action: 'getItems', page: -1, params: {}})).rejects.toThrow()
   })
 
   it('should return empty allowedSorts when not configured', async () => {

@@ -1,0 +1,128 @@
+---
+title: 'Procedures'
+description: 'Decorators and options for tRPC procedures'
+---
+
+## Decorators Reference
+
+### @Procedures()
+
+Marks a class as a tRPC procedures container. This decorator also applies `@Service()` for dependency injection.
+
+```typescript
+@Procedures()
+export class MyProcedures {
+  // procedures here
+}
+```
+
+### @TQuery()
+
+Marks a field as a tRPC query procedure.
+
+```typescript
+@TQuery()
+myQuery = createTQuery({
+  params: {...},
+  returns: {...},
+  resolve: async (params) => {...}
+})
+```
+
+### @TMutation()
+
+Marks a field as a tRPC mutation procedure.
+
+```typescript
+@TMutation()
+myMutation = createTMutation({
+  params: {...},
+  returns: {...},
+  resolve: async (params) => {...}
+})
+```
+
+## Procedure Options
+
+Both `createTQuery` and `createTMutation` accept the same options:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `params` | Schema | Input validation schema (optional) |
+| `returns` | Schema | Output schema for documentation (optional) |
+| `resolve` | Function | The resolver function |
+
+### Schema Types
+
+You can use Orionjs schema definitions:
+
+```typescript
+// Inline schema
+createTQuery({
+  params: {
+    userId: {type: String},
+    includeDetails: {type: Boolean, optional: true}
+  },
+  returns: UserSchema,
+  resolve: async ({userId, includeDetails}) => {...}
+})
+
+// Array returns
+createTQuery({
+  returns: [UserSchema],
+  resolve: async () => {...}
+})
+```
+
+## Merging Procedures
+
+When using the component system, procedures are merged automatically via `mergeComponents()`. For standalone usage, you can use `mergeProcedures` to combine multiple procedure classes while preserving types:
+
+```typescript
+import {mergeProcedures} from '@orion-js/trpc'
+
+// Supports up to 5 procedure classes with full type inference
+const procedures = mergeProcedures([
+  UserProcedures,
+  PostProcedures,
+  CommentProcedures,
+])
+```
+
+## Context and Viewer
+
+The tRPC context includes the Orionjs viewer:
+
+```typescript
+createTQuery({
+  resolve: async (params, viewer) => {
+    if (!viewer.user) {
+      throw new Error('Unauthorized')
+    }
+    return await this.service.getData(viewer.user._id)
+  }
+})
+```
+
+## Error Handling
+
+Throw errors normally - they'll be properly serialized by tRPC:
+
+```typescript
+import {TRPCError} from '@trpc/server'
+
+createTMutation({
+  resolve: async (params) => {
+    const item = await this.repo.findOne(params.id)
+
+    if (!item) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Item not found'
+      })
+    }
+
+    return item
+  }
+})
+```

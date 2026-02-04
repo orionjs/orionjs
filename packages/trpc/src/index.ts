@@ -16,7 +16,7 @@ export type {
   TPaginatedQueryOptions,
 } from './createTPaginatedQuery'
 export {createTPaginatedQuery} from './createTPaginatedQuery'
-export {paginatedBaseParamsSchema} from './createTPaginatedQuery/params'
+export {paginationFieldsSchema} from './createTPaginatedQuery/params'
 export type {TQueryOptions} from './createTQuery'
 // Procedure creators
 export {createTQuery} from './createTQuery'
