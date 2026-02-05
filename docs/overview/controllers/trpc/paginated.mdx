@@ -25,9 +25,9 @@ export class UserProcedures {
     allowedSorts: ['name', 'createdAt'],
     defaultSortBy: 'createdAt',
     defaultSortType: 'desc',
-    getCursor: async ({search}, viewer) => {
+    getItems: async ({skip, limit, sort}, {search}, viewer) => {
       const query = search ? {name: {$regex: search, $options: 'i'}} : {}
-      return this.usersRepo.find(query)
+      return this.usersRepo.find(query).skip(skip).limit(limit).sort(sort).toArray()
     },
     getCount: async ({search}, viewer) => {
       const query = search ? {name: {$regex: search, $options: 'i'}} : {}
@@ -37,20 +37,25 @@ export class UserProcedures {
 }
 ```
 
-## Cursor Interface
+## Pagination Parameters
 
-The `getCursor` function must return a cursor-like object with the following methods:
+The `getItems` function receives pagination parameters as its first argument, ready to use with MongoDB:
 
 ```typescript
-interface PaginatedCursor<TItem> {
-  skip: (value: number) => void
-  limit: (value: number) => void
-  sort: (value: {[key: string]: 1 | -1}) => void
-  toArray: () => Promise<TItem[]>
+interface PaginationParams {
+  skip: number                    // Calculated from page and limit
+  limit: number                   // Items per page
+  sort: {[key: string]: 1 | -1}   // Sort object for MongoDB
 }
 ```
 
-MongoDB cursors from Orionjs collections implement this interface automatically.
+Example:
+```typescript
+getItems: async ({skip, limit, sort}, params, viewer) => {
+  // Use directly with MongoDB
+  return collection.find(query).skip(skip).limit(limit).sort(sort).toArray()
+}
+```
 
 ## Input Structure
 
@@ -115,8 +120,8 @@ const result = await caller.listUsers({
 |--------|------|-------------|
 | `params` | Schema | Custom input params schema (optional) |
 | `returns` | Schema | Output item schema for cleaning (optional) |
-| `getCursor` | Function | Returns a cursor with `skip`, `limit`, `sort`, `toArray` methods |
-| `getCount` | Function | Returns the total count for the query |
+| `getItems` | Function | `(paginationParams, params, viewer) => items[]` - Returns the paginated items |
+| `getCount` | Function | `(params, viewer) => number` - Returns the total count for the query |
 | `allowedSorts` | string[] | List of allowed sort fields (optional) |
 | `defaultSortBy` | string | Default sort field (optional) |
 | `defaultSortType` | 'asc' \| 'desc' | Default sort direction (optional) |
@@ -136,7 +141,7 @@ The following fields are automatically available at the top level of the input:
 
 ## Type Inference
 
-Item types are automatically inferred from the `getCursor` return type - no manual type annotations needed:
+Item types are automatically inferred from the `getItems` return type - no manual type annotations needed:
 
 ```typescript
 interface User {
@@ -147,12 +152,23 @@ interface User {
 
 @TPaginatedQuery()
 listUsers = createTPaginatedQuery({
-  getCursor: async () => {
-    // Returns PaginatedCursor<User> - type is inferred automatically
-    return this.usersRepo.find({})
+  getItems: async ({skip, limit, sort}) => {
+    // Return type User[] is inferred automatically
+    const users: User[] = await this.usersRepo.find({}).skip(skip).limit(limit).sort(sort).toArray()
+    return users
   },
   getCount: async () => this.usersRepo.countDocuments({}),
 })
+```
+
+For proper type inference with `InferRouterOutputs`, use the custom `InferRouterOutputs` type from `@orion-js/trpc`:
+
+```typescript
+import {InferRouterOutputs} from '@orion-js/trpc'
+
+type RouterOutputs = InferRouterOutputs<typeof router>
+type ListUsersOutput = RouterOutputs['listUsers']
+// ListUsersOutput.items is correctly typed as User[]
 ```
 
 ## Schema Cleaning
@@ -163,7 +179,9 @@ If you provide a `returns` schema, items will be cleaned/filtered according to t
 @TPaginatedQuery()
 listUsers = createTPaginatedQuery({
   returns: {id: {type: 'ID'}, name: {type: String}},
-  getCursor: async () => this.usersRepo.find({}),
+  getItems: async ({skip, limit, sort}) => {
+    return this.usersRepo.find({}).skip(skip).limit(limit).sort(sort).toArray()
+  },
   getCount: async () => this.usersRepo.countDocuments({}),
 })
 // Only 'id' and 'name' fields will be returned, extra fields are stripped
