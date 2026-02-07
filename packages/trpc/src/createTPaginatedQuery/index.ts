@@ -11,9 +11,6 @@ import {t} from '../trpc'
 import {computeSkip} from './computePagination'
 import {getPaginationSchema, getUserParamsSchema} from './params'
 
-// Action types
-export type PaginatedAction = 'getItems' | 'getCount' | 'getDescription'
-
 // Pagination params passed to getItems - ready to use with MongoDB
 export interface PaginationParams {
   skip: number
@@ -35,25 +32,6 @@ type ResolveParamsType<TParams> = TParams extends undefined
   : InferSchemaType<TParams> extends void
     ? Record<string, never>
     : InferSchemaType<TParams>
-
-// Input for the query - pagination fields are top-level, user params are in params
-export interface PaginatedQueryInput<TParams extends SchemaFieldType | undefined = undefined> {
-  action: PaginatedAction
-  page?: number
-  limit?: number
-  sortBy?: string
-  sortType?: 'asc' | 'desc'
-  params: ResolveParamsType<TParams>
-}
-
-// Response with all optional fields
-export interface PaginatedResponse<TItem> {
-  items?: TItem[]
-  totalCount?: number
-  allowedSorts?: string[]
-  defaultSortBy?: string
-  defaultSortType?: 'asc' | 'desc'
-}
 
 // Options interface - captures getItems function type for type extraction
 export interface TPaginatedQueryOptions<
@@ -113,46 +91,37 @@ export function createTPaginatedQuery<
       }
     : undefined
 
-  type Output = PaginatedResponse<TItem>
+  return {
+    getItems: t.procedure
+      .input(
+        (val: unknown) =>
+          val as {
+            page?: number
+            limit?: number
+            sortBy?: string
+            sortType?: 'asc' | 'desc'
+            params: ResolveParamsType<TParams>
+          },
+      )
+      .query(async ({ctx, input}): Promise<{items: TItem[]}> => {
+        try {
+          const {params: rawUserParams, ...rawPaginationFields} = input
 
-  return t.procedure
-    .input((val: unknown) => val as PaginatedQueryInput<TParams>)
-    .query(async ({ctx, input}): Promise<Output> => {
-      try {
-        const {action, params: rawUserParams, ...rawPaginationFields} = input
+          // Validate and clean pagination fields
+          const paginationFields = (await cleanAndValidate(
+            paginationSchema,
+            rawPaginationFields,
+          )) as PaginationFields
 
-        // Handle getDescription action - doesn't need params validation
-        if (action === 'getDescription') {
-          return {
-            allowedSorts: options.allowedSorts || [],
-            defaultSortBy: options.defaultSortBy,
-            defaultSortType: options.defaultSortType,
-          }
-        }
+          // Validate and clean user params
+          const userParams = (await cleanAndValidate(
+            userParamsSchema,
+            rawUserParams || {},
+          )) as ResolveParamsType<TParams>
 
-        // Validate and clean pagination fields
-        const paginationFields = (await cleanAndValidate(
-          paginationSchema,
-          rawPaginationFields,
-        )) as PaginationFields
+          const page = paginationFields.page ?? 1
+          const limit = paginationFields.limit ?? 20
 
-        // Validate and clean user params
-        const userParams = (await cleanAndValidate(
-          userParamsSchema,
-          rawUserParams || {},
-        )) as ResolveParamsType<TParams>
-
-        const page = paginationFields.page ?? 1
-        const limit = paginationFields.limit ?? 20
-
-        // Handle getCount action
-        if (action === 'getCount') {
-          const totalCount = await options.getCount(userParams, ctx.viewer as TViewer)
-          return {totalCount}
-        }
-
-        // Handle getItems action
-        if (action === 'getItems') {
           const skip = computeSkip(page, limit)
           const {sortBy, sortType} = paginationFields
 
@@ -180,11 +149,42 @@ export function createTPaginatedQuery<
           }
 
           return {items: cleanedItems}
+        } catch (error) {
+          throw mapErrorToTRPCError(error as Error)
         }
+      }),
 
-        throw new Error(`Unknown action: ${action}`)
-      } catch (error) {
-        throw mapErrorToTRPCError(error as Error)
-      }
-    })
+    getCount: t.procedure
+      .input((val: unknown) => val as {params: ResolveParamsType<TParams>})
+      .query(async ({ctx, input}): Promise<{totalCount: number}> => {
+        try {
+          const {params: rawUserParams} = input
+
+          // Validate and clean user params
+          const userParams = (await cleanAndValidate(
+            userParamsSchema,
+            rawUserParams || {},
+          )) as ResolveParamsType<TParams>
+
+          const totalCount = await options.getCount(userParams, ctx.viewer as TViewer)
+          return {totalCount}
+        } catch (error) {
+          throw mapErrorToTRPCError(error as Error)
+        }
+      }),
+
+    getDescription: t.procedure.query(
+      (): {
+        allowedSorts: string[]
+        defaultSortBy: string | undefined
+        defaultSortType: 'asc' | 'desc' | undefined
+      } => {
+        return {
+          allowedSorts: options.allowedSorts || [],
+          defaultSortBy: options.defaultSortBy,
+          defaultSortType: options.defaultSortType,
+        }
+      },
+    ),
+  }
 }

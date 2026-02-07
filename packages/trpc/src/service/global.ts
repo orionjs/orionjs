@@ -59,10 +59,10 @@ export function TPaginatedQuery() {
 }
 
 /**
- * Extracts only the tRPC procedure fields from a class instance type
+ * Extracts only the tRPC procedure fields (or nested router records) from a class instance type
  */
 export type ExtractProcedures<T> = {
-  [K in keyof T as T[K] extends AnyProcedure ? K : never]: T[K]
+  [K in keyof T as T[K] extends AnyProcedure | TRPCRouterRecord ? K : never]: T[K]
 }
 
 /**

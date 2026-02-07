@@ -3,7 +3,7 @@ title: 'Paginated Queries'
 description: 'Creating paginated table queries with tRPC'
 ---
 
-The `createTPaginatedQuery` function creates a query procedure designed for paginated tables. It provides a single endpoint with three actions: `getItems`, `getCount`, and `getDescription`.
+The `createTPaginatedQuery` function creates a sub-router with three separate procedures for paginated tables: `getItems`, `getCount`, and `getDescription`. Each procedure has its own typed input and output.
 
 ## Basic Usage
 
@@ -57,30 +57,16 @@ getItems: async ({skip, limit, sort}, params, viewer) => {
 }
 ```
 
-## Input Structure
+## Procedures
 
-The query input has a flat structure where pagination fields are top-level:
-
-```typescript
-{
-  action: 'getItems' | 'getCount' | 'getDescription',
-  page?: number,      // Pagination field
-  limit?: number,     // Pagination field
-  sortBy?: string,    // Pagination field
-  sortType?: 'asc' | 'desc',  // Pagination field
-  params: {...}       // Your custom params only
-}
-```
-
-## Actions
+Each `createTPaginatedQuery` returns three separate tRPC procedures, accessible as nested routes:
 
 ### getItems
 
-Returns the paginated items:
+Returns the paginated items. Input includes pagination fields and custom params.
 
 ```typescript
-const result = await caller.listUsers({
-  action: 'getItems',
+const result = await caller.listUsers.getItems({
   page: 1,
   limit: 10,
   sortBy: 'name',
@@ -92,11 +78,10 @@ const result = await caller.listUsers({
 
 ### getCount
 
-Returns the total count (for calculating total pages on the client):
+Returns the total count (for calculating total pages on the client). Input includes only custom params.
 
 ```typescript
-const result = await caller.listUsers({
-  action: 'getCount',
+const result = await caller.listUsers.getCount({
   params: {search: 'john'},
 })
 // Returns: { totalCount: number }
@@ -104,13 +89,10 @@ const result = await caller.listUsers({
 
 ### getDescription
 
-Returns the sorting configuration:
+Returns the sorting configuration. Takes no input.
 
 ```typescript
-const result = await caller.listUsers({
-  action: 'getDescription',
-  params: {},
-})
+const result = await caller.listUsers.getDescription()
 // Returns: { allowedSorts: string[], defaultSortBy?: string, defaultSortType?: 'asc' | 'desc' }
 ```
 
@@ -130,7 +112,7 @@ const result = await caller.listUsers({
 
 ## Pagination Fields
 
-The following fields are automatically available at the top level of the input:
+The following fields are available in the `getItems` input:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -168,7 +150,9 @@ import {InferRouterOutputs} from '@orion-js/trpc'
 
 type RouterOutputs = InferRouterOutputs<typeof router>
 type ListUsersOutput = RouterOutputs['listUsers']
-// ListUsersOutput.items is correctly typed as User[]
+// ListUsersOutput.getItems.items is correctly typed as User[]
+// ListUsersOutput.getCount.totalCount is number
+// ListUsersOutput.getDescription.allowedSorts is string[]
 ```
 
 ## Schema Cleaning
@@ -196,8 +180,7 @@ const [sortBy, setSortBy] = useState<string>()
 const [sortType, setSortType] = useState<'asc' | 'desc'>()
 
 // Fetch items
-const {data: itemsResult} = trpc.listUsers.useQuery({
-  action: 'getItems',
+const {data: itemsResult} = trpc.listUsers.getItems.useQuery({
   page,
   limit: 10,
   sortBy,
@@ -206,18 +189,14 @@ const {data: itemsResult} = trpc.listUsers.useQuery({
 })
 
 // Fetch count for pagination
-const {data: countResult} = trpc.listUsers.useQuery({
-  action: 'getCount',
+const {data: countResult} = trpc.listUsers.getCount.useQuery({
   params: {},
 })
 
 // Fetch description for sort options
-const {data: descriptionResult} = trpc.listUsers.useQuery({
-  action: 'getDescription',
-  params: {},
-})
+const {data: descriptionResult} = trpc.listUsers.getDescription.useQuery()
 
-// Access data directly - all fields are optional
+// Access data directly - each procedure has its own specific return type
 const items = itemsResult?.items ?? []
 const totalCount = countResult?.totalCount ?? 0
 const allowedSorts = descriptionResult?.allowedSorts ?? []

@@ -5,13 +5,7 @@ export type {inferRouterInputs, inferRouterOutputs, TRPCRouterRecord} from '@trp
 export {buildRouter} from './buildRouter'
 export type {TMutationOptions} from './createTMutation'
 export {createTMutation} from './createTMutation'
-export type {
-  PaginatedAction,
-  PaginatedQueryInput,
-  PaginatedResponse,
-  PaginationParams,
-  TPaginatedQueryOptions,
-} from './createTPaginatedQuery'
+export type {PaginationParams, TPaginatedQueryOptions} from './createTPaginatedQuery'
 export {createTPaginatedQuery} from './createTPaginatedQuery'
 export {paginationFieldsSchema} from './createTPaginatedQuery/params'
 export type {TQueryOptions} from './createTQuery'
