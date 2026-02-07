@@ -1,5 +1,11 @@
 # @orion-js/trpc
 
+## 4.0.9
+
+### Patch Changes
+
+- Refactor createTPaginatedQuery to return a sub-router with 3 separate procedures (getItems, getCount, getDescription) instead of a single action-based procedure
+
 ## 4.0.8
 
 ### Patch Changes
