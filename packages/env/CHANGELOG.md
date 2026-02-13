@@ -1,5 +1,13 @@
 # @orion-js/env
 
+## 4.2.1
+
+### Patch Changes
+
+- - Add configurable tRPC server options in `startTRPC`, including `trpcOptions` support for transformers like SuperJSON.
+  - Improve example backend integration and docs for SuperJSON setup.
+  - Fix package prepare/build behavior for local workspace installs.
+
 ## 4.2.0
 
 ### Minor Changes

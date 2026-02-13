@@ -1,5 +1,13 @@
 # @orion-js/echoes
 
+## 4.2.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/http@4.2.2
+  - @orion-js/env@4.2.1
+
 ## 4.2.1
 
 ### Patch Changes
