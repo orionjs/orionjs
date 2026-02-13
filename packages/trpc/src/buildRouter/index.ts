@@ -1,11 +1,10 @@
 import {TRPCRouterRecord} from '@trpc/server'
 import {createTRPC, router, TRPCCreateOptions} from '../trpc'
 
-export function buildRouter<T extends TRPCRouterRecord>(
+export function buildRouter<T extends TRPCRouterRecord, TOptions extends TRPCCreateOptions = {}>(
   procedures: T,
-  trpcOptions?: TRPCCreateOptions,
+  trpcOptions?: TOptions,
 ) {
-  const defaultRouter = router(procedures)
-  if (!trpcOptions) return defaultRouter
-  return createTRPC(trpcOptions).router(procedures as any) as typeof defaultRouter
+  if (!trpcOptions) return router(procedures)
+  return createTRPC(trpcOptions).router(procedures as any)
 }

@@ -1,21 +1,23 @@
-import {createExpressMiddleware} from '@trpc/server/adapters/express'
+import {createRoute, express, getApp, registerRoute} from '@orion-js/http'
 import {TRPCRouterRecord} from '@trpc/server'
-import {getApp, registerRoute, createRoute, express} from '@orion-js/http'
-import {TRPCContext, TRPCCreateOptions} from './trpc'
+import {createExpressMiddleware} from '@trpc/server/adapters/express'
 import {buildRouter} from './buildRouter'
+import {TRPCContext, TRPCCreateOptions} from './trpc'
 
 type TrpcExpressMiddlewareOptions = Parameters<typeof createExpressMiddleware>[0]
 type StartTRPCCreateContext = TrpcExpressMiddlewareOptions['createContext']
 type StartTRPCMiddlewareOptions = Omit<TrpcExpressMiddlewareOptions, 'router' | 'createContext'>
 
-export interface StartTRPCOptions<T extends TRPCRouterRecord = TRPCRouterRecord>
-  extends StartTRPCMiddlewareOptions {
+export interface StartTRPCOptions<
+  T extends TRPCRouterRecord = TRPCRouterRecord,
+  TOptions extends TRPCCreateOptions = {},
+> extends StartTRPCMiddlewareOptions {
   procedures: T
   app?: express.Application
   path?: string
   bodyParserOptions?: {limit?: number | string}
   createContext?: StartTRPCCreateContext
-  trpcOptions?: TRPCCreateOptions
+  trpcOptions?: TOptions
 }
 
 /**
@@ -31,9 +33,18 @@ export interface StartTRPCOptions<T extends TRPCRouterRecord = TRPCRouterRecord>
  * const controllers = mergeComponents(components)
  * await startTRPC({procedures: controllers.trpc})
  */
-export async function startTRPC<T extends TRPCRouterRecord>(options: StartTRPCOptions<T>) {
-  const {procedures, path = '/trpc', bodyParserOptions, trpcOptions, createContext, ...middlewareOptions} =
-    options
+export async function startTRPC<
+  T extends TRPCRouterRecord,
+  TOptions extends TRPCCreateOptions = {},
+>(options: StartTRPCOptions<T, TOptions>) {
+  const {
+    procedures,
+    path = '/trpc',
+    bodyParserOptions,
+    trpcOptions,
+    createContext,
+    ...middlewareOptions
+  } = options
   const app = options.app || getApp()
   const router = buildRouter(procedures, trpcOptions)
 

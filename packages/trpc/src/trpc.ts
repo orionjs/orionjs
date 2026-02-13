@@ -20,6 +20,10 @@ const defaultErrorFormatter = ({shape, error}: any) => {
   }
 }
 
+export function createTRPC<TOptions extends TRPCCreateOptions>(
+  options: TOptions,
+): ReturnType<typeof trpcBuilder.create<TOptions>>
+export function createTRPC(): ReturnType<typeof trpcBuilder.create<{}>>
 export function createTRPC(options?: TRPCCreateOptions) {
   return trpcBuilder.create({
     ...options,
