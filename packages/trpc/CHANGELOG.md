@@ -1,5 +1,11 @@
 # @orion-js/trpc
 
+## 4.0.11
+
+### Patch Changes
+
+- 7af63a1: Fix transformer type propagation so frontend clients can use `transformer: superjson` on tRPC links without type casts when `trpcOptions.transformer` is configured on the server.
+
 ## 4.0.10
 
 ### Patch Changes
