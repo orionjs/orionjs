@@ -1,0 +1,648 @@
+---
+description: How to upgrade a file to Orionjs v4
+globs: 
+alwaysApply: false
+---
+
+This guide helps you convert Orionjs v3 code to the new v4 syntax. Follow these patterns to update your code.
+
+Important general considerations:
+
+- You should only change the syntax, not the logic.
+- If the code has errors and the possible fix include changing other files, leave the code as it is.
+- Do not add any functionality.
+
+## Schema Definitions
+
+If your file contains TypedSchema:
+
+```ts
+// Replace
+import {createEnum} from '@orion-js/schema'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+export const ExampleTypeEnum = createEnum('ExampleTypeEnum', ['type1', 'type2', 'type3'] as const)
+
+export type ExampleId = `ex-${string}`
+
+@TypedSchema()
+export class ExampleSchema {
+  @Prop({type: String})
+  _id: ExampleId
+
+  @Prop({type: String})
+  name: string
+
+  @Prop({type: Date})
+  createdAt: Date
+
+  @Prop({optional: true, type: ExampleTypeEnum})
+  paymentMethod?: typeof ExampleTypeEnum.type
+}
+
+// With
+import {TypedId, typedId} from '@orion-js/mongodb'
+import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
+
+export type ExampleId = TypedId<'ex'>
+
+export const PaymentMethodEnum = createEnum('PaymentMethodEnum', [
+  'type1',
+  'type2',
+  'type3',
+] as const)
+
+export const ExampleSchema = schemaWithName('Example', {
+  _id: {type: typedId('ex')},
+  name: {type: String},
+  createdAt: {type: Date},
+  paymentMethod: {type: PaymentMethodEnum, optional: true},
+})
+
+export type Example = InferSchemaType<typeof ExampleSchema>
+```
+
+## Dependency Injection
+
+If your file contains Inject:
+
+```ts
+// Replace
+import {Service, Inject} from '@orion-js/services'
+
+@Service()
+class SomeService {
+  @Inject()
+  private someRepo: SomeRepo
+}
+
+// With
+import {Service, Inject} from '@orion-js/services'
+
+@Service()
+class SomeService {
+  @Inject(() => SomeRepo)
+  private someRepo: SomeRepo
+}
+```
+
+## MongoDB Collections
+
+If your file defines MongoDB collections:
+
+```ts
+// Replace
+import {Collection, MongoCollection, Repository} from '@orion-js/mongodb'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {CardSchema} from '../schemas/Card'
+
+@Repository()
+export class CardsRepo {
+  @MongoCollection<CardSchema>({
+    name: 'cards',
+    schema: CardSchema, // or model: CardSchema
+    indexes: [
+      {
+        keys: {
+          searchTokens: 1,
+        }
+      }
+    ],
+  })
+  private collection: Collection<CardSchema>
+}
+
+// With
+import {createCollection, Repository} from '@orion-js/mongodb'
+import {InferSchemaType} from '@orion-js/schema'
+import {CardSchema} from '../schemas/Card'
+
+type Card = InferSchemaType<typeof CardSchema> // or check if this is exported from the schema file
+
+@Repository()
+export class CardsRepo {
+  private collection = createCollection({
+    name: 'cards',
+    // if the model had a model param, change it to schema
+    schema: CardSchema,
+    indexes: [
+      {
+        keys: {
+          searchTokens: 1,
+        }
+      }
+    ],
+  })
+}
+```
+
+## GraphQL Resolvers
+
+If your file contains GraphQL resolvers:
+
+```ts
+// Replace
+import {Query, ResolverParams, ResolverReturns, Resolvers} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+
+@TypedSchema()
+export class WebsiteConfigParams {
+  @Prop()
+  websiteId: WebsiteId
+}
+
+@Resolvers()
+export class WebsiteConfigResolvers {
+  @Inject()
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Query()
+  @ResolverParams(WebsiteConfigParams)
+  @ResolverReturns(WebsiteConfig)
+  async websiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+    return await this.websiteConfigsRepo.getWebsiteConfigByWebsiteId(params.websiteId)
+  }
+
+  // or 
+  @Query({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfig,
+  })
+  async websiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+    return await this.websiteConfigsRepo.getWebsiteConfigByWebsiteId(params.websiteId)
+  }
+}
+
+// With
+import {Query, Resolvers, createQuery} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {schemaWithName} from '@orion-js/schema'
+
+const WebsiteConfigParams = schemaWithName('WebsiteConfigParams', {
+  websiteId: {type: String}
+})
+
+@Resolvers()
+export class WebsiteConfigResolvers {
+  @Inject(() => WebsiteConfigsRepo)
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Query()
+  websiteConfig = createQuery({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfigSchema,
+    resolve: async params => {
+      return await this.websiteConfigsRepo.getWebsiteConfigByWebsiteId(params.websiteId)
+    }
+  })
+}
+```
+
+## GraphQL Mutations
+
+If your file contains GraphQL mutations:
+
+```ts
+// Replace
+import {Mutation, ResolverParams, ResolverReturns, Resolvers} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {cloneSchemaClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
+import {WebsiteConfig} from 'app/providers/schemas/WebsiteConfig'
+
+@TypedSchema()
+export class WebsiteConfigParams {
+  @Prop()
+  websiteId: WebsiteId
+
+  @Prop()
+  name: string
+}
+
+@Resolvers()
+export class UpdateWebsiteConfigResolvers {
+  @Inject()
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Mutation()
+  @ResolverParams(WebsiteConfigParams)
+  @ResolverReturns(WebsiteConfig)
+  async updateWebsiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+    return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, {name: params.name})
+  }
+
+  // or
+  @Mutation({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfig,
+  })
+  async updateWebsiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+    return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, {name: params.name})
+  }
+}
+
+// With
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {schemaWithName} from '@orion-js/schema'
+
+const WebsiteConfigParams = schemaWithName('WebsiteConfigParams', {
+  websiteId: {type: String},
+  name: {type: String}
+})
+
+@Resolvers()
+export class UpdateWebsiteConfigResolvers {
+  @Inject(() => WebsiteConfigsRepo)
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Mutation()
+  updateWebsiteConfig = createMutation({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfigSchema,
+    resolve: async params => {
+      return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, {name: params.name})
+    }
+  })
+}
+```
+
+## Model Resolvers
+
+If your file contains model resolvers:
+
+```ts
+// Replace
+import {ModelResolver, ModelResolvers, ResolverReturns} from '@orion-js/graphql'
+import {Person} from 'app/providers/schemas/Person'
+
+@ModelResolvers(Person)
+export class PersonResolvers {
+  @ModelResolver()
+  @ResolverReturns(String)
+  async sayHi(person: Person): Promise<string> {
+    return `My name is ${person.name}`
+  }
+
+  // or
+  @ModelResolver({
+    returns: String,
+  })
+  async sayHi(person: Person): Promise<string> {
+    return `My name is ${person.name}`
+  }
+}
+
+// With
+import {ModelResolver, ModelResolvers} from '@orion-js/graphql'
+import {PersonSchema} from 'app/providers/schemas/Person'
+import {createModelResolver} from '@orion-js/resolvers'
+import {InferSchemaType} from '@orion-js/schema'
+
+type Person = InferSchemaType<typeof PersonSchema> // if its not exported in the schema file
+
+@ModelResolvers(PersonSchema)
+export class PersonResolvers {
+  @ModelResolver()
+  sayHi = createModelResolver<Person>({
+    returns: String,
+    resolve: async person => {
+      return `My name is ${person.name}`
+    }
+  })
+}
+```
+
+## Subscriptions
+
+If your file contains subscriptions:
+
+```ts
+// Replace
+import {Subscription} from '@orion-js/graphql'
+import {checkPermission} from 'app/permissions'
+
+@Subscriptions()
+export class ExampleSubscriptionsService {
+  @Subscription({
+    returns: UserSchema,
+    params: ParamsSchema,
+    checkPermission: async (params) => {
+      return params.name === 'test'
+    }
+  })
+  onUserCreated() {}
+}
+
+// With
+import {Subscription, Subscriptions} from '@orion-js/graphql'
+import {createSubscription} from '@orion-js/subscriptions'
+
+@Subscriptions()
+export class ExampleSubscriptionsService {
+  @Subscription()
+  onUserCreated = createSubscription({
+    params: ParamsSchema,
+    returns: UserSchema,
+    async canSubscribe(params) {
+      return params.name === 'test'
+    }
+  })
+}
+```
+
+## HTTP Routes
+
+If your file contains HTTP routes:
+
+```ts
+// Replace
+import {route, Router} from '@orion-js/http'
+
+@route()
+export default class ExampleRouter extends Router {
+  @Route({
+    method: 'post',
+    path: '/route-service-test/:age',
+    bodyParser: 'json',
+  })
+  async getRoute(req, res) {
+    return {
+      statusCode: 200,
+      body: {
+        name: req.body.name,
+        age: req.params.age
+      }
+    }
+  }
+}
+
+// With
+import {Route, Routes} from '@orion-js/http'
+import {createRoute} from '@orion-js/routes'
+
+@Routes()
+class RoutesService {
+  @Route()
+  route1 = createRoute({
+    method: 'post',
+    path: '/route-service-test/:age',
+    bodyParams: {
+      name: {
+        type: 'string',
+      },
+    },
+    returns: {
+      name: {
+        type: 'string',
+      },
+      age: {
+        type: 'number',
+      },
+    },
+    resolve: async req => {
+      return {
+        statusCode: 200,
+        body: {
+          name: req.body.name,
+          age: req.params.age,
+        },
+      }
+    },
+  })
+}
+```
+
+## Jobs
+
+If your file contains jobs:
+
+```ts
+// Replace
+import {EventJob, Jobs} from '@orion-js/dogs'
+
+@Jobs()
+class ExampleJobsService {
+  @EventJob()
+  async job1(params: {age: number}) {
+    // job code
+  }
+
+  @RecurrentJob({runEvery: '10m'})
+  async job2() {
+    // job code
+  }
+}
+
+// Calling jobs
+scheduleJob('job1', {params})
+
+// With
+import {EventJob, Jobs, RecurrentJob} from '@orion-js/jobs'
+import {createEventJob, createRecurrentJob} from '@orion-js/jobs'
+
+@Jobs()
+class ExampleJobsService {
+  @EventJob()
+  job1 = createEventJob({
+    params: {
+      age: {
+        type: 'number',
+      },
+    },
+    resolve: async params => {
+      // job code
+    },
+  })
+
+  @RecurrentJob()
+  job2 = createRecurrentJob({
+    runEvery: '10m', // 10 minutes as string
+    resolve: async () => {
+      // job code
+    },
+  })
+}
+
+// Calling jobs from other service
+@Inject(() => ExampleJobsService)
+private exampleJobsService: ExampleJobsService
+
+async mehtodThatRunsJobs() {
+  await this.exampleJobsService.job1.schedule({age: 25})
+}
+```
+
+## Echoes
+
+If your file contains echoes:
+
+```ts
+// Replace
+import {EchoEvent, EchoRequest, Echoes} from '@orion-js/echoes'
+
+@Echoes()
+class ExampleEchoesService {
+  @EchoRequest()
+  async echo(params: {name: string}): Promise<string> {
+    return params.name
+  }
+
+  @EchoEvent()
+  async echoEvent(params: string): Promise<string> {
+    return params
+  }
+}
+// With
+import {EchoEvent, EchoRequest, Echoes} from '@orion-js/echoes'
+import {createEchoEvent, createEchoRequest} from '@orion-js/echoes'
+
+@Echoes()
+class ExampleEchoesService {
+  @EchoRequest()
+  echo = createEchoRequest({
+    params: {
+      name: {
+        type: 'string',
+      },
+    },
+    returns: String,
+    resolve: async params => {
+      return params.name
+    },
+  })
+
+  @EchoEvent()
+  echoEvent = createEchoEvent({
+    params: 'string',
+    returns: String,
+    resolve: async params => {
+      return params
+    },
+  })
+}
+```
+
+## Paginated MongoDB
+
+If your file contains paginated resolvers:
+
+```ts
+// Replace
+import {createPaginatedResolver} from '@orion-js/pagination'
+
+@Resolvers()
+class ExampleResolvers {
+  @PaginatedQuery({
+    returns: ItemSchema,
+    allowedSorts: ['index'],
+  })
+  async paginatedList(params) {
+    return {
+      cursor: this.repo.find(query),
+      count: () => this.repo.countDocuments(query),
+    }
+  }
+}
+
+// With
+import {PaginatedQuery, Resolvers} from '@orion-js/graphql'
+import {createPaginatedResolver} from '@orion-js/pagination'
+
+@Resolvers()
+class ExampleResolvers {
+  @PaginatedQuery()
+  paginatedList = createPaginatedResolver({
+    returns: ItemSchema,
+    params: Params,
+    allowedSorts: ['index'],
+    getCursor: async (params) => {
+      return {
+        cursor: this.repo.find(query),
+        count: () => this.repo.countDocuments(query),
+      }
+    },
+  })
+}
+```
+
+## Permissions in Resolvers
+
+If your file contains permissions in resolvers:
+
+```ts
+@Mutation({ // or @Query() or @ModelResolver()
+  params: WebsiteConfigParams,
+  returns: WebsiteConfig,
+  permissionsOptions: {
+    roles: ['admin', 'support'],
+  },
+})
+async updateWebsiteConfig(params: WebsiteConfigParams): Promise<WebsiteConfig> {
+  // do something here
+}
+```
+
+With:
+
+```ts
+@Mutation() // or @Query() or @ModelResolver()
+updateWebsiteConfig = createResolver({
+  ...
+  async resolve (params, viewer) => {
+    // check permissions here
+    checkRoles(['admin', 'support'], viewer)
+    // or leave a throw error to be later changed by the human programmer
+  },
+})
+```
+
+## Cloning Schemas
+
+The proper way of cloning a schema now is using the `cloneSchema` helper:
+
+```ts
+import {cloneSchema} from '@orion-js/schema'
+
+const cloned = cloneSchema({schema})
+```
+
+```ts
+// documentation
+export type CloneSchemaOptions = {
+  /**
+   * The schema to clone
+   */
+  schema: TSchema
+  /**
+   * The name of the cloned schema
+   */
+  name?: string
+  /**
+   * The schema to extend the cloned schema with
+   */
+  extendSchema?: TExtendFields
+  /**
+   * A function to map the fields of the cloned schema.
+   * Warning: This function will not be applied to the typescript types of this schema.
+   */
+  mapFields?: (field: TSchema[keyof TSchema], key: keyof TSchema) => SchemaNode
+  /**
+   * The fields to pick from the cloned schema
+   */
+  pickFields?: TPickFields
+  /**
+   * The fields to omit from the cloned schema
+   */
+  omitFields?: TOmitFields
+}
+```
+
+
+## Removed Features
+
+If your file contains any of these features, they need to be replaced:
+
+1. `@orion-js/mailing`: Replace with direct use of nodemailer
+2. `@orion-js/cache`: Replace with `lru-cache` or another caching solution

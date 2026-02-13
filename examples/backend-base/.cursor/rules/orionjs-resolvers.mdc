@@ -1,0 +1,231 @@
+---
+description: How to create and use GraphQL resolvers effectively in Orionjs
+globs: *.ts
+alwaysApply: true
+---
+
+# How to create good Resolvers in Orionjs
+
+## Resolver Overview
+
+Resolvers in Orionjs define GraphQL API endpoints using a clean, decorator-based approach. They allow you to create type-safe GraphQL operations with minimal boilerplate code.
+
+## Structure
+- Use `@Resolvers()` decorator from `@orion-js/graphql`
+- Each resolver class should handle only one operation
+- Follow naming conventions:
+  - Resolver classes: `{Action}{Entity}Resolvers` (e.g., `GetUserResolvers`, `UpdateProductResolvers`)
+  - Mutations: descriptive of the operation (e.g., `listProducts`, `createUser`)
+  - Queries: only the name of the entity (e.g., `user`, `productsList`, `blogPosts`)
+- Put resolvers in `app/exampleComponent/controllers/resolvers/{Entity}/{Action}/index.ts`
+
+## Best Practices
+- Use `@Inject(() => ServiceName)` for dependency injection of services
+- Always define proper schemas for parameters and return values
+- Use `createQuery()`, `createMutation()` and `createModelResolver()` functions
+- Provide descriptive names and descriptions for GraphQL schema documentation
+- Always use `schemaWithName()` for schemas that will be used in GraphQL
+- When creating a schema for params, prefer to clone another schema with the `schemaWithName()` function
+
+## Query vs Mutation
+- Use `@Query()` for operations that fetch data without side effects
+- Use `@Mutation()` for operations that create, update, or delete data
+
+## Example 1: Query
+
+```typescript
+import {Query, Resolvers, createQuery} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {schemaWithName} from '@orion-js/schema'
+import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
+import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
+
+const WebsiteConfigParams = schemaWithName('WebsiteConfigParams', {
+  websiteId: {type: String}
+})
+
+@Resolvers()
+export class WebsiteConfigResolvers {
+  @Inject(() => WebsiteConfigsRepo)
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Query()
+  websiteConfig = createQuery({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfigSchema,
+    resolve: async params => {
+      return await this.websiteConfigsRepo.getWebsiteConfigByWebsiteId(params.websiteId)
+    }
+  })
+}
+```
+
+## Example 2: Full Entity Update Mutation
+
+```typescript
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {schemaWithName, cloneSchema} from '@orion-js/schema'
+import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
+import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
+
+// Define a schema with only the fields we want to update
+const UpdatesSchema = cloneSchema({
+  name: 'Updates',
+  schema: WebsiteConfigSchema,
+  pickFields: ['name', 'description'],
+})
+
+const WebsiteConfigParams = schemaWithName('UpdateWebsiteConfigParams', {
+  websiteId: {type: String},
+  updates: {type: UpdatesSchema}
+})
+
+@Resolvers()
+export class UpdateWebsiteConfigResolvers {
+  @Inject(() => WebsiteConfigsRepo)
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Mutation()
+  updateWebsiteConfig = createMutation({
+    params: WebsiteConfigParams,
+    returns: WebsiteConfigSchema,
+    resolve: async params => {
+      return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, params.updates)
+    }
+  })
+}
+```
+
+## Example 3: Simple Entity Update Mutation
+
+```typescript
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {cloneSchema} from '@orion-js/schema'
+import {WebsiteConfigsRepo} from 'app/providers/repos/WebsiteConfigs'
+import {WebsiteConfigSchema} from 'app/providers/schemas/WebsiteConfig'
+
+const SetWebsiteConfigNameParams = cloneSchema({
+  name: 'SetWebsiteConfigNameParams',
+  schema: WebsiteConfigSchema,
+  pickFields: ['websiteId', 'name']
+})
+
+@Resolvers()
+export class SetWebsiteConfigNameResolvers {
+  @Inject(() => WebsiteConfigsRepo)
+  private websiteConfigsRepo: WebsiteConfigsRepo
+
+  @Mutation()
+  setWebsiteConfigName = createMutation({
+    params: SetWebsiteConfigNameParams,
+    returns: WebsiteConfigSchema,
+    resolve: async params => {
+      return await this.websiteConfigsRepo.updateWebsiteConfig(params.websiteId, {name: params.name})
+    }
+  })
+}
+```
+
+## Example 4: Mutation Using a Service
+
+```typescript
+import {Mutation, Resolvers, createMutation} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {schemaWithName} from '@orion-js/schema'
+import {SendToInboxService} from 'app/services/SendToInbox'
+
+const SendToInboxParams = schemaWithName('SendToInboxParams', {
+  email: {type: String},
+  message: {type: String}
+})
+
+@Resolvers()
+export class SendToInboxResolvers {
+  @Inject(() => SendToInboxService)
+  private sendToInboxService: SendToInboxService
+
+  @Mutation()
+  sendToInbox = createMutation({
+    params: SendToInboxParams,
+    returns: String,
+    resolve: async params => {
+      return await this.sendToInboxService.send(params)
+    }
+  })
+}
+```
+
+## Example 5: Model Resolver
+
+```typescript
+import {ModelResolver, ModelResolvers} from '@orion-js/graphql'
+import {InferSchemaType} from '@orion-js/schema'
+import {createModelResolver} from '@orion-js/resolvers'
+import {PersonSchema} from 'app/providers/schemas/Person'
+
+type PersonType = InferSchemaType<typeof PersonSchema>
+
+@ModelResolvers(PersonSchema)
+export class PersonResolvers {
+  @ModelResolver()
+  sayHi = createModelResolver<PersonType>({
+    returns: String,
+    resolve: async person => {
+      return `My name is ${person.name}`
+    }
+  })
+}
+```
+
+## Example 6: Paginated Query
+
+```typescript
+import {Query, Resolvers} from '@orion-js/graphql'
+import {Inject} from '@orion-js/services'
+import {createPaginatedResolver} from '@orion-js/paginated-mongodb'
+import {ProductsRepo} from 'app/providers/repos/Products'
+import {ProductSchema} from 'app/providers/schemas/Product'
+import {ProductsListParams} from 'app/providers/schemas/params/ProductsList'
+
+@Resolvers()
+export class ProductsListResolvers {
+  @Inject(() => ProductsRepo)
+  private productsRepo: ProductsRepo
+
+  @Query()
+  productsList = createPaginatedResolver({
+    returns: ProductSchema,
+    params: ProductsListParams,
+    allowedSorts: ['createdAt', 'name'],
+    getCursor: async (params) => {
+      return {
+        cursor: this.productsRepo.getProductsListCursor(params),
+        count: () => this.productsRepo.getProductsListCount(params)
+      }
+    }
+  })
+}
+```
+
+## Example 7: Complex clone schema for params
+
+```typescript
+import {cloneSchema, InferSchemaType} from '@orion-js/schema'
+import {ArticleSchema} from '../Article'
+
+export const ArticlesListParamsSchema = cloneSchema({
+  name: 'ArticlesListParams',
+  schema: ArticleSchema,
+  extendSchema: {
+    filter: {
+      type: String,
+      optional: true,
+    },
+  },
+  pickFields: ['websiteId', 'type'],
+})
+
+export type ArticlesListParamsType = InferSchemaType<typeof ArticlesListParamsSchema>
+```

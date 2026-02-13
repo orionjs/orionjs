@@ -1,0 +1,68 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "@orion-js/components": "*",
+    "@orion-js/crypto": "*",
+    "@orion-js/dogs": "*",
+    "@orion-js/echoes": "*",
+    "@orion-js/env": "*",
+    "@orion-js/graphql": "*",
+    "@orion-js/helpers": "*",
+    "@orion-js/http": "*",
+    "@orion-js/logger": "*",
+    "@orion-js/migrations": "*",
+    "@orion-js/models": "*",
+    "@orion-js/mongodb": "*",
+    "@orion-js/paginated-mongodb": "*",
+    "@orion-js/resolvers": "*",
+    "@orion-js/schema": "*",
+    "@orion-js/services": "*",
+    "@orion-js/trpc": "*",
+    "@orion-js/typed-model": "*",
+    "@trpc/server": "^11.9.0",
+    "graphql": "^16.10.0",
+    "lodash-es": "^4.17.21"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "@orion-js/core": "*",
+    "@types/express": "^5.0.6",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@orion-js/cache": "link:../orionjs/packages/cache",
+      "@orion-js/components": "link:../orionjs/packages/components",
+      "@orion-js/core": "link:../orionjs/packages/core",
+      "@orion-js/crypto": "link:../orionjs/packages/crypto",
+      "@orion-js/dogs": "link:../orionjs/packages/dogs",
+      "@orion-js/echoes": "link:../orionjs/packages/echoes",
+      "@orion-js/env": "link:../orionjs/packages/env",
+      "@orion-js/graphql": "link:../orionjs/packages/graphql",
+      "@orion-js/helpers": "link:../orionjs/packages/helpers",
+      "@orion-js/http": "link:../orionjs/packages/http",
+      "@orion-js/logger": "link:../orionjs/packages/logger",
+      "@orion-js/migrations": "link:../orionjs/packages/migrations",
+      "@orion-js/models": "link:../orionjs/packages/models",
+      "@orion-js/mongodb": "link:../orionjs/packages/mongodb",
+      "@orion-js/paginated-mongodb": "link:../orionjs/packages/paginated-mongodb",
+      "@orion-js/resolvers": "link:../orionjs/packages/resolvers",
+      "@orion-js/schema": "link:../orionjs/packages/schema",
+      "@orion-js/services": "link:../orionjs/packages/services",
+      "@orion-js/trpc": "link:../orionjs/packages/trpc",
+      "@orion-js/typed-model": "link:../orionjs/packages/typed-model"
+    }
+  }
+}

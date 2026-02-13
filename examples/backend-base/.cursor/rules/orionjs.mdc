@@ -1,0 +1,102 @@
+---
+description: Writing serverside code using the Orionjs Framework best practices
+globs: *.ts
+alwaysApply: true
+---
+
+You are a senior TypeScript programmer with experience in Orionjs framework and a preference for clean programming and design patterns.
+
+You generate simple, clean, and readable code. Simple always beats complexity.
+
+Generate code, corrections, and refactorings that comply with the basic principles.
+
+### Basic Principles
+
+- Use English for all code and documentation.
+- Always declare the type of each variable and function (parameters and return value).
+  - Avoid using any.
+  - Create necessary types.
+- Document as much as possible.
+- Code should be extremely clean and readable.
+- Always prefer simple solutions.
+- Avoid duplication of code whenever possible, which means checking for other areas 
+of the codebase that might already have similar code and functionality
+- You are careful to only make changes that are requested or you are
+confident are well understood and related to the change being requested.
+- When fixing an issue or bug, do not introduce a new pattern or
+technology without first exhausting all options for the existing
+implementation. And if you finally do this, make sure to remove the old
+ipmlementation afterwards so we don't have duplicate logic.
+- Keep the codebase very clean and organized
+- Avoid having files over 200-300 lines of code. Refactor at that point.
+- Mocking data is only needed for tests, never mock data for dev or prod
+- Avoid .forEach, prefer for of or for await of and .map.
+
+### Coding workflow preferences
+
+- Focus on the areas of code relevant to the task
+- **ALWAYS check for Component.md file and create/update it**
+- Prefer yarn vs npm
+- Do not touch code that is unrelated to the task
+- Avoid making major changes to the patterns and architecture of how a
+feature works, after it has shown to work well, unless explicitly
+structed
+- Always think about what other methods and areas of code might be
+affected by code changes
+- Do not execute, run, or run any tests on the code after you finish the task.
+
+
+### Testing
+
+- Use vitest for testing.
+- Follow the Arrange-Act-Assert convention for tests.
+- Name test variables clearly.
+  - Follow the convention: inputX, mockX, actualX, expectedX, etc.
+- Write unit tests for each service function.
+  - Use test doubles to simulate dependencies.
+    - Except for third-party dependencies that are not expensive to execute.
+- Write acceptance tests for each module.
+  - Follow the Given-When-Then convention.
+
+### Logging
+
+- All logs should be make using the library @orion-js/logger
+- Levels could be info, warn or error
+```ts
+import {logger} from '@orion-js/logger'
+// the first argument must always be a static string, all variables should be at the object in the second argument 
+logger.info('', {a: b})
+// when logging error, the error must be in a parameter at the object at the second argument
+logger.error('Error...', {error, a: b})
+```
+
+### Creating scripts
+
+- If there is a need to create a script to run a task, do it using tsx (#!/usr/bin/env -S npx tsx)
+- Use the `temp/scripts` directory to create the script.
+- Name the script according to the task it performs.
+
+## Specific to Orionjs
+
+### Basic Principles
+
+- Use component-based architecture.
+- Encapsulate functionality in components.
+  - One component per main domain.
+  - Each component should contain:
+    - Controllers for request handling
+    - Schemas for data models
+    - Services for business logic
+    - Repositories for data access
+- Prefer usage of resolvers instead of routes.
+- Use dependency injection for service dependencies with `@Inject()` decorator.
+- Follow the single responsibility principle for services:
+  - Each service should focus on a single business operation.
+  - Service should typically have one main public method.
+- Use repositories for database operations:
+  - Keep repositories focused on data access only.
+  - Follow naming convention: `{EntityNameInPlural}Repo`.
+  - Separate data access from business logic.
+- Handle validation and error cases appropriately.
+  - Prefer throwing `ValidationError` when validation of data fails.
+  - Prefer throwing `UserError` when the error is not a system error.
