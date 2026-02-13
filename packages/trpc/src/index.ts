@@ -1,18 +1,17 @@
-// Core tRPC exports
-
-// Re-export useful tRPC types (including our improved InferRouterOutputs)
+// Re-export useful tRPC types
 export type {inferRouterInputs, inferRouterOutputs, TRPCRouterRecord} from '@trpc/server'
-export {buildRouter} from './buildRouter'
 export type {TMutationOptions} from './createTMutation'
 export {createTMutation} from './createTMutation'
 export type {PaginationParams, TPaginatedQueryOptions} from './createTPaginatedQuery'
 export {createTPaginatedQuery} from './createTPaginatedQuery'
 export {paginationFieldsSchema} from './createTPaginatedQuery/params'
-export type {TQueryOptions} from './createTQuery'
 // Procedure creators
+export type {TQueryOptions} from './createTQuery'
 export {createTQuery} from './createTQuery'
-export type {ExtractProcedures} from './service'
+// Error handling (use defaultErrorFormatter with your own initTRPC instance)
+export {defaultErrorFormatter, getErrorData, mapErrorToTRPCError} from './errorHandler'
 // Service decorators
+export type {ExtractProcedures} from './service'
 export {
   getTProcedures,
   mergeProcedures,
@@ -22,9 +21,7 @@ export {
   TProcedures,
   TQuery,
 } from './service'
-export type {StartTRPCOptions} from './startTRPC'
-// Router building
-export {startTRPC} from './startTRPC'
-export {createTRPC, procedure, router, TRPCContext, t} from './trpc'
-export type {TRPCCreateOptions} from './trpc'
+
+// Internal tRPC instance and context type
+export {procedure, TRPCContext, t} from './trpc'
 export type {InferRouterInputs, InferRouterOutputs} from './types'

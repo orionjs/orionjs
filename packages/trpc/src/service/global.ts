@@ -67,7 +67,7 @@ export type ExtractProcedures<T> = {
 
 /**
  * Gets the procedures from a class decorated with @Procedures.
- * Returns a TRPCRouterRecord that can be passed to buildRouter/startTRPC.
+ * Returns a TRPCRouterRecord that can be passed to t.router().
  */
 export function getTProcedures<T extends object>(
   target: new (...args: any[]) => T,
@@ -97,8 +97,8 @@ type ProcedureClass = new (...args: any[]) => any
  *
  * @example
  * const procedures = mergeProcedures([UserProcedures, PostProcedures])
- * const router = buildRouter(procedures)
- * export type AppRouter = typeof router
+ * const appRouter = t.router(procedures)
+ * export type AppRouter = typeof appRouter
  */
 export function mergeProcedures<T1 extends ProcedureClass>(
   classes: [T1],

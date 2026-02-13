@@ -1,12 +1,11 @@
-import {describe, it, expect, expectTypeOf} from 'vitest'
-import {Inject, Service} from '@orion-js/services'
 import {schemaWithName} from '@orion-js/schema'
-import {Procedures, TQuery, TMutation, getTProcedures, mergeProcedures} from './global'
-import {createTQuery} from '../createTQuery'
-import {createTMutation} from '../createTMutation'
-import {buildRouter} from '../buildRouter'
-import {t} from '../trpc'
+import {Inject, Service} from '@orion-js/services'
 import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
+import {describe, expect, expectTypeOf, it} from 'vitest'
+import {createTMutation} from '../createTMutation'
+import {createTQuery} from '../createTQuery'
+import {t} from '../trpc'
+import {getTProcedures, mergeProcedures, Procedures, TMutation, TQuery} from './global'
 
 describe('Procedures with service injection', () => {
   it('should work with the v4 syntax', async () => {
@@ -42,7 +41,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ExampleProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     expect(procedures.example).toBeDefined()
@@ -77,7 +76,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ProceduresWithSchema)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     expect(procedures.greet).toBeDefined()
@@ -114,7 +113,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ValidationProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     await expect(caller.validate({email: 'not-an-email'})).rejects.toThrow()
@@ -136,7 +135,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ViewerProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
 
     // Test with viewer
     const callerWithViewer = t.createCallerFactory(router)({viewer: {userId: 'user-123'}})
@@ -156,7 +155,7 @@ describe('Procedures with service injection', () => {
       getUser = createTQuery({
         params: {id: {type: 'ID'}},
         returns: {name: {type: 'string'}},
-        resolve: async ({id}) => ({name: 'John'}),
+        resolve: async _params => ({name: 'John'}),
       })
 
       @TMutation()
@@ -174,8 +173,7 @@ describe('Procedures with service injection', () => {
     expectTypeOf(procedures).toHaveProperty('createUser')
 
     // Build router and verify it can be used for type exports
-    const router = buildRouter(procedures)
-    type AppRouter = typeof router
+    const router = t.router(procedures)
 
     // The router should have the procedure keys
     expectTypeOf(router).toHaveProperty('getUser')
@@ -203,7 +201,7 @@ describe('Procedures with service injection', () => {
       @TMutation()
       updateConfig = createTMutation({
         params: {key: {type: 'string'}, value: {type: 'string'}},
-        resolve: async ({key, value}) => ({
+        resolve: async ({key}) => ({
           success: true,
           updatedKey: key,
           previousValue: null as string | null,
@@ -212,7 +210,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(InferredOutputProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Runtime tests
@@ -248,9 +246,17 @@ describe('Procedures with service injection', () => {
     // @ts-expect-error - uptime should be number
     const _badStatus: RouterOutputs['getStatus'] = {status: 'ok', uptime: '100'}
     // @ts-expect-error - metadata.visits should be number
-    const _badUser: RouterOutputs['getUserData'] = {id: '1', name: 'Jane', metadata: {lastLogin: '2024-01-01', visits: 'many'}}
+    const _badUser: RouterOutputs['getUserData'] = {
+      id: '1',
+      name: 'Jane',
+      metadata: {lastLogin: '2024-01-01', visits: 'many'},
+    }
     // @ts-expect-error - success should be boolean
-    const _badConfig: RouterOutputs['updateConfig'] = {success: 'yes', updatedKey: 'x', previousValue: null}
+    const _badConfig: RouterOutputs['updateConfig'] = {
+      success: 'yes',
+      updatedKey: 'x',
+      previousValue: null,
+    }
 
     expect(router).toBeDefined()
   })
@@ -263,7 +269,7 @@ describe('Procedures with service injection', () => {
       withBothSchemas = createTQuery({
         params: {id: {type: 'ID'}},
         returns: {name: {type: 'string'}},
-        resolve: async ({id}) => ({name: 'Test', extra: 'removed'}),
+        resolve: async _params => ({name: 'Test', extra: 'removed'}),
       })
 
       // With only params schema - output inferred from resolve
@@ -294,7 +300,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(MixedProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Runtime tests for schema cleaning
@@ -361,7 +367,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(ArrayProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Runtime tests
@@ -441,7 +447,7 @@ describe('Procedures with service injection', () => {
     }
 
     const procedures = getTProcedures(InjectedProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Runtime tests
@@ -467,7 +473,11 @@ describe('Procedures with service injection', () => {
     }
 
     // @ts-expect-error - features.darkMode should be boolean
-    const _badConfig: RouterOutputs['getAppConfig'] = {appName: 'App', version: '1.0', features: {darkMode: 'yes', notifications: true}}
+    const _badConfig: RouterOutputs['getAppConfig'] = {
+      appName: 'App',
+      version: '1.0',
+      features: {darkMode: 'yes', notifications: true},
+    }
 
     expect(router).toBeDefined()
   })
@@ -504,7 +514,7 @@ describe('Procedures with service injection', () => {
 
     // Merge procedures from multiple classes
     const procedures = mergeProcedures([UserProcedures, PostProcedures])
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Runtime tests

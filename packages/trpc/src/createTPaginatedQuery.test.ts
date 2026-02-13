@@ -1,7 +1,6 @@
 import {schemaWithName} from '@orion-js/schema'
 import {Inject, Service} from '@orion-js/services'
 import {describe, expect, it} from 'vitest'
-import {buildRouter} from './buildRouter'
 import {createTPaginatedQuery, PaginationParams} from './createTPaginatedQuery'
 import {getTProcedures, Procedures, TPaginatedQuery} from './service'
 import {t} from './trpc'
@@ -47,7 +46,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listUsers.getItems({page: 1, limit: 2, params: {}})
@@ -76,7 +75,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getCount({params: {}})
@@ -98,7 +97,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getDescription()
@@ -123,7 +122,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // First page
@@ -171,7 +170,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const admins = await caller.listUsersByRole.getItems({params: {role: 'admin'}})
@@ -205,7 +204,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Sort by name asc
@@ -244,7 +243,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     // Default limit
@@ -272,7 +271,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
 
     const callerWithViewer = t.createCallerFactory(router)({viewer: {userId: 'user-123'}})
     const result = await callerWithViewer.listItems.getItems({params: {}})
@@ -308,7 +307,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getItems({params: {}})
@@ -328,7 +327,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getItems({params: {}})
@@ -347,7 +346,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getItems({params: {}})
@@ -368,7 +367,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     await expect(caller.listItems.getItems({params: {search: 'ab'}})).rejects.toThrow()
@@ -386,7 +385,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getItems({params: {}})
@@ -407,7 +406,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     await expect(caller.listItems.getItems({page: 0, params: {}})).rejects.toThrow()
@@ -425,7 +424,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getDescription()
@@ -460,7 +459,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listUsers.getItems({params: {}})
@@ -502,7 +501,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
 
     type RouterOutputs = InferRouterOutputs<typeof router>
     type ListProductsOutput = RouterOutputs['listProducts']
@@ -542,7 +541,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     const result = await caller.listItems.getItems({params: {}})
@@ -567,7 +566,7 @@ describe('createTPaginatedQuery', () => {
     }
 
     const procedures = getTProcedures(TestProcedures)
-    const router = buildRouter(procedures)
+    const router = t.router(procedures)
     const caller = t.createCallerFactory(router)({viewer: null})
 
     await caller.listItems.getItems({

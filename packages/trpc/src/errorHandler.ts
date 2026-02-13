@@ -51,6 +51,17 @@ export function mapErrorToTRPCError(error: OrionError): TRPCError {
   })
 }
 
+export const defaultErrorFormatter = ({shape, error}: {shape: any; error: any}) => {
+  const cause = error.cause as any
+  return {
+    ...shape,
+    data: {
+      ...shape.data,
+      ...getErrorData(cause || error),
+    },
+  }
+}
+
 export function getErrorData(error: OrionError): Record<string, any> {
   const data: Record<string, any> = {}
 
