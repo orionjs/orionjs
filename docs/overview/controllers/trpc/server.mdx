@@ -3,44 +3,87 @@ title: 'Server Configuration'
 description: 'Configuring and starting the tRPC server'
 ---
 
-## Install SuperJSON
+## Overview
+
+`@orion-js/trpc` provides procedure helpers (queries, mutations, paginated queries) and service decorators, but does **not** start the tRPC server for you. You call `initTRPC` and wire Express middleware directly, which gives you full control over transformer, context, and error formatting — and correct TypeScript type propagation.
+
+## Install Dependencies
 
 ```bash
-pnpm add superjson
+pnpm add @orion-js/trpc @trpc/server superjson
 ```
 
-## startTRPC Options
+## Server Setup
 
 ```typescript
-import {startTRPC} from '@orion-js/trpc'
+import {initTRPC} from '@trpc/server'
+import {createExpressMiddleware} from '@trpc/server/adapters/express'
+import {createRoute, getApp, registerRoute} from '@orion-js/http'
+import {defaultErrorFormatter} from '@orion-js/trpc'
+import type {TRPCRouterRecord} from '@trpc/server'
 import superjson from 'superjson'
 
-await startTRPC({
-  procedures, // Required: TRPCRouterRecord (from components or mergeProcedures)
-  path: '/trpc', // Optional: endpoint path (default: '/trpc')
-  bodyParserOptions: {
-    // Optional: body parser config
-    limit: '10mb',
-  },
-  trpcOptions: {
-    // Optional: initTRPC.create(...) options
-    transformer: superjson,
-  },
-  onError: ({error, path}) => {
-    // Optional: any createExpressMiddleware server option
-    console.error('tRPC error', path, error.message)
-  },
+const t = initTRPC.create({
+  transformer: superjson,
+  errorFormatter: defaultErrorFormatter,
+})
+
+export default function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
+  const appRouter = t.router(procedures)
+
+  const middleware = createExpressMiddleware({
+    router: appRouter,
+    createContext: ({req}) => ({
+      viewer: (req as any)._viewer,
+    }),
+    onError({error, path}) {
+      console.error('tRPC error', path, error.message)
+    },
+  })
+
+  const app = getApp()
+  const path = '/trpc'
+
+  registerRoute(
+    createRoute({
+      app,
+      method: 'all',
+      path: `${path}/:trpcPath*`,
+      bodyParser: 'json',
+      bodyParserOptions: {limit: '10mb'},
+      async resolve(req, res, viewer) {
+        ;(req as any)._viewer = viewer
+        ;(req as any).url = req.url.replace(path, '')
+        return middleware(req, res, () => {})
+      },
+    }),
+  )
+
+  return {router: appRouter}
+}
+```
+
+## Error Formatting
+
+`@orion-js/trpc` exports `defaultErrorFormatter` which enriches tRPC error shapes with Orionjs-specific data (validation errors, user error codes, permission errors). Use it with your own `initTRPC` instance:
+
+```typescript
+import {defaultErrorFormatter} from '@orion-js/trpc'
+
+const t = initTRPC.create({
+  errorFormatter: defaultErrorFormatter,
 })
 ```
+
+You can also use `mapErrorToTRPCError` and `getErrorData` directly for custom error handling.
 
 ## Server-Side Caller
 
 Create a server-side caller for testing or internal use:
 
 ```typescript
-const {router} = await startApp([exampleComponent])
-
-const caller = router.createCaller({})
+const {router} = startTrpc(procedures)
+const caller = t.createCallerFactory(router)({viewer: null})
 
 // Call procedures directly
 const example = await caller.getExample({exampleId: '123'})
