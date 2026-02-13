@@ -84,6 +84,7 @@ pnpm publish -r --otp=<code>  # Publish all packages
 - Variable naming: `inputX`, `mockX`, `actualX`, `expectedX`
 - Mock services with `mockService` from `@orion-js/services`
 - Mocking is only for tests, never for dev/prod
+- There is a full backend powered by orionjs at examples/backend-base which should be used to test real-world scenarios and integration tests. Use `start.sh` in that folder to run it.
 
 ## Tech Stack
 
