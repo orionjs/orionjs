@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "test": "vitest run",
-    "prepare": "",
+    "prepare": "pnpm build",
     "clean": "rm -rf ./dist",
     "build": "tsup",
     "upgrade-interactive": "pnpm upgrade --interactive",

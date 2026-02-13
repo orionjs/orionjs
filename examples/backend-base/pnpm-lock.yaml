@@ -5,85 +5,85 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@orion-js/cache': link:../orionjs/packages/cache
-  '@orion-js/components': link:../orionjs/packages/components
-  '@orion-js/core': link:../orionjs/packages/core
-  '@orion-js/crypto': link:../orionjs/packages/crypto
-  '@orion-js/dogs': link:../orionjs/packages/dogs
-  '@orion-js/echoes': link:../orionjs/packages/echoes
-  '@orion-js/env': link:../orionjs/packages/env
-  '@orion-js/graphql': link:../orionjs/packages/graphql
-  '@orion-js/helpers': link:../orionjs/packages/helpers
-  '@orion-js/http': link:../orionjs/packages/http
-  '@orion-js/logger': link:../orionjs/packages/logger
-  '@orion-js/migrations': link:../orionjs/packages/migrations
-  '@orion-js/models': link:../orionjs/packages/models
-  '@orion-js/mongodb': link:../orionjs/packages/mongodb
-  '@orion-js/paginated-mongodb': link:../orionjs/packages/paginated-mongodb
-  '@orion-js/resolvers': link:../orionjs/packages/resolvers
-  '@orion-js/schema': link:../orionjs/packages/schema
-  '@orion-js/services': link:../orionjs/packages/services
-  '@orion-js/trpc': link:../orionjs/packages/trpc
-  '@orion-js/typed-model': link:../orionjs/packages/typed-model
+  '@orion-js/cache': link:../../packages/cache
+  '@orion-js/components': link:../../packages/components
+  '@orion-js/core': link:../../packages/core
+  '@orion-js/crypto': link:../../packages/crypto
+  '@orion-js/dogs': link:../../packages/dogs
+  '@orion-js/echoes': link:../../packages/echoes
+  '@orion-js/env': link:../../packages/env
+  '@orion-js/graphql': link:../../packages/graphql
+  '@orion-js/helpers': link:../../packages/helpers
+  '@orion-js/http': link:../../packages/http
+  '@orion-js/logger': link:../../packages/logger
+  '@orion-js/migrations': link:../../packages/migrations
+  '@orion-js/models': link:../../packages/models
+  '@orion-js/mongodb': link:../../packages/mongodb
+  '@orion-js/paginated-mongodb': link:../../packages/paginated-mongodb
+  '@orion-js/resolvers': link:../../packages/resolvers
+  '@orion-js/schema': link:../../packages/schema
+  '@orion-js/services': link:../../packages/services
+  '@orion-js/trpc': link:../../packages/trpc
+  '@orion-js/typed-model': link:../../packages/typed-model
 
 importers:
 
   .:
     dependencies:
       '@orion-js/components':
-        specifier: link:../orionjs/packages/components
-        version: link:../orionjs/packages/components
+        specifier: link:../../packages/components
+        version: link:../../packages/components
       '@orion-js/crypto':
-        specifier: link:../orionjs/packages/crypto
-        version: link:../orionjs/packages/crypto
+        specifier: link:../../packages/crypto
+        version: link:../../packages/crypto
       '@orion-js/dogs':
-        specifier: link:../orionjs/packages/dogs
-        version: link:../orionjs/packages/dogs
+        specifier: link:../../packages/dogs
+        version: link:../../packages/dogs
       '@orion-js/echoes':
-        specifier: link:../orionjs/packages/echoes
-        version: link:../orionjs/packages/echoes
+        specifier: link:../../packages/echoes
+        version: link:../../packages/echoes
       '@orion-js/env':
-        specifier: link:../orionjs/packages/env
-        version: link:../orionjs/packages/env
+        specifier: link:../../packages/env
+        version: link:../../packages/env
       '@orion-js/graphql':
-        specifier: link:../orionjs/packages/graphql
-        version: link:../orionjs/packages/graphql
+        specifier: link:../../packages/graphql
+        version: link:../../packages/graphql
       '@orion-js/helpers':
-        specifier: link:../orionjs/packages/helpers
-        version: link:../orionjs/packages/helpers
+        specifier: link:../../packages/helpers
+        version: link:../../packages/helpers
       '@orion-js/http':
-        specifier: link:../orionjs/packages/http
-        version: link:../orionjs/packages/http
+        specifier: link:../../packages/http
+        version: link:../../packages/http
       '@orion-js/logger':
-        specifier: link:../orionjs/packages/logger
-        version: link:../orionjs/packages/logger
+        specifier: link:../../packages/logger
+        version: link:../../packages/logger
       '@orion-js/migrations':
-        specifier: link:../orionjs/packages/migrations
-        version: link:../orionjs/packages/migrations
+        specifier: link:../../packages/migrations
+        version: link:../../packages/migrations
       '@orion-js/models':
-        specifier: link:../orionjs/packages/models
-        version: link:../orionjs/packages/models
+        specifier: link:../../packages/models
+        version: link:../../packages/models
       '@orion-js/mongodb':
-        specifier: link:../orionjs/packages/mongodb
-        version: link:../orionjs/packages/mongodb
+        specifier: link:../../packages/mongodb
+        version: link:../../packages/mongodb
       '@orion-js/paginated-mongodb':
-        specifier: link:../orionjs/packages/paginated-mongodb
-        version: link:../orionjs/packages/paginated-mongodb
+        specifier: link:../../packages/paginated-mongodb
+        version: link:../../packages/paginated-mongodb
       '@orion-js/resolvers':
-        specifier: link:../orionjs/packages/resolvers
-        version: link:../orionjs/packages/resolvers
+        specifier: link:../../packages/resolvers
+        version: link:../../packages/resolvers
       '@orion-js/schema':
-        specifier: link:../orionjs/packages/schema
-        version: link:../orionjs/packages/schema
+        specifier: link:../../packages/schema
+        version: link:../../packages/schema
       '@orion-js/services':
-        specifier: link:../orionjs/packages/services
-        version: link:../orionjs/packages/services
+        specifier: link:../../packages/services
+        version: link:../../packages/services
       '@orion-js/trpc':
-        specifier: link:../orionjs/packages/trpc
-        version: link:../orionjs/packages/trpc
+        specifier: link:../../packages/trpc
+        version: link:../../packages/trpc
       '@orion-js/typed-model':
-        specifier: link:../orionjs/packages/typed-model
-        version: link:../orionjs/packages/typed-model
+        specifier: link:../../packages/typed-model
+        version: link:../../packages/typed-model
       '@trpc/server':
         specifier: ^11.9.0
         version: 11.9.0(typescript@5.8.2)
@@ -93,13 +93,16 @@ importers:
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
+      superjson:
+        specifier: ^2.2.2
+        version: 2.2.6
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.10
         version: 2.3.14
       '@orion-js/core':
-        specifier: link:../orionjs/packages/core
-        version: link:../orionjs/packages/core
+        specifier: link:../../packages/core
+        version: link:../../packages/core
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
@@ -366,6 +369,10 @@ packages:
   '@types/serve-static@2.2.0':
     resolution: {integrity: sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==}
 
+  copy-anything@4.0.5:
+    resolution: {integrity: sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==}
+    engines: {node: '>=18'}
+
   esbuild@0.25.1:
     resolution: {integrity: sha512-BGO5LtrGC7vxnqucAe/rmvKdJllfGaYWdyABvyMoXQlfYMb2bbRuReWR5tEGE//4LcNJj9XrkovTqNYRFZHAMQ==}
     engines: {node: '>=18'}
@@ -383,11 +390,19 @@ packages:
     resolution: {integrity: sha512-AjqGKbDGUFRKIRCP9tCKiIGHyriz2oHEbPIbEtcSLSs4YjReZOIPQQWek4+6hjw62H9QShXHyaGivGiYVLeYFQ==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
+  is-what@5.5.0:
+    resolution: {integrity: sha512-oG7cgbmg5kLYae2N5IVd3jm2s+vldjxJzK1pcu9LfpGuQ93MQSzo0okvRna+7y5ifrD+20FE8FvjusyGaz14fw==}
+    engines: {node: '>=18'}
+
   lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
 
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
+
+  superjson@2.2.6:
+    resolution: {integrity: sha512-H+ue8Zo4vJmV2nRjpx86P35lzwDT3nItnIsocgumgr0hHMQ+ZGq5vrERg9kJBo5AWGmxZDhzDo+WVIJqkB0cGA==}
+    engines: {node: '>=16'}
 
   tsx@4.19.3:
     resolution: {integrity: sha512-4H8vUNGNjQ4V2EOoGw005+c+dGuPSnhpPBPHBtsZdGZBk/iJb4kguGlPWaZTZ3q5nMtFOEsY0nRDlh9PJyd6SQ==}
@@ -565,6 +580,10 @@ snapshots:
       '@types/http-errors': 2.0.5
       '@types/node': 22.13.10
 
+  copy-anything@4.0.5:
+    dependencies:
+      is-what: 5.5.0
+
   esbuild@0.25.1:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.25.1
@@ -602,9 +621,15 @@ snapshots:
 
   graphql@16.10.0: {}
 
+  is-what@5.5.0: {}
+
   lodash-es@4.17.21: {}
 
   resolve-pkg-maps@1.0.0: {}
+
+  superjson@2.2.6:
+    dependencies:
+      copy-anything: 4.0.5
 
   tsx@4.19.3:
     dependencies:

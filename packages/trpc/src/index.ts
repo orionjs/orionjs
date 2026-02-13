@@ -25,5 +25,6 @@ export {
 export type {StartTRPCOptions} from './startTRPC'
 // Router building
 export {startTRPC} from './startTRPC'
-export {procedure, router, TRPCContext, t} from './trpc'
+export {createTRPC, procedure, router, TRPCContext, t} from './trpc'
+export type {TRPCCreateOptions} from './trpc'
 export type {InferRouterInputs, InferRouterOutputs} from './types'

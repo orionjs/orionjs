@@ -437,4 +437,58 @@ describe('startTRPC', () => {
     expect(response.body.result.data.id).toBe('generated-id')
     expect(response.body.result.data.createdAt).toBeDefined()
   })
+
+  it('should pass tRPC middleware options like onError', async () => {
+    let receivedErrorMessage: string | undefined
+
+    const procedures = {
+      fail: createTQuery({
+        resolve: async () => {
+          throw new Error('boom')
+        },
+      }),
+    }
+
+    const app = express()
+    await startTRPC({
+      procedures,
+      app,
+      onError({error}) {
+        receivedErrorMessage = error.message
+      },
+    })
+
+    await request(app).get('/trpc/fail')
+    expect(receivedErrorMessage).toBe('boom')
+  })
+
+  it('should pass trpcOptions to initTRPC.create', async () => {
+    const procedures = {
+      fail: createTQuery({
+        resolve: async () => {
+          throw new Error('boom')
+        },
+      }),
+    }
+
+    const app = express()
+    await startTRPC({
+      procedures,
+      app,
+      trpcOptions: {
+        errorFormatter({shape}) {
+          return {
+            ...shape,
+            data: {
+              ...shape.data,
+              customFormatter: true,
+            },
+          }
+        },
+      },
+    })
+
+    const response = await request(app).get('/trpc/fail')
+    expect(response.body.error.data.customFormatter).toBe(true)
+  })
 })

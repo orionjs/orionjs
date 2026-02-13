@@ -5,18 +5,29 @@ export interface TRPCContext {
   viewer?: any
 }
 
-export const t = initTRPC.context<TRPCContext>().create({
-  errorFormatter({shape, error}) {
-    const cause = error.cause as any
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        ...getErrorData(cause || error),
-      },
-    }
-  },
-})
+const trpcBuilder = initTRPC.context<TRPCContext>()
+
+export type TRPCCreateOptions = Parameters<typeof trpcBuilder.create>[0]
+
+const defaultErrorFormatter = ({shape, error}: any) => {
+  const cause = error.cause as any
+  return {
+    ...shape,
+    data: {
+      ...shape.data,
+      ...getErrorData(cause || error),
+    },
+  }
+}
+
+export function createTRPC(options?: TRPCCreateOptions) {
+  return trpcBuilder.create({
+    ...options,
+    errorFormatter: options?.errorFormatter || defaultErrorFormatter,
+  })
+}
+
+export const t = createTRPC()
 
 export const router = t.router
 export const procedure = t.procedure

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "prepare": "pnpm build",
     "clean": "rm -rf ./dist",
     "build": "tsup --config tsup.config.ts && tsup --config cli.tsup.config.ts",
     "dev": "tsup --watch"

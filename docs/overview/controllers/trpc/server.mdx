@@ -3,17 +3,33 @@ title: 'Server Configuration'
 description: 'Configuring and starting the tRPC server'
 ---
 
+## Install SuperJSON
+
+```bash
+pnpm add superjson
+```
+
 ## startTRPC Options
 
 ```typescript
 import {startTRPC} from '@orion-js/trpc'
+import superjson from 'superjson'
 
 await startTRPC({
-  procedures,               // Required: TRPCRouterRecord (from components or mergeProcedures)
-  path: '/trpc',            // Optional: endpoint path (default: '/trpc')
-  bodyParserOptions: {      // Optional: body parser config
-    limit: '10mb'
-  }
+  procedures, // Required: TRPCRouterRecord (from components or mergeProcedures)
+  path: '/trpc', // Optional: endpoint path (default: '/trpc')
+  bodyParserOptions: {
+    // Optional: body parser config
+    limit: '10mb',
+  },
+  trpcOptions: {
+    // Optional: initTRPC.create(...) options
+    transformer: superjson,
+  },
+  onError: ({error, path}) => {
+    // Optional: any createExpressMiddleware server option
+    console.error('tRPC error', path, error.message)
+  },
 })
 ```
 
