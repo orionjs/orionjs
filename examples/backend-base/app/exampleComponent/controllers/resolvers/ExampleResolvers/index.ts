@@ -1,9 +1,9 @@
-import {Mutation, Query, Resolvers, createMutation, createQuery} from '@orion-js/graphql'
-import {Inject} from '@orion-js/services'
+import {createMutation, createQuery, Mutation, Query, Resolvers} from '@orion-js/graphql'
+import {typedId} from '@orion-js/mongodb'
 import {schemaWithName} from '@orion-js/schema'
+import {Inject} from '@orion-js/services'
 import {ExampleSchema} from 'app/exampleComponent/schemas/ExampleSchema'
 import {ExampleService} from 'app/exampleComponent/services/ExampleService'
-import {typedId} from '@orion-js/mongodb'
 
 const ExampleParams = schemaWithName('ExampleParams', {
   exampleId: {type: typedId('ex')},
@@ -19,6 +19,7 @@ export default class ExampleResolvers {
     params: ExampleParams,
     returns: ExampleSchema,
     resolve: async params => {
+      if (!params) throw new Error('Missing params')
       return await this.exampleService.getAExample(params.exampleId)
     },
   })

@@ -1,5 +1,12 @@
 # @orion-js/components
 
+## 4.2.19
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/trpc@4.0.13
+
 ## 4.2.18
 
 ### Patch Changes

@@ -5,7 +5,7 @@ description: 'Configuring and starting the tRPC server'
 
 ## Overview
 
-`@orion-js/trpc` provides procedure helpers (queries, mutations, paginated queries) and service decorators, but does **not** start the tRPC server for you. You call `initTRPC` and wire Express middleware directly, which gives you full control over transformer, context, and error formatting — and correct TypeScript type propagation.
+`@orion-js/trpc` provides procedure helpers (queries, mutations, paginated queries), service decorators, and `registerTRPCRoute` to mount your router on Orion HTTP.
 
 ## Install Dependencies
 
@@ -17,49 +17,42 @@ pnpm add @orion-js/trpc @trpc/server superjson
 
 ```typescript
 import {initTRPC} from '@trpc/server'
-import {createExpressMiddleware} from '@trpc/server/adapters/express'
-import {createRoute, getApp, registerRoute} from '@orion-js/http'
-import {defaultErrorFormatter} from '@orion-js/trpc'
+import {
+  defaultErrorFormatter,
+  registerTRPCRoute,
+  type TRPCContext,
+} from '@orion-js/trpc'
 import type {TRPCRouterRecord} from '@trpc/server'
-import superjson from 'superjson'
+import {deserialize as superjsonDeserialize, serialize as superjsonSerialize} from 'superjson'
 
-const t = initTRPC.create({
-  transformer: superjson,
+const transformer = {
+  serialize: superjsonSerialize,
+  deserialize: superjsonDeserialize,
+}
+
+const t = initTRPC.context<TRPCContext>().create({
+  transformer,
   errorFormatter: defaultErrorFormatter,
 })
 
-export default function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
+export function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
   const appRouter = t.router(procedures)
 
-  const middleware = createExpressMiddleware({
-    router: appRouter,
-    createContext: ({req}) => ({
-      viewer: (req as any)._viewer,
-    }),
-    onError({error, path}) {
-      console.error('tRPC error', path, error.message)
-    },
-  })
-
-  const app = getApp()
-  const path = '/trpc'
-
-  registerRoute(
-    createRoute({
-      app,
-      method: 'all',
-      path: `${path}/:trpcPath*`,
-      bodyParser: 'json',
-      bodyParserOptions: {limit: '10mb'},
-      async resolve(req, res, viewer) {
-        ;(req as any)._viewer = viewer
-        ;(req as any).url = req.url.replace(path, '')
-        return middleware(req, res, () => {})
-      },
-    }),
-  )
+  registerTRPCRoute({appRouter, path: '/trpc'})
 
   return {router: appRouter}
+}
+```
+
+## Type Inference Requirement
+
+To get native transformer inference on client types (so `httpBatchLink({transformer})` is accepted), enable `strictNullChecks`:
+
+```json
+{
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
 }
 ```
 

@@ -25,7 +25,7 @@ const getLogger = (level: number) => {
 export default () => {
   return ({namespace, level, log}) => {
     if (level >= 4 && process.env.ORION_DEV) return
-    const logFunction = getLogger(level)
+    const logFunction = getLogger(level) ?? logger.info
 
     const {message, ...others} = log
     logFunction(`[Kafka ${namespace}] ${message}`, others)

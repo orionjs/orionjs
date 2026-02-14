@@ -85,8 +85,8 @@ importers:
         specifier: link:../../packages/typed-model
         version: link:../../packages/typed-model
       '@trpc/server':
-        specifier: ^11.9.0
-        version: 11.9.0(typescript@5.8.2)
+        specifier: ^11.10.0
+        version: 11.10.0(typescript@5.8.2)
       graphql:
         specifier: ^16.10.0
         version: 16.10.0
@@ -328,8 +328,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@trpc/server@11.9.0':
-    resolution: {integrity: sha512-T8gC4NOCzx8tCsQEQ5sSjf24bN+9AEqXZRfpThG+YCEmcEwXfS7RP8VVrl5Vodt1S+zGEDyQSof4YVAj1zq/mg==}
+  '@trpc/server@11.10.0':
+    resolution: {integrity: sha512-zZjTrR6He61e5TiT7e/bQqab/jRcXBZM8Fg78Yoo8uh5pz60dzzbYuONNUCOkafv5ppXVMms4NHYfNZgzw50vg==}
     peerDependencies:
       typescript: '>=5.7.2'
 
@@ -529,7 +529,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.1':
     optional: true
 
-  '@trpc/server@11.9.0(typescript@5.8.2)':
+  '@trpc/server@11.10.0(typescript@5.8.2)':
     dependencies:
       typescript: 5.8.2
 

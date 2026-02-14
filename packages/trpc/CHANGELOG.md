@@ -1,5 +1,15 @@
 # @orion-js/trpc
 
+## 4.0.13
+
+### Patch Changes
+
+- Add `registerTRPCRoute` helper to mount a tRPC router on Orion HTTP with typed context support.
+
+  - Exports `registerTRPCRoute` and `RegisterTRPCRouteOptions`
+  - Reduces boilerplate by replacing manual `createExpressMiddleware` + `createRoute` wiring
+  - Keeps full router type safety for `appRouter`
+
 ## 4.0.12
 
 ### Patch Changes

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "strict": false,
+    "strictNullChecks": true,
+    "baseUrl": "..",
+    "paths": {
+      "app/*": ["app/*"]
+    },
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["client.ts"]
+}

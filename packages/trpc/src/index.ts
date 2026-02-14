@@ -10,6 +10,8 @@ export type {TQueryOptions} from './createTQuery'
 export {createTQuery} from './createTQuery'
 // Error handling (use defaultErrorFormatter with your own initTRPC instance)
 export {defaultErrorFormatter, getErrorData, mapErrorToTRPCError} from './errorHandler'
+export type {RegisterTRPCRouteOptions} from './registerTRPCRoute'
+export {registerTRPCRoute} from './registerTRPCRoute'
 // Service decorators
 export type {ExtractProcedures} from './service'
 export {

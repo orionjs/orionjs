@@ -82,57 +82,40 @@ export default component({
 
 ### 3. Set Up the tRPC Server
 
-You own the tRPC initialization directly. This gives you full control over transformer, error formatting, and middleware:
+Create a local `t` config and mount routes with `registerTRPCRoute`:
 
 ```typescript
 // app/config/trpc/index.ts
 import {initTRPC} from '@trpc/server'
-import {createExpressMiddleware} from '@trpc/server/adapters/express'
-import {createRoute, getApp, registerRoute} from '@orion-js/http'
-import {defaultErrorFormatter} from '@orion-js/trpc'
+import {
+  defaultErrorFormatter,
+  registerTRPCRoute,
+  type TRPCContext,
+} from '@orion-js/trpc'
 import {logger} from '@orion-js/logger'
 import type {TRPCRouterRecord} from '@trpc/server'
-import superjson from 'superjson'
+import {deserialize as superjsonDeserialize, serialize as superjsonSerialize} from 'superjson'
 
-const t = initTRPC.create({
-  transformer: superjson,
+export const transformer = {
+  serialize: superjsonSerialize,
+  deserialize: superjsonDeserialize,
+}
+
+export const t = initTRPC.context<TRPCContext>().create({
+  transformer,
   errorFormatter: defaultErrorFormatter,
 })
 
-export default function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
+export function startTrpc<T extends TRPCRouterRecord>(procedures: T) {
   const appRouter = t.router(procedures)
-
-  const middleware = createExpressMiddleware({
-    router: appRouter,
-    createContext: ({req}) => ({
-      viewer: (req as any)._viewer,
-    }),
-  })
-
-  const app = getApp()
-  const path = '/trpc'
-
-  registerRoute(
-    createRoute({
-      app,
-      method: 'all',
-      path: `${path}/:trpcPath*`,
-      bodyParser: 'json',
-      async resolve(req, res, viewer) {
-        ;(req as any)._viewer = viewer
-        ;(req as any).url = req.url.replace(path, '')
-        return middleware(req, res, () => {})
-      },
-    }),
-  )
+  registerTRPCRoute({appRouter, path: '/trpc'})
 
   logger.info('tRPC started at /trpc')
-
-  return {router: appRouter}
+  return appRouter
 }
 ```
 
-Because you call `initTRPC.create()` directly, the router type naturally reflects your configuration (e.g. `transformer: true` when using superjson).
+Because you call `initTRPC.create()` directly, the router type reflects your configuration.
 
 ### 4. Wire Everything Together
 
@@ -144,21 +127,35 @@ import {type Component, mergeComponents} from '@orion-js/components'
 
 export async function startApp<T extends Component<any>[]>(components: [...T]) {
   const controllers = mergeComponents(components)
-  // controllers.trpc is fully typed!
-  const {router} = startTrpc(controllers.trpc)
-  return {router}
+  return {procedures: controllers.trpc}
 }
 ```
 
 ```typescript
 // app/index.ts
+import {registerTRPCRoute} from '@orion-js/trpc'
 import {startApp} from './config'
+import {t} from './config/trpc'
 import exampleComponent from './exampleComponent'
 
-const {router} = await startApp([exampleComponent])
+const {procedures} = await startApp([exampleComponent])
+const appRouter = t.router(procedures)
+registerTRPCRoute({appRouter})
 
 // Export the router type for client usage — transformer types flow through!
-export type AppRouter = typeof router
+export type AppRouter = typeof appRouter
+```
+
+### Type Inference Requirement
+
+Enable `strictNullChecks` in both backend and frontend tsconfig for native transformer type inference:
+
+```json
+{
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
+}
 ```
 
 ## File Organization

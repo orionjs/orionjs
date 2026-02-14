@@ -1,6 +1,5 @@
-import {Route, Routes} from '@orion-js/http'
+import {createRoute, Route, Routes} from '@orion-js/http'
 import {Inject} from '@orion-js/services'
-import {createRoute} from '@orion-js/http'
 import {ExampleId} from 'app/exampleComponent/schemas/ExampleSchema'
 import {ExampleService} from 'app/exampleComponent/services/ExampleService'
 
@@ -14,6 +13,7 @@ export default class ExampleRoutes {
     path: '/example/:exampleId',
     method: 'get',
     resolve: async req => {
+      if (!req) throw new Error('Missing request')
       const {exampleId} = req.params
       return {
         body: await this.exampleService.getAExample(exampleId as ExampleId),

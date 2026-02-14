@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "target": "ES2022",
     "rootDir": "./app",
     "moduleDetection": "force",
     "module": "Preserve",
     "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "baseUrl": "./",
     "noEmit": true
-  }
+  },
+  "include": ["app"]
 }
