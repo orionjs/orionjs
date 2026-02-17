@@ -1,12 +1,12 @@
+import {SpanStatusCode, trace} from '@opentelemetry/api'
 import {logger, runWithOrionAsyncContext, updateOrionAsyncContext} from '@orion-js/logger'
+import {Blackbox} from '@orion-js/schema'
 import {Inject, Service} from '@orion-js/services'
 import {JobsHistoryRepo} from '../repos/JobsHistoryRepo'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinition, JobsDefinition} from '../types/JobsDefinition'
 import {ExecutionContext, JobToRun} from '../types/Worker'
 import {getNextRunDate} from './getNextRunDate'
-import {trace, SpanStatusCode} from '@opentelemetry/api'
-import {Blackbox} from '@orion-js/schema'
 
 /**
  * Configuration for job execution including max tries settings.
@@ -36,6 +36,7 @@ export class Executor {
   getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {
     const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
     let staleTimeout = setTimeout(() => onStale(), effectiveLockTime)
+    staleTimeout.unref?.()
     return {
       definition: job,
       record: jobToRun,
@@ -44,6 +45,7 @@ export class Executor {
       extendLockTime: async (extraTime: number) => {
         clearTimeout(staleTimeout)
         staleTimeout = setTimeout(() => onStale(), extraTime)
+        staleTimeout.unref?.()
         await this.jobsRepo.extendLockTime(jobToRun.jobId, extraTime)
       },
       logger: logger.addMetadata({
@@ -242,15 +244,17 @@ export class Executor {
 
           await this.jobsRepo.setJobRecordPriority(jobToRun.jobId, 0)
 
-          respawnWorker()
+          void respawnWorker()
 
-          this.saveExecution({
+          void this.saveExecution({
             startedAt,
             status: 'stale',
             result: null,
             errorMessage: null,
             job,
             jobToRun,
+          }).catch(error => {
+            context.logger.error('Error saving stale execution history', {error})
           })
         }
 
@@ -272,25 +276,29 @@ export class Executor {
             const result = await job.resolve(jobToRun.params, context)
             context.clearStaleTimeout()
 
-            this.saveExecution({
+            void this.saveExecution({
               startedAt,
               status: 'success',
               result: result || null,
               errorMessage: null,
               job,
               jobToRun,
+            }).catch(error => {
+              context.logger.error('Error saving successful execution history', {error})
             })
 
             await this.afterExecutionSuccess(job, jobToRun, context)
           } catch (error) {
             context.clearStaleTimeout()
-            this.saveExecution({
+            void this.saveExecution({
               startedAt,
               status: 'error',
               result: null,
               errorMessage: (error as Error).message,
               job,
               jobToRun,
+            }).catch(saveError => {
+              context.logger.error('Error saving failed execution history', {error: saveError})
             })
 
             await this.onError(error, job, jobToRun, context, config)
