@@ -7,6 +7,21 @@ import {
 } from '../types/subscription'
 import getChannelName from './getChannelName'
 
+const unauthorizedIterator: AsyncIterableIterator<never> = {
+  async next() {
+    return {value: undefined, done: true}
+  },
+  async return() {
+    return {value: undefined, done: true}
+  },
+  async throw(error?: any) {
+    throw error
+  },
+  [Symbol.asyncIterator]() {
+    return this
+  },
+}
+
 const createSubscription: CreateOrionSubscriptionFunction = <
   TParamsSchema extends SchemaFieldType,
   TReturnsSchema extends SchemaFieldType,
@@ -37,14 +52,14 @@ const createSubscription: CreateOrionSubscriptionFunction = <
       if (options.canSubscribe) {
         const canSubscribe = await options.canSubscribe(params, viewer)
         if (!canSubscribe) {
-          return pubsub.asyncIterator('unauthorized')
+          return unauthorizedIterator
         }
       }
 
       const channelName = getChannelName(getSubscriptionName(), params)
       return pubsub.asyncIterator(channelName)
     } catch (_error) {
-      return pubsub.asyncIterator('unauthorized')
+      return unauthorizedIterator
     }
   }
 

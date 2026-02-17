@@ -1,26 +1,24 @@
-import getType from '../getType'
-import getArgs from '../getArgs'
-import errorHandler from '../../errorHandler'
-import {resolversStore} from './resolversStore'
-import {GraphQLFieldConfig, ThunkObjMap} from 'graphql'
-import {StartGraphQLOptions} from '../../types/startGraphQL'
 import {runWithOrionAsyncContext} from '@orion-js/logger'
+import {GraphQLFieldConfig, ThunkObjMap} from 'graphql'
+import errorHandler from '../../errorHandler'
+import {StartGraphQLOptions} from '../../types/startGraphQL'
+import getArgs from '../getArgs'
+import getType from '../getType'
+import {resolversStore} from './resolversStore'
 
 export default async function (options: StartGraphQLOptions, mutation: boolean) {
   const {resolvers} = options
-  const filteredResolvers = Object.keys(resolvers)
-    .map(key => {
-      return {
-        name: key,
-        resolver: resolvers[key],
-      }
-    })
-    .filter(({resolver}) => !!resolver.mutation === !!mutation)
-    .filter(({resolver}) => !resolver.private)
-
   const fields: ThunkObjMap<GraphQLFieldConfig<any, any, any>> = {}
 
-  for (const {resolver, name} of filteredResolvers) {
+  for (const name of Object.keys(resolvers)) {
+    const resolver = resolvers[name]
+    if (!!resolver.mutation !== !!mutation) {
+      continue
+    }
+    if (resolver.private) {
+      continue
+    }
+
     resolversStore[name] = resolver
 
     const type = await getType(resolver.returns, options)
