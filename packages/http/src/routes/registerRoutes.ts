@@ -1,10 +1,8 @@
-import registerRoute from './registerRoute'
 import {RoutesMap} from '../types'
+import registerRoute from './registerRoute'
 
 export default function registerRoutes(routesMap: RoutesMap): void {
-  const routes = Object.values(routesMap)
-
-  for (const route of routes) {
-    registerRoute(route)
+  for (const routeName in routesMap) {
+    registerRoute(routesMap[routeName])
   }
 }

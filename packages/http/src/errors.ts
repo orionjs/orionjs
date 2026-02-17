@@ -1,6 +1,6 @@
-import express from 'express'
 import crypto from 'node:crypto'
 import {logger} from '@orion-js/logger'
+import express from 'express'
 
 type onErrorFunction = (req: express.Request, res: express.Response, error: any) => Promise<void>
 
@@ -30,8 +30,8 @@ const defaultOnError: onErrorFunction = async (req, res, error) => {
     const statusCode = 500
     const data = {error: 500, message: 'Internal server error', hash}
 
-    res.writeHead(statusCode)
-    res.end(JSON.stringify(data, null, 2))
+    res.status(statusCode)
+    res.json(data)
 
     error.hash = hash
     logger.error('[route/handler] Internal server error', {error, url: req.url, hash})
@@ -41,7 +41,7 @@ const defaultOnError: onErrorFunction = async (req, res, error) => {
 let onErrorRef: onErrorFunction = defaultOnError
 
 export const onError: onErrorFunction = async (req, res, error) => {
-  await onErrorRef(req, res, error)
+  return onErrorRef(req, res, error)
 }
 
 export const setOnError = (onErrorFunc: onErrorFunction): void => {
