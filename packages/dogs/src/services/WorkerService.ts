@@ -1,12 +1,11 @@
+import {sleep} from '@orion-js/helpers'
+import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
-import {range} from 'rambdax'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {StartWorkersConfig} from '../types/StartConfig'
-import {sleep} from '@orion-js/helpers'
-import {Executor, ExecuteJobConfig} from './Executor'
 import {WorkerInstance, WorkersInstance} from '../types/Worker'
-import {logger} from '@orion-js/logger'
+import {ExecuteJobConfig, Executor} from './Executor'
 
 @Service()
 export class WorkerService {
@@ -29,12 +28,13 @@ export class WorkerService {
     })
   }
 
-  async runWorkerLoop(config: StartWorkersConfig, workerInstance: WorkerInstance) {
-    const names = this.getJobNames(config.jobs)
-    logger.debug(
-      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
-    )
-    const jobToRun = await this.jobsRepo.getJobAndLock(names, config.defaultLockTime)
+  async runWorkerLoop(
+    config: StartWorkersConfig,
+    workerInstance: WorkerInstance,
+    jobNames: string[],
+    executeConfig: ExecuteJobConfig,
+  ) {
+    const jobToRun = await this.jobsRepo.getJobAndLock(jobNames, config.defaultLockTime)
     if (!jobToRun) {
       logger.debug('No job to run')
       return false
@@ -42,19 +42,22 @@ export class WorkerService {
 
     logger.debug(`Got job [w${workerInstance.workerIndex}] to run:`, jobToRun)
 
-    // Build the execution config from the worker config
-    const executeConfig: ExecuteJobConfig = {
-      jobs: config.jobs,
-      maxTries: config.maxTries,
-      onMaxTriesReached: config.onMaxTriesReached,
-    }
-
     await this.executor.executeJob(executeConfig, jobToRun, workerInstance.respawn)
 
     return true
   }
 
   async startWorker(config: StartWorkersConfig, workerInstance: WorkerInstance) {
+    const names = this.getJobNames(config.jobs)
+    logger.debug(
+      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
+    )
+    const executeConfig: ExecuteJobConfig = {
+      jobs: config.jobs,
+      maxTries: config.maxTries,
+      onMaxTriesReached: config.onMaxTriesReached,
+    }
+
     while (true) {
       if (!workerInstance.running) {
         logger.info(`Got signal to stop. Stopping worker [w${workerInstance.workerIndex}]...`)
@@ -62,7 +65,7 @@ export class WorkerService {
       }
 
       try {
-        const didRun = await this.runWorkerLoop(config, workerInstance)
+        const didRun = await this.runWorkerLoop(config, workerInstance, names, executeConfig)
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
@@ -101,8 +104,14 @@ export class WorkerService {
     )
   }
 
-  async startANewWorker(config: StartWorkersConfig, workersInstance: WorkersInstance) {
-    const workerIndex = workersInstance.workers.length
+  async startANewWorker(
+    config: StartWorkersConfig,
+    workersInstance: WorkersInstance,
+    workerIndex = workersInstance.workers.length,
+  ) {
+    if (!workersInstance.running) {
+      return
+    }
 
     const workerInstance: WorkerInstance = {
       running: true,
@@ -114,15 +123,15 @@ export class WorkerService {
       },
       respawn: async () => {
         logger.info(`Respawning worker [w${workerIndex}]...`)
-        workerInstance.stop()
-        await this.startANewWorker(config, workersInstance)
+        workerInstance.running = false
+        await this.startANewWorker(config, workersInstance, workerIndex)
       },
     }
 
     const workerPromise = this.startWorker(config, workerInstance)
 
     workerInstance.promise = workerPromise
-    workersInstance.workers.push(workerInstance)
+    workersInstance.workers[workerIndex] = workerInstance
   }
 
   async runWorkers(config: StartWorkersConfig, workersInstance: WorkersInstance) {
@@ -133,8 +142,8 @@ export class WorkerService {
     const workerWord = workersCount === 1 ? 'worker' : 'workers'
     logger.info(`Starting ${workersCount} ${workerWord}`)
 
-    for (const _ of range(0, workersCount)) {
-      this.startANewWorker(config, workersInstance)
+    for (let workerIndex = 0; workerIndex < workersCount; workerIndex++) {
+      this.startANewWorker(config, workersInstance, workerIndex)
     }
   }
 
@@ -164,7 +173,7 @@ export class WorkerService {
 }
 
 function setNameToJobs(jobs: JobsDefinition) {
-  return Object.keys(jobs).map(name => {
+  for (const name of Object.keys(jobs)) {
     jobs[name].jobName = name
-  })
+  }
 }

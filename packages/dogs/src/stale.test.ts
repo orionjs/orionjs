@@ -1,6 +1,6 @@
 import {generateId, sleep} from '@orion-js/helpers'
+import {describe, expect, it} from 'vitest'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Stale Jobs Management', () => {
   it('Should spawn a new worker when a job is stale and kill the stale worker after it ends', async () => {
@@ -37,6 +37,7 @@ describe('Stale Jobs Management', () => {
     await scheduleJob({name: jobName2})
 
     await sleep(500)
+    expect(instance.workers.length).toBe(instance.workersCount)
     await instance.stop()
 
     const executions1 = await jobsHistoryRepo.getExecutions(jobName1)
