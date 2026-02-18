@@ -1,5 +1,5 @@
-import {createMapArray, clone} from '@orion-js/helpers'
-import {DataLoader, Collection, ModelClassBase, ModelToMongoSelector} from '../../../types'
+import {createMapArray} from '@orion-js/helpers'
+import {Collection, DataLoader, ModelClassBase, ModelToMongoSelector} from '../../../types'
 import dataLoad from './dataLoad'
 
 export default function <DocumentType extends ModelClassBase>(
@@ -21,7 +21,7 @@ export default function <DocumentType extends ModelClassBase>(
       timeout: options.timeout,
       load: async values => {
         const query = {
-          ...clone(options.match),
+          ...(options.match || {}),
           [options.key]: {$in: values},
         } as ModelToMongoSelector<DocumentType>
 

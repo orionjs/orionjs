@@ -1,6 +1,5 @@
-import {getDataLoader} from './getDataLoader'
-import {flatten} from 'rambdax'
 import {hashObject} from '@orion-js/helpers'
+import {getDataLoader} from './getDataLoader'
 
 interface Options {
   loaderKey: any
@@ -11,6 +10,14 @@ interface Options {
 }
 
 const dataLoad = async (options: Options) => {
+  if (options.ids && options.ids.length === 0) {
+    return []
+  }
+
+  if (!options.ids && typeof options.id === 'undefined') {
+    return []
+  }
+
   const dataLoader = getDataLoader({
     key: hashObject(options.loaderKey),
     func: options.load,
@@ -19,7 +26,7 @@ const dataLoad = async (options: Options) => {
 
   if (options.ids) {
     const resultArray = await dataLoader.loadMany(options.ids)
-    return flatten(resultArray)
+    return resultArray.flat()
   }
 
   return await dataLoader.load(options.id)

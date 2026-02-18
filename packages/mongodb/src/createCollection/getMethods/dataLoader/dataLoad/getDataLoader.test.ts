@@ -1,6 +1,6 @@
-import {getDataLoader, cache} from './getDataLoader'
 import DataLoader from 'dataloader'
-import {it, expect} from 'vitest'
+import {expect, it} from 'vitest'
+import {cache, getDataLoader} from './getDataLoader'
 
 it('should get data loaders', async () => {
   const dataLoader = getDataLoader({
@@ -39,4 +39,18 @@ it('should delete dataloader map when its used', async () => {
   expect(result).toBe(1)
 
   expect(cache.get('test2')).toBeUndefined()
+})
+
+it('should cleanup stale dataloader map when its never used', async () => {
+  getDataLoader({
+    key: 'test-stale',
+    func: async () => [],
+    timeout: 1,
+  })
+
+  expect(cache.get('test-stale')).toBeInstanceOf(DataLoader)
+
+  await new Promise(resolve => setTimeout(resolve, 120))
+
+  expect(cache.get('test-stale')).toBeUndefined()
 })

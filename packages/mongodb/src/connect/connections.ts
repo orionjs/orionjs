@@ -1,9 +1,8 @@
 import {EventEmitter} from 'node:events'
-import {MongoClient, Db, MongoClientOptions} from 'mongodb'
-import getDBName from './getDBName'
-import {nextTick} from 'node:process'
-import {logger} from '@orion-js/logger'
 import {sleep} from '@orion-js/helpers'
+import {logger} from '@orion-js/logger'
+import {Db, MongoClient, MongoClientOptions} from 'mongodb'
+import getDBName from './getDBName'
 import {getMongoURLFromEnv} from './getMongoURLFromEnv'
 
 export interface OrionMongoClient {
@@ -108,23 +107,21 @@ class OrionMongoDatabaseWrapper implements OrionMongoClient {
     this.state = 'connected'
     this.connectionEvent.emit('connected', this.client)
 
-    nextTick(() => {
-      this.connectionEvent.removeAllListeners()
-      this.connectionEvent = null
-    })
+    this.connectionEvent.removeAllListeners()
     return this
   }
 
   async connectWithRetry(client: MongoClient) {
-    try {
-      return await client.connect()
-    } catch (error) {
-      logger.error('Error connecting to mongo. Will retry in 5s', {
-        error,
-        connectionName: this.connectionName,
-      })
-      await sleep(5000)
-      return this.connectWithRetry(client)
+    while (true) {
+      try {
+        return await client.connect()
+      } catch (error) {
+        logger.error('Error connecting to mongo. Will retry in 5s', {
+          error,
+          connectionName: this.connectionName,
+        })
+        await sleep(5000)
+      }
     }
   }
 
