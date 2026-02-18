@@ -1,5 +1,11 @@
 # @orion-js/http
 
+## 4.2.3
+
+### Patch Changes
+
+- Performance and stability improvements across GraphQL, HTTP routing, Dogs workers, and MongoDB data loading/connection handling.
+
 ## 4.2.2
 
 ### Patch Changes

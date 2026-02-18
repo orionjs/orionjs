@@ -1,5 +1,13 @@
 # @orion-js/dogs
 
+## 4.2.9
+
+### Patch Changes
+
+- Performance and stability improvements across GraphQL, HTTP routing, Dogs workers, and MongoDB data loading/connection handling.
+- Updated dependencies
+  - @orion-js/mongodb@4.2.9
+
 ## 4.2.8
 
 ### Patch Changes
