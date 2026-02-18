@@ -27,7 +27,7 @@
     "@orion-js/typed-model": "*",
     "@trpc/server": "^11.10.0",
     "graphql": "^16.10.0",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "superjson": "^2.2.2"
   },
   "engines": {
