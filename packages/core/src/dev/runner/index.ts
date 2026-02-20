@@ -5,8 +5,6 @@ import {startProcess} from './startProcess'
 export interface RunnerOptions {
   shell: boolean
   clean: boolean
-  // omit the creation of the orion mcp server
-  omitMcpServer?: boolean
 }
 
 export interface Runner {

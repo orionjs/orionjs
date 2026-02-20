@@ -7,8 +7,8 @@ import prod from './prod'
 import './handleErrors'
 import version from './version'
 import 'dotenv/config'
-import check from './check'
 import build from './build'
+import check from './check'
 
 const program = new Command()
 
@@ -25,7 +25,6 @@ const run =
 program
   .command('dev')
   .description('Run the Orionjs app in development mode')
-  .option('--omit-mcp-server', 'Omit the creation of the Orionjs MCP server')
   .allowUnknownOption()
   .action(run(dev))
 

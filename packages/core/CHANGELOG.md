@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.2.4
+
+### Patch Changes
+
+- Remove MCP server setup from `orion dev` and delete related CLI options and implementation.
+
 ## 4.2.3
 
 ### Patch Changes
