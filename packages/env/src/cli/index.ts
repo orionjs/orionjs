@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import {Command} from 'commander'
 import chalk from 'chalk'
-import envInit from './init'
+import {Command} from 'commander'
 import envAdd from './add'
-import envRead from './read'
+import envInit from './init'
 import envMigrate from './migrate'
+import envRead from './read'
 
 const program = new Command()
 
@@ -28,6 +28,8 @@ program
   .command('add')
   .description('Adds a new environment to the encrypted env file')
   .option('--path <path>', 'Specify the env file name')
+  .option('--key <key>', 'The environment variable key')
+  .option('--value <value>', 'The environment variable value')
   .action(run(envAdd))
 
 program

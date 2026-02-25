@@ -1,7 +1,11 @@
 import prompts from 'prompts'
 import {Config} from '../../environment/getVariables'
 
-export const getParams = async (config: Config) => {
+export const getParams = async (config: Config, opts?: {key?: string; value?: string}) => {
+  if (opts?.key && opts?.value) {
+    return {key: opts.key, value: opts.value}
+  }
+
   const response = await prompts([
     {
       type: 'text',

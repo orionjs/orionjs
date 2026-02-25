@@ -1,8 +1,8 @@
+import YAML from 'yaml'
+import {writeFile} from '../../files'
 import {encryptValue} from './encryptValue'
 import {getConfig} from './getConfig'
 import {getParams} from './getParams'
-import YAML from 'yaml'
-import {writeFile} from '../../files'
 
 const sortObjectByKeys = (object: any) => {
   if (!object) return {}
@@ -15,13 +15,13 @@ const sortObjectByKeys = (object: any) => {
   return sorted
 }
 
-export default async function envAdd({path}) {
+export default async function envAdd({path, key: optKey, value: optValue}) {
   if (!path) {
     path = '.env.local.yml'
   }
 
   const config = getConfig(path)
-  const {key, value} = await getParams(config)
+  const {key, value} = await getParams(config, {key: optKey, value: optValue})
   if (!value) return
 
   encryptValue(key, value, config)
