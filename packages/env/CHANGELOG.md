@@ -1,5 +1,11 @@
 # @orion-js/env
 
+## 4.2.2
+
+### Patch Changes
+
+- Add --key and --value options to the `add` command for non-interactive use without a TTY
+
 ## 4.2.1
 
 ### Patch Changes

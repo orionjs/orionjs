@@ -1,5 +1,11 @@
 # @orion-js/trpc
 
+## 4.0.15
+
+### Patch Changes
+
+- @orion-js/http@4.2.4
+
 ## 4.0.14
 
 ### Patch Changes
