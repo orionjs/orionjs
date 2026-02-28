@@ -1,8 +1,7 @@
-import {Route, Routes} from '@orion-js/http'
-import {mergeComponentControllers} from '.'
-import {component} from '../components'
-import {describe, it, expect} from 'vitest'
 import {Query, Resolvers} from '@orion-js/graphql'
+import {Route, Routes} from '@orion-js/http'
+import {component} from '../components'
+import {mergeComponentControllers} from '.'
 
 describe('Merge components', () => {
   it('should return merged components', () => {

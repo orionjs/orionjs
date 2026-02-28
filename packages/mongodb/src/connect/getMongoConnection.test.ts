@@ -1,17 +1,17 @@
+import {afterEach, beforeEach, describe, expect, spyOn} from 'bun:test'
 import {generateId} from '@orion-js/helpers'
-import {getMongoConnection} from '.'
-import {describe, test, expect, vi} from 'vitest'
-import {createCollection} from '../createCollection'
 import {logger} from '@orion-js/logger'
+import {createCollection} from '../createCollection'
+import {getMongoConnection} from '.'
 import {configureConnection} from './connections'
 
 describe('Get Mongo Connection', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
+    jest.useFakeTimers()
   })
 
   afterEach(() => {
-    vi.useRealTimers()
+    jest.useRealTimers()
   })
 
   test('Should get mongo connection for main connection', async () => {
@@ -36,9 +36,9 @@ describe('Get Mongo Connection', () => {
     process.env.MONGO_EXPLICIT_SETUP_TEST_UNCONFIGURED = 'true'
 
     const mongoConnection = getMongoConnection({name: 'test_unconfigured'})
-    const spy = vi.spyOn(logger, 'error')
+    const spy = spyOn(logger, 'error')
     const promise = mongoConnection.startConnection()
-    vi.advanceTimersByTime(35 * 1000)
+    jest.advanceTimersByTime(35 * 1000)
     await expect(promise).rejects.toThrow('Connection was required but never configured')
     expect(spy).toHaveBeenLastCalledWith(
       'Connection was required but never configured, call configureConnection() or unset the env variable MONGO_EXPLICIT_SETUP',

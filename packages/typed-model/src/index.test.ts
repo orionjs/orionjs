@@ -1,7 +1,6 @@
 import {createModel} from '@orion-js/models'
 import {modelResolver} from '@orion-js/resolvers'
-import {describe, it, expect} from 'vitest'
-import {Prop, TypedSchema, getSchemaForClass, getModelForClass} from './index'
+import {getModelForClass, getSchemaForClass, Prop, TypedSchema} from './index'
 
 describe('typed-schema e2e tests', () => {
   describe('getSchemaForClass', () => {
@@ -458,8 +457,7 @@ describe('typed-schema e2e tests', () => {
     it('allows creating multiple classes with the same name', () => {
       const create = () => {
         @TypedSchema()
-        // eslint-disable-next-line no-unused-vars
-        class Spec {
+        class _Spec {
           @Prop({type: String})
           name: string
         }
@@ -502,7 +500,7 @@ describe('typed-schema e2e tests', () => {
         lastName: string
       }
 
-      const model = getModelForClass(Person)
+      const _model = getModelForClass(Person)
     })
   })
 })

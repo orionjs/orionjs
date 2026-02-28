@@ -1,5 +1,4 @@
 import createMap from './createMap'
-import {describe, it, expect} from 'vitest'
 
 describe('createMap', () => {
   it('should create a map using the default _id key', () => {

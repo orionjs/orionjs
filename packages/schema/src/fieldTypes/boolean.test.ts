@@ -1,6 +1,5 @@
-import boolean from './boolean'
 import Errors from '../Errors'
-import {test, expect} from 'vitest'
+import boolean from './boolean'
 
 test('return an error when the value is incorrect', async () => {
   expect(boolean.validate(['Hello'])).toBe(Errors.NOT_A_BOOLEAN)

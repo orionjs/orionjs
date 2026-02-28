@@ -1,7 +1,6 @@
 import {createModel} from '@orion-js/models'
 import {clean, InferSchemaType, validate} from '@orion-js/schema'
 import {getModelForClass, Prop, TypedSchema} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Test typed model with Schema', () => {
   it('Should allow passing a typed model to schema', async () => {

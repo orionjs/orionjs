@@ -1,5 +1,4 @@
 import cleanModifier from './cleanModifier'
-import {it, expect} from 'vitest'
 
 it('should remove the modifier if no fields are present in schema', async () => {
   const schema = {

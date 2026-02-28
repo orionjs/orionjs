@@ -1,8 +1,7 @@
-import createInsert from './insertMany'
 import {generateId} from '@orion-js/helpers'
-import {createCollection} from '..'
 import {createModel} from '@orion-js/models'
-import {expect, it} from 'vitest'
+import {createCollection} from '..'
+import createInsert from './insertMany'
 
 it('should return a function', async () => {
   const Tests = createCollection({name: generateId()})

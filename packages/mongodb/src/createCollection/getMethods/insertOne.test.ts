@@ -1,8 +1,7 @@
-import createInsert from './insertOne'
 import {generateId} from '@orion-js/helpers'
-import {createCollection} from '..'
 import {createModel} from '@orion-js/models'
-import {describe, it, expect} from 'vitest'
+import {createCollection} from '..'
+import createInsert from './insertOne'
 
 describe('InsertOne', () => {
   it('should return a function', async () => {
@@ -78,7 +77,7 @@ describe('InsertOne', () => {
     const Tests = createCollection({name: generateId(), schema: model})
     const docId = await Tests.insertOne({name: 'hello'})
     const result = await Tests.findOne(docId)
-    expect(result.name).toBe('HELLO' + docId)
+    expect(result.name).toBe(`HELLO${docId}`)
   })
 
   it('should throw unique index errors', async () => {

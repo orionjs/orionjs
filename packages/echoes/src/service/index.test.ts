@@ -1,6 +1,5 @@
-import {Echoes, EchoEvent, EchoRequest, getServiceEchoes} from '.'
-import {describe, it, expect} from 'vitest'
 import {createEchoEvent, createEchoRequest} from '../echo'
+import {EchoEvent, Echoes, EchoRequest, getServiceEchoes} from '.'
 
 describe('Echoes with service injections', () => {
   it('Should define a echoes map using services', async () => {

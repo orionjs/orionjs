@@ -1,8 +1,7 @@
 import {generateId} from '@orion-js/helpers'
-import {describe, it, expect, beforeEach} from 'vitest'
-import {JobsRepo} from './JobsRepo'
 import {getInstance} from '@orion-js/services'
 import {defineJob, scheduleJob, startWorkers} from '../index'
+import {JobsRepo} from './JobsRepo'
 
 describe('JobsRepo', () => {
   let jobsRepo: JobsRepo

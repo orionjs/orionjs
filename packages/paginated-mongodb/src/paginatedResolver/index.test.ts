@@ -1,10 +1,9 @@
 import {generateId} from '@orion-js/helpers'
-import {createPaginatedResolver} from '.'
 import {createCollection, InferSchemaTypeWithId, MongoFilter, typedId} from '@orion-js/mongodb'
-import {describe, it, expect} from 'vitest'
-import {schemaWithName} from '@orion-js/schema'
-import {getPaginatedResolverResolvers} from './getModel'
 import {internal_appendResolversToItem} from '@orion-js/resolvers'
+import {schemaWithName} from '@orion-js/schema'
+import {createPaginatedResolver} from '.'
+import {getPaginatedResolverResolvers} from './getModel'
 
 describe('Full example of paginated resolver', () => {
   const createResolver = async () => {

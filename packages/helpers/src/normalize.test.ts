@@ -1,11 +1,10 @@
-import {describe, it, expect} from 'vitest'
 import {
-  removeAccentsAndTrim,
-  normalizeForSearch,
   normalizeForCompactSearch,
   normalizeForFileKey,
-  removeAccentsOnly,
+  normalizeForSearch,
   normalizeForSearchToken,
+  removeAccentsAndTrim,
+  removeAccentsOnly,
 } from './normalize'
 
 describe('Text normalization functions', () => {

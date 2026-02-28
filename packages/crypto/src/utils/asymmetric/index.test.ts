@@ -1,6 +1,5 @@
-import {asymmetric} from '.'
 import generatePassword from '../symmetric/generatePassword'
-import {describe, it, expect} from 'vitest'
+import {asymmetric} from '.'
 
 describe('ECDH', () => {
   it('should generate public and private keys', async () => {

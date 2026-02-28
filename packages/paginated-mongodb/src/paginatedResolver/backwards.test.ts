@@ -1,10 +1,9 @@
-import {createModel} from '@orion-js/models'
 import {generateId} from '@orion-js/helpers'
-import {createPaginatedResolver} from '.'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {createModel} from '@orion-js/models'
 import {createCollection} from '@orion-js/mongodb'
-import {describe, it, expect} from 'vitest'
 import {internal_appendResolversToItem} from '@orion-js/resolvers'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {createPaginatedResolver} from '.'
 import {getPaginatedResolverResolvers} from './getModel'
 
 describe('Backwards compatibility (TypedSchema)', () => {

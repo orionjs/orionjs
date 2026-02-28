@@ -1,5 +1,4 @@
-import {createIndexesPromises, connections} from '@orion-js/mongodb'
-import {afterAll} from 'vitest'
+import {connections, createIndexesPromises} from '@orion-js/mongodb'
 import {MongoMemoryServer} from 'mongodb-memory-server'
 
 // Declare mongod at module scope so it can be accessed by both beforeAll and afterAll

@@ -1,5 +1,4 @@
 import validateModifier from './index'
-import {it, expect} from 'vitest'
 
 it('validate $unset operations', async () => {
   const mom = {

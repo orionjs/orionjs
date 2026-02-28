@@ -1,12 +1,12 @@
-import {describe, expect, it, vi} from 'vitest'
+import {describe, expect, it, mock} from 'bun:test'
 import {setPubsub} from '../pubsub'
 import createSubscription from './index'
 
 describe('subscription', () => {
   it('should not subscribe to pubsub channel when canSubscribe returns false', async () => {
     const pubsub = {
-      publish: vi.fn(async () => {}),
-      asyncIterator: vi.fn(() => ({})),
+      publish: mock(async () => {}),
+      asyncIterator: mock(() => ({})),
     }
     setPubsub(pubsub as any)
 

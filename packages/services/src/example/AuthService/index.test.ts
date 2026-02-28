@@ -1,6 +1,5 @@
 import {getInstance} from '../../di'
 import {AuthService} from './AuthService'
-import {describe, it, expect} from 'vitest'
 
 describe('Example AuthService', () => {
   it('should create the instance and run all the methods using circular dependencies', () => {

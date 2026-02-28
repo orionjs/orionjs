@@ -9,6 +9,7 @@ import version from './version'
 import 'dotenv/config'
 import build from './build'
 import check from './check'
+import info from './info'
 
 const program = new Command()
 
@@ -25,7 +26,6 @@ const run =
 program
   .command('dev')
   .description('Run the Orionjs app in development mode')
-  .option('--node', 'Use Node.js runtime instead of Bun')
   .allowUnknownOption()
   .action(run(dev))
 
@@ -44,7 +44,6 @@ program
     '--path [path]',
     'Path of the compiled Orionjs app. If not provided, the app will be compiled and then run',
   )
-  .option('--node', 'Use Node.js runtime instead of Bun')
   .description('Run the Orionjs app in production mode')
   .action(run(prod))
 
@@ -54,6 +53,8 @@ program
   .option('--name [name]', 'Name of the project')
   .option('--kit [kit]', 'Which starter kit to use')
   .action(run(create))
+
+program.command('info').description('Print runtime and version info').action(run(info))
 
 program.version(version, '-v --version')
 

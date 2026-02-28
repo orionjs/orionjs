@@ -12,11 +12,10 @@
     "orion": "./dist/index.js"
   },
   "scripts": {
-    "test": "vitest run",
-    "prepare": "pnpm build",
+    "test": "bun test",
+    "prepare": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "tsup",
-    "upgrade-interactive": "pnpm upgrade --interactive",
     "dev": "tsup --watch"
   },
   "dependencies": {
@@ -51,8 +50,7 @@
   "devDependencies": {
     "@types/node": "^18.0.0",
     "@types/prompts": "^2.4.2",
-    "tsup": "^8.0.1",
-    "vitest": "^3.0.8"
+    "tsup": "^8.0.1"
   },
   "type": "module",
   "module": "./dist/index.js",

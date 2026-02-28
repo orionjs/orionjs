@@ -1,9 +1,9 @@
+import {describe, expect, it, mock} from 'bun:test'
 import {generateId} from '@orion-js/helpers'
-import {createCollection} from '.'
-import {it, describe, expect, vi} from 'vitest'
 import {logger} from '@orion-js/logger'
-import {keysMatch, isIndexDefined} from './deleteUnusedIndexes'
-import {getIndexOptions, getIndexName} from './getIndexOptions'
+import {createCollection} from '.'
+import {isIndexDefined, keysMatch} from './deleteUnusedIndexes'
+import {getIndexName, getIndexOptions} from './getIndexOptions'
 
 describe('keysMatch', () => {
   it('should match identical simple keys', () => {
@@ -230,7 +230,7 @@ describe('deleteUnusedIndexes', () => {
     await collection2.startConnection()
 
     // Mock logger to verify logging
-    logger.info = vi.fn()
+    logger.info = mock()
 
     // Delete unused indexes
     const result = await collection2.deleteUnusedIndexes()

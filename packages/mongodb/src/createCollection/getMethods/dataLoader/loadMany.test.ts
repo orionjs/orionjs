@@ -1,7 +1,6 @@
-import {range, sort} from 'rambdax'
 import {generateId} from '@orion-js/helpers'
+import {range, sort} from 'rambdax'
 import {createCollection} from '../../index'
-import {it, expect} from 'vitest'
 
 it('should data load many not by id', async () => {
   const Tests = createCollection({name: generateId()})

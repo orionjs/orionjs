@@ -1,5 +1,4 @@
-import {generateKeys, encrypt, decrypt} from '.'
-import {describe, it, expect} from 'vitest'
+import {decrypt, encrypt, generateKeys} from '.'
 
 describe('Asymetric encryption lib', () => {
   it('should generate public and private keys', async () => {

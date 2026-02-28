@@ -1,8 +1,5 @@
-import {Query} from '@orion-js/graphql'
-import {Routes} from '@orion-js/http'
-import {Route} from '@orion-js/http'
-import {describe, expect, it} from 'vitest'
-import {Resolvers} from '@orion-js/graphql'
+import {Query, Resolvers} from '@orion-js/graphql'
+import {Route, Routes} from '@orion-js/http'
 import {component} from '.'
 
 describe('Components', () => {

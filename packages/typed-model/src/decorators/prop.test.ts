@@ -1,5 +1,4 @@
 import {getModelForClass, Prop, TypedSchema} from '..'
-import {describe, it, expect} from 'vitest'
 
 describe('Test prop type generator', () => {
   it('Should detect strings automatically', async () => {

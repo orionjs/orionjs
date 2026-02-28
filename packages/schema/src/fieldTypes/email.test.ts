@@ -1,6 +1,5 @@
-import email from './email'
 import Errors from '../Errors'
-import {test, expect} from 'vitest'
+import email from './email'
 
 test('return an error when the value is incorrect', async () => {
   expect(email.validate(['Hello'])).toBe(Errors.NOT_A_STRING)

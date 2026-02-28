@@ -5,7 +5,6 @@ import {startProcess} from './startProcess'
 export interface RunnerOptions {
   shell: boolean
   clean: boolean
-  node: boolean
 }
 
 export interface Runner {

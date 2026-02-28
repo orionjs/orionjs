@@ -1,8 +1,7 @@
-import createInsert from './insertOne'
 import {generateId} from '@orion-js/helpers'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {createCollection} from '..'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
-import {expect, it, describe} from 'vitest'
+import createInsert from './insertOne'
 
 describe('insertAndFind', () => {
   it('should return a function', async () => {

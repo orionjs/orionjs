@@ -1,11 +1,10 @@
-import {describe, it, expect} from 'vitest'
 import {
   isOrionError,
-  isUserError,
   isPermissionsError,
+  isUserError,
   OrionError,
-  UserError,
   PermissionsError,
+  UserError,
 } from './index'
 
 describe('Error type guards', () => {

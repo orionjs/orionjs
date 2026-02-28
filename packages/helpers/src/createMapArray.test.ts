@@ -1,5 +1,4 @@
 import createMapArray from './createMapArray'
-import {describe, it, expect} from 'vitest'
 
 describe('createMapArray', () => {
   it('should create a map of arrays using the default _id key', () => {

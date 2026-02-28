@@ -1,13 +1,12 @@
-import {startGraphQL} from '.'
-import {createResolver, resolver} from '@orion-js/resolvers'
-import {express} from '@orion-js/http'
-import request from 'supertest'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
-import {cleanResolvers} from './cleanResolvers'
 import {UserError} from '@orion-js/helpers'
-import {GraphQLResolveInfo} from 'graphql'
-import {expect, it, describe, beforeEach} from 'vitest'
+import {express} from '@orion-js/http'
+import {createResolver, resolver} from '@orion-js/resolvers'
 import {schemaWithName} from '@orion-js/schema'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {GraphQLResolveInfo} from 'graphql'
+import request from 'supertest'
+import {startGraphQL} from '.'
+import {cleanResolvers} from './cleanResolvers'
 
 describe('Test GraphQL Server', () => {
   beforeEach(() => {

@@ -1,6 +1,5 @@
 import {generateId} from '@orion-js/helpers'
 import {createCollection} from '..'
-import {it, expect} from 'vitest'
 
 it('updates a document without errors', async () => {
   const Tests = createCollection({name: generateId()})

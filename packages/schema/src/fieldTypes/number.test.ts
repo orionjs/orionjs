@@ -1,13 +1,12 @@
-import number from './number'
 import Errors from '../Errors'
-import {test, expect} from 'vitest'
+import number from './number'
 
 test('return an error when the value is incorrect', async () => {
-  //@ts-ignore
+  //@ts-expect-error
   expect(number.validate('1234')).toBe(Errors.NOT_A_NUMBER)
-  //@ts-ignore
+  //@ts-expect-error
   expect(number.validate(new Date())).toBe(Errors.NOT_A_NUMBER)
-  //@ts-ignore
+  //@ts-expect-error
   expect(number.validate([123])).toBe(Errors.NOT_A_NUMBER)
   expect(number.validate(Number.NaN)).toBe(Errors.NOT_A_NUMBER)
   expect(number.validate(Number.POSITIVE_INFINITY)).toBe(Errors.NOT_A_NUMBER)

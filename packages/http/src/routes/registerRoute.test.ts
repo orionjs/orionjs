@@ -1,10 +1,10 @@
-import {describe, expect, it, vi} from 'vitest'
+import {describe, expect, it, mock} from 'bun:test'
 import registerRoute from './registerRoute'
 import {createRoute} from './route'
 
 describe('registerRoute', () => {
   it('registers the same route object once per app', () => {
-    const get = vi.fn()
+    const get = mock()
     const app = {get} as any
     const route = createRoute({
       app,
@@ -24,7 +24,7 @@ describe('registerRoute', () => {
   })
 
   it('registers different route objects even with same path', () => {
-    const get = vi.fn()
+    const get = mock()
     const app = {get} as any
 
     registerRoute(

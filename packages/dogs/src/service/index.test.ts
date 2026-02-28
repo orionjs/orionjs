@@ -1,9 +1,8 @@
-import {expect, describe, it} from 'vitest'
-import {EventJob, getServiceJobs, Jobs, RecurrentJob} from '.'
-import {createEventJob, createRecurrentJob} from '../defineJob'
-import {startWorkers} from '..'
 import {sleep} from '@orion-js/helpers'
 import {getInstance} from '@orion-js/services'
+import {startWorkers} from '..'
+import {createEventJob, createRecurrentJob} from '../defineJob'
+import {EventJob, getServiceJobs, Jobs, RecurrentJob} from '.'
 
 describe('Jobs (dogs) with service injections', () => {
   it('Should define a jobs map using services', async () => {

@@ -1,6 +1,5 @@
 import {generateId} from '@orion-js/helpers'
 import {createCollection} from '.'
-import {describe, it, expect, beforeEach} from 'vitest'
 
 const Tests = createCollection({
   name: generateId(),

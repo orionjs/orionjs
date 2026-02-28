@@ -1,10 +1,9 @@
-import {getApp} from './../start'
-import {route} from './route'
-import registerRoute from './registerRoute'
-import request from 'supertest'
-import {range} from 'rambdax'
 import {sleep} from '@orion-js/helpers'
-import {describe, it} from 'vitest'
+import {range} from 'rambdax'
+import request from 'supertest'
+import {getApp} from './../start'
+import registerRoute from './registerRoute'
+import {route} from './route'
 
 const app = getApp()
 
@@ -28,11 +27,11 @@ describe('Test streaming responses', () => {
     const response = await request(app)
       .get('/test-streaming')
       .parse((res, callback) => {
-        let data = ''
+        let _data = ''
         res.setEncoding('binary')
         res.on('data', chunk => {
           console.log('got chunk', chunk)
-          data += chunk
+          _data += chunk
         })
         res.on('end', () => {
           callback(null, '')

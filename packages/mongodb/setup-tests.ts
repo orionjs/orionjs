@@ -1,4 +1,3 @@
-import {afterAll} from 'vitest'
 import {MongoMemoryServer} from 'mongodb-memory-server'
 import {connections} from './src/connect/connections'
 import {createIndexesPromises} from './src/createCollection'

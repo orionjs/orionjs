@@ -1,12 +1,11 @@
-import {describe, it, expect} from 'vitest'
 import type {
   DistanceMetric,
+  VectorData,
   VectorDataType,
   VectorIndexConfig,
-  VectorStoreConfig,
-  VectorData,
   VectorQueryParams,
   VectorQueryResult,
+  VectorStoreConfig,
 } from '../types'
 
 describe('Vector Types', () => {

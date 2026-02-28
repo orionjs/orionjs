@@ -1,7 +1,6 @@
-import validateKey from './index'
-import Errors from '../Errors'
 import {Schema} from '..'
-import {test, expect} from 'vitest'
+import Errors from '../Errors'
+import validateKey from './index'
 
 test('autoconvert value', async () => {
   const schema = {

@@ -8,19 +8,19 @@ This example uses the `AppRouter` type from `../app/index.ts` and configures the
 2. Install deps for this example:
 
 ```bash
-pnpm install
+bun install
 ```
 
 3. Run the client:
 
 ```bash
-pnpm dev
+bun run dev
 ```
 
 To validate config without hitting the backend:
 
 ```bash
-TRPC_DRY_RUN=1 pnpm dev
+TRPC_DRY_RUN=1 bun run dev
 ```
 
 ## Key part

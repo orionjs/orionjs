@@ -1,6 +1,5 @@
-import {schemaWithName} from '@orion-js/schema'
 import {generateId} from '@orion-js/helpers'
-import {expect, it} from 'vitest'
+import {schemaWithName} from '@orion-js/schema'
 import {typedId} from '../types'
 import {createCollection} from '.'
 

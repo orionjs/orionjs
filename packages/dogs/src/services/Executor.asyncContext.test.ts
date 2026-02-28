@@ -1,25 +1,25 @@
-import {describe, it, expect, vi} from 'vitest'
-import {Executor} from './Executor'
+import {describe, expect, it, mock} from 'bun:test'
 import {getOrionAsyncContext} from '@orion-js/logger'
+import {Executor} from './Executor'
 
 describe('Executor async context', () => {
   it('sets job context when executing', async () => {
     const executor = new Executor() as any
     executor.jobsRepo = {
-      extendLockTime: vi.fn(),
-      scheduleNextRun: vi.fn(),
-      deleteEventJob: vi.fn(),
-      setJobRecordPriority: vi.fn(),
-      markJobAsMaxTriesReached: vi.fn(),
+      extendLockTime: mock(),
+      scheduleNextRun: mock(),
+      deleteEventJob: mock(),
+      setJobRecordPriority: mock(),
+      markJobAsMaxTriesReached: mock(),
     }
     executor.jobsHistoryRepo = {
-      saveExecution: vi.fn(),
+      saveExecution: mock(),
     }
 
     const jobDefinition = {
       type: 'event' as const,
       saveExecutionsFor: 0,
-      resolve: vi.fn(async () => {
+      resolve: mock(async () => {
         const context = getOrionAsyncContext()
         expect(context?.contextId).toBeDefined()
         expect(typeof context?.contextId).toBe('string')
@@ -46,7 +46,7 @@ describe('Executor async context', () => {
         params: {},
         uniqueIdentifier: 'unique123',
       },
-      vi.fn(),
+      mock(),
     )
 
     expect(jobDefinition.resolve).toHaveBeenCalled()

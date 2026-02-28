@@ -1,8 +1,7 @@
-import {getApp} from './../start'
-import {route} from './route'
-import registerRoute from './registerRoute'
 import request from 'supertest'
-import {describe, test, expect} from 'vitest'
+import {getApp} from './../start'
+import registerRoute from './registerRoute'
+import {route} from './route'
 
 const app = getApp()
 
@@ -12,7 +11,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test1',
       method: 'get',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, _viewer) {
         return {body: test, statusCode: 201}
       },
     })
@@ -28,7 +27,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test2',
       method: 'post',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, _viewer) {
         return {body: {status: 'ok'}, statusCode: 200}
       },
     })
@@ -43,7 +42,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test3',
       method: 'post',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, _viewer) {
         return {body: {error: '504'}, statusCode: 504}
       },
     })
@@ -60,7 +59,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test4',
       method: 'get',
-      async resolve(req, res, viewer) {
+      async resolve(req, _res, _viewer) {
         return {body: req.query, statusCode: 200}
       },
     })
@@ -76,7 +75,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test5',
       method: 'get',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, _viewer) {
         return {body: 'hello world', statusCode: 200}
       },
     })
@@ -92,7 +91,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test6',
       method: 'all',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, _viewer) {
         return {body: 'hello world', statusCode: 200}
       },
     })
@@ -112,7 +111,7 @@ describe('Test routes', () => {
     const testRoute = route({
       path: '/test7',
       method: 'get',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, _viewer) {
         return {
           statusCode: 302,
           body: '',

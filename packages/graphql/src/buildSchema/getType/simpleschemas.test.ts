@@ -1,7 +1,6 @@
 import {createModelResolver, createResolver} from '@orion-js/resolvers'
-import buildSchema from '..'
-import {describe, expect, it} from 'vitest'
 import {schemaWithName} from '@orion-js/schema'
+import buildSchema from '..'
 
 describe('Enum test', () => {
   it('Should create correctly types when using schemas (not models)', async () => {
@@ -57,7 +56,7 @@ describe('Enum test', () => {
     const options = {resolvers}
     const graphqlSchema = await buildSchema(options)
 
-    // @ts-ignore
+    // @ts-expect-error
     const resolverData = graphqlSchema.getQueryType()._fields.globalResolver
 
     expect(graphqlSchema.getType('Sub')).toBeDefined()

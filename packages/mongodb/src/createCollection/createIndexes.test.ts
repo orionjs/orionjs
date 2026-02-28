@@ -1,7 +1,7 @@
+import {describe, expect, it, mock} from 'bun:test'
 import {generateId} from '@orion-js/helpers'
-import {createCollection, createIndexesPromises} from '.'
-import {it, describe, expect, vi} from 'vitest'
 import {logger} from '@orion-js/logger'
+import {createCollection, createIndexesPromises} from '.'
 
 describe('Test indexes', () => {
   it('Should store all create indexes promises in the array', async () => {
@@ -37,7 +37,7 @@ describe('Test indexes', () => {
     await collection1.insertOne({a: 1})
     await collection1.insertOne({a: 1})
 
-    console.error = vi.fn()
+    console.error = mock()
 
     const collection2 = createCollection({
       name: collectionName,
@@ -65,7 +65,7 @@ describe('Test indexes', () => {
     // Manually create an index that is NOT defined in any createCollection() call
     await collection1.rawCollection.createIndex({orphanedIndex: 1})
 
-    logger.warn = vi.fn(() => Math.random())
+    logger.warn = mock(() => Math.random())
 
     // Create another collection reference - the orphanedIndex should be flagged
     const collection2 = createCollection({
@@ -90,7 +90,7 @@ describe('Test indexes', () => {
     await collection1.startConnection()
     await collection1.createIndexesPromise
 
-    logger.warn = vi.fn()
+    logger.warn = mock()
 
     // Second createCollection with different index {ba: 1} - should merge, not warn
     const collection2 = createCollection({
@@ -114,7 +114,7 @@ describe('Test indexes', () => {
     await collection1.startConnection()
     await collection1.createIndexesPromise
 
-    console.info = vi.fn()
+    console.info = mock()
 
     const collection2 = createCollection({
       name: collectionName,

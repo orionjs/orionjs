@@ -1,5 +1,5 @@
 import {getInstance, Inject, Service} from './di'
-import {describe, it} from 'vitest'
+
 /**
  * A very basic test to make the test command pass.
  * This avoids the circular dependency issue in the AuthService example.

@@ -1,5 +1,4 @@
 import {OrionError, OrionErrorInformation} from './OrionError'
-import {describe, it, expect} from 'vitest'
 
 // Since OrionError is an abstract class with unimplemented methods,
 // we'll create a concrete implementation for testing

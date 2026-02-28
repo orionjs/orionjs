@@ -1,7 +1,6 @@
-import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {subscription} from '../..'
 import getSubscriptions from './index'
-import {describe, it, expect} from 'vitest'
 
 describe('Test get subscriptions schema', () => {
   it('Should correctly build a subscriptions schema using typed models', async () => {

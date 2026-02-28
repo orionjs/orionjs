@@ -1,5 +1,4 @@
-import {describe, it, expect} from 'vitest'
-import {runWithOrionAsyncContext, getOrionAsyncContext} from './asyncContext'
+import {getOrionAsyncContext, runWithOrionAsyncContext} from './asyncContext'
 
 describe('OrionAsyncContext', () => {
   it('generates unique contextId for each context', async () => {

@@ -1,11 +1,11 @@
+import {describe, expect, it, mock} from 'bun:test'
 import {generateId} from '@orion-js/helpers'
-import {createCollection} from '.'
-import {it, describe, expect, vi, beforeEach} from 'vitest'
 import {logger} from '@orion-js/logger'
+import {createCollection} from '.'
 import {
   collectionsRegistry,
-  getRegisteredCollections,
   deleteAllUnusedIndexes,
+  getRegisteredCollections,
 } from './collectionsRegistry'
 
 describe('collectionsRegistry', () => {
@@ -149,7 +149,7 @@ describe('deleteAllUnusedIndexes', () => {
     await collection2Updated.startConnection()
 
     // Mock logger
-    logger.info = vi.fn()
+    logger.info = mock()
 
     // Delete all unused indexes
     const results = await deleteAllUnusedIndexes('main')
@@ -165,7 +165,7 @@ describe('deleteAllUnusedIndexes', () => {
   })
 
   it('should warn when no collections registered for connection', async () => {
-    logger.warn = vi.fn()
+    logger.warn = mock()
 
     const results = await deleteAllUnusedIndexes('unknown_connection')
 
@@ -215,7 +215,7 @@ describe('deleteAllUnusedIndexes', () => {
     await collection2.createIndexesPromise
 
     // Mock logger
-    logger.info = vi.fn()
+    logger.info = mock()
 
     // Delete unused indexes - neither a_1 nor b_1 should be deleted
     const results = await deleteAllUnusedIndexes('main')

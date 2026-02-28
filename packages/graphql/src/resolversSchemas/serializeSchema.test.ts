@@ -1,7 +1,6 @@
+import {createEnum, FieldType, fieldTypes, SchemaNode} from '@orion-js/schema'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import serializeSchema from './serializeSchema'
-import {it, expect} from 'vitest'
-import {createEnum, FieldType, fieldTypes, SchemaNode} from '@orion-js/schema'
 
 it('should create a JSON of the schema', async () => {
   const schema = {

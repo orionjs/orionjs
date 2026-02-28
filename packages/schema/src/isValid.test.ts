@@ -1,5 +1,4 @@
 import isValid from './isValid'
-import {test, expect} from 'vitest'
 
 const schema = {
   firstName: {

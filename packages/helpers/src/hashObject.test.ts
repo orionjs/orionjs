@@ -1,5 +1,4 @@
 import hashObject from './hashObject'
-import {it, expect} from 'vitest'
 
 it('should create a string hash of an object', async () => {
   const object = {

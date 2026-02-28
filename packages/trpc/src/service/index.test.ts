@@ -1,7 +1,6 @@
 import {schemaWithName} from '@orion-js/schema'
 import {Inject, Service} from '@orion-js/services'
 import {inferRouterInputs, inferRouterOutputs} from '@trpc/server'
-import {describe, expect, expectTypeOf, it} from 'vitest'
 import {createTMutation} from '../createTMutation'
 import {createTQuery} from '../createTQuery'
 import {t} from '../trpc'
@@ -25,7 +24,7 @@ describe('Procedures with service injection', () => {
       example = createTQuery({
         params: {name: {type: 'string'}},
         returns: {name: {type: 'string'}},
-        resolve: async (params, viewer) => ({
+        resolve: async (params, _viewer) => ({
           name: `${params.name} ${this.dataService.getLastName()}`,
         }),
       })
@@ -34,7 +33,7 @@ describe('Procedures with service injection', () => {
       example2 = createTMutation({
         params: {name: {type: 'string'}},
         returns: {name: {type: 'string'}},
-        resolve: async (params, viewer) => ({
+        resolve: async (params, _viewer) => ({
           name: `${params.name} ${this.dataService.getLastName()}`,
         }),
       })
@@ -69,7 +68,7 @@ describe('Procedures with service injection', () => {
       greet = createTQuery({
         params: ParamsSchema,
         returns: ReturnsSchema,
-        resolve: async (params, viewer) => ({
+        resolve: async (params, _viewer) => ({
           fullName: `Hello ${params.name}`,
         }),
       })
@@ -90,7 +89,7 @@ describe('Procedures with service injection', () => {
       @TQuery()
       test = createTQuery({
         returns: 'string',
-        resolve: async (params, viewer) => 'test',
+        resolve: async (_params, _viewer) => 'test',
       })
     }
 
@@ -108,7 +107,7 @@ describe('Procedures with service injection', () => {
           email: {type: 'email'},
         },
         returns: 'string',
-        resolve: async (params, viewer) => params.email,
+        resolve: async (params, _viewer) => params.email,
       })
     }
 
@@ -128,7 +127,7 @@ describe('Procedures with service injection', () => {
       @TQuery()
       getUser = createTQuery({
         returns: {userId: {type: 'string'}},
-        resolve: async (params, viewer) => ({
+        resolve: async (_params, viewer) => ({
           userId: viewer?.userId || 'no-user',
         }),
       })
@@ -169,15 +168,15 @@ describe('Procedures with service injection', () => {
     const procedures = getTProcedures(TypedProcedures)
 
     // Verify the procedures object has the correct keys
-    expectTypeOf(procedures).toHaveProperty('getUser')
-    expectTypeOf(procedures).toHaveProperty('createUser')
+    expect(procedures).toHaveProperty('getUser')
+    expect(procedures).toHaveProperty('createUser')
 
     // Build router and verify it can be used for type exports
     const router = t.router(procedures)
 
     // The router should have the procedure keys
-    expectTypeOf(router).toHaveProperty('getUser')
-    expectTypeOf(router).toHaveProperty('createUser')
+    expect(router).toHaveProperty('getUser')
+    expect(router).toHaveProperty('createUser')
   })
 
   it('should infer output types from resolve when no returns schema in @Procedures class', async () => {

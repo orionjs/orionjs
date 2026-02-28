@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Orionjs is a Node.js/TypeScript framework for building GraphQL server applications. It's a monorepo with 21 packages under `/packages/*` managed by pnpm workspaces.
+Orionjs is a Node.js/TypeScript framework for building GraphQL server applications. It's a monorepo with 21 packages under `/packages/*` managed by Bun workspaces.
 
 Website: https://orionjs.com
 
@@ -12,22 +12,22 @@ Website: https://orionjs.com
 
 ```bash
 # Root level
-pnpm install              # Install dependencies
-pnpm build                # Build all packages in dependency order
-pnpm test                 # Run tests for all packages
+bun install              # Install dependencies
+bun run build            # Build all packages in dependency order
+bun test                 # Run tests for all packages
 
 # Per-package (from packages/<name>)
-pnpm build                # Build package (tsup - ESM + CJS)
-pnpm test                 # Run tests (vitest)
-pnpm dev                  # Watch mode development
+bun run build            # Build package (tsup - ESM + CJS)
+bun test                 # Run tests (vitest)
+bun run dev              # Watch mode development
 
 # Run a single test file
-pnpm vitest packages/<name>/src/path/to/file.test.ts
+bunx vitest packages/<name>/src/path/to/file.test.ts
 
 # Publishing (uses changesets)
-pnpm changeset            # Create changeset (always use patch)
-pnpm changeset version    # Update versions
-pnpm publish -r --otp=<code>  # Publish all packages
+bunx changeset            # Create changeset (always use patch)
+bunx changeset version    # Update versions
+bun publish -r --otp=<code>  # Publish all packages
 ```
 
 ## Architecture
@@ -88,10 +88,10 @@ pnpm publish -r --otp=<code>  # Publish all packages
 
 ## Tech Stack
 
-- **Runtime**: Node.js v22, ESM modules
+- **Runtime**: Bun (auto-detected; Node.js also supported)
 - **Build**: tsup (esbuild-based)
 - **Formatter/Linter**: Biome (not ESLint/Prettier)
-- **Package Manager**: pnpm with workspaces
+- **Package Manager**: Bun with workspaces
 - **GraphQL**: Apollo Server v4
 - **Database**: MongoDB v6
 - **DI**: TypeDI
@@ -99,7 +99,7 @@ pnpm publish -r --otp=<code>  # Publish all packages
 ## Important Notes
 
 - Install dependencies with `--ignore-scripts` flag
-- Use `pnpx tsx` to run TypeScript scripts
+- Use `bunx tsx` to run TypeScript scripts
 - Prefer resolvers over HTTP routes for client APIs
 - Use `ValidationError` for data validation failures
 - Use `UserError` for user-facing errors (not system errors)

@@ -1,5 +1,4 @@
 import any from './any'
-import {test, expect} from 'vitest'
 
 test('return no error when the value is correct', async () => {
   expect(any.validate({name: null})).toBeFalsy()
