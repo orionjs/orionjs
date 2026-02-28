@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.3.1
+
+### Patch Changes
+
+- feat: REPL connects to running dev server instead of spawning new process
+
 ## 4.2.5
 
 ### Patch Changes

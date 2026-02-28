@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -18,7 +18,7 @@
   "dependencies": {
     "@orion-js/env": "4.3.0",
     "@orion-js/helpers": "4.3.0",
-    "@orion-js/http": "4.3.0",
+    "@orion-js/http": "4.3.1",
     "@orion-js/schema": "4.3.0",
     "@orion-js/services": "4.3.0",
     "axios": "^0.24.0",
