@@ -9,14 +9,18 @@ export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const echoesMetadata = new WeakMap<any, Record<string, any>>()
+const echoEntriesByClass = new Map<Function, Record<string, (instance: any) => any>>()
+let pendingEchoEntries: Record<string, (instance: any) => any> = {}
 
 export function Echoes() {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
+    serviceMetadata.set(target, {_serviceType: 'echoes'})
 
-    context.addInitializer(function (this) {
-      serviceMetadata.set(this, {_serviceType: 'echoes'})
-    })
+    if (Object.keys(pendingEchoEntries).length > 0) {
+      echoEntriesByClass.set(target, pendingEchoEntries)
+      pendingEchoEntries = {}
+    }
   }
 }
 
@@ -31,12 +35,10 @@ export function EchoEvent(options = {}) {
   return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
-      const echoes = echoesMetadata.get(this) || {}
-
-      if (context.kind === 'method') {
-        const originalResolve = this[propertyKey].bind(this)
-        echoes[propertyKey] = createEchoEvent({
+    if (context.kind === 'method') {
+      pendingEchoEntries[propertyKey] = (instance: any) => {
+        const originalResolve = instance[propertyKey].bind(instance)
+        return createEchoEvent({
           ...options,
           resolve: async (params, contextData) => {
             return await runWithOrionAsyncContext(
@@ -52,13 +54,11 @@ export function EchoEvent(options = {}) {
           },
         })
       }
+    }
 
-      if (context.kind === 'field') {
-        echoes[propertyKey] = this[propertyKey]
-      }
-
-      echoesMetadata.set(this, echoes)
-    })
+    if (context.kind === 'field') {
+      pendingEchoEntries[propertyKey] = (instance: any) => instance[propertyKey]
+    }
 
     return method
   }
@@ -75,12 +75,10 @@ export function EchoRequest(options = {}) {
   return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
-      const echoes = echoesMetadata.get(this) || {}
-
-      if (context.kind === 'method') {
-        const originalResolve = this[propertyKey].bind(this)
-        echoes[propertyKey] = createEchoRequest({
+    if (context.kind === 'method') {
+      pendingEchoEntries[propertyKey] = (instance: any) => {
+        const originalResolve = instance[propertyKey].bind(instance)
+        return createEchoRequest({
           ...options,
           resolve: async (params, contextData) => {
             return await runWithOrionAsyncContext(
@@ -96,16 +94,24 @@ export function EchoRequest(options = {}) {
           },
         })
       }
+    }
 
-      if (context.kind === 'field') {
-        echoes[propertyKey] = this[propertyKey]
-      }
-
-      echoesMetadata.set(this, echoes)
-    })
+    if (context.kind === 'field') {
+      pendingEchoEntries[propertyKey] = (instance: any) => instance[propertyKey]
+    }
 
     return method
   }
+}
+
+function initializeEchoesIfNeeded(instance: any) {
+  if (echoesMetadata.has(instance)) return
+  const entries = echoEntriesByClass.get(instance.constructor) || {}
+  const echoes: Record<string, any> = {}
+  for (const [key, setup] of Object.entries(entries)) {
+    echoes[key] = setup(instance)
+  }
+  echoesMetadata.set(instance, echoes)
 }
 
 export function getServiceEchoes(target: any): EchoesMap {
@@ -119,6 +125,8 @@ export function getServiceEchoes(target: any): EchoesMap {
   if (instanceMetadata._serviceType !== 'echoes') {
     throw new Error('You must pass a class decorated with @Echoes to getServiceEchoes')
   }
+
+  initializeEchoesIfNeeded(instance)
 
   const echoesMap = echoesMetadata.get(instance) || {}
 

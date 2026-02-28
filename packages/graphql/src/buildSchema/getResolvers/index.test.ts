@@ -1,8 +1,15 @@
+import {beforeEach, describe, expect, it} from 'bun:test'
 import {createResolver} from '@orion-js/resolvers'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import getResolvers from './index'
+import {clearRegisteredGraphQLTypes} from '../getType'
+import {clearRegisteredGraphQLInputTypes} from '../getArgs/getField'
 
 describe('Test get resolvers schema', () => {
+  beforeEach(() => {
+    clearRegisteredGraphQLTypes()
+    clearRegisteredGraphQLInputTypes()
+  })
   it('Should correctly build a resolvers schema using typed models', async () => {
     @TypedSchema()
     class TestParams {

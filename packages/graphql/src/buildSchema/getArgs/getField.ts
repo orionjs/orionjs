@@ -20,6 +20,10 @@ const registeredGraphQLTypes = new Map<
   {schema: SchemaWithMetadata; graphQLType: GraphQLInputObjectType}
 >()
 
+export function clearRegisteredGraphQLInputTypes() {
+  registeredGraphQLTypes.clear()
+}
+
 const resolveType = (type, options: StartGraphQLOptions) => {
   if (!type) throw new Error('No type specified')
 

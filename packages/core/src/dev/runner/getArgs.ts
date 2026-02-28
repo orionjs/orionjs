@@ -1,13 +1,13 @@
-import {isBun} from '../../helpers/isBun'
+import {RunnerOptions} from './index'
 
-export function getArgs(_options: any, command: any) {
-  if (isBun()) {
-    const startCommand = 'bun'
-    const args = ['--watch', ...command.args, './app/index.ts']
+export function getArgs(options: RunnerOptions, command: any) {
+  if (options.node) {
+    const startCommand = 'tsx'
+    const args = ['watch', '--clear-screen=false', ...command.args, './app/index.ts']
     return {startCommand, args}
   }
 
-  const startCommand = 'tsx'
-  const args = ['watch', '--clear-screen=false', ...command.args, './app/index.ts']
+  const startCommand = 'bun'
+  const args = ['--watch', ...command.args, './app/index.ts']
   return {startCommand, args}
 }

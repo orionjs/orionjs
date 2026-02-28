@@ -19,6 +19,8 @@ const serviceMetadata = new WeakMap<
   {_serviceType: string; options: ModelResolversOptions; _modelName: string}
 >()
 const modelResolversMetadata = new WeakMap<any, Record<string, any>>()
+const modelResolverEntriesByClass = new Map<Function, Record<string, (instance: any) => any>>()
+let pendingModelResolverEntries: Record<string, (instance: any) => any> = {}
 
 export function ModelResolvers(typedSchema: any, options: ModelResolversOptions = {}) {
   return (target: any, context: ClassDecoratorContext<any>) => {
@@ -41,13 +43,16 @@ export function ModelResolvers(typedSchema: any, options: ModelResolversOptions 
       throw new Error(`You must specify a model name for the model resolvers (at: ${className})`)
     })()
 
-    context.addInitializer(function (this) {
-      serviceMetadata.set(this, {
-        _serviceType: 'modelResolvers',
-        options: options,
-        _modelName: modelName,
-      })
+    serviceMetadata.set(target, {
+      _serviceType: 'modelResolvers',
+      options: options,
+      _modelName: modelName,
     })
+
+    if (Object.keys(pendingModelResolverEntries).length > 0) {
+      modelResolverEntriesByClass.set(target, pendingModelResolverEntries)
+      pendingModelResolverEntries = {}
+    }
   }
 }
 
@@ -62,28 +67,36 @@ export function ModelResolver(options = {}) {
   return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
-      const modelResolvers = modelResolversMetadata.get(this) || {}
-
-      if (context.kind === 'method') {
-        modelResolvers[propertyKey] = createModelResolver({
-          params: getTargetMetadata(method, propertyKey, 'params') || {},
-          returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
-          middlewares: getTargetMetadata(method, propertyKey, 'middlewares') || [],
+    if (context.kind === 'method') {
+      const params = getTargetMetadata(method, propertyKey, 'params') || {}
+      const returns = getTargetMetadata(method, propertyKey, 'returns') || 'string'
+      const middlewares = getTargetMetadata(method, propertyKey, 'middlewares') || []
+      pendingModelResolverEntries[propertyKey] = (instance: any) =>
+        createModelResolver({
+          params,
+          returns,
+          middlewares,
           ...options,
-          resolve: this[propertyKey].bind(this),
+          resolve: instance[propertyKey].bind(instance),
         })
-      }
+    }
 
-      if (context.kind === 'field') {
-        modelResolvers[propertyKey] = this[propertyKey]
-      }
-
-      modelResolversMetadata.set(this, modelResolvers)
-    })
+    if (context.kind === 'field') {
+      pendingModelResolverEntries[propertyKey] = (instance: any) => instance[propertyKey]
+    }
 
     return method
   }
+}
+
+function initializeModelResolversIfNeeded(instance: any) {
+  if (modelResolversMetadata.has(instance)) return
+  const entries = modelResolverEntriesByClass.get(instance.constructor) || {}
+  const resolvers: Record<string, any> = {}
+  for (const [key, setup] of Object.entries(entries)) {
+    resolvers[key] = setup(instance)
+  }
+  modelResolversMetadata.set(instance, resolvers)
 }
 
 export function getServiceModelResolvers(target: any): {
@@ -105,6 +118,8 @@ export function getServiceModelResolvers(target: any): {
       'You must pass a class decorated with @ModelResolvers to getServiceModelResolvers',
     )
   }
+
+  initializeModelResolversIfNeeded(instance)
 
   const modelResolversMap = modelResolversMetadata.get(instance) || {}
 

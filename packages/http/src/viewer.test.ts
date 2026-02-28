@@ -1,3 +1,4 @@
+import {afterEach, describe, expect, test} from 'bun:test'
 import request from 'supertest'
 import registerRoute from './routes/registerRoute'
 import {route} from './routes/route'
@@ -5,6 +6,9 @@ import {getApp} from './start'
 import {setGetViewer} from './viewer'
 
 describe('Test viewer', () => {
+  afterEach(() => {
+    setGetViewer(() => null)
+  })
   test('It should pass the correct viewer', async () => {
     setGetViewer(async req => {
       return {
@@ -57,6 +61,10 @@ describe('Test viewer', () => {
 })
 
 describe('Test viewer orion v4 syntax', () => {
+  afterEach(() => {
+    setGetViewer(() => null)
+  })
+
   test('It should pass the correct viewer', async () => {
     setGetViewer(async req => {
       return {

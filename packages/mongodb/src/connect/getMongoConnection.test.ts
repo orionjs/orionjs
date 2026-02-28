@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, spyOn, test} from 'bun:test'
+import {afterEach, beforeEach, describe, expect, jest, spyOn, test} from 'bun:test'
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {createCollection} from '../createCollection'

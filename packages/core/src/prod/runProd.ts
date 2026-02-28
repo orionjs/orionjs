@@ -1,9 +1,8 @@
 import {spawn} from 'node:child_process'
-import {isBun} from '../helpers/isBun'
 import {ProdOptions} from './index'
 
 export function runProd(options: ProdOptions, command: any) {
-  if (!isBun()) {
+  if (options.node) {
     const indexPath = `${options.path}/index.js`
     const args = ['--import=tsx', ...command.args, indexPath]
     spawn('node', args, {

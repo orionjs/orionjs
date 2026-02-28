@@ -26,6 +26,7 @@ const run =
 program
   .command('dev')
   .description('Run the Orionjs app in development mode')
+  .option('--node', 'Use Node.js runtime instead of Bun')
   .allowUnknownOption()
   .action(run(dev))
 
@@ -40,6 +41,7 @@ program
 program
   .command('prod')
   .allowUnknownOption()
+  .option('--node', 'Use Node.js runtime instead of Bun')
   .option(
     '--path [path]',
     'Path of the compiled Orionjs app. If not provided, the app will be compiled and then run',
