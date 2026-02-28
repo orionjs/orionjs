@@ -1,52 +1,91 @@
 ---
 title: 'CLI'
-description: 'CLI is used to create a new Orionjs project'
+description: 'CLI is used to develop and run Orionjs applications'
 ---
 
-The Orionjs CLI is a command-line tool that helps you develop and build Orionjs applications.
+The Orionjs CLI is a command-line tool that helps you develop, build, and run Orionjs applications. Starting with v4.3, it defaults to **Bun** as the runtime.
 
 ## Installation
 
 The CLI is part of the `@orion-js/core` package.
 
 ```bash
-pnpm add -D @orion-js/core
+bun add -D @orion-js/core
 ```
 
 ## Available Commands
 
-Orionjs CLI provides essential commands to help you with your development workflow.
-
 ### orion dev
 
-Runs your Orionjs application in development mode with hot reloading.
+Runs your Orionjs application in development mode with automatic restart on file changes.
 
 ```bash
-pnpm orion dev [options]
+bunx orion dev [options]
 ```
 
 **Options:**
 
+- `--node`: Use Node.js (with tsx watch) instead of Bun
 - `--shell`: Opens a shell in Chrome developer tools
-- `--clean`: Build the typescript project from scratch
+- `--clean`: Build the TypeScript project from scratch
 
-**Example:**
+**What happens under the hood:**
 
-```bash
-pnpm orion dev --clean
-```
-
-This command will:
-1. Compile your TypeScript code
-2. Watch for changes in your files
-3. Automatically restart the server when changes are detected
+| Runtime | Command executed |
+| --- | --- |
+| Bun (default) | `bun --watch ./app/index.ts` |
+| Node (`--node`) | `tsx watch ./app/index.ts` |
 
 ### orion prod
 
-Starts an Orionjs application as a production Node.js application.
+Starts an Orionjs application in production mode.
 
 ```bash
-pnpm orion prod [options]
+bunx orion prod [options]
+```
+
+**Options:**
+
+- `--node`: Use Node.js instead of Bun
+- `--path [path]`: Specify a pre-compiled build directory (Node.js only)
+
+**What happens under the hood:**
+
+| Runtime | Command executed |
+| --- | --- |
+| Bun (default) | `bun ./app/index.ts` (runs TypeScript directly) |
+| Node (`--node`) | Builds with esbuild, then runs `node --import=tsx ./build/index.js` |
+
+### orion build
+
+Compiles the application using esbuild for Node.js deployment.
+
+```bash
+bunx orion build
+```
+
+### orion check
+
+Runs TypeScript type checking without emitting files.
+
+```bash
+bunx orion check
+```
+
+### orion info
+
+Shows the available runtimes and the default runtime.
+
+```bash
+bunx orion info
+```
+
+### orion create
+
+Creates a new Orionjs project from the starter kit.
+
+```bash
+bunx orion create
 ```
 
 ## Environment Variables Integration
@@ -62,17 +101,6 @@ See the [Env documentation](/overview/other-modules/env) for details.
 
 ## Requirements
 
-- Node.js >=14.0.0
+- **Bun** >= 1.0 (default runtime)
+- **Node.js** >= 22 (when using `--node` flag, also requires `tsx`)
 - TypeScript
-
-## Environment Variables
-
-The Orionjs CLI automatically loads environment variables from a `.env` file in your project root, making it easy to configure your application for different environments.
-
-## Troubleshooting
-
-If you encounter any errors while using the CLI, they will be displayed with helpful error messages. Most common issues are related to missing parameters or incorrect project setup.
-
-For more information and advanced usage, please refer to the [Orionjs documentation](https://orionjs.com/docs).
-
-

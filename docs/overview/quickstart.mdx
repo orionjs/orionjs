@@ -7,25 +7,27 @@ This guide will help you set up a new Orionjs project quickly by using our examp
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v22 or later)
-- [pnpm](https://pnpm.io/) package manager
-- [tsx](https://tsx.is/) installed in your project
+- [Bun](https://bun.sh/) (v1.0 or later) — the default runtime
 - [MongoDB](https://www.mongodb.com/) (local instance or connection string)
-- Basic knowledge of TypeScript and Node.js
+- Basic knowledge of TypeScript
+
+<Note>
+  Node.js (v22+) is also supported. See [Using Node.js instead of Bun](#using-nodejs-instead-of-bun) below.
+</Note>
 
 ## Using the Example Project
 
 The fastest way to get started with Orionjs is to use our example project. It provides a fully functioning application that demonstrates the core features and best practices.
 
 ```bash
-# Clone the entire Orionjs repository
+# Clone the starter repository
 git clone https://github.com/orionjs/orionjs-services-starter
 
-# Navigate to the example directory
+# Navigate to the project directory
 cd orionjs-services-starter
 
 # Install dependencies
-pnpm install
+bun install
 ```
 
 ## Project Structure
@@ -61,10 +63,24 @@ You can start the application in development mode using:
 export ORION_ENV_SECRET_KEY=pk+uJ3wTEZxuDWKF6zdeypUzQQNkKE3i+bnfHe6g+RU=
 export ORION_ENV_FILE_PATH=.env.local.yml
 export PORT=3010
-pnpm orion dev
+bunx orion dev
 ```
 
-The application will start, and you can access it at `http://localhost:3010`.
+The application will start with Bun's built-in watch mode. Any file changes will automatically restart the server. You can access it at `http://localhost:3010`.
+
+## Using Node.js Instead of Bun
+
+If you prefer to use Node.js, pass the `--node` flag to any CLI command:
+
+```bash
+# Dev mode with Node.js (uses tsx watch)
+bunx orion dev --node
+
+# Production mode with Node.js
+bunx orion prod --node
+```
+
+When using Node.js you'll also need [tsx](https://tsx.is/) installed in your project.
 
 ## Key Features of the Example
 
@@ -105,4 +121,3 @@ After exploring the example project, check out our other documentation sections 
 - [GraphQL](/overview/essentials/graphql)
 
 Happy coding with Orionjs!
-

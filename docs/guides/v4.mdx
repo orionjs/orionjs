@@ -409,14 +409,15 @@ class ExampleResolvers {
 
 ## CLI (`@orion-js/core`)
 
-Now we are using `tsx` to run the app. You must install `tsx` in your project.
+As of **v4.3**, the CLI defaults to **Bun** as the runtime. Node.js is still supported via the `--node` flag. See the [Using Bun with Orionjs](/guides/bun) guide for details.
 
-- `pnpm orion dev` to start in dev mode, it will watch for changes and automatically restart the server.
-- `pnpm orion prod` to start in prod mode, it will compile the code and then run it.
+- `bunx orion dev` to start in dev mode with Bun's built-in watch mode.
+- `bunx orion prod` to start in prod mode (runs TypeScript directly with Bun).
+- `bunx orion dev --node` / `bunx orion prod --node` to use Node.js instead.
 
-You don't need to build the app for production anymore.
-  
-> You must have installed `@orion-js/core` in your project, you can't running using `npx` or `pnpx`.
+You don't need to build the app for production anymore when using Bun.
+
+> You must have installed `@orion-js/core` in your project.
 
 ### Recommended TypeScript Configuration
 

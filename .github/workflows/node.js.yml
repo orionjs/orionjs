@@ -14,4 +14,4 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun run first-install
       - run: bun run build
-      - run: bun test
+      - run: bun run test

@@ -92,7 +92,7 @@
       },
       {
         "tab": "Guides",
-        "pages": ["guides/v4"]
+        "pages": ["guides/bun", "guides/v4"]
       }
     ],
     "global": {
