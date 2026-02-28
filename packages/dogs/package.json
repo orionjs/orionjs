@@ -39,6 +39,7 @@
   "devDependencies": {
     "@orion-js/logger": "4.3.0",
     "@orion-js/mongodb": "4.3.0",
+    "mongodb-memory-server": "^10.1.4",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5"
   },
