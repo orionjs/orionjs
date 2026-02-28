@@ -53,6 +53,7 @@ describe('Merge components', () => {
         test3: aRoute,
         test4: aRoute,
       } as any,
+      trpc: {},
     })
   })
 })

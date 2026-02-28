@@ -87,7 +87,6 @@ export class S3VectorStore<TVectorData extends VectorData = VectorData>
           vector =>
             ({
               key: vector.key,
-              vector: vector.data?.float32,
               metadata: vector.metadata,
             }) as TVectorData,
         ) ?? []
