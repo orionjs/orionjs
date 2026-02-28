@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/typed-model",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -23,13 +23,13 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/models": "workspace:*",
-    "@orion-js/resolvers": "workspace:*",
-    "@orion-js/schema": "workspace:*",
-    "@orion-js/services": "workspace:*"
+    "@orion-js/models": "4.3.0",
+    "@orion-js/resolvers": "4.3.0",
+    "@orion-js/schema": "4.3.0",
+    "@orion-js/services": "4.3.0"
   },
   "peerDependencies": {
-    "@orion-js/logger": "workspace:*"
+    "@orion-js/logger": "4.3.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

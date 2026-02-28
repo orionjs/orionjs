@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/mongodb",
-  "version": "4.2.10",
+  "version": "4.3.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -24,13 +24,13 @@
   },
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.782.0",
-    "@orion-js/env": "workspace:*",
-    "@orion-js/helpers": "workspace:*",
-    "@orion-js/models": "workspace:*",
-    "@orion-js/resolvers": "workspace:*",
-    "@orion-js/schema": "workspace:*",
-    "@orion-js/services": "workspace:*",
-    "@orion-js/typed-model": "workspace:*",
+    "@orion-js/env": "4.3.0",
+    "@orion-js/helpers": "4.3.0",
+    "@orion-js/models": "4.3.0",
+    "@orion-js/resolvers": "4.3.0",
+    "@orion-js/schema": "4.3.0",
+    "@orion-js/services": "4.3.0",
+    "@orion-js/typed-model": "4.3.0",
     "bson": "^6.10.3",
     "dataloader": "2.2.3",
     "dot-object": "2.1.5",
@@ -38,7 +38,7 @@
     "mongodb-client-encryption": "^6.3.0"
   },
   "peerDependencies": {
-    "@orion-js/logger": "workspace:*"
+    "@orion-js/logger": "4.3.0"
   },
   "devDependencies": {
     "@types/dot-object": "^2.1.6",

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/file-manager",
-  "version": "4.2.10",
+  "version": "4.3.0",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,22 +12,22 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "workspace:*",
-    "@orion-js/models": "workspace:*",
-    "@orion-js/paginated-mongodb": "workspace:*",
-    "@orion-js/resolvers": "workspace:*",
-    "@orion-js/schema": "workspace:*",
-    "@orion-js/typed-model": "workspace:*",
+    "@orion-js/helpers": "4.3.0",
+    "@orion-js/models": "4.3.0",
+    "@orion-js/paginated-mongodb": "4.3.0",
+    "@orion-js/resolvers": "4.3.0",
+    "@orion-js/schema": "4.3.0",
+    "@orion-js/typed-model": "4.3.0",
     "aws-sdk": "^2.1367.0",
     "escape-string-regexp": "^4.0.0",
     "luxon": "^2.1.1"
   },
   "peerDependencies": {
-    "@orion-js/logger": "workspace:*",
-    "@orion-js/mongodb": "workspace:*"
+    "@orion-js/logger": "4.3.0",
+    "@orion-js/mongodb": "4.3.0"
   },
   "devDependencies": {
-    "@orion-js/mongodb": "workspace:*",
+    "@orion-js/mongodb": "4.3.0",
     "@types/dot-object": "^2.1.2",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
