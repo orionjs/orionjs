@@ -36,6 +36,11 @@
     "@orion-js/logger": "workspace:*",
     "tsx": "*"
   },
+  "peerDependenciesMeta": {
+    "tsx": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
