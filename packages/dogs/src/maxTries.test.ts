@@ -1,8 +1,8 @@
-import {sleep, generateId} from '@orion-js/helpers'
+import {beforeEach, describe, expect, it, mock} from 'bun:test'
+import {generateId, sleep} from '@orion-js/helpers'
 import {getInstance} from '@orion-js/services'
 import {defineJob, scheduleJob, startWorkers} from '.'
 import {JobsRepo} from './repos/JobsRepo'
-import {describe, it, expect, beforeEach, vi} from 'vitest'
 import {JobToRun} from './types/Worker'
 
 describe('Max tries functionality', () => {
@@ -16,7 +16,7 @@ describe('Max tries functionality', () => {
   it('should mark job as maxTriesReached when max tries is exceeded', async () => {
     const jobName = generateId()
     let executionCount = 0
-    const maxTriesReachedCallback = vi.fn()
+    const maxTriesReachedCallback = mock()
 
     const job = defineJob({
       type: 'event',
@@ -73,7 +73,7 @@ describe('Max tries functionality', () => {
   it('should use job-specific maxTries when defined', async () => {
     const jobName = generateId()
     let executionCount = 0
-    const maxTriesReachedCallback = vi.fn()
+    const maxTriesReachedCallback = mock()
 
     // Job with custom maxTries of 2 (less than global 5)
     const job = defineJob({
@@ -156,7 +156,7 @@ describe('Max tries functionality', () => {
   it('should handle recurrent jobs reaching max tries', async () => {
     const jobName = generateId()
     let executionCount = 0
-    const maxTriesReachedCallback = vi.fn()
+    const maxTriesReachedCallback = mock()
 
     const job = defineJob({
       type: 'recurrent',
@@ -208,7 +208,7 @@ describe('Max tries functionality', () => {
   it('should reset tries on successful execution and not trigger maxTriesReached', async () => {
     const jobName = generateId()
     let executionCount = 0
-    const maxTriesReachedCallback = vi.fn()
+    const maxTriesReachedCallback = mock()
 
     // Job that fails twice then succeeds
     const job = defineJob({
@@ -306,7 +306,7 @@ describe('Max tries functionality', () => {
   it('should handle jobs without onError reaching max tries', async () => {
     const jobName = generateId()
     let executionCount = 0
-    const maxTriesReachedCallback = vi.fn()
+    const maxTriesReachedCallback = mock()
 
     // Job without onError handler that always fails
     const job = defineJob({

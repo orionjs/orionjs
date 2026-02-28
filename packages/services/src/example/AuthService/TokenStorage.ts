@@ -1,9 +1,8 @@
 import {AuthService} from './AuthService'
 import {Service, Inject} from '../../di'
 
-export
 @Service()
-class TokenStorage {
+export class TokenStorage {
   @Inject(() => AuthService)
   private authService: AuthService
 

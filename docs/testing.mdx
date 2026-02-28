@@ -8,13 +8,13 @@ Orionjs uses Vitest for testing. This guide covers setup, conventions, and best 
 ## Installation
 
 ```bash
-pnpm add --dev vitest @vitest/coverage-v8
+bun add --dev vitest @vitest/coverage-v8
 ```
 
 For MongoDB testing:
 
 ```bash
-pnpm add --dev mongodb-memory-server
+bun add --dev mongodb-memory-server
 ```
 
 ## Configuration
@@ -252,14 +252,14 @@ describe('AuthenticateUserService', () => {
 
 ```bash
 # Run all tests
-pnpm vitest
+bunx vitest
 
 # Run tests in watch mode
-pnpm vitest --watch
+bunx vitest --watch
 
 # Run tests with coverage
-pnpm vitest --coverage
+bunx vitest --coverage
 
 # Run specific test file
-pnpm vitest app/users/services/CreateUser/index.test.ts
+bunx vitest app/users/services/CreateUser/index.test.ts
 ```

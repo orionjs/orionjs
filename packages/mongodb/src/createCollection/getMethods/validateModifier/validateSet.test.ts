@@ -1,5 +1,4 @@
 import validateModifier from './index'
-import {it} from 'vitest'
 
 it('should handle $ correctly', async () => {
   const Email = {

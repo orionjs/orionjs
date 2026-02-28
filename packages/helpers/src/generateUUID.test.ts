@@ -1,5 +1,4 @@
 import {generateUUID, generateUUIDWithPrefix} from './generateUUID'
-import {it, expect} from 'vitest'
 
 it('should generate random uuid v7', async () => {
   expect(generateUUID()).not.toBe(generateUUID())

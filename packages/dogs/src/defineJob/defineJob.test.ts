@@ -1,7 +1,6 @@
-import {describe, it, expect, beforeEach} from 'vitest'
-import {createEventJob} from './index'
 import {getInstance} from '@orion-js/services'
 import {JobsRepo} from '../repos/JobsRepo'
+import {createEventJob} from './index'
 
 describe('Event Job Definition - schedule method with runIn/runAt', () => {
   let jobsRepo: JobsRepo

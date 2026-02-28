@@ -1,13 +1,13 @@
-# 
+#
 
-https://pnpm.io/using-changesets
-
-```
-pnpm changeset
-```
+https://bun.sh/docs/install/workspaces
 
 ```
-pnpm changeset version
+bunx changeset
+```
+
+```
+bunx changeset version
 ```
 
 ```
@@ -16,8 +16,8 @@ git commit -m "chore: update changelog"
 ```
 
 ```
-pnpm publish -r
-pnpm publish -r --tag next // this mis for beta
+bun publish -r
+bun publish -r --tag next // this is for beta
 ```
 
-Publish all (hacer un pnpm changeset y ponerle minor a todas)
+Publish all (hacer un bunx changeset y ponerle minor a todas)

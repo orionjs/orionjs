@@ -1,5 +1,4 @@
 import validate from './validate'
-import {test, expect} from 'vitest'
 
 const schema = {
   firstName: {

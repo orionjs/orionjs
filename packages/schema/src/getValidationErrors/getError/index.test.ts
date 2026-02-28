@@ -1,7 +1,6 @@
-import getError from './index'
 import Errors from '../../Errors'
 import fieldType from '../../fieldType'
-import {test, expect} from 'vitest'
+import getError from './index'
 
 test('pass a simple string validation', async () => {
   const error = await getError({value: 'A valid string', currentSchema: {type: String}})
@@ -25,7 +24,7 @@ test('dont detect required field when value is null and omit required is passed'
 test('run custom validation if passed', async () => {
   const customType = fieldType({
     name: 'customValidator',
-    validate(value) {
+    validate(_value) {
       return 'hello'
     },
   })
@@ -39,7 +38,7 @@ test('run custom validation if passed', async () => {
 test('run async custom validation', async () => {
   const customType = fieldType({
     name: 'customAsyncValidator',
-    async validate(value) {
+    async validate(_value) {
       const sleep = time => new Promise(resolve => setTimeout(resolve, time))
       await sleep(1)
       return 'hello'

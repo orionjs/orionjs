@@ -1,17 +1,31 @@
-import {generateId} from '../../helpers/dist'
-
 type Token<T> = {new (...args: any[]): T}
 
 const instances = new Map<Token<any>, any>()
-const serviceMetadata = new WeakMap<object, {id: string; name: string}>()
-const injectionMetadata = new WeakMap<object, Record<string | symbol, () => Token<any>>>()
+const injectionsByClass = new Map<Function, Record<string, () => Token<any>>>()
+
+// Temporary storage for field decorator metadata, picked up by Service class decorator
+let pendingInjections: Record<string, () => Token<any>> = {}
+
+// Validators registered by field decorators, run by Service class decorator
+let pendingFieldValidators: Array<() => void> = []
+
+export function addPendingFieldValidator(validator: () => void) {
+  pendingFieldValidators.push(validator)
+}
 
 export function Service() {
-  return (_target: Function, context: ClassDecoratorContext) => {
-    serviceMetadata.set(context, {
-      id: generateId(12),
-      name: context.name,
-    })
+  return (target: Function, _context: ClassDecoratorContext) => {
+    if (Object.keys(pendingInjections).length > 0) {
+      injectionsByClass.set(target, pendingInjections)
+      pendingInjections = {}
+    }
+
+    // Run any pending field validators (e.g., MongoCollection checking for @Repository)
+    const validators = pendingFieldValidators
+    pendingFieldValidators = []
+    for (const validator of validators) {
+      validator()
+    }
   }
 }
 
@@ -23,11 +37,7 @@ export function Inject<T>(getDependency: () => Token<T>) {
         `Since v4, Inject() requires a function that returns the dependency token. Check the @Inject() of ${propertyKey}`,
       )
     }
-    context.addInitializer(function (this: any) {
-      const metadata = injectionMetadata.get(this) || {}
-      metadata[context.name] = getDependency
-      injectionMetadata.set(this, metadata)
-    })
+    pendingInjections[propertyKey] = getDependency
   }
 }
 
@@ -35,15 +45,30 @@ export function setInstance<T extends object>(token: Token<T>, instance: T) {
   instances.set(token, instance)
 }
 
+// Post-init field factories (e.g., MongoCollection defers createCollection to getInstance time)
+const fieldFactoriesByClass = new Map<Function, Record<string, () => any>>()
+
+export function registerFieldFactories(target: Function, factories: Record<string, () => any>) {
+  const existing = fieldFactoriesByClass.get(target) || {}
+  fieldFactoriesByClass.set(target, {...existing, ...factories})
+}
+
 export function getInstance<T extends object>(token: Token<T>): T {
   if (!instances.has(token)) {
     const instance = new token()
     instances.set(token, instance)
 
-    const injections = injectionMetadata.get(instance)
+    const injections = injectionsByClass.get(token)
     if (injections) {
       for (const [propertyKey, getDependency] of Object.entries(injections)) {
         instance[propertyKey] = getInstance(getDependency())
+      }
+    }
+
+    const fieldFactories = fieldFactoriesByClass.get(token)
+    if (fieldFactories) {
+      for (const [key, factory] of Object.entries(fieldFactories)) {
+        instance[key] = factory()
       }
     }
   }

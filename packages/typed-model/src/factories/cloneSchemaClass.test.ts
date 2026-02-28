@@ -1,6 +1,5 @@
 import {Prop, TypedSchema} from '..'
 import {cloneSchemaClass} from './cloneSchemaClass'
-import {describe, expect, it} from 'vitest'
 
 describe('cloneSchemaClass', () => {
   it('should clone a schema class', async () => {

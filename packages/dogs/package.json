@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "4.2.10",
+  "version": "4.3.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -16,33 +16,31 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "vitest run",
-    "prepare": "pnpm build",
+    "test": "bun test",
+    "prepare": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "tsup",
-    "upgrade-interactive": "pnpm upgrade --interactive",
     "dev": "tsup --watch"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@orion-js/helpers": "workspace:*",
-    "@orion-js/schema": "workspace:*",
-    "@orion-js/services": "workspace:*",
-    "@orion-js/typed-model": "workspace:*",
+    "@orion-js/helpers": "4.3.0",
+    "@orion-js/schema": "4.3.0",
+    "@orion-js/services": "4.3.0",
+    "@orion-js/typed-model": "4.3.0",
     "dataloader": "2.2.2",
     "dot-object": "^2.1.5",
     "parse-duration": "^2.1.3"
   },
   "peerDependencies": {
-    "@orion-js/logger": "workspace:*",
-    "@orion-js/mongodb": "workspace:*"
+    "@orion-js/logger": "4.3.0",
+    "@orion-js/mongodb": "4.3.0"
   },
   "devDependencies": {
-    "@orion-js/logger": "workspace:*",
-    "@orion-js/mongodb": "workspace:*",
+    "@orion-js/logger": "4.3.0",
+    "@orion-js/mongodb": "4.3.0",
     "tsup": "^8.0.1",
-    "typescript": "^5.4.5",
-    "vitest": "^3.0.8"
+    "typescript": "^5.4.5"
   },
   "publishConfig": {
     "access": "public"

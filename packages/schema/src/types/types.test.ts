@@ -1,6 +1,5 @@
-import {Schema, InferSchemaType} from '.'
 import {clean, createEnum} from '..'
-import {test, expect} from 'vitest'
+import {InferSchemaType, Schema} from '.'
 
 test('check ts types for schema', async () => {
   const schema: Schema = {

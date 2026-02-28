@@ -1,8 +1,7 @@
-import {Subscriptions, Subscription, getServiceSubscriptions} from './index'
-import {getInstance} from '@orion-js/services'
-import {describe, it, expect} from 'vitest'
 import {schemaWithName} from '@orion-js/schema'
+import {getInstance} from '@orion-js/services'
 import createSubscription from '../subscription'
+import {getServiceSubscriptions, Subscription, Subscriptions} from './index'
 
 describe('Subscriptions classes', () => {
   it('should get the subscriptions using services v4 syntax', async () => {

@@ -1,5 +1,4 @@
 import DataLoader from 'dataloader'
-import {expect, it} from 'vitest'
 import {cache, getDataLoader} from './getDataLoader'
 
 it('should get data loaders', async () => {

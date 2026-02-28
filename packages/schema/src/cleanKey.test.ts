@@ -1,5 +1,4 @@
 import cleanKey from './cleanKey'
-import {test, expect} from 'vitest'
 
 test('autoconvert value', async () => {
   const schema = {

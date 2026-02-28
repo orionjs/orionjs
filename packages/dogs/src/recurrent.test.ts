@@ -1,6 +1,5 @@
 import {sleep} from '@orion-js/helpers'
 import {defineJob, startWorkers} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Recurrent tests', () => {
   it('Should run a recurrent job', async () => {

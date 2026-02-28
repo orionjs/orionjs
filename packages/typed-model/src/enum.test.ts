@@ -1,6 +1,5 @@
 import {createEnum} from '@orion-js/schema'
 import {getModelForClass, Prop, TypedSchema} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Test custom fields', () => {
   it('Should convert custom fields correctly', async () => {

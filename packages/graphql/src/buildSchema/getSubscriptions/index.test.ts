@@ -1,9 +1,15 @@
-import {TypedSchema, Prop} from '@orion-js/typed-model'
+import {beforeEach, describe, expect, it} from 'bun:test'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {subscription} from '../..'
 import getSubscriptions from './index'
-import {describe, it, expect} from 'vitest'
+import {clearRegisteredGraphQLTypes} from '../getType'
+import {clearRegisteredGraphQLInputTypes} from '../getArgs/getField'
 
 describe('Test get subscriptions schema', () => {
+  beforeEach(() => {
+    clearRegisteredGraphQLTypes()
+    clearRegisteredGraphQLInputTypes()
+  })
   it('Should correctly build a subscriptions schema using typed models', async () => {
     @TypedSchema()
     class TestParams {

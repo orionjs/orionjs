@@ -1,6 +1,5 @@
-import {sleep, generateId} from '@orion-js/helpers'
+import {generateId, sleep} from '@orion-js/helpers'
 import {defineJob, scheduleJob, startWorkers} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Parallel Event Jobs', () => {
   it('Should run multiple event jobs with the same jobName in parallel', async () => {

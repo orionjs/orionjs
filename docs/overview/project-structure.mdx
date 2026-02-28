@@ -16,7 +16,7 @@ An Orionjs application follows a modular, component-based architecture that prom
 ├── biome.json        # Biome configuration (for linting/formatting)
 ├── package.json      # Project dependencies and scripts
 ├── tsconfig.json     # TypeScript configuration
-└── pnpm-lock.yaml    # pnpm dependency lock file
+└── bun.lock          # Bun dependency lock file
 ```
 
 ## App Directory
@@ -195,7 +195,7 @@ For one-off scripts or maintenance tasks, use the `temp/scripts` directory:
 ```
 
 Scripts should:
-- Use tsx for execution: `#!/usr/bin/env -S npx tsx`
+- Use tsx for execution: `#!/usr/bin/env -S bunx tsx`
 - Be named according to the task they perform
 - Be self-contained and documented
 
@@ -225,7 +225,7 @@ main().catch(error => {
 })
 ```
 
-Run with: `npx tsx temp/scripts/cleanup-orphaned-records.ts`
+Run with: `bunx tsx temp/scripts/cleanup-orphaned-records.ts`
 
 ## Code Organization Guidelines
 

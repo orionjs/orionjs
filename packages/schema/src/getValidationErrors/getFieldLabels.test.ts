@@ -1,7 +1,6 @@
+import Errors from '../Errors'
 import getFieldLabels from './getFieldLabels'
 import getValidationErrors from './index'
-import Errors from '../Errors'
-import {test, expect} from 'vitest'
 
 test('extracts field labels from a simple schema', () => {
   const schema = {

@@ -1,7 +1,6 @@
-import createModel from '.'
 import {clean, createEnum, SchemaNode} from '@orion-js/schema'
-import {it, expect} from 'vitest'
 import {sleep} from '../../../helpers/dist'
+import createModel from '.'
 
 it('should add the __model field when converting to schema', async () => {
   const model = createModel({

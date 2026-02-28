@@ -1,7 +1,6 @@
-import getValidationErrors from './index'
 import Errors from '../Errors'
 import {Schema} from '../types/schema'
-import {test, expect} from 'vitest'
+import getValidationErrors from './index'
 
 const friend: Schema = {
   firstName: {
@@ -198,7 +197,7 @@ test('run validate validation when field is optional and no value is passed', as
     name: {
       type: String,
       optional: true,
-      validate(value) {
+      validate(_value) {
         return 'No'
       },
     },
@@ -331,7 +330,7 @@ test('allow custom validation to pass an error object', async () => {
   const schema: Schema = {
     person: {
       type: 'blackbox',
-      async validate(person) {
+      async validate(_person) {
         return {
           name: 'required',
           lastName: 'tooShort',
@@ -362,7 +361,7 @@ test('allow custom validation to pass an complex error object', async () => {
   const schema: Schema = {
     person: {
       type: 'blackbox',
-      async validate(person) {
+      async validate(_person) {
         return {
           name: 'required',
           'car.name': 'required',
@@ -387,7 +386,7 @@ test('pass currentDoc validating arrays', async () => {
   const item = {
     name: {
       type: String,
-      async validate(name, {currentDoc}) {
+      async validate(_name, {currentDoc}) {
         expect(currentDoc).toBe(aItem)
       },
     },
@@ -396,7 +395,7 @@ test('pass currentDoc validating arrays', async () => {
   const schema: Schema = {
     items: {
       type: [item],
-      async validate(items, {currentDoc}) {
+      async validate(_items, {currentDoc}) {
         expect(currentDoc).toBe(doc)
       },
     },

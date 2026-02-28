@@ -13,10 +13,7 @@ const serviceMetadata = new WeakMap<any, {_serviceType: string; options: Migrati
 export function MigrationService(options: MigrationServiceOptions) {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
-
-    context.addInitializer(function (this) {
-      serviceMetadata.set(this, {_serviceType: 'migrations', options: options})
-    })
+    serviceMetadata.set(target, {_serviceType: 'migrations', options: options})
   }
 }
 

@@ -1,6 +1,5 @@
-import {Echoes, EchoEvent, EchoRequest, getServiceEchoes} from '.'
-import {describe, it, expect} from 'vitest'
 import {createEchoEvent, createEchoRequest} from '../echo'
+import {EchoEvent, Echoes, EchoRequest, getServiceEchoes} from '.'
 
 describe('Echoes with service injections', () => {
   it('Should define a echoes map using services', async () => {
@@ -19,16 +18,10 @@ describe('Echoes with service injections', () => {
 
     const echoes = getServiceEchoes(ExampleEchoesService)
 
-    expect(echoes).toMatchObject({
-      echo: {
-        type: 'request',
-        onRequest: expect.any(Function),
-      },
-      echoEvent: {
-        type: 'event',
-        resolve: expect.any(Function),
-      },
-    })
+    expect(echoes.echo.type).toBe('request')
+    expect(typeof echoes.echo.onRequest).toBe('function')
+    expect(echoes.echoEvent.type).toBe('event')
+    expect(typeof echoes.echoEvent.resolve).toBe('function')
   })
 
   it('should be able to define echoes using the v4 syntax', async () => {
@@ -59,21 +52,17 @@ describe('Echoes with service injections', () => {
 
     const echoes = getServiceEchoes(ExampleEchoesService)
 
-    expect(echoes).toMatchObject({
-      echo: {
-        type: 'request',
-        onRequest: expect.any(Function),
-      },
-      echoEvent: {
-        type: 'event',
-        resolve: expect.any(Function),
-      },
-    })
-
+    // Test functional behavior first (before any matchers that might mutate the object)
     const requestResult = await echoes.echo.resolve({name: 'John'})
     expect(requestResult).toBe('John')
 
     const eventResult = await echoes.echoEvent.resolve(1 as any as string)
     expect(eventResult).toBe('1')
+
+    // Verify structure
+    expect(echoes.echo.type).toBe('request')
+    expect(typeof echoes.echo.onRequest).toBe('function')
+    expect(echoes.echoEvent.type).toBe('event')
+    expect(typeof echoes.echoEvent.resolve).toBe('function')
   })
 })

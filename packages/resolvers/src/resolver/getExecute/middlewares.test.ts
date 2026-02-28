@@ -1,6 +1,5 @@
-import {modelResolver, resolver} from '..'
 import {createResolverMiddleware} from '../../createResolverMiddleware'
-import {it, expect} from 'vitest'
+import {modelResolver, resolver} from '..'
 
 it('should call middlewares in the correct order', async () => {
   const order: (string | number)[] = []

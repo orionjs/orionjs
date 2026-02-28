@@ -1,6 +1,5 @@
-import UserError from './UserError'
 import {OrionError} from './OrionError'
-import {describe, it, expect} from 'vitest'
+import UserError from './UserError'
 
 describe('UserError', () => {
   it('should extend OrionError', () => {

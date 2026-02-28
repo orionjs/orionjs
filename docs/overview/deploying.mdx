@@ -5,20 +5,40 @@ description: 'How to deploy your Orionjs application'
 
 Orionjs comes with a built-in CLI tool that helps you start your application in production mode.
 
-## Deployment Steps
+## Deploying with Bun (Default)
 
-The deployment process for an Orionjs application follows a standard Node.js deployment workflow:
+Bun runs TypeScript directly, so no build step is needed.
 
 1. **Install dependencies**
    ```bash
-   pnpm install
+   bun install
    ```
 
 2. **Start the server**
    ```bash
-   pnpm orion prod
+   bunx orion prod
    ```
-   This will start the Node.js server using the entry point at `app/index.ts`.
+   This will run `bun ./app/index.ts` directly in production mode.
+
+## Deploying with Node.js
+
+When deploying with Node.js, the CLI will automatically build your app before starting.
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Start the server**
+   ```bash
+   npx orion prod --node
+   ```
+   This will compile the app with esbuild and then run `node --import=tsx ./build/index.js`.
+
+   If you have a pre-compiled build, you can skip the build step:
+   ```bash
+   npx orion prod --node --path ./build
+   ```
 
 ## Environment Variables
 

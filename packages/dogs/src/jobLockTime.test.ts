@@ -1,6 +1,5 @@
 import {generateId, sleep} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Per-job lockTime', () => {
   it('Should use job-specific lockTime when larger than default', async () => {

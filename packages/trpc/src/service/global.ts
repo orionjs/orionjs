@@ -3,11 +3,18 @@ import {AnyProcedure, TRPCRouterRecord} from '@trpc/server'
 
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const proceduresMetadata = new WeakMap<any, Record<string, any>>()
+const procedureEntriesByClass = new Map<Function, Record<string, (instance: any) => any>>()
+let pendingProcedureEntries: Record<string, (instance: any) => any> = {}
 
 export function Procedures() {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
     serviceMetadata.set(target, {_serviceType: 'trpc-procedures'})
+
+    if (Object.keys(pendingProcedureEntries).length > 0) {
+      procedureEntriesByClass.set(target, pendingProcedureEntries)
+      pendingProcedureEntries = {}
+    }
   }
 }
 
@@ -19,13 +26,7 @@ export const TProcedures = Procedures
 export function TQuery() {
   return (method: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
-
-    context.addInitializer(function (this: any) {
-      const procedures = proceduresMetadata.get(this) || {}
-      procedures[propertyKey] = this[propertyKey]
-      proceduresMetadata.set(this, procedures)
-    })
-
+    pendingProcedureEntries[propertyKey] = (instance: any) => instance[propertyKey]
     return method
   }
 }
@@ -33,13 +34,7 @@ export function TQuery() {
 export function TMutation() {
   return (method: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
-
-    context.addInitializer(function (this: any) {
-      const procedures = proceduresMetadata.get(this) || {}
-      procedures[propertyKey] = this[propertyKey]
-      proceduresMetadata.set(this, procedures)
-    })
-
+    pendingProcedureEntries[propertyKey] = (instance: any) => instance[propertyKey]
     return method
   }
 }
@@ -47,13 +42,7 @@ export function TMutation() {
 export function TPaginatedQuery() {
   return (method: any, context: ClassFieldDecoratorContext) => {
     const propertyKey = String(context.name)
-
-    context.addInitializer(function (this: any) {
-      const procedures = proceduresMetadata.get(this) || {}
-      procedures[propertyKey] = this[propertyKey]
-      proceduresMetadata.set(this, procedures)
-    })
-
+    pendingProcedureEntries[propertyKey] = (instance: any) => instance[propertyKey]
     return method
   }
 }
@@ -63,6 +52,16 @@ export function TPaginatedQuery() {
  */
 export type ExtractProcedures<T> = {
   [K in keyof T as T[K] extends AnyProcedure | TRPCRouterRecord ? K : never]: T[K]
+}
+
+function initializeProceduresIfNeeded(instance: any) {
+  if (proceduresMetadata.has(instance)) return
+  const entries = procedureEntriesByClass.get(instance.constructor) || {}
+  const procedures: Record<string, any> = {}
+  for (const [key, setup] of Object.entries(entries)) {
+    procedures[key] = setup(instance)
+  }
+  proceduresMetadata.set(instance, procedures)
 }
 
 /**
@@ -85,6 +84,8 @@ export function getTProcedures<T extends object>(
   if (instanceMetadata?._serviceType !== 'trpc-procedures') {
     throw new Error(`${errorMessage}. Got class type ${instanceMetadata?._serviceType}`)
   }
+
+  initializeProceduresIfNeeded(instance)
 
   return (proceduresMetadata.get(instance) || {}) as ExtractProcedures<T>
 }

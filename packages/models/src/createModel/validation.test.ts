@@ -1,7 +1,6 @@
-import createModel from './index'
 import {createResolver} from '@orion-js/resolvers'
 import {schemaWithName} from '@orion-js/schema'
-import {it, expect} from 'vitest'
+import createModel from './index'
 
 it('should validate a schema', async () => {
   const model = createModel({

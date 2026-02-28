@@ -1,6 +1,5 @@
-import string from './string'
 import Errors from '../Errors'
-import {test, expect} from 'vitest'
+import string from './string'
 
 test('return an error when the value is incorrect', async () => {
   expect(string.validate(['Hello'])).toBe(Errors.NOT_A_STRING)

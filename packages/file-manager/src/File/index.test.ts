@@ -1,8 +1,7 @@
-import {FileSchema} from './schema'
-import {Files} from '../Files'
 import {createModel} from '@orion-js/models'
-import {Prop, TypedSchema, getModelForClass} from '@orion-js/typed-model'
-import {describe, it, expect} from 'vitest'
+import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {Files} from '../Files'
+import {FileSchema} from './schema'
 
 describe('File model', () => {
   it('should correctly clean on a simple file input', async () => {

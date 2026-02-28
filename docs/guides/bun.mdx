@@ -1,0 +1,173 @@
+---
+title: 'Using Bun with Orionjs'
+description: 'Orionjs v4.3 defaults to Bun for faster development and simpler deployments'
+---
+
+Starting with **v4.3**, Orionjs uses [Bun](https://bun.sh/) as its default runtime. This means faster startup times, native TypeScript execution without a compile step, and a simpler development workflow.
+
+## Why Bun?
+
+- **Native TypeScript** — Bun runs `.ts` files directly. No build step needed for development or production.
+- **Faster startup** — Bun starts significantly faster than Node.js, which matters during development when your server restarts on every file change.
+- **Built-in watch mode** — `bun --watch` replaces the need for `tsx watch` or `nodemon`.
+- **Compatible** — Bun is compatible with the Node.js ecosystem. Your existing npm packages, MongoDB driver, and Apollo Server all work as-is.
+
+## Getting Started
+
+### Install Bun
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+### Create a New Project
+
+```bash
+# Create from the starter template
+git clone https://github.com/orionjs/orionjs-services-starter
+cd orionjs-services-starter
+bun install
+```
+
+### Run in Development
+
+```bash
+bunx orion dev
+```
+
+That's it. Bun watches your files and restarts the server automatically when anything changes.
+
+### Run in Production
+
+```bash
+bunx orion prod
+```
+
+Bun executes `./app/index.ts` directly — no build step, no compiled output directory.
+
+## Migrating an Existing Project
+
+If you have an existing Orionjs v4 project using Node.js and pnpm, here's how to migrate:
+
+### 1. Install Bun
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+### 2. Update Dependencies
+
+```bash
+# Remove old lock file
+rm pnpm-lock.yaml  # or package-lock.json / yarn.lock
+
+# Install with Bun
+bun install
+```
+
+### 3. Update package.json Scripts
+
+```json
+{
+  "scripts": {
+    "dev": "orion dev",
+    "prod": "orion prod",
+    "test": "vitest",
+    "check": "orion check"
+  }
+}
+```
+
+### 4. Update Orionjs Packages
+
+```bash
+bun add @orion-js/core@4.3.0
+```
+
+Or update all `@orion-js/*` packages to `4.3.0`.
+
+### 5. Run
+
+```bash
+bunx orion dev
+```
+
+Your project now runs on Bun. All existing code, schemas, services, resolvers, and MongoDB operations work without changes.
+
+## Using Node.js
+
+Bun is the default but Node.js is fully supported. Pass `--node` to any CLI command:
+
+```bash
+# Development with Node.js
+bunx orion dev --node
+
+# Production with Node.js
+bunx orion prod --node
+
+# Production with a pre-compiled build
+bunx orion prod --node --path ./build
+```
+
+When using `--node`:
+- **Dev mode** uses `tsx watch` for file watching and TypeScript execution.
+- **Prod mode** builds the app with esbuild first, then runs the compiled output with `node --import=tsx`.
+
+This is useful if you deploy to an environment where Bun is not available, or if you hit a Bun-specific compatibility issue.
+
+## Check Available Runtimes
+
+```bash
+bunx orion info
+```
+
+This shows which runtimes are available on your machine and confirms the default is Bun.
+
+## What Changed in v4.3
+
+| Area | Before (v4.2) | After (v4.3) |
+| --- | --- | --- |
+| Default runtime | Node.js (via tsx) | Bun |
+| Package manager | pnpm | Bun |
+| `orion dev` | `tsx watch ./app/index.ts` | `bun --watch ./app/index.ts` |
+| `orion prod` | Build + `node` | `bun ./app/index.ts` (no build) |
+| Node.js support | Default | Opt-in via `--node` flag |
+| Test runner | Vitest (unchanged) | Vitest (unchanged) |
+
+## FAQ
+
+### Do I need to change my application code?
+
+No. Your services, schemas, resolvers, MongoDB operations, and all other application code work the same on both Bun and Node.js.
+
+### Does Vitest still work?
+
+Yes. Vitest runs independently of the Orionjs CLI runtime. Use `bunx vitest` to run your tests.
+
+### Can I use npm packages?
+
+Yes. Bun is compatible with the npm registry and supports `node_modules`. All your existing dependencies work.
+
+### What about Docker deployments?
+
+Use the official [Bun Docker image](https://hub.docker.com/r/oven/bun):
+
+```dockerfile
+FROM oven/bun:1
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+COPY . .
+CMD ["bun", "run", "prod"]
+```
+
+If you prefer Node.js in production, you can develop with Bun locally and deploy with `--node`:
+
+```dockerfile
+FROM node:22-slim
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+CMD ["npx", "orion", "prod", "--node"]
+```

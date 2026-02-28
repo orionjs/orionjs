@@ -1,7 +1,6 @@
 import {generateId} from '@orion-js/helpers'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {createCollection} from '..'
-import {it, expect} from 'vitest'
 
 it('updates the item variable using updateItem', async () => {
   @TypedSchema()

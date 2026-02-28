@@ -1,5 +1,4 @@
 import createModel from './index'
-import {describe, it, expect} from 'vitest'
 
 describe('Cloning models', () => {
   it('cloned model should pick fields correctly', async () => {

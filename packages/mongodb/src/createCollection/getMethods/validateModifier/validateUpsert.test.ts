@@ -1,5 +1,4 @@
 import validateUpsert from './validateUpsert'
-import {it, expect} from 'vitest'
 
 it('pass validation when everything is fine', async () => {
   const person = {

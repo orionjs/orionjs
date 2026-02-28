@@ -5,14 +5,18 @@ import type {CreateEventJobOptions, JobDefinition, RecurrentJobDefinition} from 
 // Define metadata storage using WeakMaps
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const jobsMetadata = new Map<any, Record<string, any>>()
+const jobEntriesByClass = new Map<Function, Record<string, (instance: any) => any>>()
+let pendingJobEntries: Record<string, (instance: any) => any> = {}
 
 export function Jobs() {
   return (target: any, context: ClassDecoratorContext<any>) => {
     Service()(target, context)
+    serviceMetadata.set(target, {_serviceType: 'jobs'})
 
-    context.addInitializer(function (this) {
-      serviceMetadata.set(this, {_serviceType: 'jobs'})
-    })
+    if (Object.keys(pendingJobEntries).length > 0) {
+      jobEntriesByClass.set(target, pendingJobEntries)
+      pendingJobEntries = {}
+    }
   }
 }
 
@@ -27,23 +31,18 @@ export function RecurrentJob(options = {}) {
   return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
-      const jobs = jobsMetadata.get(this) || {}
-
-      if (context.kind === 'method') {
-        jobs[propertyKey] = defineJob({
+    if (context.kind === 'method') {
+      pendingJobEntries[propertyKey] = (instance: any) =>
+        defineJob({
           ...options,
           type: 'recurrent',
-          resolve: this[propertyKey].bind(this),
+          resolve: instance[propertyKey].bind(instance),
         })
-      }
+    }
 
-      if (context.kind === 'field') {
-        jobs[propertyKey] = this[propertyKey]
-      }
-
-      jobsMetadata.set(this, jobs)
-    })
+    if (context.kind === 'field') {
+      pendingJobEntries[propertyKey] = (instance: any) => instance[propertyKey]
+    }
 
     return method
   }
@@ -60,25 +59,30 @@ export function EventJob(options = {}) {
   return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
-      const jobs = jobsMetadata.get(this) || {}
-
-      if (context.kind === 'method') {
-        jobs[propertyKey] = createEventJob({
+    if (context.kind === 'method') {
+      pendingJobEntries[propertyKey] = (instance: any) =>
+        createEventJob({
           ...options,
-          resolve: this[propertyKey].bind(this),
+          resolve: instance[propertyKey].bind(instance),
         })
-      }
+    }
 
-      if (context.kind === 'field') {
-        jobs[propertyKey] = this[propertyKey]
-      }
-
-      jobsMetadata.set(this, jobs)
-    })
+    if (context.kind === 'field') {
+      pendingJobEntries[propertyKey] = (instance: any) => instance[propertyKey]
+    }
 
     return method
   }
+}
+
+function initializeJobsIfNeeded(instance: any) {
+  if (jobsMetadata.has(instance)) return
+  const entries = jobEntriesByClass.get(instance.constructor) || {}
+  const jobs: Record<string, any> = {}
+  for (const [key, setup] of Object.entries(entries)) {
+    jobs[key] = setup(instance)
+  }
+  jobsMetadata.set(instance, jobs)
 }
 
 export function getServiceJobs(target: any): {
@@ -95,38 +99,9 @@ export function getServiceJobs(target: any): {
     throw new Error('You must pass a class decorated with @Jobs to getServiceJobs')
   }
 
+  initializeJobsIfNeeded(instance)
+
   const jobsMap = jobsMetadata.get(instance) || {}
 
   return jobsMap
 }
-
-/**
- * Logs
- * after event job {
-  job1: { type: 'event', resolve: [Function: bound job1] AsyncFunction }
-}
-before recurrent job Map(1) {
-  ExampleJobsService {} => {
-    job1: { type: 'event', resolve: [Function: bound job1] AsyncFunction }
-  }
-}
-before recurrent job undefined
-after recurrent job {
-  job2: {
-    runEvery: 1000,
-    type: 'recurrent',
-    resolve: [Function: bound job2] AsyncFunction,
-    priority: 100
-  }
-}
-{
-  serviceJobs: {
-    job2: {
-      runEvery: 1000,
-      type: 'recurrent',
-      resolve: [Function: bound job2] AsyncFunction,
-      priority: 100
-    }
-  }
-}
- */

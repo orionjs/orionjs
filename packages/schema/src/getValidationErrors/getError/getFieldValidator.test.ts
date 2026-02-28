@@ -1,8 +1,7 @@
-import getFieldValidator from './getFieldValidator'
+import {clean, Schema, validate} from '../..'
 import fieldType from '../../fieldType'
 import getFieldType from './getFieldType'
-import {clean, Schema, validate} from '../..'
-import {test, expect} from 'vitest'
+import getFieldValidator from './getFieldValidator'
 
 test('returns object validator when an object is passed', async () => {
   const validator = getFieldValidator({name: {type: String}})

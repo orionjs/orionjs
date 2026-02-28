@@ -1,6 +1,5 @@
 import {schemaWithName} from '@orion-js/schema'
 import {Inject, Service} from '@orion-js/services'
-import {describe, expect, it} from 'vitest'
 import {createTPaginatedQuery, PaginationParams} from './createTPaginatedQuery'
 import {getTProcedures, Procedures, TPaginatedQuery} from './service'
 import {t} from './trpc'
@@ -263,7 +262,7 @@ describe('createTPaginatedQuery', () => {
     class TestProcedures {
       @TPaginatedQuery()
       listItems = createTPaginatedQuery({
-        getItems: async (paginationParams, params, viewer) => {
+        getItems: async (_paginationParams, _params, viewer) => {
           return [{id: '1', ownerId: viewer?.userId || 'anonymous'}]
         },
         getCount: async () => 1,

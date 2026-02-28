@@ -1,10 +1,9 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {getOrionAsyncContext, RouteAsyncContext} from '@orion-js/logger'
 import request from 'supertest'
 import {getApp} from '../start'
-import {createRoute} from './route'
-import registerRoute from './registerRoute'
 import {setGetViewer} from '../viewer'
-import {getOrionAsyncContext, RouteAsyncContext} from '@orion-js/logger'
+import registerRoute from './registerRoute'
+import {createRoute} from './route'
 
 describe('http async context', () => {
   beforeEach(() => {

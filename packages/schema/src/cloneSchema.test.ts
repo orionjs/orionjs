@@ -1,5 +1,4 @@
 import {cloneSchema} from './cloneSchema'
-import {test, expect} from 'vitest'
 import {Schema} from './types'
 
 // Sample schema for testing
@@ -223,9 +222,9 @@ test('combines mapFields with extensions', () => {
   })
 
   // All fields should have key property
-  Object.keys(userSchema).map(key => {
+  for (const key of Object.keys(userSchema)) {
     expect(cloned[key].fieldType).toBe(key)
-  })
+  }
 
   // Extension field should also have key property
   expect((cloned.role as any).fieldType).toBe('role')

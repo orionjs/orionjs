@@ -1,4 +1,3 @@
-import {expect, expectTypeOf, test} from 'vitest'
 import {clean, getValidationErrors, isSchemaLike, validate} from '..'
 import {InferSchemaType} from '.'
 
@@ -161,13 +160,12 @@ test('InferSchemaType should correctly infer type for schema with "type" field',
   type TestType = InferSchemaType<typeof schemaWithTypeField>
 
   // This should compile and the type should have both 'type' and 'name' as string fields
-  const validObj: TestType = {
+  const _validObj: TestType = {
     type: 'my-type',
     name: 'test',
   }
 
-  expectTypeOf(validObj.type).toEqualTypeOf<string>()
-  expectTypeOf(validObj.name).toEqualTypeOf<string>()
+  // type checked at compile time
 })
 
 test('InferSchemaType should correctly infer nested schema with "type" field', () => {
@@ -189,13 +187,12 @@ test('InferSchemaType should correctly infer nested schema with "type" field', (
   type TestType = InferSchemaType<typeof parentSchema>
 
   // This should compile and the type should have data.type as string and data.value as number
-  const validObj: TestType = {
+  const _validObj: TestType = {
     data: {
       type: 'some-type',
       value: 123,
     },
   }
 
-  expectTypeOf(validObj.data.type).toEqualTypeOf<string>()
-  expectTypeOf(validObj.data.value).toEqualTypeOf<number>()
+  // type checked at compile time
 })

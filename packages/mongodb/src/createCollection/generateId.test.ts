@@ -1,9 +1,8 @@
 import {generateId} from '@orion-js/helpers'
-import {createCollection} from './index'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {ObjectId} from 'bson'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
 import {DistinctDocumentId} from '../types'
-import {expect, it} from 'vitest'
+import {createCollection} from './index'
 
 it('generates a usable mongo objectId as string', async () => {
   const Tests = createCollection({name: generateId()})
@@ -45,7 +44,7 @@ it('generates a ids with uuidv7', async () => {
     name: 'Nico',
   })
 
-  expect(userId).toMatch(/^prefix\-/)
+  expect(userId).toMatch(/^prefix-/)
 })
 
 it('generates a ids with a prefix', async () => {
@@ -71,7 +70,7 @@ it('generates a ids with a prefix', async () => {
     name: 'Nico',
   })
 
-  const item = await Tests.findOne(userId)
+  const _item = await Tests.findOne(userId)
   // no te deja usar otra cosa que no sea con el prefix
   await Tests.updateOne({_id: 'pref_123'}, {$set: {name: 'Nicolás'}})
 

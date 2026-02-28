@@ -1,9 +1,8 @@
 import {resolver} from '@orion-js/resolvers'
-import {cloneSchemaClass, Prop, TypedSchema} from '@orion-js/typed-model'
-import getResolvers from '../getResolvers'
 import {createEnum} from '@orion-js/schema'
+import {cloneSchemaClass, Prop, TypedSchema} from '@orion-js/typed-model'
 import buildSchema from '..'
-import {describe, it, expect} from 'vitest'
+import getResolvers from '../getResolvers'
 
 describe('Enum test', () => {
   it('Should create correctly enum types', async () => {

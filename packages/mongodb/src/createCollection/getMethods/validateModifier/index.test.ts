@@ -1,5 +1,4 @@
 import validateModifier from './index'
-import {it, expect} from 'vitest'
 
 it('should pass validation when not all fields are present', async () => {
   const wife = {

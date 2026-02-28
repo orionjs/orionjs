@@ -1,5 +1,4 @@
 import {hashWithSalt} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Hash with salt', () => {
   // should hash a password

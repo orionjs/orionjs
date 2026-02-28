@@ -1,5 +1,4 @@
 import validateOperator from './validateOperator'
-import {it, expect} from 'vitest'
 
 it('validate $push operations', async () => {
   const friend = {

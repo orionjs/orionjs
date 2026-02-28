@@ -1,5 +1,4 @@
 import fromDot from './fromDot'
-import {it, expect} from 'vitest'
 
 it('should convert objects from dot notation', async () => {
   const result = fromDot({

@@ -1,11 +1,10 @@
-import {ValidationError} from '@orion-js/schema'
-import {createCollection} from '.'
-import {TypedSchema, Prop, getModelForClass} from '@orion-js/typed-model'
 import {generateId} from '@orion-js/helpers'
-import {describe, it, expect} from 'vitest'
+import {ValidationError} from '@orion-js/schema'
+import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {createCollection} from '.'
 
 describe('Collections with typed model', () => {
-  const resolve = async (person: Person, {title}: {title: string}, viewer?: any) => {
+  const _resolve = async (person: Person, {title}: {title: string}, _viewer?: any) => {
     return `${title} ${person.firstName} ${person.lastName}`
   }
 

@@ -1,8 +1,8 @@
-import paramsResolver from './params'
-import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
 import {createResolver, resolver} from '@orion-js/resolvers'
-import {describe, it, expect} from 'vitest'
 import {schemaWithName} from '@orion-js/schema'
+import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
+import paramsResolver from './params'
+
 describe('Get params tests', () => {
   it('Should return the correct information for a resolver that returns a string array', async () => {
     resolversStore.aResolver = createResolver({

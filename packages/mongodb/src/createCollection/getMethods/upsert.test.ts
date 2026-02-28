@@ -1,8 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {createModel} from '@orion-js/models'
-import {createCollection} from '..'
-import {it, expect} from 'vitest'
 import {Schema} from '@orion-js/schema'
+import {createCollection} from '..'
 
 it('updates a document if exists', async () => {
   const Tests = createCollection({name: generateId()})

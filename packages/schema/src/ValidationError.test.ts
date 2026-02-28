@@ -1,10 +1,9 @@
-import ValidationError from './ValidationError'
 import Errors from './Errors'
-import {test, expect} from 'vitest'
+import ValidationError from './ValidationError'
 
 test("don't allow to create a ValidationError with no error", () => {
   expect(() => {
-    // @ts-ignore
+    // @ts-expect-error
     new ValidationError()
   }).toThrow()
 })

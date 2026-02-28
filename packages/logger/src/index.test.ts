@@ -1,5 +1,4 @@
 import {logger, setLogLevel} from './logger'
-import {describe, it, test} from 'vitest'
 
 setLogLevel('debug')
 

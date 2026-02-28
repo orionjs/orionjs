@@ -1,11 +1,10 @@
 import {Inject, Service} from '@orion-js/services'
-import {getServiceRoutes, Route, Routes} from '.'
-import {getApp} from '../start'
 import request from 'supertest'
 import registerRoutes from '../routes/registerRoutes'
-import type {Request} from '../types'
-import {describe, it, expect} from 'vitest'
 import {createRoute} from '../routes/route'
+import {getApp} from '../start'
+import type {Request} from '../types'
+import {getServiceRoutes, Route, Routes} from '.'
 
 describe('Routes with service injections', () => {
   it('Should define a routes map using services', async () => {

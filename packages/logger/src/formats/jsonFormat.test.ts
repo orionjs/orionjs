@@ -1,8 +1,7 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {Writable} from 'node:stream'
+import winston from 'winston'
 import {runWithOrionAsyncContext} from '../asyncContext'
 import {jsonConsoleFormat} from './consoleFormats'
-import winston from 'winston'
-import {Writable} from 'node:stream'
 
 describe('JSON console format with async context', () => {
   let logs: any[] = []

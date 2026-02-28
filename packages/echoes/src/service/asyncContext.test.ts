@@ -1,6 +1,5 @@
-import {describe, it, expect} from 'vitest'
-import {Echoes, EchoEvent, getServiceEchoes} from '.'
 import {getOrionAsyncContext} from '@orion-js/logger'
+import {EchoEvent, Echoes, getServiceEchoes} from '.'
 
 describe('Echoes async context', () => {
   it('captures echo handler context', async () => {

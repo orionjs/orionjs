@@ -1,11 +1,14 @@
-import {setGetViewer} from './viewer'
-import {getApp} from './start'
-import {route} from './routes/route'
-import registerRoute from './routes/registerRoute'
+import {afterEach, describe, expect, test} from 'bun:test'
 import request from 'supertest'
-import {describe, test, expect} from 'vitest'
+import registerRoute from './routes/registerRoute'
+import {route} from './routes/route'
+import {getApp} from './start'
+import {setGetViewer} from './viewer'
 
 describe('Test viewer', () => {
+  afterEach(() => {
+    setGetViewer(() => null)
+  })
   test('It should pass the correct viewer', async () => {
     setGetViewer(async req => {
       return {
@@ -18,7 +21,7 @@ describe('Test viewer', () => {
       path: '/testViewer/:name',
       method: 'post',
       bodyParser: 'json',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, viewer) {
         return {body: viewer}
       },
     })
@@ -31,7 +34,7 @@ describe('Test viewer', () => {
   })
 
   test('It should throw an error correctly when getViewer returns an error', async () => {
-    setGetViewer(async req => {
+    setGetViewer(async _req => {
       throw new Error('invalid headers')
     })
 
@@ -39,7 +42,7 @@ describe('Test viewer', () => {
       path: '/testViewer/:name',
       method: 'post',
       bodyParser: 'json',
-      async resolve(req, res, viewer) {
+      async resolve(_req, _res, viewer) {
         return {body: viewer}
       },
     })
@@ -58,6 +61,10 @@ describe('Test viewer', () => {
 })
 
 describe('Test viewer orion v4 syntax', () => {
+  afterEach(() => {
+    setGetViewer(() => null)
+  })
+
   test('It should pass the correct viewer', async () => {
     setGetViewer(async req => {
       return {

@@ -1,5 +1,4 @@
 import {generateId, sleep} from '@orion-js/helpers'
-import {describe, expect, it} from 'vitest'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
 
 describe('Stale Jobs Management', () => {

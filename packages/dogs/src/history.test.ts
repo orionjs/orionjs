@@ -1,6 +1,5 @@
-import {sleep, generateId} from '@orion-js/helpers'
+import {generateId, sleep} from '@orion-js/helpers'
 import {defineJob, jobsHistoryRepo, scheduleJob, startWorkers} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Test Jobs History', () => {
   it('Should save success history types', async () => {

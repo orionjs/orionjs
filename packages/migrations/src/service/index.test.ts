@@ -1,6 +1,5 @@
 import {ExecutionContext} from '@orion-js/dogs'
 import {getMigrationsFromServices, MigrationService} from '.'
-import {describe, it, expect} from 'vitest'
 
 describe('Migration as IOC', () => {
   it('should create a migration service', async () => {
@@ -27,7 +26,7 @@ describe('Migration as IOC', () => {
     for (const {runMigration, name} of migrations) {
       lastName = name
       await runMigration({
-        extendLockTime: time => {
+        extendLockTime: _time => {
           didExtend = true
         },
       } as ExecutionContext)

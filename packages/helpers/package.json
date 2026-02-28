@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/helpers",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,24 +15,22 @@
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "vitest run",
-    "prepare": "pnpm build",
+    "test": "bun test",
+    "prepare": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "tsup",
-    "upgrade-interactive": "pnpm upgrade --interactive",
     "dev": "tsup --watch"
   },
   "dependencies": {
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
-    "@orion-js/logger": "workspace:*"
+    "@orion-js/logger": "4.3.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
-    "typescript": "^5.4.5",
-    "vitest": "^3.0.8"
+    "typescript": "^5.4.5"
   },
   "publishConfig": {
     "access": "public"

@@ -1,6 +1,5 @@
-import date from './date'
 import Errors from '../Errors'
-import {test, expect} from 'vitest'
+import date from './date'
 
 test('return an error when the value is incorrect', async () => {
   expect(date.validate(['Hello'])).toBe(Errors.NOT_A_DATE)

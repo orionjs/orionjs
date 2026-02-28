@@ -1,8 +1,7 @@
-import {describe, it, expect} from 'vitest'
 import {createModel} from '@orion-js/models'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
-import {getPaginatedResolverParams} from './params'
 import {cleanAndValidate, schemaWithName} from '@orion-js/schema'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
+import {getPaginatedResolverParams} from './params'
 
 describe('Get params', () => {
   it('should return the params', () => {

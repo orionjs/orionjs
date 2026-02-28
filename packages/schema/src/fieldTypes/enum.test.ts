@@ -1,8 +1,7 @@
-import createEnum from './enum'
 import Errors from '../Errors'
-import {Schema} from '../types'
 import getValidationErrors from '../getValidationErrors'
-import {test, expect} from 'vitest'
+import {Schema} from '../types'
+import createEnum from './enum'
 
 test('return an error when the value is incorrect', async () => {
   expect(createEnum('hello', ['hello']).validate(['Hello'])).toBe(Errors.NOT_A_STRING)

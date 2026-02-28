@@ -1,15 +1,13 @@
-import {RunnerOptions} from '.'
+import {RunnerOptions} from './index'
 
-export function getArgs(_options: RunnerOptions, command: any) {
-  const startCommand = 'tsx'
+export function getArgs(options: RunnerOptions, command: any) {
+  if (options.node) {
+    const startCommand = 'tsx'
+    const args = ['watch', '--clear-screen=false', ...command.args, './app/index.ts']
+    return {startCommand, args}
+  }
 
-  const args = []
-
-  args.push('watch', '--clear-screen=false')
-
-  args.push(...command.args)
-
-  args.push('./app/index.ts')
-
+  const startCommand = 'bun'
+  const args = ['--watch', ...command.args, './app/index.ts']
   return {startCommand, args}
 }

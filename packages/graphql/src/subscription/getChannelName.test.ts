@@ -1,5 +1,4 @@
 import getChannelName from './getChannelName'
-import {describe, it, expect} from 'vitest'
 
 describe('Test channel name generation', () => {
   it('Should return different channel names with different params', () => {

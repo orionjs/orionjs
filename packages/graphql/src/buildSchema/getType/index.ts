@@ -80,6 +80,10 @@ const registeredGraphQLTypes = new Map<
   {schema: SchemaWithMetadata; graphQLType: GraphQLObjectType}
 >()
 
+export function clearRegisteredGraphQLTypes() {
+  registeredGraphQLTypes.clear()
+}
+
 export default function getGraphQLType(type: SchemaFieldType, options: StartGraphQLOptions) {
   if (!type) throw new Error('Type is undefined')
 

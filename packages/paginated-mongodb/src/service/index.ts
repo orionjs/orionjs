@@ -1,5 +1,5 @@
 import {createPaginatedResolver, PaginatedResolverOpts} from '../paginatedResolver'
-import {internalResolversMetadata, getTargetMetadata} from '@orion-js/graphql'
+import {registerPendingResolver, getTargetMetadata} from '@orion-js/graphql'
 
 export interface PagiantedQueryDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: PaginatedResolverOpts['getCursor']
@@ -13,24 +13,22 @@ export function PaginatedQuery(options?: Omit<PaginatedResolverOpts, 'getCursor'
   return (method: any, context: ClassFieldDecoratorContext | ClassMethodDecoratorContext) => {
     const propertyKey = String(context.name)
 
-    context.addInitializer(function (this) {
-      const resolvers = internalResolversMetadata.get(this) || {}
-
-      if (context.kind === 'method') {
-        resolvers[propertyKey] = createPaginatedResolver({
-          params: getTargetMetadata(method, propertyKey, 'params') || {},
-          returns: getTargetMetadata(method, propertyKey, 'returns') || 'string',
+    if (context.kind === 'method') {
+      const params = getTargetMetadata(method, propertyKey, 'params') || {}
+      const returns = getTargetMetadata(method, propertyKey, 'returns') || 'string'
+      registerPendingResolver(propertyKey, (instance: any) =>
+        createPaginatedResolver({
+          params,
+          returns,
           ...options,
-          getCursor: this[propertyKey].bind(this),
-        })
-      }
+          getCursor: instance[propertyKey].bind(instance),
+        }),
+      )
+    }
 
-      if (context.kind === 'field') {
-        resolvers[propertyKey] = this[propertyKey]
-      }
-
-      internalResolversMetadata.set(this, resolvers)
-    })
+    if (context.kind === 'field') {
+      registerPendingResolver(propertyKey, (instance: any) => instance[propertyKey])
+    }
 
     return method
   }

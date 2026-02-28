@@ -1,6 +1,5 @@
 import {Schema, SchemaNode, SchemaRecursiveNodeType} from '..'
 import dotGetSchema from './dotGetSchema'
-import {test, expect} from 'vitest'
 
 const tag: Schema = {
   name: {

@@ -1,6 +1,5 @@
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import getField from './getField'
-import {describe, it, expect} from 'vitest'
 
 describe('Field serialization', () => {
   it('should return a valid serialization of the field', async () => {

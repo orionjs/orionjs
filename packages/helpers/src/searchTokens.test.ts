@@ -1,5 +1,4 @@
-import {getSearchTokens, getSearchQueryForTokens} from './searchTokens'
-import {describe, it, expect} from 'vitest'
+import {getSearchQueryForTokens, getSearchTokens} from './searchTokens'
 
 describe('Search Tokens Utilities', () => {
   describe('getSearchTokens', () => {

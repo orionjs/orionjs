@@ -1,9 +1,8 @@
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {ModelClassBase, ModelToMongoSelector, MongoSelector} from '../..'
 import getSelector from './getSelector'
-import {TypedSchema, Prop} from '@orion-js/typed-model'
-import {expect, it} from 'vitest'
 
-const mongoFunctionMock = function <Model extends ModelClassBase>(selectorArg?: MongoSelector) {
+const mongoFunctionMock = function <Model extends ModelClassBase>(_selectorArg?: MongoSelector) {
   return getSelector<Model>(arguments)
 }
 
@@ -32,6 +31,6 @@ it('should allow passing $in to selectors with typed id', async () => {
     _id: `prefix_${string}`
   }
 
-  const selector1: ModelToMongoSelector<Example> = {_id: {$in: ['prefix_']}}
-  const selector2: ModelToMongoSelector<Example> = 'prefix_1'
+  const _selector1: ModelToMongoSelector<Example> = {_id: {$in: ['prefix_']}}
+  const _selector2: ModelToMongoSelector<Example> = 'prefix_1'
 })

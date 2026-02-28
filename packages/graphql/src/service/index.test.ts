@@ -1,8 +1,7 @@
-import {Inject, Service} from '@orion-js/services'
-import {Query, getServiceResolvers, Resolvers, Mutation, createQuery, createMutation} from './index'
-import {describe, it, expect} from 'vitest'
 import {schemaWithName} from '@orion-js/schema'
+import {Inject, Service} from '@orion-js/services'
 import {getModelForClass, Prop, TypedSchema} from '@orion-js/typed-model'
+import {createMutation, createQuery, getServiceResolvers, Mutation, Query, Resolvers} from './index'
 
 describe('Resolvers with service injection', () => {
   it('should allow to pass a service as resolve', async () => {

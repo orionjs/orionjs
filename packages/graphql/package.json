@@ -1,28 +1,27 @@
 {
   "name": "@orion-js/graphql",
-  "version": "4.2.4",
+  "version": "4.3.0",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
   "scripts": {
-    "test": "vitest run",
-    "prepare": "pnpm build",
+    "test": "bun test",
+    "prepare": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "tsup",
-    "upgrade-interactive": "pnpm upgrade --interactive",
     "dev": "tsup --watch"
   },
   "dependencies": {
     "@apollo/server": "^4.3.0",
     "@graphql-tools/schema": "^9.0.12",
-    "@orion-js/env": "workspace:*",
-    "@orion-js/helpers": "workspace:*",
-    "@orion-js/http": "workspace:*",
-    "@orion-js/models": "workspace:*",
-    "@orion-js/resolvers": "workspace:*",
-    "@orion-js/schema": "workspace:*",
-    "@orion-js/services": "workspace:*",
-    "@orion-js/typed-model": "workspace:*",
+    "@orion-js/env": "4.3.0",
+    "@orion-js/helpers": "4.3.0",
+    "@orion-js/http": "4.3.0",
+    "@orion-js/models": "4.3.0",
+    "@orion-js/resolvers": "4.3.0",
+    "@orion-js/schema": "4.3.0",
+    "@orion-js/services": "4.3.0",
+    "@orion-js/typed-model": "4.3.0",
     "graphql-scalars": "^1.24.1",
     "graphql-subscriptions": "2.0.0",
     "graphql-tag": "^2.12.6",
@@ -39,11 +38,10 @@
     "supertest": "^6.3.3",
     "superwstest": "^2.0.3",
     "tsup": "^8.0.1",
-    "typescript": "^5.4.5",
-    "vitest": "^3.0.8"
+    "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "@orion-js/logger": "workspace:*",
+    "@orion-js/logger": "4.3.0",
     "graphql": "*"
   },
   "publishConfig": {

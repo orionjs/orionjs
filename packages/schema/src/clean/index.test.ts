@@ -1,7 +1,6 @@
 import {Schema} from '../types/schema'
 import validate from '../validate'
 import clean from './index'
-import {test, expect} from 'vitest'
 
 test('autoconverts values', async () => {
   const schema = {
@@ -165,7 +164,7 @@ test('returns the default values', async () => {
       type: String,
       defaultValue: 'hello',
       clean(value) {
-        return value + ' world'
+        return `${value} world`
       },
     },
     text1: {
@@ -382,7 +381,7 @@ test('passes extra arguments to clean', async () => {
   const schema = {
     name: {
       type: String,
-      clean(name, info, arg1, arg2) {
+      clean(name, _info, arg1, arg2) {
         expect(arg1).toBe(1)
         expect(arg2).toBe(2)
         return name

@@ -1,9 +1,8 @@
-import plainObject from './plainObject'
 import Errors from '../Errors'
-import {test, expect} from 'vitest'
+import plainObject from './plainObject'
 
 test('return an error when the value is incorrect', async () => {
-  //@ts-ignore
+  //@ts-expect-error
   expect(plainObject.validate('a string')).toBe(Errors.NOT_AN_OBJECT)
   expect(plainObject.validate(new Date())).toBe(Errors.NOT_AN_OBJECT)
   expect(plainObject.validate([])).toBe(Errors.NOT_AN_OBJECT)
@@ -15,7 +14,7 @@ test('return no error when the value is correct', async () => {
 })
 
 test('should return same value when cleaning non-object', async () => {
-  //@ts-ignore
+  //@ts-expect-error
   expect(plainObject.clean('a string')).toBe('a string')
 })
 

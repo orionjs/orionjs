@@ -1,6 +1,5 @@
 // import {InferSchemaType} from '@orion-js/schema'
 import {createModel} from '..'
-import {it} from 'vitest'
 
 it('should create correctly a model with its schema', async () => {
   const model1 = createModel({
@@ -21,7 +20,7 @@ it('should create correctly a model with its schema', async () => {
     },
   })
 
-  const model3 = createModel({
+  const _model3 = createModel({
     name: 'Name',
     schema: {
       services: {
@@ -35,7 +34,7 @@ it('should create correctly a model with its schema', async () => {
     name: 'Name',
     schema: {},
   })
-  type Model4 = typeof model4.type
+  type _Model4 = typeof model4.type
 })
 
 // const schema = {

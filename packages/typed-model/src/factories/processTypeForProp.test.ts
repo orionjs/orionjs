@@ -1,7 +1,6 @@
-import {describe, it, expect} from 'vitest'
-import {getParamTypeForProp} from './processTypeForProp'
 import {Prop} from '../decorators/prop'
 import {TypedSchema} from '../decorators/typedSchema'
+import {getParamTypeForProp} from './processTypeForProp'
 
 describe('getParamTypeForProp', () => {
   it('should return the type unchanged for primitive types', () => {

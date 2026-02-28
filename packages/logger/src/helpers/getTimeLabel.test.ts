@@ -1,4 +1,3 @@
-import {describe, it, expect} from 'vitest'
 import {getTimeLabel} from './getTimeLabel'
 
 // Mock Date for consistent testing

@@ -1,12 +1,11 @@
+import {generateId} from '@orion-js/helpers'
+import {InferSchemaType, schemaWithName} from '@orion-js/schema'
 import {getInstance, Inject, Service} from '@orion-js/services'
 import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {OptionalId, WithoutId} from 'mongodb'
-import {MongoCollection, Repository} from '.'
-import {typedId, type Collection} from '../types'
-import {describe, it, expect} from 'vitest'
 import {createCollection} from '../createCollection'
-import {InferSchemaType, schemaWithName} from '@orion-js/schema'
-import {generateId} from '@orion-js/helpers'
+import {type Collection, typedId} from '../types'
+import {MongoCollection, Repository} from '.'
 
 describe('Collection as IOC', () => {
   it('should create the collection and set the methods', async () => {

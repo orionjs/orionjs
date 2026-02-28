@@ -1,16 +1,15 @@
+import {createResolverMiddleware} from '@orion-js/resolvers'
 import {Service} from '@orion-js/services'
-import {describe, it, expect} from 'vitest'
+import {Prop, TypedSchema} from '@orion-js/typed-model'
 import {
-  Query,
-  getServiceResolvers,
-  Resolvers,
-  ModelResolvers,
-  ModelResolver,
   getServiceModelResolvers,
+  getServiceResolvers,
+  ModelResolver,
+  ModelResolvers,
+  Query,
+  Resolvers,
 } from './index'
 import {ResolverParams, ResolverReturns, UseMiddleware} from './middlewares'
-import {createResolverMiddleware} from '@orion-js/resolvers'
-import {Prop, TypedSchema} from '@orion-js/typed-model'
 
 describe('Resolvers with service injection and middlewares', () => {
   it('should allow to pass resolver middlewares with decorators', async () => {
