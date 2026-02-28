@@ -6,6 +6,7 @@ export interface RunnerOptions {
   shell: boolean
   clean: boolean
   node: boolean
+  repl: boolean
 }
 
 export interface Runner {

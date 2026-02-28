@@ -1,7 +1,7 @@
 import {spawn} from 'node:child_process'
+import chalk from 'chalk'
 import {getArgs} from './getArgs'
 import {RunnerOptions} from './index'
-import chalk from 'chalk'
 
 export function startProcess(options: RunnerOptions, command: any) {
   const {startCommand, args} = getArgs(options, command)
@@ -11,6 +11,7 @@ export function startProcess(options: RunnerOptions, command: any) {
     env: {
       ORION_DEV: 'local',
       ...process.env,
+      ...(options.repl ? {ORION_REPL: 'true'} : {}),
     },
     cwd: process.cwd(),
     stdio: 'inherit',

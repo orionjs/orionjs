@@ -26,6 +26,7 @@ bunx orion dev [options]
 **Options:**
 
 - `--node`: Use Node.js (with tsx watch) instead of Bun
+- `--repl`: Enable REPL endpoint for `orion repl` (see below)
 - `--shell`: Opens a shell in Chrome developer tools
 - `--clean`: Build the TypeScript project from scratch
 
@@ -79,6 +80,34 @@ Shows the available runtimes and the default runtime.
 ```bash
 bunx orion info
 ```
+
+### orion repl
+
+Evaluates a TypeScript expression against a running Orionjs dev server. Requires `orion dev --repl` to be running.
+
+```bash
+bunx orion repl -e "<expression>"
+```
+
+**Options:**
+
+- `-e, --expression <expr>`: **(Required)** The expression to evaluate
+- `--port <port>`: Port of the dev server (default: auto-detect from `.orion/port`)
+
+**Examples:**
+
+```bash
+# Start dev server with REPL enabled
+bunx orion dev --repl
+
+# In another terminal:
+bunx orion repl -e "return 1 + 1"
+
+# Query a service
+bunx orion repl -e "const {UserService} = await import('./app/services/UserService'); return await getInstance(UserService).getUserById('abc')"
+```
+
+See the [REPL guide](/guides/repl) for more details.
 
 ### orion create
 

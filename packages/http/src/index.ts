@@ -1,11 +1,10 @@
-import {setOnError, onError} from './errors'
-import {getViewer, setGetViewer} from './viewer'
-import {startServer, getApp, getServer} from './start'
-import express from 'express'
+import bodyParserLib from 'body-parser'
+import express, {RequestHandler} from 'express'
+import {onError, setOnError} from './errors'
 import registerRoute from './routes/registerRoute'
 import registerRoutes from './routes/registerRoutes'
-import bodyParserLib from 'body-parser'
-import {RequestHandler} from 'express'
+import {getApp, getServer, startServer} from './start'
+import {getViewer, setGetViewer} from './viewer'
 
 export * from './routes/route'
 
@@ -32,5 +31,6 @@ export {
   bodyParser,
 }
 
-export * from './types'
+export {registerReplEndpoint} from './repl'
 export * from './service'
+export * from './types'

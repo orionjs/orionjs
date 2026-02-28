@@ -27,7 +27,7 @@ bunx vitest packages/<name>/src/path/to/file.test.ts
 # Publishing (uses changesets)
 bunx changeset            # Create changeset (always use patch)
 bunx changeset version    # Update versions
-bun publish -r --otp=<code>  # Publish all packages
+for pkg in packages/*/; do (cd "$pkg" && npm publish --otp=<code>); done  # Publish all packages
 ```
 
 ## Architecture

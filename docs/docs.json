@@ -92,7 +92,11 @@
       },
       {
         "tab": "Guides",
-        "pages": ["guides/bun", "guides/v4"]
+        "pages": ["guides/bun", "guides/repl", "guides/v4"]
+      },
+      {
+        "tab": "Blog",
+        "pages": ["blog/repl-command"]
       }
     ],
     "global": {

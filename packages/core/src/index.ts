@@ -10,6 +10,7 @@ import 'dotenv/config'
 import build from './build'
 import check from './check'
 import info from './info'
+import repl from './repl'
 
 const program = new Command()
 
@@ -27,6 +28,7 @@ program
   .command('dev')
   .description('Run the Orionjs app in development mode')
   .option('--node', 'Use Node.js runtime instead of Bun')
+  .option('--repl', 'Enable REPL endpoint for orion repl')
   .allowUnknownOption()
   .action(run(dev))
 
@@ -57,6 +59,13 @@ program
   .action(run(create))
 
 program.command('info').description('Print runtime and version info').action(run(info))
+
+program
+  .command('repl')
+  .description('Evaluate an expression against a running Orionjs dev server')
+  .requiredOption('-e, --expression <expression>', 'Expression to evaluate')
+  .option('--port <port>', 'Port of the dev server (default: auto-detect from .orion/port)')
+  .action(run(repl))
 
 program.version(version, '-v --version')
 

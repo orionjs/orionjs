@@ -1,0 +1,124 @@
+---
+title: 'REPL Command'
+description: 'Run one-off expressions against your running Orionjs dev server'
+---
+
+The `orion repl` command lets you evaluate expressions against a running Orionjs dev server. It connects to the server over HTTP, runs your code, and prints the result — perfect for querying services, testing methods, running one-off data fixes, or inspecting app state.
+
+## Setup
+
+Start your dev server with the `--repl` flag:
+
+```bash
+bunx orion dev --repl
+```
+
+This enables a `POST /__repl` endpoint on your server and writes the port to `.orion/port` for auto-discovery.
+
+## Usage
+
+In a separate terminal:
+
+```bash
+bunx orion repl -e "<expression>"
+```
+
+The expression runs inside an `async function` with `getInstance` from `@orion-js/services` available as a parameter, so you can use `await` and `return` directly.
+
+### Options
+
+| Flag | Description |
+| --- | --- |
+| `-e, --expression <expr>` | **(Required)** The TypeScript expression to evaluate |
+| `--port <port>` | Port of the dev server (default: auto-detect from `.orion/port`, then `PORT` env, then `3000`) |
+
+## How It Works
+
+1. `orion dev --repl` sets `ORION_REPL=true` on the spawned app process
+2. When `@orion-js/http` starts, it registers a `POST /__repl` endpoint and writes the port to `.orion/port`
+3. `orion repl -e "..."` sends an HTTP POST to `http://localhost:<port>/__repl`
+4. The endpoint evaluates the expression via an `AsyncFunction` with `getInstance` in scope
+5. The result is returned as JSON and printed by the CLI
+
+## Examples
+
+### Simple expression
+
+```bash
+bunx orion repl -e "return 1 + 1"
+# Output: 2
+```
+
+### Query a service
+
+```bash
+bunx orion repl -e "
+const {UserService} = await import('./app/services/UserService')
+const userService = getInstance(UserService)
+return await userService.getUserById('abc123')
+"
+```
+
+### Run a data migration
+
+```bash
+bunx orion repl -e "
+const {OrdersRepo} = await import('./app/repos/OrdersRepo')
+const repo = getInstance(OrdersRepo)
+const orders = await repo.find({status: 'pending'})
+for (const order of orders) {
+  await repo.updateOne(order._id, {status: 'processing'})
+}
+return 'Done'
+"
+```
+
+### Inspect a collection
+
+```bash
+bunx orion repl -e "
+const {ProductsRepo} = await import('./app/repos/ProductsRepo')
+const repo = getInstance(ProductsRepo)
+return await repo.countDocuments({active: true})
+"
+```
+
+### Specify a custom port
+
+```bash
+bunx orion repl -e "return 1 + 1" --port 4000
+```
+
+## Tips
+
+- The `getInstance` function is injected as a parameter — use it to grab any registered service or repository.
+- The REPL runs against the live app, so all connections (MongoDB, etc.) are already established.
+- Use `return` to output a value. If you don't return anything, nothing is printed.
+- For complex expressions, use multi-line strings or put your code in a script file instead.
+- The `--repl` flag is opt-in and only recommended for development. Do not enable it in production.
+
+## Claude Code Custom Skill
+
+You can add the following as a Claude Code custom command at `.claude/commands/orion-repl.md` so Claude can interact with your Orionjs app directly:
+
+````markdown
+---
+description: Run an expression against the Orionjs app using the REPL
+---
+
+Use the Orionjs REPL to evaluate an expression against the running dev server.
+
+Command pattern:
+```
+bunx orion repl -e "<expression>"
+```
+
+The expression runs inside an async function. Use `return` to output a value.
+`getInstance` from `@orion-js/services` is available — use it to get any service or repository.
+
+Make sure the dev server is running with `bunx orion dev --repl`.
+
+Examples:
+- `bunx orion repl -e "const {UserService} = await import('./app/services/UserService'); return getInstance(UserService).getUserById('abc')"`
+- `bunx orion repl -e "const {OrdersRepo} = await import('./app/repos/OrdersRepo'); return await getInstance(OrdersRepo).countDocuments({})"`
+````

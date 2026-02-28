@@ -1,5 +1,7 @@
+import {mkdirSync, writeFileSync} from 'node:fs'
 import {internalGetEnv} from '@orion-js/env'
 import express from 'express'
+import {registerReplEndpoint} from './repl'
 
 global.appRef = null
 global.serverRef = null
@@ -20,6 +22,14 @@ export const startServer = (
   if (otherOptions.keepAliveTimeout) {
     server.keepAliveTimeout = otherOptions.keepAliveTimeout // Ensure all inactive connections are terminated by the ALB, by setting this a few seconds higher than the ALB idle timeout
     server.headersTimeout = otherOptions.keepAliveTimeout + 1000
+  }
+
+  if (process.env.ORION_REPL) {
+    registerReplEndpoint()
+    try {
+      mkdirSync('.orion', {recursive: true})
+      writeFileSync('.orion/port', String(port))
+    } catch {}
   }
 
   return app

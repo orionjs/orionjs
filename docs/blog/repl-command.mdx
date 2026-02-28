@@ -1,0 +1,124 @@
+---
+title: 'Introducing orion repl'
+description: 'Run one-off expressions against your running Orionjs dev server'
+---
+
+We've added a new `repl` command to the Orionjs CLI. It lets you evaluate TypeScript expressions against your running dev server — services, repositories, database connections, and all.
+
+## The Problem
+
+Sometimes you need to quickly query a service, inspect data, or run a one-off fix. Until now, you'd either:
+
+- Write a throwaway script that imports your app and runs some code
+- Add temporary code to a route or resolver and hit it with curl
+- Open a MongoDB shell and work around your application layer
+
+None of these are great. They're slow, error-prone, and bypass your business logic.
+
+## The Solution
+
+First, start your dev server with the `--repl` flag:
+
+```bash
+bunx orion dev --repl
+```
+
+Then, in another terminal:
+
+```bash
+bunx orion repl -e "
+const {UserService} = await import('./app/services/UserService')
+return getInstance(UserService).getActiveUsers()
+"
+```
+
+That's it. The command:
+
+1. Connects to your already-running dev server over HTTP
+2. Evaluates your expression with full access to `getInstance` and all registered services
+3. Prints the result as JSON
+
+No extra boot time, no port conflicts, and you're working against the actual live app state.
+
+## Examples
+
+### Query a service
+
+```bash
+bunx orion repl -e "
+const {UserService} = await import('./app/services/UserService')
+const userService = getInstance(UserService)
+return await userService.getUserById('abc123')
+"
+```
+
+### Count documents in a collection
+
+```bash
+bunx orion repl -e "
+const {ProductsRepo} = await import('./app/repos/ProductsRepo')
+const repo = getInstance(ProductsRepo)
+return await repo.countDocuments({active: true})
+"
+```
+
+### Run a quick data fix
+
+```bash
+bunx orion repl -e "
+const {OrdersRepo} = await import('./app/repos/OrdersRepo')
+const repo = getInstance(OrdersRepo)
+const orders = await repo.find({status: 'stuck'})
+for (const order of orders) {
+  await repo.updateOne(order._id, {status: 'pending'})
+}
+return orders.length + ' orders fixed'
+"
+```
+
+## How It Works
+
+When you run `orion dev --repl`, the dev server registers a `POST /__repl` endpoint on the same Express app. The `orion repl` CLI sends your expression to that endpoint, where it's evaluated as an async function body with `getInstance` in scope. The result is returned as JSON.
+
+Port discovery is automatic — the server writes its port to `.orion/port`, and the CLI reads it. You can also specify `--port` explicitly.
+
+## Claude Code Integration
+
+If you use [Claude Code](https://claude.com/claude-code), you can teach it to use the REPL by adding a custom command at `.claude/commands/orion-repl.md`:
+
+````markdown
+---
+description: Run an expression against the Orionjs app using the REPL
+---
+
+Use the Orionjs REPL to evaluate an expression against the running dev server.
+
+Command pattern:
+```
+bunx orion repl -e "<expression>"
+```
+
+The expression runs inside an async function. Use `return` to output a value.
+`getInstance` from `@orion-js/services` is available — use it to get any service or repository.
+
+Make sure the dev server is running with `bunx orion dev --repl`.
+
+Examples:
+- `bunx orion repl -e "const {UserService} = await import('./app/services/UserService'); return getInstance(UserService).getUserById('abc')"`
+- `bunx orion repl -e "const {OrdersRepo} = await import('./app/repos/OrdersRepo'); return await getInstance(OrdersRepo).countDocuments({})"`
+````
+
+This lets Claude interact with your app directly — querying data, testing services, and running migrations on your behalf.
+
+## Get Started
+
+Update to the latest `@orion-js/core` and try it:
+
+```bash
+bun add -D @orion-js/core@latest
+bunx orion dev --repl
+# In another terminal:
+bunx orion repl -e "return 1 + 1"
+```
+
+See the full [REPL guide](/guides/repl) for more details.
