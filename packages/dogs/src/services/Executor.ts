@@ -82,10 +82,14 @@ export class Executor {
    */
   async handleMaxTriesReached(
     jobToRun: JobToRun,
-    context: ExecutionContext,
     onMaxTriesReached: (job: JobToRun) => Promise<void>,
   ) {
-    context.logger.warn(
+    const jobLogger = logger.addMetadata({
+      jobName: jobToRun.name,
+      jobId: jobToRun.jobId,
+    })
+
+    jobLogger.warn(
       `Job "${jobToRun.name}" has reached max tries (${jobToRun.tries}). Marking as maxTriesReached.`,
     )
     await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId)
@@ -94,7 +98,7 @@ export class Executor {
     try {
       await onMaxTriesReached(jobToRun)
     } catch (callbackError) {
-      context.logger.error(`Error in onMaxTriesReached callback for job "${jobToRun.name}"`, {
+      jobLogger.error(`Error in onMaxTriesReached callback for job "${jobToRun.name}"`, {
         error: callbackError,
       })
     }
@@ -125,7 +129,7 @@ export class Executor {
     const handleRetry = async (nextRunAt: Date) => {
       // Check if we've reached max tries before scheduling another retry
       if (jobToRun.tries >= effectiveMaxTries) {
-        await this.handleMaxTriesReached(jobToRun, context, config.onMaxTriesReached)
+        await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
         return
       }
 
@@ -143,7 +147,7 @@ export class Executor {
 
       // For jobs without onError, check if max tries reached
       if (jobToRun.tries >= effectiveMaxTries) {
-        await this.handleMaxTriesReached(jobToRun, context, config.onMaxTriesReached)
+        await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
         return
       }
 
@@ -221,6 +225,12 @@ export class Executor {
   async executeJob(config: ExecuteJobConfig, jobToRun: JobToRun, respawnWorker: () => void) {
     const job = this.getJobDefinition(jobToRun, config.jobs)
     if (!job) return
+
+    const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
+    if (jobToRun.wasStale && jobToRun.tries >= effectiveMaxTries) {
+      await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
+      return
+    }
 
     // If job has a custom lockTime different from the default, update the database lock
     const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)

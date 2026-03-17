@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "dev": "tsup --watch"
   },
   "peerDependencies": {
-    "@orion-js/dogs": "4.3.0",
+    "@orion-js/dogs": "4.3.1",
     "@orion-js/echoes": "4.3.1",
     "@orion-js/graphql": "4.3.1",
     "@orion-js/helpers": "4.3.0",
@@ -33,7 +33,7 @@
     }
   },
   "devDependencies": {
-    "@orion-js/dogs": "4.3.0",
+    "@orion-js/dogs": "4.3.1",
     "@orion-js/echoes": "4.3.1",
     "@orion-js/graphql": "4.3.1",
     "@orion-js/helpers": "4.3.0",

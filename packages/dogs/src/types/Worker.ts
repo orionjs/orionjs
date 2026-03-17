@@ -1,6 +1,6 @@
 import {OrionLogger} from '@orion-js/logger'
-import {JobDefinition} from './JobsDefinition'
 import {Blackbox} from '@orion-js/schema'
+import {JobDefinition} from './JobsDefinition'
 
 export interface JobToRun {
   jobId: string
@@ -12,6 +12,7 @@ export interface JobToRun {
   lockTime: number
   priority: number
   uniqueIdentifier?: string
+  wasStale?: boolean
 }
 
 export interface ExecutionContext {

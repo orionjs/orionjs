@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.3.1
+
+### Patch Changes
+
+- Respect maxTries when recovering stale jobs so they stop retrying indefinitely and transition to maxTriesReached.
+
 ## 4.2.10
 
 ### Patch Changes

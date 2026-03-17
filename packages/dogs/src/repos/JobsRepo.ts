@@ -1,12 +1,10 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
-import {Collection, MongoDB, MongoCollection} from '@orion-js/mongodb'
+import {Collection, MongoCollection, MongoDB, Repository} from '@orion-js/mongodb'
 import {ScheduleJobRecordOptions, ScheduleJobsResult} from '../types/Events'
-import {JobRecord} from '../types/JobRecord'
+import {JobRecord, JobRecordSchema} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
 import {JobToRun} from '../types/Worker'
-import {Repository} from '@orion-js/mongodb'
-import {JobRecordSchema} from '../types/JobRecord'
 
 @Repository()
 export class JobsRepo {
@@ -73,10 +71,11 @@ export class JobsRepo {
     if (!job) return
 
     let tries = job.tries || 1
+    const wasStale = Boolean(job.lockedUntil)
 
-    if (job.lockedUntil) {
+    if (wasStale) {
       logger.info(`Running job "${job.jobName}" that was staled`)
-      this.jobs.updateOne(job._id, {$inc: {tries: 1}})
+      await this.jobs.updateOne(job._id, {$inc: {tries: 1}})
       tries++
     }
 
@@ -90,6 +89,7 @@ export class JobsRepo {
       lockTime,
       priority: job.priority,
       uniqueIdentifier: job.uniqueIdentifier,
+      wasStale,
     }
   }
 

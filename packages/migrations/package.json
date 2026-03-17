@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/migrations",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -16,7 +16,7 @@
     "dev": "tsup --watch"
   },
   "peerDependencies": {
-    "@orion-js/dogs": "4.3.0",
+    "@orion-js/dogs": "4.3.1",
     "@orion-js/logger": "4.3.0",
     "@orion-js/mongodb": "4.3.0"
   },
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@orion-js/mongodb": "4.3.0",
-    "@orion-js/dogs": "4.3.0",
+    "@orion-js/dogs": "4.3.1",
     "@types/node": "^18.0.0",
     "mongodb-memory-server": "^10.1.4",
     "tsup": "^8.0.1",

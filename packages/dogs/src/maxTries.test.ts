@@ -346,6 +346,56 @@ describe('Max tries functionality', () => {
     expect(jobRecord).toBeDefined()
     expect(jobRecord.status).toBe('maxTriesReached')
   })
+
+  it('should stop stale-recovered jobs when they reach max tries', async () => {
+    const jobName = generateId()
+    let executionCount = 0
+    const maxTriesReachedCallback = mock()
+
+    const job = defineJob({
+      type: 'event',
+      maxTries: 2,
+      async resolve() {
+        executionCount++
+        await sleep(50)
+        throw new Error('Always goes stale before failing')
+      },
+    })
+
+    await scheduleJob({
+      name: jobName,
+      runIn: 1,
+    })
+
+    const instance = startWorkers({
+      jobs: {[jobName]: job},
+      workersCount: 1,
+      pollInterval: 5,
+      cooldownPeriod: 5,
+      defaultLockTime: 10,
+      maxTries: 10,
+      onMaxTriesReached: async jobToRun => {
+        maxTriesReachedCallback(jobToRun)
+      },
+    })
+
+    await sleep(150)
+    await instance.stop()
+
+    expect(executionCount).toBe(1)
+    expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
+    expect(maxTriesReachedCallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: jobName,
+        tries: 2,
+        wasStale: true,
+      }),
+    )
+
+    const jobRecord = await jobsRepo.jobs.findOne({jobName})
+    expect(jobRecord).toBeDefined()
+    expect(jobRecord.status).toBe('maxTriesReached')
+  })
 })
 
 describe('JobsRepo maxTriesReached filtering', () => {
