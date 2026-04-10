@@ -145,6 +145,8 @@ export default class NotificationJobs {
       subject: { type: String },
       body: { type: String }
     },
+    // Optional: limit how many sendEmail jobs can run in parallel on this server
+    maxParallelExecutionsPerServer: 2,
     // Optional: configure error handling
     onError: async function(error, params, context) {
       if (context.tries < 3) {
@@ -180,6 +182,9 @@ export default class NotificationJobs {
 | `runEvery` | `number \| string` | Milliseconds between runs or a string like '1d', '4h', etc. Ignored if `getNextRun` is provided. |
 | `getNextRun` | `Function` | Function returning a Date for the next execution. Takes precedence over `runEvery`. |
 | `priority` | `number` | Job priority. Higher numbers get executed first (default: 100). |
+| `lockTime` | `number` | Override the global `defaultLockTime` for this job only. |
+| `maxTries` | `number` | Override the global `maxTries` for this job only. |
+| `maxParallelExecutionsPerServer` | `number` | Limit how many executions of this job can run at the same time in a single server process. |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
 | `saveExecutionsFor` | `number` | Time in milliseconds to keep job execution history (default: 1 week). Set to 0 to disable. |
@@ -190,6 +195,9 @@ export default class NotificationJobs {
 | Option | Type | Description |
 | ------ | ---- | ----------- |
 | `params` | `Object \| Schema` | Schema for validating job parameters. |
+| `lockTime` | `number` | Override the global `defaultLockTime` for this job only. |
+| `maxTries` | `number` | Override the global `maxTries` for this job only. |
+| `maxParallelExecutionsPerServer` | `number` | Limit how many executions of this job can run at the same time in a single server process. |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
 | `saveExecutionsFor` | `number` | Time in milliseconds to keep job execution history (default: 1 week). Set to 0 to disable. |
@@ -207,7 +215,11 @@ const workersInstance = startWorkers({
   workersCount: 2, // Number of concurrent workers (default: 1)
   pollInterval: 3000, // Milliseconds between polling for new jobs (default: 3000)
   cooldownPeriod: 100, // Milliseconds to wait after job execution (default: 100)
-  lockTime: 30000 // Lock time in milliseconds (default: 30000 = 30 seconds)
+  defaultLockTime: 30000, // Default lock time in milliseconds (default: 30000 = 30 seconds)
+  maxTries: 10,
+  onMaxTriesReached: async (job) => {
+    logger.error('Job reached max tries', {jobName: job.name, jobId: job.jobId})
+  }
 })
 
 // To stop workers (e.g., when shutting down the application)
@@ -216,6 +228,24 @@ process.on('SIGTERM', async () => {
   process.exit(0)
 })
 ```
+
+Use `maxParallelExecutionsPerServer` when a job is safe to queue but should not run too many times concurrently on the same server, for example:
+
+```typescript
+@EventJob()
+generateInvoicePdf = createEventJob({
+  maxParallelExecutionsPerServer: 1,
+  params: {
+    invoiceId: {type: String}
+  },
+  resolve: async ({invoiceId}) => {
+    // Avoid saturating CPU or a shared local resource on this server
+    await generatePdf(invoiceId)
+  }
+})
+```
+
+This limit is applied per server process. If you run multiple servers, each one can execute up to that limit independently.
 
 ## Scheduling Event Jobs
 
@@ -365,5 +395,4 @@ console.log('Success rate:', history.stats.successRate)
 7. **Test Jobs Thoroughly**: Write unit tests for job logic to ensure reliability.
 
 8. **Check Job Status**: Implement health checks to monitor job processing.
-
 
