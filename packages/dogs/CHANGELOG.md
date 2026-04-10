@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.3.2
+
+### Patch Changes
+
+- Add `maxParallelExecutionsPerServer` to limit parallel executions of a specific job within a single server process.
+
 ## 4.3.1
 
 ### Patch Changes

@@ -4,7 +4,7 @@ import {Inject, Service} from '@orion-js/services'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {StartWorkersConfig} from '../types/StartConfig'
-import {WorkerInstance, WorkersInstance} from '../types/Worker'
+import {JobToRun, WorkerInstance, WorkersInstance} from '../types/Worker'
 import {ExecuteJobConfig, Executor} from './Executor'
 
 @Service()
@@ -28,13 +28,76 @@ export class WorkerService {
     })
   }
 
+  getAvailableJobNames(
+    config: StartWorkersConfig,
+    workersInstance: WorkersInstance,
+    jobNames: string[],
+  ) {
+    return jobNames.filter(jobName => {
+      const currentExecutions = workersInstance.runningJobsByName.get(jobName) || 0
+      const maxParallelExecutions =
+        config.jobs[jobName].maxParallelExecutionsPerServer ?? Number.POSITIVE_INFINITY
+
+      return currentExecutions < maxParallelExecutions
+    })
+  }
+
+  reserveJobExecution(workersInstance: WorkersInstance, jobName: string) {
+    const currentExecutions = workersInstance.runningJobsByName.get(jobName) || 0
+    workersInstance.runningJobsByName.set(jobName, currentExecutions + 1)
+  }
+
+  releaseJobExecution(workersInstance: WorkersInstance, jobName: string) {
+    const currentExecutions = workersInstance.runningJobsByName.get(jobName) || 0
+    if (currentExecutions <= 1) {
+      workersInstance.runningJobsByName.delete(jobName)
+      return
+    }
+
+    workersInstance.runningJobsByName.set(jobName, currentExecutions - 1)
+  }
+
+  async withJobAcquisitionLock<T>(workersInstance: WorkersInstance, callback: () => Promise<T>) {
+    const previousLock = workersInstance.jobAcquisitionLock
+    let releaseLock!: () => void
+    workersInstance.jobAcquisitionLock = new Promise<void>(resolve => {
+      releaseLock = resolve
+    })
+
+    await previousLock
+
+    try {
+      return await callback()
+    } finally {
+      releaseLock()
+    }
+  }
+
+  async getJobAndReserveExecution(
+    config: StartWorkersConfig,
+    workersInstance: WorkersInstance,
+    jobNames: string[],
+  ): Promise<JobToRun | undefined> {
+    return this.withJobAcquisitionLock(workersInstance, async () => {
+      const availableJobNames = this.getAvailableJobNames(config, workersInstance, jobNames)
+      if (availableJobNames.length === 0) return
+
+      const jobToRun = await this.jobsRepo.getJobAndLock(availableJobNames, config.defaultLockTime)
+      if (!jobToRun) return
+
+      this.reserveJobExecution(workersInstance, jobToRun.name)
+      return jobToRun
+    })
+  }
+
   async runWorkerLoop(
     config: StartWorkersConfig,
+    workersInstance: WorkersInstance,
     workerInstance: WorkerInstance,
     jobNames: string[],
     executeConfig: ExecuteJobConfig,
   ) {
-    const jobToRun = await this.jobsRepo.getJobAndLock(jobNames, config.defaultLockTime)
+    const jobToRun = await this.getJobAndReserveExecution(config, workersInstance, jobNames)
     if (!jobToRun) {
       logger.debug('No job to run')
       return false
@@ -42,12 +105,20 @@ export class WorkerService {
 
     logger.debug(`Got job [w${workerInstance.workerIndex}] to run:`, jobToRun)
 
-    await this.executor.executeJob(executeConfig, jobToRun, workerInstance.respawn)
+    try {
+      await this.executor.executeJob(executeConfig, jobToRun, workerInstance.respawn)
+    } finally {
+      this.releaseJobExecution(workersInstance, jobToRun.name)
+    }
 
     return true
   }
 
-  async startWorker(config: StartWorkersConfig, workerInstance: WorkerInstance) {
+  async startWorker(
+    config: StartWorkersConfig,
+    workersInstance: WorkersInstance,
+    workerInstance: WorkerInstance,
+  ) {
     const names = this.getJobNames(config.jobs)
     logger.debug(
       `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
@@ -65,7 +136,13 @@ export class WorkerService {
       }
 
       try {
-        const didRun = await this.runWorkerLoop(config, workerInstance, names, executeConfig)
+        const didRun = await this.runWorkerLoop(
+          config,
+          workersInstance,
+          workerInstance,
+          names,
+          executeConfig,
+        )
         if (!didRun) await sleep(config.pollInterval)
         if (didRun) await sleep(config.cooldownPeriod)
       } catch (error) {
@@ -80,6 +157,8 @@ export class WorkerService {
       running: true,
       workersCount: config.workersCount,
       workers: [],
+      runningJobsByName: new Map(),
+      jobAcquisitionLock: Promise.resolve(),
       stop: async () => {
         logger.info('Stopping workers...')
         workersInstance.running = false
@@ -128,7 +207,7 @@ export class WorkerService {
       },
     }
 
-    const workerPromise = this.startWorker(config, workerInstance)
+    const workerPromise = this.startWorker(config, workersInstance, workerInstance)
 
     workerInstance.promise = workerPromise
     workersInstance.workers[workerIndex] = workerInstance

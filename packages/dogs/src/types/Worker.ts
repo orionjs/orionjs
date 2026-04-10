@@ -36,6 +36,8 @@ export interface WorkersInstance {
   running: boolean
   workersCount: number
   workers: WorkerInstance[]
+  runningJobsByName: Map<string, number>
+  jobAcquisitionLock: Promise<void>
   /**
    * Stop all workers and wait for them to finish
    */

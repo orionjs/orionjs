@@ -1,6 +1,6 @@
 import {Blackbox, InferSchemaType, SchemaInAnyOrionForm} from '@orion-js/schema'
-import {ExecutionContext} from './Worker'
 import {ScheduleJobOptionsWithoutName, ScheduleJobsResult} from './Events'
+import {ExecutionContext} from './Worker'
 
 export interface JobRetryResultBase {
   action: 'retry' | 'dismiss'
@@ -45,6 +45,12 @@ export interface BaseJobDefinition {
    * If not set, the global maxTries from config will be used.
    */
   maxTries?: number
+
+  /**
+   * Maximum number of executions of this job that can run in parallel on the same server.
+   * If not set, the job can use all available workers on the current server.
+   */
+  maxParallelExecutionsPerServer?: number
 }
 
 export interface RecurrentJobDefinition extends BaseJobDefinition {

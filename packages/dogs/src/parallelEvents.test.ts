@@ -232,4 +232,51 @@ describe('Parallel Event Jobs', () => {
     // All jobs should start within a reasonable time window if running in parallel
     expect(lastStart - firstStart).toBeLessThan(500) // 500ms window
   })
+
+  it('Should limit parallel executions per server for a specific job', async () => {
+    const jobName = `limitedParallelJob${generateId()}`
+    let runningExecutions = 0
+    let maxRunningExecutions = 0
+    const executions: string[] = []
+
+    const job = defineJob({
+      type: 'event',
+      maxParallelExecutionsPerServer: 2,
+      async resolve(params) {
+        runningExecutions++
+        maxRunningExecutions = Math.max(maxRunningExecutions, runningExecutions)
+        executions.push(`execution-${params.id}`)
+
+        await sleep(100)
+
+        runningExecutions--
+        return {id: params.id}
+      },
+    })
+
+    const instance = startWorkers({
+      jobs: {[jobName]: job},
+      workersCount: 5,
+      pollInterval: 10,
+      cooldownPeriod: 10,
+      maxTries: 10,
+      onMaxTriesReached: async () => {},
+    })
+
+    await Promise.all(
+      Array.from({length: 5}, (_, index) =>
+        scheduleJob({
+          name: jobName,
+          params: {id: index + 1},
+          runIn: 5,
+        }),
+      ),
+    )
+
+    await sleep(700)
+    await instance.stop()
+
+    expect(executions).toHaveLength(5)
+    expect(maxRunningExecutions).toBe(2)
+  })
 })
