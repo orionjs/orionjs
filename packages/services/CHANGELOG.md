@@ -1,5 +1,13 @@
 # @orion-js/services
 
+## 4.3.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.3.1
+  - @orion-js/helpers@4.3.1
+
 ## 4.2.0
 
 ### Minor Changes

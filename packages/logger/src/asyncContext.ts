@@ -10,6 +10,7 @@ interface BaseOrionAsyncContext {
 export interface JobAsyncContext extends BaseOrionAsyncContext {
   controllerType: 'job'
   jobName: string
+  jobId?: string
 }
 
 export interface RouteAsyncContext extends BaseOrionAsyncContext {

@@ -25,6 +25,7 @@ describe('Executor async context', () => {
         expect(typeof context?.contextId).toBe('string')
         expect(context?.controllerType).toBe('job')
         expect(context?.jobName).toBe('testJob')
+        expect(context?.jobId).toBe('id123')
         expect(context?.params).toEqual({})
       }),
     }

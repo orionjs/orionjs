@@ -14,6 +14,7 @@ describe('OrionAsyncContext - Discriminated Unions', () => {
       {
         controllerType: 'job',
         jobName: 'processData',
+        jobId: 'job-123',
         params: {id: 123},
       },
       async () => {
@@ -23,9 +24,11 @@ describe('OrionAsyncContext - Discriminated Unions', () => {
         // Type narrowing works with discriminated unions
         if (ctx?.controllerType === 'job') {
           expect(ctx.jobName).toBe('processData')
+          expect(ctx.jobId).toBe('job-123')
           // TypeScript knows these fields exist on JobAsyncContext
           const jobCtx: JobAsyncContext = ctx
           expect(jobCtx.jobName).toBe('processData')
+          expect(jobCtx.jobId).toBe('job-123')
         }
       },
     )

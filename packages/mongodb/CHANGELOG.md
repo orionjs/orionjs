@@ -1,5 +1,19 @@
 # @orion-js/mongodb
 
+## 4.3.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/logger@4.3.1
+  - @orion-js/env@4.3.1
+  - @orion-js/helpers@4.3.1
+  - @orion-js/models@4.3.1
+  - @orion-js/resolvers@4.3.1
+  - @orion-js/schema@4.3.1
+  - @orion-js/services@4.3.1
+  - @orion-js/typed-model@4.3.1
+
 ## 4.2.10
 
 ### Patch Changes

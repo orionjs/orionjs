@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/trpc",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -12,10 +12,10 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@orion-js/http": "4.3.1",
-    "@orion-js/helpers": "4.3.0",
-    "@orion-js/schema": "4.3.0",
-    "@orion-js/services": "4.3.0",
+    "@orion-js/http": "4.3.2",
+    "@orion-js/helpers": "4.3.1",
+    "@orion-js/schema": "4.3.1",
+    "@orion-js/services": "4.3.1",
     "@trpc/server": "^11.0.0"
   },
   "devDependencies": {

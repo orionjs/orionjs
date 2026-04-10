@@ -273,6 +273,7 @@ export class Executor {
         const extraContext = {
           controllerType: 'job' as const,
           jobName: jobToRun.name,
+          jobId: jobToRun.jobId,
           params: jobToRun.params,
         }
 
@@ -281,6 +282,7 @@ export class Executor {
             // Inject async context update
             updateOrionAsyncContext({
               jobName: jobToRun.name,
+              jobId: jobToRun.jobId,
               params: jobToRun.params,
             })
             const result = await job.resolve(jobToRun.params, context)

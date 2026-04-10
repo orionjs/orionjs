@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/schema",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -19,7 +19,7 @@
     "dot-object": "^2.1.4"
   },
   "peerDependencies": {
-    "@orion-js/logger": "4.3.0"
+    "@orion-js/logger": "4.3.1"
   },
   "devDependencies": {
     "@types/dot-object": "^2.1.2",

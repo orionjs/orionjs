@@ -1,5 +1,11 @@
 # @orion-js/logger
 
+## 4.3.1
+
+### Patch Changes
+
+- Expose `jobId` in job async context so Dogs jobs can inspect the concrete job record, and update Dogs to populate that field during job execution.
+
 ## 4.2.0
 
 ### Minor Changes
