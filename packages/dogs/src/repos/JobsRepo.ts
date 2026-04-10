@@ -56,6 +56,7 @@ export class JobsRepo {
       },
       {
         $set: {lockedUntil, lastRunAt: new Date()},
+        $inc: {tries: 1},
       },
       {
         mongoOptions: {
@@ -70,13 +71,11 @@ export class JobsRepo {
 
     if (!job) return
 
-    let tries = job.tries || 1
+    const tries = (job.tries || 0) + 1
     const wasStale = Boolean(job.lockedUntil)
 
     if (wasStale) {
       logger.info(`Running job "${job.jobName}" that was staled`)
-      await this.jobs.updateOne(job._id, {$inc: {tries: 1}})
-      tries++
     }
 
     return {
@@ -100,17 +99,16 @@ export class JobsRepo {
   async scheduleNextRun(options: {
     jobId: string
     nextRunAt: Date
-    addTries: boolean
+    resetTries: boolean
     priority: number
   }) {
     const updator: MongoDB.UpdateFilter<JobRecord> = {
       $set: {
         nextRunAt: options.nextRunAt,
         priority: options.priority,
-        ...(options.addTries ? {} : {tries: 0}),
+        ...(options.resetTries ? {tries: 0} : {}),
       },
       $unset: {lockedUntil: ''},
-      ...(options.addTries ? {$inc: {tries: 1}} : {}),
     }
 
     await this.jobs.updateOne(options.jobId, updator)

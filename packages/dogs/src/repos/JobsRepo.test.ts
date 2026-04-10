@@ -13,7 +13,7 @@ describe('JobsRepo', () => {
   })
 
   describe('scheduleNextRun method', () => {
-    it('should set tries to 0 when addTries is false (successful execution)', async () => {
+    it('should set tries to 0 when resetTries is true (successful execution)', async () => {
       // Arrange: Create a job record with some tries
       const jobId = generateId()
       await jobsRepo.jobs.insertOne({
@@ -29,7 +29,7 @@ describe('JobsRepo', () => {
       await jobsRepo.scheduleNextRun({
         jobId,
         nextRunAt: new Date(Date.now() + 1000),
-        addTries: false,
+        resetTries: true,
         priority: 100,
       })
 
@@ -39,7 +39,7 @@ describe('JobsRepo', () => {
       expect(updatedJob.lockedUntil).toBeUndefined()
     })
 
-    it('should increment tries by 1 when addTries is true (error scenario)', async () => {
+    it('should preserve tries when resetTries is false (retry scenario)', async () => {
       // Arrange: Create a job record with some tries
       const jobId = generateId()
       const initialTries = 3
@@ -57,17 +57,17 @@ describe('JobsRepo', () => {
       await jobsRepo.scheduleNextRun({
         jobId,
         nextRunAt: new Date(Date.now() + 1000),
-        addTries: true,
+        resetTries: false,
         priority: 100,
       })
 
-      // Assert: Tries should be incremented by 1
+      // Assert: Tries should be preserved until the job is picked up again
       const updatedJob = await jobsRepo.jobs.findOne(jobId)
-      expect(updatedJob.tries).toBe(initialTries + 1)
+      expect(updatedJob.tries).toBe(initialTries)
       expect(updatedJob.lockedUntil).toBeUndefined()
     })
 
-    it('should handle job with no previous tries field', async () => {
+    it('should preserve missing tries when resetTries is false', async () => {
       // Arrange: Create a job record without tries field
       const jobId = generateId()
       await jobsRepo.jobs.insertOne({
@@ -79,17 +79,17 @@ describe('JobsRepo', () => {
         // No tries field
       })
 
-      // Act: Schedule next run with adding tries
+      // Act: Schedule next run without resetting tries
       await jobsRepo.scheduleNextRun({
         jobId,
         nextRunAt: new Date(Date.now() + 1000),
-        addTries: true,
+        resetTries: false,
         priority: 100,
       })
 
-      // Assert: Tries should be incremented from 0 to 1
+      // Assert: Tries should remain unset until the next pickup
       const updatedJob = await jobsRepo.jobs.findOne(jobId)
-      expect(updatedJob.tries).toBe(1)
+      expect(updatedJob.tries).toBeUndefined()
     })
   })
 
@@ -123,7 +123,7 @@ describe('JobsRepo', () => {
       expect(updatedJob.tries).toBe(initialTries + 1)
     })
 
-    it('should return job with current tries when not stale', async () => {
+    it('should increment tries when picking up a non-stale job', async () => {
       // Arrange: Create a non-stale job
       const jobId = generateId()
       const initialTries = 1
@@ -140,9 +140,9 @@ describe('JobsRepo', () => {
       // Act: Get and lock the job
       const jobToRun = await jobsRepo.getJobAndLock(['test-job'], 5000)
 
-      // Assert: Job should be returned with original tries
+      // Assert: Job should be returned with incremented tries
       expect(jobToRun).toBeDefined()
-      expect(jobToRun.tries).toBe(initialTries)
+      expect(jobToRun.tries).toBe(initialTries + 1)
     })
   })
 

@@ -13,7 +13,7 @@ describe('Max tries functionality', () => {
     await jobsRepo.jobs.deleteMany({})
   })
 
-  it('should mark job as maxTriesReached when max tries is exceeded', async () => {
+  it('should mark job as maxTriesReached before executing attempt past maxTries', async () => {
     const jobName = generateId()
     let executionCount = 0
     const maxTriesReachedCallback = mock()
@@ -52,9 +52,7 @@ describe('Max tries functionality', () => {
     await sleep(300)
     await instance.stop()
 
-    // Note: Due to how tries tracking works (starts at 1, DB increments after each fail),
-    // with maxTries = 3, the job executes 4 times before tries reaches 3
-    expect(executionCount).toBe(4)
+    expect(executionCount).toBe(3)
 
     // Callback should have been called
     expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
@@ -110,8 +108,7 @@ describe('Max tries functionality', () => {
     await sleep(200)
     await instance.stop()
 
-    // Note: With maxTries = 2 and the tries tracking behavior, job executes 3 times
-    expect(executionCount).toBe(3)
+    expect(executionCount).toBe(2)
     expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
   })
 
@@ -194,8 +191,7 @@ describe('Max tries functionality', () => {
     await sleep(200)
     await instance.stop()
 
-    // Note: With maxTries = 2 and the tries tracking behavior, job executes 3 times
-    expect(executionCount).toBe(3)
+    expect(executionCount).toBe(2)
     expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
 
     // Recurrent job should still exist but be marked as maxTriesReached
@@ -215,10 +211,9 @@ describe('Max tries functionality', () => {
       type: 'event',
       async resolve(_, context) {
         executionCount++
-        if (context.tries < 2) {
+        if (context.tries < 3) {
           throw new Error('Fails first two times')
         }
-        // Success on 3rd try
       },
       async onError() {
         return {
@@ -248,7 +243,7 @@ describe('Max tries functionality', () => {
     await instance.stop()
 
     // Should have succeeded before reaching max tries
-    expect(executionCount).toBeGreaterThanOrEqual(2)
+    expect(executionCount).toBe(3)
     expect(maxTriesReachedCallback).not.toHaveBeenCalled()
 
     // Job should be deleted (event job after success)
@@ -294,8 +289,7 @@ describe('Max tries functionality', () => {
     await sleep(200)
     await instance.stop()
 
-    // Note: With maxTries = 2 and the tries tracking behavior, job executes 3 times
-    expect(executionCount).toBe(3)
+    expect(executionCount).toBe(2)
 
     // Job should still be marked as maxTriesReached despite callback error
     const jobRecord = await jobsRepo.jobs.findOne({jobName})
@@ -328,16 +322,18 @@ describe('Max tries functionality', () => {
       workersCount: 1,
       pollInterval: 10,
       cooldownPeriod: 10,
+      defaultLockTime: 10,
       maxTries: 1,
       onMaxTriesReached: async () => {
         maxTriesReachedCallback()
       },
     })
 
-    await sleep(100)
+    await sleep(150)
     await instance.stop()
 
-    // Should have executed once and hit max tries
+    // Without onError, the failed event job is retried only when it becomes stale.
+    // The second pickup increments tries to 2 and gets blocked at start.
     expect(executionCount).toBe(1)
     expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
 
@@ -382,12 +378,12 @@ describe('Max tries functionality', () => {
     await sleep(150)
     await instance.stop()
 
-    expect(executionCount).toBe(1)
+    expect(executionCount).toBe(2)
     expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
     expect(maxTriesReachedCallback).toHaveBeenCalledWith(
       expect.objectContaining({
         name: jobName,
-        tries: 2,
+        tries: 3,
         wasStale: true,
       }),
     )

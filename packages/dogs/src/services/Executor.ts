@@ -90,7 +90,7 @@ export class Executor {
     })
 
     jobLogger.warn(
-      `Job "${jobToRun.name}" has reached max tries (${jobToRun.tries}). Marking as maxTriesReached.`,
+      `Job "${jobToRun.name}" has exceeded max tries (${jobToRun.tries}). Marking as maxTriesReached.`,
     )
     await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId)
 
@@ -111,45 +111,29 @@ export class Executor {
     context: ExecutionContext,
     config: ExecuteJobConfig,
   ) {
-    const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
-
     // Helper to schedule next run for recurrent jobs (used when dismissing)
     const scheduleRecurrent = async () => {
       if (job.type === 'recurrent') {
         await this.jobsRepo.scheduleNextRun({
           jobId: jobToRun.jobId,
           nextRunAt: getNextRunDate(job),
-          addTries: false,
+          resetTries: true,
           priority: job.priority,
         })
       }
     }
 
-    // Helper to handle retry with max tries check
     const handleRetry = async (nextRunAt: Date) => {
-      // Check if we've reached max tries before scheduling another retry
-      if (jobToRun.tries >= effectiveMaxTries) {
-        await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
-        return
-      }
-
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt,
-        addTries: true,
+        resetTries: false,
         priority: job.type === 'recurrent' ? job.priority : jobToRun.priority,
       })
     }
 
-    // If no custom error handler, check max tries and schedule recurrent if applicable
     if (!job.onError) {
       context.logger.error(`Error executing job "${jobToRun.name}"`, {error})
-
-      // For jobs without onError, check if max tries reached
-      if (jobToRun.tries >= effectiveMaxTries) {
-        await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
-        return
-      }
 
       await scheduleRecurrent()
       return
@@ -212,7 +196,7 @@ export class Executor {
       await this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
-        addTries: false,
+        resetTries: true,
         priority: job.priority,
       })
     }
@@ -227,7 +211,7 @@ export class Executor {
     if (!job) return
 
     const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
-    if (jobToRun.wasStale && jobToRun.tries >= effectiveMaxTries) {
+    if (jobToRun.tries > effectiveMaxTries) {
       await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
       return
     }
