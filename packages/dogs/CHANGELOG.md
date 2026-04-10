@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.3.4
+
+### Patch Changes
+
+- Count job tries when a worker starts executing a job, including stale recoveries, and centralize max tries checks at the start of execution.
+
 ## 4.3.3
 
 ### Patch Changes
