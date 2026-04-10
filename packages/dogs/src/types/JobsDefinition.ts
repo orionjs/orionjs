@@ -45,12 +45,6 @@ export interface BaseJobDefinition {
    * If not set, the global maxTries from config will be used.
    */
   maxTries?: number
-
-  /**
-   * Maximum number of executions of this job that can run in parallel on the same server.
-   * If not set, the job can use all available workers on the current server.
-   */
-  maxParallelExecutionsPerServer?: number
 }
 
 export interface RecurrentJobDefinition extends BaseJobDefinition {
@@ -103,6 +97,12 @@ export interface EventJobDefinition<TParamsSchema extends SchemaInAnyOrionForm =
    * The schema of the params of the job.
    */
   params?: TParamsSchema
+
+  /**
+   * Maximum number of executions of this job that can run in parallel on the same server.
+   * If not set, the job can use all available workers on the current server.
+   */
+  maxParallelExecutionsPerServer?: number
 
   /**
    * The function to execute when the job is executed.

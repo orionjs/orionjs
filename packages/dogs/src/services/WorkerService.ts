@@ -35,8 +35,11 @@ export class WorkerService {
   ) {
     return jobNames.filter(jobName => {
       const currentExecutions = workersInstance.runningJobsByName.get(jobName) || 0
+      const job = config.jobs[jobName]
       const maxParallelExecutions =
-        config.jobs[jobName].maxParallelExecutionsPerServer ?? Number.POSITIVE_INFINITY
+        job.type === 'event'
+          ? (job.maxParallelExecutionsPerServer ?? Number.POSITIVE_INFINITY)
+          : Number.POSITIVE_INFINITY
 
       return currentExecutions < maxParallelExecutions
     })

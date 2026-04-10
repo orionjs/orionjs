@@ -184,7 +184,6 @@ export default class NotificationJobs {
 | `priority` | `number` | Job priority. Higher numbers get executed first (default: 100). |
 | `lockTime` | `number` | Override the global `defaultLockTime` for this job only. |
 | `maxTries` | `number` | Override the global `maxTries` for this job only. |
-| `maxParallelExecutionsPerServer` | `number` | Limit how many executions of this job can run at the same time in a single server process. |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
 | `saveExecutionsFor` | `number` | Time in milliseconds to keep job execution history (default: 1 week). Set to 0 to disable. |
@@ -245,7 +244,7 @@ generateInvoicePdf = createEventJob({
 })
 ```
 
-This limit is applied per server process. If you run multiple servers, each one can execute up to that limit independently.
+This limit only applies to event jobs. Recurrent jobs already execute as a single job record, so they do not need this option.
 
 ## Scheduling Event Jobs
 
@@ -395,4 +394,3 @@ console.log('Success rate:', history.stats.successRate)
 7. **Test Jobs Thoroughly**: Write unit tests for job logic to ensure reliability.
 
 8. **Check Job Status**: Implement health checks to monitor job processing.
-
