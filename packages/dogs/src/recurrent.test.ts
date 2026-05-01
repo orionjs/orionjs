@@ -1,5 +1,6 @@
 import {sleep} from '@orion-js/helpers'
 import {defineJob, startWorkers} from '.'
+import {getNextRunDate} from './services/getNextRunDate'
 
 describe('Recurrent tests', () => {
   it('Should run a recurrent job', async () => {
@@ -50,5 +51,38 @@ describe('Recurrent tests', () => {
     await instance.stop()
 
     expect(count).toBeGreaterThanOrEqual(3)
+  })
+
+  it('Should calculate the next run from a cron string and timezone', () => {
+    const nextRunAt = getNextRunDate({
+      cron: '0 9 * * *',
+      timezone: 'America/Santiago',
+      currentDate: new Date('2026-05-01T12:00:00.000Z'),
+    })
+
+    expect(nextRunAt.toISOString()).toBe('2026-05-01T13:00:00.000Z')
+  })
+
+  it('Should define a recurrent job with a cron string and timezone', () => {
+    const job = defineJob({
+      type: 'recurrent',
+      cron: '0 9 * * *',
+      timezone: 'America/Santiago',
+      async resolve() {},
+    })
+
+    expect(job.type).toBe('recurrent')
+    expect(job.cron).toBe('0 9 * * *')
+    expect(job.timezone).toBe('America/Santiago')
+  })
+
+  it('Should require timezone when using a cron string', () => {
+    expect(() =>
+      defineJob({
+        type: 'recurrent',
+        cron: '0 9 * * *',
+        async resolve() {},
+      } as any),
+    ).toThrow('Cron recurrent jobs require a timezone')
   })
 })

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "4.3.4",
+  "version": "4.3.5",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -28,6 +28,7 @@
     "@orion-js/schema": "4.3.1",
     "@orion-js/services": "4.3.1",
     "@orion-js/typed-model": "4.3.1",
+    "cron-parser": "^5.5.0",
     "dataloader": "2.2.2",
     "dot-object": "^2.1.5",
     "parse-duration": "^2.1.3"

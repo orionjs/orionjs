@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.3.5
+
+### Patch Changes
+
+- Add cron string support for recurrent jobs with required timezone configuration.
+
 ## 4.3.4
 
 ### Patch Changes
