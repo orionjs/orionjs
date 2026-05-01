@@ -1,3 +1,8 @@
+import {cleanAndValidate, SchemaInAnyOrionForm} from '@orion-js/schema'
+import {CronExpressionParser} from 'cron-parser'
+import parse from 'parse-duration'
+import {ScheduleJobsResult, scheduleJob, scheduleJobs} from '..'
+import {ScheduleJobOptionsWithoutName} from '../types/Events'
 import {
   CreateEventJobOptions,
   CreateJobOptions,
@@ -6,10 +11,6 @@ import {
   JobDefinition,
   RecurrentJobDefinition,
 } from '../types/JobsDefinition'
-import {scheduleJob, ScheduleJobsResult, scheduleJobs} from '..'
-import {ScheduleJobOptionsWithoutName} from '../types/Events'
-import {cleanAndValidate, SchemaInAnyOrionForm} from '@orion-js/schema'
-import parse from 'parse-duration'
 
 export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
   options: CreateEventJobOptions<TParamsSchema>,
@@ -21,7 +22,9 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
     scheduleJobs: null,
   }
 
-  jobDefinition.schedule = async (scheduleOptions: ScheduleJobOptionsWithoutName<TParamsSchema>) => {
+  jobDefinition.schedule = async (
+    scheduleOptions: ScheduleJobOptionsWithoutName<TParamsSchema>,
+  ) => {
     if (!jobDefinition.jobName) {
       throw new Error('This job has not been registered in the workers')
     }
@@ -66,11 +69,26 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
 }
 
 export function createRecurrentJob(options: CreateRecurrentJobOptions): RecurrentJobDefinition {
+  if ('cron' in options && options.cron && !options.timezone) {
+    throw new Error('Cron recurrent jobs require a timezone')
+  }
+
+  if ('cron' in options && options.cron) {
+    CronExpressionParser.parse(options.cron, {tz: options.timezone}).next()
+  }
+
+  const runEvery =
+    'runEvery' in options
+      ? typeof options.runEvery === 'string'
+        ? parse(options.runEvery)
+        : options.runEvery
+      : undefined
+
   const jobDefinition: RecurrentJobDefinition = {
     ...options,
     priority: options.priority ?? 100,
     type: 'recurrent',
-    runEvery: typeof options.runEvery === 'string' ? parse(options.runEvery) : options.runEvery,
+    runEvery,
   }
 
   return jobDefinition

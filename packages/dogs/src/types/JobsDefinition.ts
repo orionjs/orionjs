@@ -64,6 +64,16 @@ export interface RecurrentJobDefinition extends BaseJobDefinition {
   runEvery?: number
 
   /**
+   * Cron expression used to calculate the next run. Requires timezone.
+   */
+  cron?: string
+
+  /**
+   * IANA timezone used to calculate cron-based schedules.
+   */
+  timezone?: string
+
+  /**
    * The priority of the job. Higher is more priority. Default is 100.
    */
   priority?: number
@@ -115,13 +125,37 @@ export type CreateEventJobOptions<TParamsSchema extends SchemaInAnyOrionForm = a
   'type' | 'schedule' | 'scheduleJobs'
 >
 
-export type CreateRecurrentJobOptions = Omit<RecurrentJobDefinition, 'type' | 'runEvery'> & {
+type CreateRecurrentJobBaseOptions = Omit<
+  RecurrentJobDefinition,
+  'type' | 'runEvery' | 'cron' | 'timezone'
+>
+
+export type CreateRecurrentJobRunEveryOptions = CreateRecurrentJobBaseOptions & {
   /**
    * Run every x milliseconds.
    * Accepts https://github.com/jkroso/parse-duration strings.
    */
   runEvery: number | string
+  cron?: never
+  timezone?: string
 }
+
+export type CreateRecurrentJobCronOptions = CreateRecurrentJobBaseOptions & {
+  /**
+   * Cron expression used to calculate the next run.
+   */
+  cron: string
+
+  /**
+   * IANA timezone used to calculate cron-based schedules.
+   */
+  timezone: string
+  runEvery?: never
+}
+
+export type CreateRecurrentJobOptions =
+  | CreateRecurrentJobRunEveryOptions
+  | CreateRecurrentJobCronOptions
 
 export type CreateJobOptions<TParamsSchema extends SchemaInAnyOrionForm = any> =
   | CreateEventJobOptions<TParamsSchema>
