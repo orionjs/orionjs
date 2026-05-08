@@ -12,7 +12,7 @@
     "test:watch": "jest src --coverage --watch"
   },
   "dependencies": {
-    "@orion-js/helpers": "^2.12.7",
+    "@orion-js/helpers": "^2.12.4",
     "@orion-js/schema": "^3.9.0",
     "axios": "^0.23.0",
     "jssha": "^3.2.0",
