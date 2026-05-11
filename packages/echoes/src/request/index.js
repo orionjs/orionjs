@@ -1,32 +1,27 @@
-import axios from 'axios'
 import getURL from './getURL'
 import getSignature from './getSignature'
 import serialize from '../publish/serialize'
 import deserialize from '../echo/deserialize'
 import {ValidationError} from '@orion-js/schema'
 import UserError from './UserError'
+import makeRequest from './makeRequest'
 
-export default async function ({method, service, params}) {
+export default async function ({method, service, params, retries, timeout}) {
   const serializedParams = serialize(params)
   const date = new Date()
   const body = {method, service, serializedParams, date}
   const signature = getSignature(body)
 
   try {
-    const result = await axios({
-      method: 'post',
+    const result = await makeRequest({
       url: getURL(service),
-      headers: {
-        'User-Agent': 'Orionjs-Echoes/1.1',
-      },
-      data: {
-        body,
-        signature,
-      },
+      data: {body, signature},
+      timeout,
+      retries
     })
 
-    if (result.status !== 200) {
-      throw new Error(`${result.status}`)
+    if (result.statusCode !== 200) {
+      throw new Error(`${result.statusCode}`)
     }
 
     if (result.data.error) {
