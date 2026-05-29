@@ -1,5 +1,13 @@
 # @orion-js/migrations
 
+## 4.3.5
+
+### Patch Changes
+
+- fa60f06: Limit maxTries handling to event jobs and stop configuring it for recurrent migration jobs.
+- Updated dependencies [fa60f06]
+  - @orion-js/dogs@4.3.6
+
 ## 4.3.4
 
 ### Patch Changes
