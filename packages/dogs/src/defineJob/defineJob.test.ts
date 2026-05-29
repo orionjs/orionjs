@@ -1,6 +1,6 @@
 import {getInstance} from '@orion-js/services'
 import {JobsRepo} from '../repos/JobsRepo'
-import {createEventJob} from './index'
+import {createEventJob, createRecurrentJob} from './index'
 
 describe('Event Job Definition - schedule method with runIn/runAt', () => {
   let jobsRepo: JobsRepo
@@ -112,6 +112,19 @@ describe('Event Job Definition - schedule method with runIn/runAt', () => {
     expect(scheduledJob.params.message).toBe('Hello immediate')
     // Should be scheduled to run now (within 1 second)
     expect(scheduledJob.nextRunAt.getTime()).toBeLessThanOrEqual(now + 1000)
+  })
+})
+
+describe('Recurrent Job Definition', () => {
+  it('should ignore maxTries when creating recurrent jobs', () => {
+    const jobDefinition = createRecurrentJob({
+      runEvery: 1000,
+      maxTries: 2,
+      resolve: async () => {},
+    } as any)
+
+    expect(jobDefinition.type).toBe('recurrent')
+    expect('maxTries' in jobDefinition).toBe(false)
   })
 })
 

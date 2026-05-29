@@ -38,13 +38,6 @@ export interface BaseJobDefinition {
    * If not set, the defaultLockTime from config will be used.
    */
   lockTime?: number
-
-  /**
-   * Maximum number of tries for this specific job before it is marked as 'maxTriesReached'.
-   * Overrides the global maxTries set in startWorkers config.
-   * If not set, the global maxTries from config will be used.
-   */
-  maxTries?: number
 }
 
 export interface RecurrentJobDefinition extends BaseJobDefinition {
@@ -90,6 +83,13 @@ export interface EventJobDefinition<TParamsSchema extends SchemaInAnyOrionForm =
    * Type of the job.
    */
   type: 'event'
+
+  /**
+   * Maximum number of tries for this specific event job before it is marked as 'maxTriesReached'.
+   * Overrides the global maxTries set in startWorkers config.
+   * If not set, the global maxTries from config will be used.
+   */
+  maxTries?: number
 
   /**
    * Schedule of the job. Supports optional runIn (milliseconds) or runAt (Date) for delayed execution.

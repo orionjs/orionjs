@@ -183,7 +183,6 @@ export default class NotificationJobs {
 | `getNextRun` | `Function` | Function returning a Date for the next execution. Takes precedence over `runEvery`. |
 | `priority` | `number` | Job priority. Higher numbers get executed first (default: 100). |
 | `lockTime` | `number` | Override the global `defaultLockTime` for this job only. |
-| `maxTries` | `number` | Override the global `maxTries` for this job only. |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
 | `saveExecutionsFor` | `number` | Time in milliseconds to keep job execution history (default: 1 week). Set to 0 to disable. |
@@ -195,7 +194,7 @@ export default class NotificationJobs {
 | ------ | ---- | ----------- |
 | `params` | `Object \| Schema` | Schema for validating job parameters. |
 | `lockTime` | `number` | Override the global `defaultLockTime` for this job only. |
-| `maxTries` | `number` | Override the global `maxTries` for this job only. |
+| `maxTries` | `number` | Override the global event `maxTries` for this job only. |
 | `maxParallelExecutionsPerServer` | `number` | Limit how many executions of this job can run at the same time in a single server process. |
 | `onError` | `Function` | Called if the job fails. Can be used to retry or dismiss the job. |
 | `onStale` | `Function` | Called if the job locktime is expired. |
@@ -215,7 +214,7 @@ const workersInstance = startWorkers({
   pollInterval: 3000, // Milliseconds between polling for new jobs (default: 3000)
   cooldownPeriod: 100, // Milliseconds to wait after job execution (default: 100)
   defaultLockTime: 30000, // Default lock time in milliseconds (default: 30000 = 30 seconds)
-  maxTries: 10,
+  maxTries: 10, // Optional. Applies only to event jobs
   onMaxTriesReached: async (job) => {
     logger.error('Job reached max tries', {jobName: job.name, jobId: job.jobId})
   }

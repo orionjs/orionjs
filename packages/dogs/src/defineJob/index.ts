@@ -69,24 +69,30 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
 }
 
 export function createRecurrentJob(options: CreateRecurrentJobOptions): RecurrentJobDefinition {
-  if ('cron' in options && options.cron && !options.timezone) {
+  const recurrentOptions = {
+    ...options,
+  } as CreateRecurrentJobOptions & {maxTries?: number}
+
+  delete recurrentOptions.maxTries
+
+  if ('cron' in recurrentOptions && recurrentOptions.cron && !recurrentOptions.timezone) {
     throw new Error('Cron recurrent jobs require a timezone')
   }
 
-  if ('cron' in options && options.cron) {
-    CronExpressionParser.parse(options.cron, {tz: options.timezone}).next()
+  if ('cron' in recurrentOptions && recurrentOptions.cron) {
+    CronExpressionParser.parse(recurrentOptions.cron, {tz: recurrentOptions.timezone}).next()
   }
 
   const runEvery =
-    'runEvery' in options
-      ? typeof options.runEvery === 'string'
-        ? parse(options.runEvery)
-        : options.runEvery
+    'runEvery' in recurrentOptions
+      ? typeof recurrentOptions.runEvery === 'string'
+        ? parse(recurrentOptions.runEvery)
+        : recurrentOptions.runEvery
       : undefined
 
   const jobDefinition: RecurrentJobDefinition = {
-    ...options,
-    priority: options.priority ?? 100,
+    ...recurrentOptions,
+    priority: recurrentOptions.priority ?? 100,
     type: 'recurrent',
     runEvery,
   }

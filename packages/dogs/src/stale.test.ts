@@ -75,8 +75,6 @@ describe('Stale Jobs Management', () => {
       pollInterval: 5,
       cooldownPeriod: 5,
       defaultLockTime: 10,
-      maxTries: 10,
-      onMaxTriesReached: async () => {},
     })
 
     await scheduleJob({name: jobName1})

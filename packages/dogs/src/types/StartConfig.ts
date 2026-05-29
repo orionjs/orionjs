@@ -9,16 +9,16 @@ export interface StartWorkersConfig {
    */
   jobs: JobsDefinition
   /**
-   * Maximum number of tries for a job before it is marked as 'maxTriesReached'.
-   * This is a required global default that can be overridden per job definition.
+   * Maximum number of tries for an event job before it is marked as 'maxTriesReached'.
+   * This is a global default that can be overridden per event job definition.
    */
-  maxTries: number
+  maxTries?: number
   /**
-   * Callback invoked when a job reaches its maximum tries limit.
+   * Callback invoked when an event job reaches its maximum tries limit.
    * Use this to notify administrators (e.g., send an email alert).
    * The job will remain in the database with status 'maxTriesReached'.
    */
-  onMaxTriesReached: (job: JobToRun) => Promise<void>
+  onMaxTriesReached?: (job: JobToRun) => Promise<void>
   /**
    * Time in milliseconds to wait between each look without results for a job
    * to run at the database. Default is 3000.

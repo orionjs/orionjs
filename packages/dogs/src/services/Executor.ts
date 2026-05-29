@@ -4,7 +4,7 @@ import {Blackbox} from '@orion-js/schema'
 import {Inject, Service} from '@orion-js/services'
 import {JobsHistoryRepo} from '../repos/JobsHistoryRepo'
 import {JobsRepo} from '../repos/JobsRepo'
-import {JobDefinition, JobsDefinition} from '../types/JobsDefinition'
+import {EventJobDefinition, JobDefinition, JobsDefinition} from '../types/JobsDefinition'
 import {ExecutionContext, JobToRun} from '../types/Worker'
 import {getNextRunDate} from './getNextRunDate'
 
@@ -13,8 +13,8 @@ import {getNextRunDate} from './getNextRunDate'
  */
 export interface ExecuteJobConfig {
   jobs: JobsDefinition
-  maxTries: number
-  onMaxTriesReached: (job: JobToRun) => Promise<void>
+  maxTries?: number
+  onMaxTriesReached?: (job: JobToRun) => Promise<void>
 }
 
 @Service()
@@ -69,20 +69,20 @@ export class Executor {
   }
 
   /**
-   * Determines the effective max tries for a job.
+   * Determines the effective max tries for an event job.
    * Job-specific maxTries takes precedence over the global maxTries from config.
    */
-  getEffectiveMaxTries(job: JobDefinition, globalMaxTries: number): number {
+  getEffectiveMaxTries(job: EventJobDefinition, globalMaxTries?: number): number | undefined {
     return job.maxTries ?? globalMaxTries
   }
 
   /**
    * Handles when a job has reached its maximum retry attempts.
-   * Marks the job in the database and invokes the onMaxTriesReached callback.
+   * Marks the job in the database and invokes the onMaxTriesReached callback when provided.
    */
   async handleMaxTriesReached(
     jobToRun: JobToRun,
-    onMaxTriesReached: (job: JobToRun) => Promise<void>,
+    onMaxTriesReached?: (job: JobToRun) => Promise<void>,
   ) {
     const jobLogger = logger.addMetadata({
       jobName: jobToRun.name,
@@ -94,6 +94,8 @@ export class Executor {
     )
     await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId)
 
+    if (!onMaxTriesReached) return
+
     // Invoke the callback to notify administrators
     try {
       await onMaxTriesReached(jobToRun)
@@ -104,13 +106,7 @@ export class Executor {
     }
   }
 
-  async onError(
-    error: unknown,
-    job: JobDefinition,
-    jobToRun: JobToRun,
-    context: ExecutionContext,
-    config: ExecuteJobConfig,
-  ) {
+  async onError(error: unknown, job: JobDefinition, jobToRun: JobToRun, context: ExecutionContext) {
     // Helper to schedule next run for recurrent jobs (used when dismissing)
     const scheduleRecurrent = async () => {
       if (job.type === 'recurrent') {
@@ -210,10 +206,12 @@ export class Executor {
     const job = this.getJobDefinition(jobToRun, config.jobs)
     if (!job) return
 
-    const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
-    if (jobToRun.tries > effectiveMaxTries) {
-      await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
-      return
+    if (job.type === 'event') {
+      const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
+      if (typeof effectiveMaxTries === 'number' && jobToRun.tries > effectiveMaxTries) {
+        await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
+        return
+      }
     }
 
     // If job has a custom lockTime different from the default, update the database lock
@@ -297,7 +295,7 @@ export class Executor {
               context.logger.error('Error saving failed execution history', {error: saveError})
             })
 
-            await this.onError(error, job, jobToRun, context, config)
+            await this.onError(error, job, jobToRun, context)
           }
         })
       } catch (error) {

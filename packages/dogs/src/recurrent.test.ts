@@ -18,8 +18,6 @@ describe('Recurrent tests', () => {
       workersCount: 3,
       pollInterval: 10,
       cooldownPeriod: 10,
-      maxTries: 10,
-      onMaxTriesReached: async () => {},
     })
 
     await sleep(500)
@@ -43,8 +41,6 @@ describe('Recurrent tests', () => {
       workersCount: 3,
       pollInterval: 1,
       cooldownPeriod: 1,
-      maxTries: 10,
-      onMaxTriesReached: async () => {},
     })
 
     await sleep(200)

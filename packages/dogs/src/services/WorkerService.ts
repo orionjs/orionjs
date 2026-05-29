@@ -231,7 +231,7 @@ export class WorkerService {
 
   /**
    * Starts the job workers with the provided configuration.
-   * @param userConfig - Configuration for the workers. Required fields: jobs, maxTries, onMaxTriesReached
+   * @param userConfig - Configuration for the workers. Required field: jobs
    */
   startWorkers(userConfig: StartWorkersConfig): WorkersInstance {
     // Apply defaults for optional fields

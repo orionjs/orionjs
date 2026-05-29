@@ -3,7 +3,7 @@ import {createEnum, InferSchemaType, schemaWithName} from '@orion-js/schema'
 /**
  * Enum representing the status of a job record.
  * - 'pending': Job is active and can be executed (default for existing records)
- * - 'maxTriesReached': Job has exhausted all retry attempts and won't be executed
+ * - 'maxTriesReached': Event job has exhausted all retry attempts and won't be executed
  */
 export const JobStatusEnum = createEnum('JobStatus', ['pending', 'maxTriesReached'])
 

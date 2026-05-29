@@ -49,10 +49,12 @@ export class JobsRepo {
       {
         jobName: {$in: jobNames},
         nextRunAt: {$lte: new Date()},
-        $or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: new Date()}}],
-        // Exclude jobs that have reached max tries. Using $ne handles backwards compatibility
-        // since records without the status field will still match (undefined !== 'maxTriesReached')
-        status: {$ne: 'maxTriesReached'},
+        $and: [
+          {$or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: new Date()}}]},
+          // Exclude event jobs that have reached max tries. Recurrent jobs keep running even
+          // if old records still have this status from previous versions.
+          {$or: [{type: {$ne: 'event'}}, {status: {$ne: 'maxTriesReached'}}]},
+        ],
       },
       {
         $set: {lockedUntil, lastRunAt: new Date()},
@@ -119,12 +121,12 @@ export class JobsRepo {
   }
 
   /**
-   * Marks a job as having reached its maximum tries limit.
+   * Marks an event job as having reached its maximum tries limit.
    * The job will remain in the database but won't be picked up for execution.
    */
   async markJobAsMaxTriesReached(jobId: string) {
     await this.jobs.updateOne(
-      {_id: jobId},
+      {_id: jobId, type: 'event'},
       {
         $set: {status: 'maxTriesReached'},
         $unset: {lockedUntil: ''},
@@ -174,6 +176,9 @@ export class JobsRepo {
         $set: {
           type: job.type,
           priority: (job as RecurrentJobDefinition).priority,
+        },
+        $unset: {
+          status: '',
         },
         $setOnInsert: {
           nextRunAt: new Date(),

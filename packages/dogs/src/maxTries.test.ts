@@ -150,7 +150,7 @@ describe('Max tries functionality', () => {
     expect(executionCount).toBe(0)
   })
 
-  it('should handle recurrent jobs reaching max tries', async () => {
+  it('should ignore maxTries for recurrent jobs', async () => {
     const jobName = generateId()
     let executionCount = 0
     const maxTriesReachedCallback = mock()
@@ -191,13 +191,13 @@ describe('Max tries functionality', () => {
     await sleep(200)
     await instance.stop()
 
-    expect(executionCount).toBe(2)
-    expect(maxTriesReachedCallback).toHaveBeenCalledTimes(1)
+    expect(executionCount).toBeGreaterThan(2)
+    expect(maxTriesReachedCallback).not.toHaveBeenCalled()
 
-    // Recurrent job should still exist but be marked as maxTriesReached
+    // Recurrent job should still exist without being marked as maxTriesReached
     const jobRecord = await jobsRepo.jobs.findOne({jobName})
     expect(jobRecord).toBeDefined()
-    expect(jobRecord.status).toBe('maxTriesReached')
+    expect(jobRecord.status).toBeUndefined()
     expect(jobRecord.type).toBe('recurrent')
   })
 
@@ -402,7 +402,7 @@ describe('JobsRepo maxTriesReached filtering', () => {
     await jobsRepo.jobs.deleteMany({})
   })
 
-  it('should not pick up jobs with status maxTriesReached', async () => {
+  it('should not pick up event jobs with status maxTriesReached', async () => {
     // Insert a job that should be picked up
     const activeJobId = generateId()
     await jobsRepo.jobs.insertOne({
@@ -431,6 +431,24 @@ describe('JobsRepo maxTriesReached filtering', () => {
     expect(jobToRun).toBeDefined()
     expect(jobToRun.name).toBe('active-job')
     expect(jobToRun.jobId).toBe(activeJobId)
+  })
+
+  it('should pick up recurrent jobs with status maxTriesReached', async () => {
+    const jobId = generateId()
+    await jobsRepo.jobs.insertOne({
+      _id: jobId,
+      jobName: 'recurrent-job',
+      type: 'recurrent',
+      priority: 100,
+      nextRunAt: new Date(Date.now() - 1000),
+      status: 'maxTriesReached',
+    })
+
+    const jobToRun = await jobsRepo.getJobAndLock(['recurrent-job'], 5000)
+
+    expect(jobToRun).toBeDefined()
+    expect(jobToRun.name).toBe('recurrent-job')
+    expect(jobToRun.jobId).toBe(jobId)
   })
 
   it('should work with existing records that have no status field (backwards compatibility)', async () => {
@@ -471,5 +489,23 @@ describe('JobsRepo maxTriesReached filtering', () => {
     const job = await jobsRepo.jobs.findOne(jobId)
     expect(job.status).toBe('maxTriesReached')
     expect(job.lockedUntil).toBeUndefined()
+  })
+
+  it('should not mark a recurrent job as maxTriesReached', async () => {
+    const jobId = generateId()
+    await jobsRepo.jobs.insertOne({
+      _id: jobId,
+      jobName: 'test-recurrent-job',
+      type: 'recurrent',
+      priority: 100,
+      nextRunAt: new Date(),
+      lockedUntil: new Date(Date.now() + 10000),
+    })
+
+    await jobsRepo.markJobAsMaxTriesReached(jobId)
+
+    const job = await jobsRepo.jobs.findOne(jobId)
+    expect(job.status).toBeUndefined()
+    expect(job.lockedUntil).toBeDefined()
   })
 })
