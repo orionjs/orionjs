@@ -7,6 +7,13 @@ export interface ReplOptions {
   port?: string
 }
 
+interface ReplResponse {
+  success: boolean
+  error?: string
+  stack?: string
+  result?: unknown
+}
+
 function resolvePort(options: ReplOptions): number {
   if (options.port) {
     return Number(options.port)
@@ -42,7 +49,7 @@ export default async function repl(options: ReplOptions) {
       body: JSON.stringify({expression}),
     })
 
-    const data = await response.json()
+    const data = (await response.json()) as ReplResponse
 
     if (!data.success) {
       console.error(chalk.red(`Error: ${data.error}`))
@@ -58,14 +65,15 @@ export default async function repl(options: ReplOptions) {
       )
     }
   } catch (error) {
-    if (error.code === 'ECONNREFUSED' || error.cause?.code === 'ECONNREFUSED') {
+    const nodeError = error as Error & {code?: string; cause?: {code?: string}}
+    if (nodeError.code === 'ECONNREFUSED' || nodeError.cause?.code === 'ECONNREFUSED') {
       console.error(
         chalk.red(
           `Could not connect to dev server on port ${port}. Make sure "orion dev --repl" is running.`,
         ),
       )
     } else {
-      console.error(chalk.red(`Error: ${error.message}`))
+      console.error(chalk.red(`Error: ${nodeError.message}`))
     }
     process.exit(1)
   }

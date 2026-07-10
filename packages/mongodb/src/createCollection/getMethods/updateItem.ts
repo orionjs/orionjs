@@ -1,13 +1,17 @@
-import {Collection, ModelClassBase, UpdateItem} from '../../types'
+import {Collection, ModelClassBase, ModelToMongoSelector, UpdateItem} from '../../types'
 import {wrapErrors} from './wrapErrors'
 
 export default function <DocumentType extends ModelClassBase>(
   collection: Partial<Collection<DocumentType>>,
 ) {
-  const updateItem: UpdateItem<DocumentType> = async function (item, modifier, options = {}) {
+  const updateItem: UpdateItem<DocumentType> = async (item, modifier, options = {}) => {
     await collection.connectionPromise
     const updated = await wrapErrors(async () => {
-      return await collection.updateAndFind(item._id, modifier, options)
+      return await collection.updateAndFind(
+        item._id as ModelToMongoSelector<DocumentType>,
+        modifier,
+        options,
+      )
     })
 
     for (const key in item) {

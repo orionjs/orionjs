@@ -5,9 +5,8 @@
     "moduleResolution": "Bundler",
     "strict": false,
     "strictNullChecks": true,
-    "baseUrl": "..",
     "paths": {
-      "app/*": ["app/*"]
+      "app/*": ["../app/*"]
     },
     "skipLibCheck": true,
     "noEmit": true

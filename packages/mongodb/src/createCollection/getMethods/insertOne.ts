@@ -1,8 +1,8 @@
-import {Collection, InsertOne, ModelClassBase} from '../../types'
-import fromDot from '../../helpers/fromDot'
 import {clean, validate} from '@orion-js/schema'
-import {wrapErrors} from './wrapErrors'
 import {isType} from 'rambdax'
+import fromDot from '../../helpers/fromDot'
+import {Collection, InsertOne, ModelClassBase} from '../../types'
+import {wrapErrors} from './wrapErrors'
 
 export default <DocumentType extends ModelClassBase>(
   collection: Partial<Collection<DocumentType>>,
@@ -25,7 +25,7 @@ export default <DocumentType extends ModelClassBase>(
     }
 
     await wrapErrors(async () => {
-      await collection.rawCollection.insertOne(doc, options.mongoOptions)
+      await collection.rawCollection.insertOne(doc as any, options.mongoOptions)
     })
 
     return doc._id

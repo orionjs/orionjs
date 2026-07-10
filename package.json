@@ -19,7 +19,7 @@
     "lint-staged": "^16.2.7",
     "oxc-transform": "^0.56.5",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "rambdax": "^11.3.1"

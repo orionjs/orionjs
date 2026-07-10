@@ -6,9 +6,9 @@
   "license": "MIT",
   "scripts": {
     "test": "bun test",
-    "prepare": "bun run build",
+    "prepack": "bun run build",
     "clean": "rm -rf ./dist",
-    "build": "tsup",
+    "build": "tsup && bun run ../../scripts/emit-declarations.ts",
     "dev": "tsup --watch"
   },
   "dependencies": {
@@ -38,7 +38,7 @@
     "supertest": "^6.3.3",
     "superwstest": "^2.0.3",
     "tsup": "^8.0.1",
-    "typescript": "^5.4.5"
+    "typescript": "^7.0.2"
   },
   "peerDependencies": {
     "@orion-js/logger": "4.3.1",

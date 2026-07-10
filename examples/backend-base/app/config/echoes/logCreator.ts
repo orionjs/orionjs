@@ -23,7 +23,15 @@ const getLogger = (level: number) => {
 }
 
 export default () => {
-  return ({namespace, level, log}) => {
+  return ({
+    namespace,
+    level,
+    log,
+  }: {
+    namespace: string
+    level: number
+    log: {message: string; [key: string]: unknown}
+  }) => {
     if (level >= 4 && process.env.ORION_DEV) return
     const logFunction = getLogger(level) ?? logger.info
 

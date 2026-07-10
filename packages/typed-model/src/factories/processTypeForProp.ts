@@ -11,27 +11,29 @@ export function getParamTypeForProp(type: PropOptions['type']) {
     return type[Symbol.metadata]._getModel(type)
   }
 
-  if (type?.getSchema) {
-    return getParamTypeForProp(type.getSchema())
+  const objectType = type as Record<PropertyKey, any>
+
+  if (objectType?.getSchema) {
+    return getParamTypeForProp(objectType.getSchema())
   }
 
   if (isType('Object', type)) {
-    if (type.__isFieldType) {
+    if (objectType.__isFieldType) {
       return type
     }
 
     const subschema = {}
-    Object.keys(type).forEach(key => {
+    for (const key of Object.keys(objectType)) {
       if (key.startsWith('__')) {
-        subschema[key] = type[key]
-        return
+        subschema[key] = objectType[key]
+        continue
       }
 
       subschema[key] = {
-        ...type[key],
-        type: getParamTypeForProp(type[key].type),
+        ...objectType[key],
+        type: getParamTypeForProp(objectType[key].type),
       }
-    })
+    }
 
     return subschema
   }

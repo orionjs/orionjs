@@ -10,7 +10,7 @@ export function getFileURL(file: FileSchema): string {
 }
 
 export default modelResolver({
-  returns: String,
+  returns: 'string',
   async resolve(file) {
     return getFileURL(file)
   },

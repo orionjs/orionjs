@@ -1,8 +1,8 @@
 import {isNil} from 'rambdax'
-import cleanType from './cleanType'
-import {CurrentNodeInfo, SchemaNode} from '../types/schema'
-import getObjectNode from './getObjectNode'
 import {convertTypedSchema} from '../getValidationErrors/convertTypedSchema'
+import {CurrentNodeInfo, SchemaFieldType, SchemaNode} from '../types/schema'
+import cleanType from './cleanType'
+import getObjectNode from './getObjectNode'
 
 const cleanObjectFields = async ({
   schema,
@@ -79,8 +79,11 @@ const clean = async (info: CurrentNodeInfo): Promise<any> => {
 
   const {schema, args = [], value} = info
 
+  const schemaValue = schema as SchemaFieldType | Partial<SchemaNode>
   const currSchema: SchemaNode =
-    schema.type === undefined ? ({type: schema} as SchemaNode) : (schema as SchemaNode)
+    typeof schemaValue === 'object' && schemaValue !== null && 'type' in schemaValue
+      ? (schemaValue as SchemaNode)
+      : ({type: schemaValue} as SchemaNode)
 
   const objectSchema = getObjectNode(currSchema, value)
   if (objectSchema) {

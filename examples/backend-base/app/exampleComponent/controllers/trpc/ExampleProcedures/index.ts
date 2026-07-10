@@ -1,21 +1,21 @@
+import {typedId} from '@orion-js/mongodb'
+import {Inject} from '@orion-js/services'
 import {
-  Procedures,
-  TQuery,
-  TMutation,
-  TPaginatedQuery,
-  createTQuery,
   createTMutation,
   createTPaginatedQuery,
+  createTQuery,
+  Procedures,
+  TMutation,
+  TPaginatedQuery,
+  TQuery,
 } from '@orion-js/trpc'
-import {Inject} from '@orion-js/services'
 import {ExampleSchema} from 'app/exampleComponent/schemas/ExampleSchema'
 import {ExampleService} from 'app/exampleComponent/services/ExampleService'
-import {typedId} from '@orion-js/mongodb'
 
 @Procedures()
 export class ExampleProcedures {
   @Inject(() => ExampleService)
-  private exampleService: ExampleService
+  private exampleService!: ExampleService
 
   @TQuery()
   getExample = createTQuery({

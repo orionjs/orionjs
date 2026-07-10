@@ -64,6 +64,7 @@ function topologicalSort(packages: Map<string, PkgInfo>): string[] {
 
 const packages = getPackages()
 const order = topologicalSort(packages)
+let failed = false
 
 for (const name of order) {
   const pkg = packages.get(name)
@@ -77,5 +78,10 @@ for (const name of order) {
     })
   } catch {
     console.error(`Failed to build ${pkg.dir}, continuing...`)
+    failed = true
   }
+}
+
+if (failed) {
+  process.exit(1)
 }

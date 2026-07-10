@@ -6,7 +6,7 @@ import {ExampleService} from 'app/exampleComponent/services/ExampleService'
 @Routes()
 export default class ExampleRoutes {
   @Inject(() => ExampleService)
-  private exampleService: ExampleService
+  private exampleService!: ExampleService
 
   @Route()
   example = createRoute({

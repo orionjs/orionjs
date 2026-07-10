@@ -1,8 +1,12 @@
+import {SchemaWithMetadata} from '@orion-js/schema'
 import {StartGraphQLOptions} from '../types/startGraphQL'
-import {Schema} from '@orion-js/schema'
 
-export function getModelLoadedResolvers(schema: Schema, options: StartGraphQLOptions): any[] {
+export function getModelLoadedResolvers(
+  schema: SchemaWithMetadata,
+  options: StartGraphQLOptions,
+): any[] {
   if (!options.modelResolvers) return []
+  if (!schema.__modelName) return []
   const resolvers = options.modelResolvers[schema.__modelName]
   if (!resolvers) return []
 
@@ -11,9 +15,10 @@ export function getModelLoadedResolvers(schema: Schema, options: StartGraphQLOpt
   return keys
     .map(key => {
       const resolver = resolvers[key]
-      resolver.resolverName = key
+      const namedResolver = resolver as typeof resolver & {resolverName: string}
+      namedResolver.resolverName = key
       return {
-        ...resolver,
+        ...namedResolver,
         key,
       }
     })

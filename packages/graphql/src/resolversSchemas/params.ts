@@ -1,14 +1,19 @@
-import {createResolver} from '@orion-js/resolvers'
 import {UserError} from '@orion-js/helpers'
-import ResolverParams from './ResolverParamsInfo'
+import {createResolver} from '@orion-js/resolvers'
+import {
+  getSchemaFromAnyOrionForm,
+  isSchemaLike,
+  SchemaFieldType,
+  SchemaWithMetadata,
+} from '@orion-js/schema'
 import {resolversStore} from '../buildSchema/getResolvers/resolversStore'
-import serializeSchema from './serializeSchema'
-import {getSchemaFromAnyOrionForm, isSchemaLike, Schema, SchemaFieldType} from '@orion-js/schema'
 import getBasicResultQuery from './getBasicResultQuery'
+import ResolverParams from './ResolverParamsInfo'
+import serializeSchema from './serializeSchema'
 
 function getResultTypeName(type: SchemaFieldType) {
   const returns = Array.isArray(type) ? type[0] : type
-  const schema = getSchemaFromAnyOrionForm(returns)
+  const schema = getSchemaFromAnyOrionForm(returns) as SchemaWithMetadata
   if (schema?.__modelName) return schema.__modelName
   return
 }
@@ -17,7 +22,7 @@ async function getInternalBasicResultQuery(type: SchemaFieldType) {
   const returns = Array.isArray(type) ? type[0] : type
 
   if (isSchemaLike(returns)) {
-    const schema = getSchemaFromAnyOrionForm(returns) as Schema
+    const schema = getSchemaFromAnyOrionForm(returns) as SchemaWithMetadata
     return await getBasicResultQuery({
       type: schema,
     })

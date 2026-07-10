@@ -12,7 +12,7 @@ const GetDataByIdParams = schemaWithName('GetDataByIdParams', {
 @Echoes()
 export class GetDataEchoes {
   @Inject(() => ExampleRepository)
-  private exampleRepository: ExampleRepository
+  private exampleRepository!: ExampleRepository
 
   @EchoRequest()
   getDataById = createEchoRequest({

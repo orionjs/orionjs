@@ -9,9 +9,9 @@
   },
   "scripts": {
     "test": "bun test",
-    "prepare": "bun run build",
+    "prepack": "bun run build",
     "clean": "rm -rf ./dist",
-    "build": "tsup --config tsup.config.ts && tsup --config cli.tsup.config.ts",
+    "build": "tsup --config tsup.config.ts && bun run ../../scripts/emit-declarations.ts && tsup --config cli.tsup.config.ts",
     "dev": "tsup --watch"
   },
   "dependencies": {
@@ -28,7 +28,7 @@
   "devDependencies": {
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
-    "typescript": "^5.8.2"
+    "typescript": "^7.0.2"
   },
   "publishConfig": {
     "access": "public"

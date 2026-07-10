@@ -1,14 +1,14 @@
-import getFieldType from '../getValidationErrors/getError/getFieldType'
 import {isNil} from 'rambdax'
-import {CurrentNodeInfo, SchemaFieldType, SchemaNode, SchemaMetadata, Schema} from '../types/schema'
+import getFieldType from '../getValidationErrors/getError/getFieldType'
 import {FieldValidatorType} from '../types/fieldValidators'
+import {CurrentNodeInfo, SchemaFieldType, SchemaMetadata, SchemaNode} from '../types/schema'
 import getObjectNode from './getObjectNode'
 
-export default async function cleanType<TSchema extends Schema>(
+export default async function cleanType(
   type: SchemaFieldType | FieldValidatorType,
   fieldSchema: Partial<SchemaNode>,
   value: any,
-  info: CurrentNodeInfo<TSchema>,
+  info: CurrentNodeInfo,
   ...args: any[]
 ): Promise<any> {
   info.type = fieldSchema.type

@@ -6,7 +6,7 @@ import {ExampleId, ExampleType} from 'app/exampleComponent/schemas/ExampleSchema
 @Service()
 export class ExampleService {
   @Inject(() => ExampleRepository)
-  private exampleRepository: ExampleRepository
+  private exampleRepository!: ExampleRepository
 
   async getAExample(id: ExampleId): Promise<ExampleType> {
     return await this.exampleRepository.getExampleById(id)

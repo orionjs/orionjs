@@ -6,9 +6,9 @@
   "license": "MIT",
   "scripts": {
     "test": "bun test",
-    "prepare": "bun run build",
+    "prepack": "bun run build",
     "clean": "rm -rf ./dist",
-    "build": "tsup",
+    "build": "tsup && bun run ../../scripts/emit-declarations.ts",
     "watch": "tsc -w",
     "dev": "tsup --watch"
   },
@@ -24,7 +24,7 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/node": "^18.0.0",
     "tsup": "^8.0.1",
-    "typescript": "^5.4.5"
+    "typescript": "^7.0.2"
   },
   "publishConfig": {
     "access": "public"

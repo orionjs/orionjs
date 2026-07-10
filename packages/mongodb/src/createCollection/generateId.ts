@@ -1,13 +1,14 @@
 import {generateId, generateUUID} from '@orion-js/helpers'
+import {FieldType, Schema} from '@orion-js/schema'
 import {ObjectId} from 'bson'
 import {CreateCollectionOptions, ModelClassBase} from '..'
-import {FieldType} from '@orion-js/schema'
 
 const getIdGenerator = <DocumentType extends ModelClassBase>(
   options: CreateCollectionOptions,
 ): (() => DocumentType['_id']) => {
-  if (!options.idPrefix && options?.schema?._id) {
-    const idField = options.schema._id.type as FieldType
+  const schema = options.schema as Schema | undefined
+  if (!options.idPrefix && schema?._id) {
+    const idField = schema._id.type as FieldType
     if (idField.name?.startsWith('typedId:')) {
       return () => {
         return (idField as any).generateId()

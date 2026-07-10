@@ -50,7 +50,6 @@ export type ValidateFunction<TType = any> = (
   value: TType,
   info?: Partial<CurrentNodeInfo>,
   ...args: any[]
-  // biome-ignore lint/suspicious/noConfusingVoidType: void is needed to allow the function to have no return clause
 ) => object | string | null | undefined | void | Promise<object | string | null | undefined | void>
 
 export type CleanFunction<TType = any> = (
@@ -89,6 +88,11 @@ export type SchemaNode<TFieldType extends SchemaFieldType = SchemaFieldType> = {
    * Function that takes a value and returns an error message if there are any errors. Must return null or undefined otherwise.
    */
   validate?: ValidateFunction<InferSchemaType<TFieldType>>
+
+  /**
+   * @deprecated Use validate instead.
+   */
+  custom?: ValidateFunction<InferSchemaType<TFieldType>>
 
   /**
    * Function that preprocesses a value before it is set.

@@ -1,9 +1,9 @@
-import getFieldValidator from './getFieldValidator'
-import fieldTypes from '../../fieldTypes'
-import Errors from '../../Errors'
-import {CurrentNodeInfo, SchemaRecursiveNodeTypeExtras} from '../../types/schema'
-import {FieldType} from '../../fieldType'
 import {isNil} from 'rambdax'
+import Errors from '../../Errors'
+import {FieldType} from '../../fieldType'
+import fieldTypes from '../../fieldTypes'
+import {CurrentNodeInfo, SchemaMetadata} from '../../types/schema'
+import getFieldValidator from './getFieldValidator'
 
 export default async function getValidationErrors(
   params: CurrentNodeInfo,
@@ -36,7 +36,7 @@ export default async function getValidationErrors(
     }
   }
 
-  const type = currentSchema.type as SchemaRecursiveNodeTypeExtras
+  const type = currentSchema.type as SchemaMetadata
 
   if (type.__validate) {
     const typeError = await type.__validate(value, info, ...args)

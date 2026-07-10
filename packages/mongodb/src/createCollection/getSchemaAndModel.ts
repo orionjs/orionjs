@@ -1,9 +1,9 @@
+import {clone} from '@orion-js/helpers'
 import {Schema} from '@orion-js/schema'
 import {type} from 'rambdax'
-import {clone} from '@orion-js/helpers'
 import {CreateCollectionOptions} from '../types'
 
-// @ts-ignore polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
+// @ts-expect-error polyfill for Symbol.metadata // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#decorator-metadata
 Symbol.metadata ??= Symbol('Symbol.metadata')
 
 export function prepareShema(schema: Schema): Schema {
@@ -17,25 +17,26 @@ export function prepareShema(schema: Schema): Schema {
 
 export function getSchema(options: CreateCollectionOptions): Schema {
   if (!options.schema) return
+  const schemaOption = options.schema as any
 
-  if (options.schema[Symbol.metadata]?._getModel) {
-    return options.schema[Symbol.metadata]._getModel().getSchema()
+  if (schemaOption[Symbol.metadata]?._getModel) {
+    return schemaOption[Symbol.metadata]._getModel().getSchema()
   }
 
   // schema is a model
-  if (options.schema.getSchema) {
-    const schema = options.schema.getSchema()
+  if (schemaOption.getSchema) {
+    const schema = schemaOption.getSchema()
     return prepareShema(schema)
   }
 
   // schema is a typed model
-  if (options.schema.getModel) {
-    const model = options.schema.getModel()
+  if (schemaOption.getModel) {
+    const model = schemaOption.getModel()
     const schema = model ? clone(model.getSchema()) : {}
     return prepareShema(schema)
   }
 
-  if (type(options.schema) === 'Object') {
-    return prepareShema(options.schema)
+  if (type(schemaOption) === 'Object') {
+    return prepareShema(schemaOption as Schema)
   }
 }

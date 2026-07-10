@@ -5,7 +5,7 @@ import writeFile from '../../helpers/writeFile'
 // Define TypeScript config interface
 interface TSConfig {
   compilerOptions?: {
-    baseUrl?: string
+    paths?: Record<string, string[]>
     rootDir?: string
     rootDirs?: string[]
     [key: string]: any
@@ -17,12 +17,16 @@ export function ensureConfigComplies(configPath: string) {
   try {
     const configJSON = getFileContents(configPath)
     const config = parse(configJSON) as TSConfig
+    const {baseUrl: _baseUrl, ...compilerOptions} = config.compilerOptions ?? {}
 
     const newConfig = {
       ...config,
       compilerOptions: {
-        ...config.compilerOptions,
-        baseUrl: './',
+        ...compilerOptions,
+        paths: {
+          '*': ['./*'],
+          ...compilerOptions.paths,
+        },
         noEmit: true,
       },
     }

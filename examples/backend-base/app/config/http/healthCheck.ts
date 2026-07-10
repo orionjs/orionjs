@@ -16,7 +16,8 @@ export default route({
         },
       }
     } catch (error) {
-      logger.error(`Error in health check: ${error.message}`, error)
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error(`Error in health check: ${message}`, error)
       return {
         statusCode: 429,
         body: {

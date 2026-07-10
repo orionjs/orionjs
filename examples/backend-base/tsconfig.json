@@ -10,7 +10,9 @@
     "strictNullChecks": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "baseUrl": "./",
+    "paths": {
+      "app/*": ["./app/*"]
+    },
     "noEmit": true
   },
   "include": ["app"]

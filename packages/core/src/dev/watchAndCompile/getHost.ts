@@ -1,58 +1,41 @@
-import ts from 'typescript'
+import {spawn} from 'node:child_process'
+import {createInterface} from 'node:readline'
+import type {Runner} from '../runner'
 import {getConfigPath} from './getConfigPath'
-import {reportDiagnostic} from './reports'
-import {Runner} from '../runner'
-import chalk from 'chalk'
 
 export function getHost(runner: Runner) {
-  let isStopped = true
-  const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
-    if (diagnostic.category !== 3) return
-    if (diagnostic.code === 6031 || diagnostic.code === 6032) {
-      // file change detected, starting compilation
-      // console.log(chalk.bold(`=> ${diagnostic.messageText}`))
-      return
-    }
-
-    if (diagnostic.code === 6193) {
-      runner.stop()
-      isStopped = true
-      return
-    }
-
-    if (diagnostic.code === 6194) {
-      /**
-       * Sometimes diagnostic code is 6194 even with errors
-       */
-      if (/^Found .+ errors?/.test(diagnostic.messageText.toString())) {
-        if (!diagnostic.messageText.toString().includes('Found 0 errors.')) {
-          runner.stop()
-          isStopped = true
-          return
-        }
-      }
-
-      if (isStopped) {
-        isStopped = false
-        runner.start()
-      }
-      return
-    }
-
-    console.log(chalk.bold(`=> ${diagnostic.messageText} [${diagnostic.code}]`))
-  }
-
   const configPath = getConfigPath()
-  const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram
+  const watcher = spawn('tsc', ['--watch', '--noEmit', '--project', configPath], {
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
 
-  const host = ts.createWatchCompilerHost(
-    configPath,
-    {},
-    ts.sys,
-    createProgram,
-    reportDiagnostic,
-    reportWatchStatusChanged,
-  )
+  const output = createInterface({input: watcher.stdout})
+  output.on('line', line => {
+    console.log(line)
 
-  return host
+    if (line.includes('Starting compilation') || line.includes('File change detected')) {
+      runner.stop()
+      return
+    }
+
+    if (line.includes('Found 0 errors.')) {
+      runner.start()
+      return
+    }
+
+    if (/Found [1-9]\d* errors?\./.test(line)) {
+      runner.stop()
+    }
+  })
+
+  const errors = createInterface({input: watcher.stderr})
+  errors.on('line', line => console.error(line))
+
+  watcher.on('error', error => {
+    runner.stop()
+    console.error(`Unable to start TypeScript: ${error.message}`)
+  })
+
+  return watcher
 }

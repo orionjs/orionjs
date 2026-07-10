@@ -13,9 +13,9 @@
   },
   "scripts": {
     "test": "bun test",
-    "prepare": "bun run build",
+    "prepack": "bun run build",
     "clean": "rm -rf ./dist",
-    "build": "tsup",
+    "build": "tsup && bun run ../../scripts/emit-declarations.ts",
     "dev": "tsup --watch"
   },
   "dependencies": {
@@ -28,7 +28,7 @@
     "dotenv": "^16.0.3",
     "esbuild": "^0.25.1",
     "prompts": "^2.4.2",
-    "typescript": "^5.4.5",
+    "typescript": "^7.0.2",
     "yaml": "^2.2.1"
   },
   "peerDependencies": {
@@ -44,7 +44,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.20.0"
   },
   "gitHead": "9d85ab24776533db109843c277324e42c65ddedd",
   "devDependencies": {

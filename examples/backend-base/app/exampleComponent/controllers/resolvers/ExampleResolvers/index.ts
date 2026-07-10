@@ -12,7 +12,7 @@ const ExampleParams = schemaWithName('ExampleParams', {
 @Resolvers()
 export default class ExampleResolvers {
   @Inject(() => ExampleService)
-  private exampleService: ExampleService
+  private exampleService!: ExampleService
 
   @Query()
   example = createQuery({
