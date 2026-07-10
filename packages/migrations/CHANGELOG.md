@@ -1,5 +1,22 @@
 # @orion-js/migrations
 
+## 4.4.0
+
+### Minor Changes
+
+- Update all packages to TypeScript 7 and align the release at version 4.4.0.
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/dogs@4.4.0
+  - @orion-js/helpers@4.4.0
+  - @orion-js/logger@4.4.0
+  - @orion-js/mongodb@4.4.0
+  - @orion-js/schema@4.4.0
+  - @orion-js/services@4.4.0
+  - @orion-js/typed-model@4.4.0
+
 ## 4.3.5
 
 ### Patch Changes

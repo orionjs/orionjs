@@ -1,5 +1,19 @@
 # @orion-js/trpc
 
+## 4.4.0
+
+### Minor Changes
+
+- Update all packages to TypeScript 7 and align the release at version 4.4.0.
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/helpers@4.4.0
+  - @orion-js/http@4.4.0
+  - @orion-js/schema@4.4.0
+  - @orion-js/services@4.4.0
+
 ## 4.3.2
 
 ### Patch Changes
