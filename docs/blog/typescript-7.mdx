@@ -1,0 +1,132 @@
+---
+title: 'Upgrade an OrionJS app to TypeScript 7'
+description: 'A practical guide to adopting TypeScript 7 with OrionJS 4.4'
+---
+
+OrionJS 4.4 is built and tested with TypeScript 7. Applications can now upgrade their compiler without waiting on OrionJS packages or declaration files.
+
+This guide follows the migration of the [`backend-base`](https://github.com/orionjs/orionjs/tree/master/examples/backend-base) example in the OrionJS repository.
+
+## 1. Upgrade OrionJS and TypeScript
+
+Keep all OrionJS packages on the same minor version and install TypeScript 7:
+
+Update each installed `@orion-js/*` dependency to `^4.4.0` in `package.json`, then install TypeScript 7 and refresh the lockfile:
+
+```bash
+bun add --dev typescript@^7.0.2
+bun install
+```
+
+If you edit `package.json` directly, the relevant entries should look like this:
+
+```json
+{
+  "dependencies": {
+    "@orion-js/http": "^4.4.0",
+    "@orion-js/models": "^4.4.0",
+    "@orion-js/mongodb": "^4.4.0",
+    "@orion-js/services": "^4.4.0"
+  },
+  "devDependencies": {
+    "@orion-js/core": "^4.4.0",
+    "typescript": "^7.0.2"
+  }
+}
+```
+
+The exact set of OrionJS packages will depend on your application. The important part is that they all resolve to 4.4 or newer.
+
+## 2. Replace `baseUrl` aliases with `paths`
+
+TypeScript 7 removes the deprecated `baseUrl` option. A common OrionJS configuration used it to import from `app/*`:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": "./"
+  }
+}
+```
+
+Replace it with an explicit path mapping. Paths are resolved relative to the `tsconfig.json` file:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "app/*": ["./app/*"]
+    }
+  }
+}
+```
+
+For a client configuration inside a subdirectory, point the mapping back to the application directory:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "app/*": ["../app/*"]
+    }
+  }
+}
+```
+
+## 3. Mark decorator-injected properties as initialized
+
+OrionJS assigns properties decorated with `@Inject` at runtime. The compiler cannot observe that assignment, so use a definite assignment assertion:
+
+```ts
+@Service()
+export class ExampleService {
+  @Inject(() => ExampleRepository)
+  private exampleRepository!: ExampleRepository
+}
+```
+
+Only use `!` for properties that the framework is guaranteed to initialize. Initialize ordinary class properties normally.
+
+## 4. Narrow caught errors
+
+Caught values are not guaranteed to be `Error` instances. Narrow them before accessing `.message`:
+
+```ts
+try {
+  await checkDatabase()
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error)
+  logger.error(`Database health check failed: ${message}`, error)
+}
+```
+
+This is safer than casting because JavaScript can throw strings, numbers, and other values.
+
+## 5. Run the compiler and build
+
+Add explicit scripts so the same checks can run locally and in CI:
+
+```json
+{
+  "scripts": {
+    "build": "orion build",
+    "dev": "orion dev",
+    "typecheck": "tsc --noEmit"
+  }
+}
+```
+
+Then validate the migration:
+
+```bash
+bun run typecheck
+bun run build
+```
+
+Run your application's tests as well. TypeScript compatibility covers the compiler and declaration files; your other framework plugins and build tools still need to support TypeScript 7.
+
+## What changed in OrionJS 4.4
+
+All published `@orion-js/*` packages are aligned at version 4.4.0. Their declarations are emitted with TypeScript 7, and OrionJS's development watcher no longer depends on the legacy compiler API removed in TypeScript 7.
+
+You can inspect the complete working migration in the [`backend-base` example](https://github.com/orionjs/orionjs/tree/master/examples/backend-base).

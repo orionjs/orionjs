@@ -96,7 +96,7 @@
       },
       {
         "tab": "Blog",
-        "pages": ["blog/repl-command"]
+        "pages": ["blog/typescript-7", "blog/repl-command"]
       }
     ],
     "global": {
