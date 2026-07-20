@@ -1,5 +1,11 @@
 # @orion-js/core
 
+## 4.4.1
+
+### Patch Changes
+
+- Bundle development applications incrementally and run TypeScript diagnostics in parallel for faster restarts.
+
 ## 4.4.0
 
 ### Minor Changes
