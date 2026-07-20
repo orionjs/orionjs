@@ -29,6 +29,7 @@ program
   .description('Run the Orionjs app in development mode')
   .option('--node', 'Use Node.js runtime instead of Bun')
   .option('--repl', 'Enable REPL endpoint for orion repl')
+  .option('--no-typecheck', 'Disable continuous TypeScript diagnostics')
   .allowUnknownOption()
   .action(run(dev))
 

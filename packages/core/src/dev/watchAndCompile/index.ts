@@ -1,10 +1,13 @@
-import {Runner} from '../runner'
+import {Runner, RunnerOptions} from '../runner'
 import cleanDirectory from './cleanDirectory'
-import {getHost} from './getHost'
+import {watchAndBundle} from './watchAndBundle'
+import {watchAndTypecheck} from './watchAndTypecheck'
 import {watchEnvFile} from './writeEnvFile'
 
-export default async function watchAndCompile(runner: Runner) {
+export default async function watchAndCompile(runner: Runner, options: RunnerOptions) {
   await cleanDirectory()
-  getHost(runner)
+  const requestTypecheck = options.typecheck ? watchAndTypecheck(runner) : undefined
+  await watchAndBundle(runner, options, requestTypecheck)
+  requestTypecheck?.()
   watchEnvFile(runner)
 }

@@ -7,5 +7,5 @@ export default async function (options: RunnerOptions, command: any) {
 
   const runner = getRunner(options, command)
 
-  watchAndCompile(runner)
+  await watchAndCompile(runner, options)
 }

@@ -25,8 +25,9 @@ bunx orion dev [options]
 
 **Options:**
 
-- `--node`: Use Node.js (with tsx watch) instead of Bun
+- `--node`: Use Node.js instead of Bun
 - `--repl`: Enable REPL endpoint for `orion repl` (see below)
+- `--no-typecheck`: Disable continuous TypeScript diagnostics
 - `--shell`: Opens a shell in Chrome developer tools
 - `--clean`: Build the TypeScript project from scratch
 
@@ -34,8 +35,16 @@ bunx orion dev [options]
 
 | Runtime | Command executed |
 | --- | --- |
-| Bun (default) | `bun --watch ./app/index.ts` |
-| Node (`--node`) | `tsx watch ./app/index.ts` |
+| Bun (default) | Incremental esbuild bundle, then `bun --watch ./.orion/build/index.js` |
+| Node (`--node`) | Incremental esbuild bundle, then `node ./.orion/build/index.js` |
+
+The development bundle rebuilds independently from TypeScript diagnostics so
+large projects restart as soon as runnable JavaScript is ready. TypeScript
+continues checking in parallel and stops an invalid application only after it
+has a real diagnostic; merely starting a check does not interrupt the server.
+Syntax and bundle errors stop the application immediately. Use
+`--no-typecheck` only when continuous diagnostics are not wanted, or run
+`orion check` for an additional one-off check.
 
 ### orion prod
 
@@ -131,5 +140,5 @@ See the [Env documentation](/overview/other-modules/env) for details.
 ## Requirements
 
 - **Bun** >= 1.0 (default runtime)
-- **Node.js** >= 22 (when using `--node` flag, also requires `tsx`)
+- **Node.js** >= 22 (when using `--node`)
 - TypeScript

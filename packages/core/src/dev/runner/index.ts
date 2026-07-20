@@ -7,6 +7,7 @@ export interface RunnerOptions {
   clean: boolean
   node: boolean
   repl: boolean
+  typecheck: boolean
 }
 
 export interface Runner {
@@ -23,16 +24,22 @@ export function getRunner(options: RunnerOptions, command: any): Runner {
   }
 
   const startApp = () => {
-    appProcess = startProcess(options, command)
+    const startedProcess = startProcess(options, command)
+    appProcess = startedProcess
 
-    appProcess.on('exit', (code: number, signal: string) => {
+    startedProcess.on('exit', (code: number, signal: string) => {
+      // An exited child must not make `start()` believe the application is
+      // still alive. Compare identities because an older child can emit its
+      // exit event after a replacement process has already been assigned.
+      if (appProcess === startedProcess) appProcess = null
+
       if (!code || code === 143 || code === 0 || signal === 'SIGTERM' || signal === 'SIGINT') {
       } else {
         console.log(chalk.bold(`=> Error running app. Exit code: ${code}`))
       }
     })
 
-    writeFile('.orion/process', `${appProcess.pid}`)
+    writeFile('.orion/process', `${startedProcess.pid}`)
   }
 
   const stop = () => {
