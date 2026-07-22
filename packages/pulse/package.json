@@ -17,7 +17,7 @@
     "dist-cli"
   ],
   "bin": {
-    "orion-pulse": "./dist-cli/orion-pulse.js"
+    "orion-pulse": "dist-cli/orion-pulse.js"
   },
   "author": "nicolaslopezj",
   "license": "MIT",
