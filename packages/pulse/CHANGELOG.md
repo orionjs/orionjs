@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.4.1
+
+### Patch Changes
+
+- Add Pulse, a MongoDB-backed distributed event system with durable consumer groups, retries, crash recovery, delivery history, and a monitoring dashboard.
+
 ## Unreleased
 
 - Add the `orion-pulse dashboard` CLI and standalone Node.js monitoring server.
