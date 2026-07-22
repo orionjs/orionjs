@@ -1,0 +1,131 @@
+---
+title: 'Monitoring dashboard'
+description: 'Run the standalone read-only dashboard and inspect Pulse directly from MongoDB'
+---
+
+Pulse includes a compiled React dashboard for inspecting events, consumers, deliveries, attempts, errors, and leases. It reads the Pulse collections directly from MongoDB and does not load your service or application code.
+
+## Start the dashboard
+
+From a project that has `@orion-js/pulse` installed:
+
+```bash
+bunx orion-pulse dashboard "$MONGO_URL"
+```
+
+By default, it listens on `http://127.0.0.1:4111` and opens the browser. The database can be part of the URI or passed separately:
+
+```bash
+bunx orion-pulse dashboard "$MONGO_URL" \
+  --database commerce \
+  --prefix orionjs.pulse \
+  --port 4111
+```
+
+The command accepts the URI from the first positional argument or, in order, `MONGO_URL`, `MONGODB_URI`, or `DATABASE_URL`.
+
+## Command options
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `-d, --database <name>` | Database in URI | Database to inspect. Required when the URI has no database. |
+| `-p, --port <port>` | `4111` | HTTP port. Use `0` to let the operating system choose an available port. |
+| `--host <host>` | `127.0.0.1` | Interface on which the server listens. |
+| `--prefix <prefix>` | `orionjs.pulse` | Pulse collection prefix. |
+| `--no-open` | Disabled | Do not open the browser automatically. |
+| `-h, --help` | — | Print command help. |
+
+## What you can monitor
+
+The overview provides:
+
+- MongoDB availability and query latency.
+- Retained events, deliveries, attempts, and subscriptions.
+- Pending, successful, and terminal-error deliveries.
+- Queued, active, and expired attempt locks.
+- Error rate and oldest pending delivery.
+- Published, successful, and failed throughput over one hour to 30 days.
+- Per-topic and per-consumer-group health.
+- Recent failures with their error codes and messages.
+
+The explorer views provide paginated inspection of:
+
+- Events and their payloads, headers, retention date, and group outcomes.
+- Deliveries by topic, group, status, event, and final attempt.
+- Attempt history, retry timing, duration, error details, and lock state.
+- Durable subscriptions, offsets, configuration, and active leases.
+
+Use live refresh for a five-second operational view, or turn it off and refresh manually while investigating a changing record. The UI includes light and dark themes and responsive layouts.
+
+## Health interpretation
+
+The overview summarizes operator signals:
+
+| State | Current rule |
+| --- | --- |
+| `healthy` | No terminal delivery errors, old pending delivery, expired locks, or high recent error rate. |
+| `attention` | A terminal delivery error exists or the oldest pending delivery is over one minute old. |
+| `critical` | At least one expired lock exists or the selected time range has an error rate of 20% or more. |
+
+These are operational hints, not application-level service-level objectives. A retained historical delivery error can keep the state at `attention` until TTL cleanup.
+
+## Read-only architecture
+
+The installed package contains two dashboard assets:
+
+```text
+@orion-js/pulse/
+├── dist/                    # Pulse runtime imported by services
+├── dist-cli/orion-pulse.js  # Small launcher
+└── assets/
+    ├── dashboard.js         # Standalone Node.js HTTP server
+    └── dashboard/           # Compiled browser assets
+```
+
+The CLI starts `node assets/dashboard.js`. The server connects to MongoDB, serves the compiled frontend, and exposes read-only GET endpoints for that frontend:
+
+- `/api/health`
+- `/api/overview`
+- `/api/events`
+- `/api/deliveries`
+- `/api/history`
+- `/api/subscriptions`
+
+Mutation methods are rejected. Importing `@orion-js/pulse` from a service does not import the dashboard server, React, or its browser assets into the service process.
+
+React, Vite, Tailwind CSS, and the UI components are build-time development dependencies. They do not increase Pulse's runtime dependency graph.
+
+## Security
+
+The dashboard has no built-in authentication and can display event payloads, headers, error stacks, and service topology.
+
+<Warning>
+  Keep the default loopback host unless access is protected. If you bind to `0.0.0.0`, place the dashboard behind an authenticated reverse proxy and network policy.
+</Warning>
+
+Create a dedicated MongoDB user with read-only access to the four Pulse collections. The dashboard does not need permission to create indexes or mutate documents.
+
+Avoid placing credentials directly in shell history. Prefer an environment variable:
+
+```bash
+export MONGO_URL='mongodb://pulse_observer:***@mongo/pulse?authSource=admin'
+bunx orion-pulse dashboard --no-open
+```
+
+## Troubleshooting
+
+### A database is required
+
+Include it in the URI or pass `--database`:
+
+```bash
+bunx orion-pulse dashboard 'mongodb://localhost:27017/commerce'
+```
+
+### Dashboard assets are missing
+
+Reinstall or rebuild `@orion-js/pulse`. Published packages include `assets`, `dist`, and `dist-cli`; source-only checkouts must run the package build before using the CLI.
+
+### Change Streams are unavailable
+
+The dashboard does not use Change Streams. It queries the current collection state directly, regardless of the topology used by Pulse workers.

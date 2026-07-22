@@ -1,0 +1,227 @@
+import type {
+  Collection,
+  CreateIndexesOptions,
+  Db,
+  IndexDescription,
+  IndexDescriptionInfo,
+} from 'mongodb'
+import {PulseIndexError} from './errors'
+import type {DeliveryDocument, EventDocument, HistoryDocument, SubscriptionDocument} from './types'
+
+export interface PulseCollections {
+  events: Collection<EventDocument>
+  subscriptions: Collection<SubscriptionDocument>
+  deliveries: Collection<DeliveryDocument>
+  history: Collection<HistoryDocument>
+}
+
+interface ExpectedIndex {
+  name: string
+  key: Record<string, 1 | -1>
+  unique?: boolean
+  expireAfterSeconds?: number
+}
+
+const eventsIndexes: ExpectedIndex[] = [
+  {
+    name: 'pulse_events_topic_created_id',
+    key: {topic: 1, createdAt: 1, _id: 1},
+  },
+  {
+    name: 'pulse_events_expires_at_ttl',
+    key: {expiresAt: 1},
+    expireAfterSeconds: 0,
+  },
+]
+
+const subscriptionsIndexes: ExpectedIndex[] = [
+  {
+    name: 'pulse_subscriptions_group_topic_unique',
+    key: {consumerGroup: 1, topic: 1},
+    unique: true,
+  },
+  {
+    name: 'pulse_subscriptions_ordered_lease',
+    key: {consumerGroup: 1, orderedLockedUntil: 1},
+  },
+  {
+    name: 'pulse_subscriptions_discovery_lease',
+    key: {consumerGroup: 1, discoveryLockedUntil: 1},
+  },
+]
+
+const deliveriesIndexes: ExpectedIndex[] = [
+  {
+    name: 'pulse_deliveries_group_event_unique',
+    key: {consumerGroup: 1, eventId: 1},
+    unique: true,
+  },
+  {
+    name: 'pulse_deliveries_acquisition',
+    key: {consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1},
+  },
+  {
+    name: 'pulse_deliveries_expires_at_ttl',
+    key: {expiresAt: 1},
+    expireAfterSeconds: 0,
+  },
+]
+
+const historyIndexes: ExpectedIndex[] = [
+  {
+    name: 'pulse_history_delivery_attempt_unique',
+    key: {deliveryId: 1, attempt: 1},
+    unique: true,
+  },
+  {
+    name: 'pulse_history_group_topic_created',
+    key: {consumerGroup: 1, topic: 1, createdAt: -1, _id: -1},
+  },
+  {
+    name: 'pulse_history_event',
+    key: {eventId: 1, createdAt: -1},
+  },
+  {
+    name: 'pulse_history_dead_locks',
+    key: {status: 1, lockedUntil: 1},
+  },
+  {
+    name: 'pulse_history_pending_acquisition',
+    key: {consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1},
+  },
+  {
+    name: 'pulse_history_expires_at_ttl',
+    key: {expiresAt: 1},
+    expireAfterSeconds: 0,
+  },
+]
+
+function isNamespaceExistsError(error: unknown) {
+  return Boolean(error && typeof error === 'object' && 'code' in error && error.code === 48)
+}
+
+async function ensureCollection(db: Db, name: string) {
+  const exists = await db.listCollections({name}, {nameOnly: true}).hasNext()
+  if (exists) return
+
+  try {
+    await db.createCollection(name)
+  } catch (error) {
+    if (!isNamespaceExistsError(error)) throw error
+  }
+}
+
+function normalizeKey(key: IndexDescriptionInfo['key'] | Record<string, 1 | -1>) {
+  return Object.entries(key).map(([field, direction]) => [field, Number(direction)])
+}
+
+function describeIndex(index: ExpectedIndex | IndexDescriptionInfo) {
+  return JSON.stringify({
+    key: normalizeKey(index.key as Record<string, 1 | -1>),
+    unique: Boolean(index.unique),
+    expireAfterSeconds: 'expireAfterSeconds' in index ? index.expireAfterSeconds : undefined,
+  })
+}
+
+function validateIndex(
+  collectionName: string,
+  actual: IndexDescriptionInfo,
+  expected: ExpectedIndex,
+) {
+  const actualKey = normalizeKey(actual.key)
+  const expectedKey = normalizeKey(expected.key)
+  const keysMatch = JSON.stringify(actualKey) === JSON.stringify(expectedKey)
+  const uniqueMatches = Boolean(actual.unique) === Boolean(expected.unique)
+  const ttlMatches = actual.expireAfterSeconds === expected.expireAfterSeconds
+
+  if (keysMatch && uniqueMatches && ttlMatches) return
+
+  throw new PulseIndexError(
+    `Pulse index "${expected.name}" on "${collectionName}" is incompatible. ` +
+      `Expected ${describeIndex(expected)}, found ${describeIndex(actual)}.`,
+  )
+}
+
+function toIndexDescription(index: ExpectedIndex): IndexDescription {
+  const options: CreateIndexesOptions = {
+    name: index.name,
+    ...(index.unique ? {unique: true} : {}),
+    ...(index.expireAfterSeconds !== undefined
+      ? {expireAfterSeconds: index.expireAfterSeconds}
+      : {}),
+  }
+
+  return {key: index.key, ...options}
+}
+
+async function ensureIndexes<T extends DocumentLike>(
+  collection: Collection<T>,
+  expectedIndexes: ExpectedIndex[],
+) {
+  let existing = await collection.listIndexes().toArray()
+  const existingNames = new Set(existing.map(index => index.name))
+
+  for (const expected of expectedIndexes) {
+    const actual = existing.find(index => index.name === expected.name)
+    if (actual) validateIndex(collection.collectionName, actual, expected)
+  }
+
+  const missing = expectedIndexes.filter(index => !existingNames.has(index.name))
+  if (missing.length > 0) {
+    try {
+      await collection.createIndexes(missing.map(toIndexDescription))
+    } catch (error) {
+      existing = await collection.listIndexes().toArray()
+      const allNowExist = missing.every(index => existing.some(item => item.name === index.name))
+      if (!allNowExist) {
+        throw new PulseIndexError(
+          `Failed to create Pulse indexes on "${collection.collectionName}".`,
+          {cause: error},
+        )
+      }
+    }
+  }
+
+  existing = await collection.listIndexes().toArray()
+  for (const expected of expectedIndexes) {
+    const actual = existing.find(index => index.name === expected.name)
+    if (!actual) {
+      throw new PulseIndexError(
+        `Pulse index "${expected.name}" is missing from "${collection.collectionName}".`,
+      )
+    }
+    validateIndex(collection.collectionName, actual, expected)
+  }
+}
+
+type DocumentLike = {_id: string}
+
+export async function createCollectionsAndIndexes(
+  db: Db,
+  collectionPrefix: string,
+): Promise<PulseCollections> {
+  const names = {
+    events: `${collectionPrefix}.events`,
+    subscriptions: `${collectionPrefix}.subscriptions`,
+    deliveries: `${collectionPrefix}.deliveries`,
+    history: `${collectionPrefix}.history`,
+  }
+
+  await Promise.all(Object.values(names).map(name => ensureCollection(db, name)))
+
+  const collections: PulseCollections = {
+    events: db.collection<EventDocument>(names.events),
+    subscriptions: db.collection<SubscriptionDocument>(names.subscriptions),
+    deliveries: db.collection<DeliveryDocument>(names.deliveries),
+    history: db.collection<HistoryDocument>(names.history),
+  }
+
+  await Promise.all([
+    ensureIndexes(collections.events, eventsIndexes),
+    ensureIndexes(collections.subscriptions, subscriptionsIndexes),
+    ensureIndexes(collections.deliveries, deliveriesIndexes),
+    ensureIndexes(collections.history, historyIndexes),
+  ])
+
+  return collections
+}

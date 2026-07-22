@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+:root,
+:root[data-theme="light"] {
+	color-scheme: light;
+	--font-sans:
+		"InterVariable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+		"Segoe UI", sans-serif;
+	--font-mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", monospace;
+	--background: #ffffff;
+	--sidebar: #fafafa;
+	--header: rgba(255, 255, 255, 0.94);
+	--surface: #ffffff;
+	--surface-raised: #f4f4f5;
+	--surface-hover: #f4f4f5;
+	--surface-inset: #fafafa;
+	--input: #ffffff;
+	--code: #18181b;
+	--code-text: #fafafa;
+	--nav-active: #f4f4f5;
+	--border: rgba(9, 9, 11, 0.1);
+	--border-strong: rgba(9, 9, 11, 0.16);
+	--text-strong: #09090b;
+	--text: #18181b;
+	--text-muted: #71717a;
+	--text-subtle: #a1a1aa;
+	--accent: #18181b;
+	--accent-hover: #27272a;
+	--accent-strong: #18181b;
+	--accent-foreground: #fafafa;
+	--accent-muted: #f4f4f5;
+	--accent-border: rgba(9, 9, 11, 0.16);
+	--focus: #18181b;
+	--success: #15803d;
+	--success-muted: #f0fdf4;
+	--success-border: #bbf7d0;
+	--warning: #a16207;
+	--warning-muted: #fefce8;
+	--warning-border: #fde68a;
+	--danger: #b91c1c;
+	--danger-muted: #fef2f2;
+	--danger-border: #fecaca;
+	--info: #0369a1;
+	--info-muted: #f0f9ff;
+	--info-border: #bae6fd;
+	--chart-published: #71717a;
+	--chart-success: #16a34a;
+	--chart-error: #dc2626;
+	--chart-grid: rgba(9, 9, 11, 0.08);
+	--shadow-card: none;
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+	--background: #09090b;
+	--sidebar: #09090b;
+	--header: rgba(9, 9, 11, 0.94);
+	--surface: #09090b;
+	--surface-raised: #18181b;
+	--surface-hover: #27272a;
+	--surface-inset: #18181b;
+	--input: #09090b;
+	--code: #18181b;
+	--code-text: #fafafa;
+	--nav-active: #27272a;
+	--border: rgba(250, 250, 250, 0.1);
+	--border-strong: rgba(250, 250, 250, 0.16);
+	--text-strong: #fafafa;
+	--text: #f4f4f5;
+	--text-muted: #a1a1aa;
+	--text-subtle: #71717a;
+	--accent: #fafafa;
+	--accent-hover: #e4e4e7;
+	--accent-strong: #fafafa;
+	--accent-foreground: #18181b;
+	--accent-muted: #27272a;
+	--accent-border: rgba(250, 250, 250, 0.16);
+	--focus: #d4d4d8;
+	--success: #4ade80;
+	--success-muted: rgba(20, 83, 45, 0.22);
+	--success-border: rgba(74, 222, 128, 0.24);
+	--warning: #facc15;
+	--warning-muted: rgba(113, 63, 18, 0.22);
+	--warning-border: rgba(250, 204, 21, 0.24);
+	--danger: #f87171;
+	--danger-muted: rgba(127, 29, 29, 0.22);
+	--danger-border: rgba(248, 113, 113, 0.24);
+	--info: #38bdf8;
+	--info-muted: rgba(12, 74, 110, 0.22);
+	--info-border: rgba(56, 189, 248, 0.24);
+	--chart-published: #a1a1aa;
+	--chart-success: #4ade80;
+	--chart-error: #f87171;
+	--chart-grid: rgba(250, 250, 250, 0.08);
+	--shadow-card: none;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	background: var(--background);
+	font-family: var(--font-sans);
+	font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+	text-rendering: optimizeLegibility;
+}
+
+body {
+	min-width: 320px;
+	min-height: 100dvh;
+	margin: 0;
+	background: var(--background);
+}
+
+button,
+input,
+select {
+	font: inherit;
+}
+
+button {
+	cursor: pointer;
+}
+
+button:disabled {
+	cursor: not-allowed;
+}
+
+::selection {
+	background: var(--accent-strong);
+	color: var(--accent-foreground);
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	border: 3px solid transparent;
+	border-radius: 999px;
+	background: var(--border-strong);
+	background-clip: padding-box;
+}
+
+.live-dot {
+	animation: live-pulse 2s ease-out infinite;
+}
+
+.skeleton {
+	position: relative;
+	overflow: hidden;
+	background: var(--surface-raised);
+}
+
+.skeleton::after {
+	position: absolute;
+	inset: 0;
+	content: "";
+	background: linear-gradient(
+		100deg,
+		transparent 20%,
+		color-mix(in srgb, var(--text-subtle) 10%, transparent) 50%,
+		transparent 80%
+	);
+	transform: translateX(-100%);
+	animation: skeleton-sweep 1.5s infinite;
+}
+
+.drawer-enter {
+	animation: drawer-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+	outline: none;
+}
+
+@keyframes live-pulse {
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.45;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes skeleton-sweep {
+	to {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes drawer-enter {
+	from {
+		opacity: 0.8;
+		transform: translateX(28px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root[data-theme] *,
+	:root[data-theme] *::before,
+	:root[data-theme] *::after {
+		scroll-behavior: auto;
+		animation-duration: 0.01ms;
+		animation-iteration-count: 1;
+		transition-duration: 0.01ms;
+	}
+}

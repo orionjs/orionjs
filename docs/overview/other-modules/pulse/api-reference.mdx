@@ -1,0 +1,242 @@
+---
+title: 'API reference'
+description: 'Pulse connection, publishing, subscriptions, history, errors, collections, and indexes'
+---
+
+## `connect()`
+
+```typescript
+function connect<TEvents extends Record<string, unknown>>(
+  options: PulseConnectOptions,
+): Pulse<TEvents>
+```
+
+`connect()` constructs Pulse immediately and creates one background readiness promise. Use `awaitConnection()` during application startup to surface connection, topology, permission, and index errors before accepting traffic.
+
+### Connection options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `connectionString` | `string` | Required | MongoDB connection string. |
+| `consumerGroup` | `string` | Required | Stable identity shared by replicas performing the same work. |
+| `databaseName` | `string` | Database in URI | MongoDB database. Startup fails if neither source provides it. |
+| `collectionPrefix` | `string` | `orionjs.pulse` | Prefix for all four collections. |
+| `changeStreams` | `'auto' \| 'required' \| 'disabled'` | `auto` | Change Stream wake-up policy. Polling always remains enabled. |
+| `eventRetentionMs` | `number \| null` | 7 days | Retention written on new events; `null` keeps them indefinitely. |
+| `historyRetentionMs` | `number \| null` | 7 days | Retention written when attempts and deliveries become terminal. |
+| `pollIntervalMs` | `number` | `3000` | Polling, reconciliation, and Change Stream retry interval. |
+| `workerCount` | `number` | `4` | Worker loops in this process. |
+| `lockTimeoutMs` | `number` | `30000` | Attempt and ordered lease duration. Heartbeats renew active leases. |
+| `onError` | `(error: Error) => void` | `console.error` | Internal worker and Change Stream error reporter. |
+
+Strings must be non-empty. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it.
+
+## `pulse.awaitConnection()`
+
+```typescript
+await pulse.awaitConnection(): Promise<void>
+```
+
+Resolves after the MongoDB client connects, the database is selected, collections and indexes are ready, and Change Stream support is resolved. Workers start only after successful initialization.
+
+`publish()`, `subscribe()`, and `history.find()` call it internally.
+
+## `pulse.publish()`
+
+```typescript
+await pulse.publish({
+  topic: 'order.created',
+  data: {orderId: 'ord_123'},
+  headers: {source: 'checkout'},
+})
+```
+
+Returns:
+
+```typescript
+interface PulsePublishedEvent<TTopic extends string, TData> {
+  id: string
+  topic: TTopic
+  data: TData
+  headers?: Record<string, string>
+  createdAt: Date
+  expiresAt?: Date
+}
+```
+
+The event `_id` is a UUIDv7 string. Pulse never uses MongoDB `ObjectId` for its own documents.
+
+## `pulse.subscribe()`
+
+```typescript
+const subscription = await pulse.subscribe(topic, handler, options)
+```
+
+### Subscription options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `ordered` | `boolean` | `true` | Serialize this group and topic across all replicas. |
+| `offsetReset` | `'latest' \| 'earliest'` | `latest` | Starting point when the durable subscription is first created. |
+| `delivery` | `'at-least-once' \| 'at-most-once'` | `at-least-once` | Retry semantics. |
+| `maxRetries` | `number` | `3` | Retries after the initial attempt. Forced to zero for at-most-once. |
+| `retryDelayMs` | `number` | `1000` | Delay before the first retry. |
+| `retryBackoffMultiplier` | `number` | `2` | Multiplier applied after each failed attempt. |
+| `maxConcurrency` | `number` | `workerCount` | Local concurrent handlers when `ordered` is false. Forced to one when ordered. |
+
+The handler can return `void` or `Promise<void>`:
+
+```typescript
+type PulseEventHandler<TTopic extends string, TData> = (
+  event: PulseReceivedEvent<TTopic, TData>,
+) => Promise<void> | void
+```
+
+`PulseReceivedEvent` contains every published event field plus `consumerGroup` and the one-based `attempt` number.
+
+The returned subscription contains the resolved options and an idempotent asynchronous `unsubscribe()` method.
+
+## `pulse.getSubscriptions()`
+
+```typescript
+const subscriptions = pulse.getSubscriptions()
+```
+
+Returns the subscriptions registered in this process. It does not query durable subscriptions created by other replicas. Use the [dashboard](/overview/other-modules/pulse/dashboard) to inspect the full database state.
+
+## `pulse.history.find()`
+
+```typescript
+const page = await pulse.history.find({
+  topic: 'order.created',
+  status: 'error',
+  from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  limit: 100,
+})
+```
+
+### History filters
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `topic` | `string` | Exact topic. |
+| `eventId` | `string` | Exact event UUIDv7. |
+| `consumerGroup` | `string` | Exact consumer group. |
+| `status` | `'pending' \| 'success' \| 'error'` | Attempt state. |
+| `lockState` | `'queued' \| 'active' \| 'expired'` | Pending lock classification. Implies `status: 'pending'`. |
+| `from` | `Date` | Inclusive lower bound on attempt `createdAt`. |
+| `to` | `Date` | Inclusive upper bound on attempt `createdAt`. |
+| `cursor` | `string` | `nextCursor` from the previous page. |
+| `limit` | `number` | Defaults to 100 and is clamped from 1 to 500. |
+
+Results are sorted by UUIDv7 `_id` descending:
+
+```typescript
+interface PulseHistoryFindResult {
+  records: PulseHistoryRecord[]
+  nextCursor?: string
+}
+```
+
+Each record exposes delivery and event IDs, topic, group, attempt number, status, lock state and timestamps, duration, expiration, and serialized error.
+
+## `pulse.close()`
+
+```typescript
+await pulse.close()
+```
+
+Stops worker loops, wakes sleepers, closes the Change Stream, waits for background loops to settle, and closes the MongoDB client. Repeated calls return the same close promise.
+
+## Exported errors
+
+| Error | When it is used |
+| --- | --- |
+| `PulseError` | Base class for Pulse-specific errors. |
+| `PulseConfigurationError` | Invalid options, missing database, subscription conflicts, or required Change Streams unavailable. |
+| `PulseIndexError` | Required index creation or compatibility validation failed. |
+| `PulseLockLostError` | A stale worker lost its fencing token while executing or acknowledging. Usually reported through `onError`. |
+
+## Collections
+
+The names use `collectionPrefix`, which defaults to `orionjs.pulse`:
+
+| Suffix | Default collection | Purpose |
+| --- | --- | --- |
+| `.events` | `orionjs.pulse.events` | Immutable published events. |
+| `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and leases. |
+| `.deliveries` | `orionjs.pulse.deliveries` | Logical group outcome for an event. |
+| `.history` | `orionjs.pulse.history` | Individual execution attempts and their locks. |
+
+Every Pulse-created `_id`, lock owner, and fencing token is a UUIDv7 string.
+
+## Automatically managed indexes
+
+Pulse creates missing indexes and validates named indexes on every connection. It never drops an index automatically.
+
+### Events
+
+| Name | Keys | Options |
+| --- | --- | --- |
+| `pulse_events_topic_created_id` | `{topic: 1, createdAt: 1, _id: 1}` | — |
+| `pulse_events_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
+
+### Subscriptions
+
+| Name | Keys | Options |
+| --- | --- | --- |
+| `pulse_subscriptions_group_topic_unique` | `{consumerGroup: 1, topic: 1}` | Unique |
+| `pulse_subscriptions_ordered_lease` | `{consumerGroup: 1, orderedLockedUntil: 1}` | — |
+| `pulse_subscriptions_discovery_lease` | `{consumerGroup: 1, discoveryLockedUntil: 1}` | — |
+
+### Deliveries
+
+| Name | Keys | Options |
+| --- | --- | --- |
+| `pulse_deliveries_group_event_unique` | `{consumerGroup: 1, eventId: 1}` | Unique |
+| `pulse_deliveries_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1}` | — |
+| `pulse_deliveries_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
+
+### History
+
+| Name | Keys | Options |
+| --- | --- | --- |
+| `pulse_history_delivery_attempt_unique` | `{deliveryId: 1, attempt: 1}` | Unique |
+| `pulse_history_group_topic_created` | `{consumerGroup: 1, topic: 1, createdAt: -1, _id: -1}` | — |
+| `pulse_history_event` | `{eventId: 1, createdAt: -1}` | — |
+| `pulse_history_dead_locks` | `{status: 1, lockedUntil: 1}` | — |
+| `pulse_history_pending_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1}` | — |
+| `pulse_history_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
+
+## Full typed example
+
+```typescript
+import {connect, type PulseReceivedEvent} from '@orion-js/pulse'
+
+type Events = {
+  'order.created': {orderId: string}
+}
+
+const pulse = connect<Events>({
+  connectionString: process.env.MONGODB_URI!,
+  databaseName: 'commerce',
+  consumerGroup: 'billing',
+  changeStreams: 'auto',
+  onError: error => console.error('[billing/pulse]', error),
+})
+
+await pulse.awaitConnection()
+
+await pulse.subscribe(
+  'order.created',
+  async (event: PulseReceivedEvent<'order.created', Events['order.created']>) => {
+    await handleOrder(event.data.orderId, event.id)
+  },
+  {
+    ordered: true,
+    offsetReset: 'latest',
+    delivery: 'at-least-once',
+    maxRetries: 3,
+  },
+)
+```

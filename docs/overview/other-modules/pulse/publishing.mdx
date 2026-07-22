@@ -1,0 +1,114 @@
+---
+title: 'Publishing events'
+description: 'Define typed topics, publish immutable events, and configure retention'
+---
+
+## Define the event contract
+
+Pass an event map to `connect()` to type-check topic names and payloads:
+
+```typescript
+import {connect} from '@orion-js/pulse'
+
+export type CommerceEvents = {
+  'order.created': {
+    orderId: string
+    customerId: string
+    amount: number
+  }
+  'payment.captured': {
+    orderId: string
+    paymentId: string
+  }
+}
+
+export const pulse = connect<CommerceEvents>({
+  connectionString: process.env.MONGODB_URI!,
+  databaseName: 'commerce',
+  consumerGroup: 'checkout',
+})
+```
+
+For multiple services, publish the event map from a small shared types-only package. Pulse does not perform runtime schema validation, so producers and consumers should deploy compatible payload changes.
+
+## Publish
+
+`publish()` inserts an immutable event and returns the stored public representation:
+
+```typescript
+const event = await pulse.publish({
+  topic: 'order.created',
+  data: {
+    orderId: 'ord_123',
+    customerId: 'cus_456',
+    amount: 24900,
+  },
+  headers: {
+    source: 'checkout',
+    traceId: 'trace_abc',
+  },
+})
+
+console.log(event.id)        // UUIDv7 string
+console.log(event.createdAt) // Date
+console.log(event.expiresAt) // Date | undefined
+```
+
+The options are:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `topic` | key of the event map | Event name. |
+| `data` | payload for that topic | Any value that MongoDB can persist. |
+| `headers` | `Record<string, string>` | Optional string metadata such as source, trace, or schema version. |
+
+Every call creates a new event ID. Pulse v1 does not expose producer idempotency keys, so retry a failed `publish()` only when your producer can tolerate the possibility of two distinct events.
+
+## Event ordering
+
+Events are discovered by `createdAt` and then by their UUIDv7 `_id`. With an ordered subscription, Pulse runs one event at a time for a specific `consumerGroup + topic`, including time spent waiting for retries.
+
+Ordering does not span topics or consumer groups, and Pulse does not provide a single global sequence. If two producers publish at almost the same time, design the payload so your domain can detect stale updates when that matters.
+
+## Retention
+
+Events are retained for seven days by default:
+
+```typescript
+const pulse = connect<CommerceEvents>({
+  connectionString,
+  databaseName: 'commerce',
+  consumerGroup: 'checkout',
+  eventRetentionMs: 30 * 24 * 60 * 60 * 1000,
+})
+```
+
+Pulse stores an absolute `expiresAt` date on each new event. A TTL index with `expireAfterSeconds: 0` lets MongoDB remove it asynchronously.
+
+Use `null` to keep events indefinitely:
+
+```typescript
+const pulse = connect<CommerceEvents>({
+  connectionString,
+  databaseName: 'commerce',
+  consumerGroup: 'checkout',
+  eventRetentionMs: null,
+})
+```
+
+Changing retention affects newly published events. Existing documents keep the `expiresAt` value written when they were created. MongoDB's TTL monitor runs in the background, so expiration is not exact to the millisecond.
+
+<Warning>
+  An event can expire before a delayed consumer processes it. Pulse records that delivery as an error with code `event_expired`; it cannot reconstruct an expired payload.
+</Warning>
+
+## Publishing before a consumer exists
+
+The first subscription controls which retained events it sees:
+
+- `offsetReset: 'latest'` starts after the most recent retained event at subscription creation time.
+- `offsetReset: 'earliest'` starts with the oldest retained event for that topic.
+
+After the subscription exists, its cursor is durable. Restarting, unsubscribing, or adding replicas does not apply `offsetReset` again.
+
+Continue with [Consuming events](/overview/other-modules/pulse/consuming) to configure offsets, concurrency, and retry behavior.
