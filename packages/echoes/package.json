@@ -28,7 +28,7 @@
   },
   "peerDependencies": {
     "@orion-js/logger": "4.4.0",
-    "@orion-js/pulse": "^4.4.2"
+    "@orion-js/pulse": "^4.4.3"
   },
   "peerDependenciesMeta": {
     "@orion-js/pulse": {
@@ -36,7 +36,7 @@
     }
   },
   "devDependencies": {
-    "@orion-js/pulse": "4.4.2",
+    "@orion-js/pulse": "4.4.3",
     "@types/node": "^18.0.0",
     "@types/supertest": "2.0.11",
     "mongodb": "^6.15.0",
