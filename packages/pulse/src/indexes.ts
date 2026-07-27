@@ -28,6 +28,10 @@ const eventsIndexes: ExpectedIndex[] = [
     key: {topic: 1, createdAt: 1, _id: 1},
   },
   {
+    name: 'pulse_events_topic_sequence_id',
+    key: {topic: 1, sequence: 1, _id: 1},
+  },
+  {
     name: 'pulse_events_expires_at_ttl',
     key: {expiresAt: 1},
     expireAfterSeconds: 0,
@@ -120,6 +124,11 @@ function describeIndex(index: ExpectedIndex | IndexDescriptionInfo) {
     key: normalizeKey(index.key as Record<string, 1 | -1>),
     unique: Boolean(index.unique),
     expireAfterSeconds: 'expireAfterSeconds' in index ? index.expireAfterSeconds : undefined,
+    sparse: 'sparse' in index ? Boolean(index.sparse) : false,
+    hidden: 'hidden' in index ? Boolean(index.hidden) : false,
+    partialFilterExpression:
+      'partialFilterExpression' in index ? index.partialFilterExpression : undefined,
+    collation: 'collation' in index ? index.collation : undefined,
   })
 }
 
@@ -133,8 +142,13 @@ function validateIndex(
   const keysMatch = JSON.stringify(actualKey) === JSON.stringify(expectedKey)
   const uniqueMatches = Boolean(actual.unique) === Boolean(expected.unique)
   const ttlMatches = actual.expireAfterSeconds === expected.expireAfterSeconds
+  const hasDefaultSemantics =
+    !actual.sparse &&
+    !actual.hidden &&
+    actual.partialFilterExpression === undefined &&
+    actual.collation === undefined
 
-  if (keysMatch && uniqueMatches && ttlMatches) return
+  if (keysMatch && uniqueMatches && ttlMatches && hasDefaultSemantics) return
 
   throw new PulseIndexError(
     `Pulse index "${expected.name}" on "${collectionName}" is incompatible. ` +
@@ -172,10 +186,13 @@ async function ensureIndexes<T extends DocumentLike>(
       await collection.createIndexes(missing.map(toIndexDescription))
     } catch (error) {
       existing = await collection.listIndexes().toArray()
-      const allNowExist = missing.every(index => existing.some(item => item.name === index.name))
-      if (!allNowExist) {
+      const unresolved = missing.filter(index => !existing.some(item => item.name === index.name))
+      if (unresolved.length > 0) {
+        const mongoMessage = error instanceof Error ? error.message : String(error)
         throw new PulseIndexError(
-          `Failed to create Pulse indexes on "${collection.collectionName}".`,
+          `Failed to create Pulse index${unresolved.length === 1 ? '' : 'es'} ` +
+            `${unresolved.map(index => `"${index.name}"`).join(', ')} on ` +
+            `"${collection.collectionName}". MongoDB: ${mongoMessage}`,
           {cause: error},
         )
       }

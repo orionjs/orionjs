@@ -23,14 +23,14 @@ function connect<TEvents extends Record<string, unknown>>(
 | `collectionPrefix` | `string` | `orionjs.pulse` | Prefix for all four collections. |
 | `changeStreams` | `'auto' \| 'required' \| 'disabled'` | `auto` | Change Stream wake-up policy. Polling always remains enabled. |
 | `eventRetentionMs` | `number \| null` | 7 days | Retention written on new events; `null` keeps them indefinitely. |
-| `historyRetentionMs` | `number \| null` | 7 days | Retention written when attempts and deliveries become terminal. |
+| `historyRetentionMs` | `number \| null` | 7 days | Retention applied to a delivery and all its completed attempts once the delivery is terminal. |
 | `pollIntervalMs` | `number` | `3000` | Polling, reconciliation, and Change Stream retry interval. |
 | `workerCount` | `number` | `4` | Worker loops in this process. |
 | `maxPoolSize` | `number` | `5` | Maximum MongoDB application connections per server for this Pulse client. |
 | `lockTimeoutMs` | `number` | `30000` | Attempt and ordered lease duration. Heartbeats renew active leases. |
 | `onError` | `(error: Error) => void` | `console.error` | Internal worker and Change Stream error reporter. |
 
-Strings must be non-empty. `maxPoolSize` must be a positive integer. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it.
+Strings must be non-empty. `maxPoolSize` must be a positive integer. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it. Retry settings are rejected when their largest computed delay falls outside MongoDB's supported date range.
 
 Pulse sets the MongoDB driver's `maxPoolSize` to 5 instead of its default of 100. `minPoolSize`
 remains at the driver default of 0, so the pool grows on demand. The limit applies to application
@@ -154,6 +154,10 @@ await pulse.close()
 
 Stops worker loops, wakes sleepers, closes the Change Stream, waits for background loops to settle, and closes the MongoDB client. Repeated calls return the same close promise.
 
+When called and awaited from inside a handler, shutdown starts but that call returns before the
+shared promise so the current worker cannot deadlock waiting for itself. A call from outside the
+handler can await complete shutdown.
+
 ## Exported errors
 
 | Error | When it is used |
@@ -185,6 +189,7 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | Name | Keys | Options |
 | --- | --- | --- |
 | `pulse_events_topic_created_id` | `{topic: 1, createdAt: 1, _id: 1}` | — |
+| `pulse_events_topic_sequence_id` | `{topic: 1, sequence: 1, _id: 1}` | — |
 | `pulse_events_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
 
 ### Subscriptions

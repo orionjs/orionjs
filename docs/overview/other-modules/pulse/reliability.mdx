@@ -44,6 +44,14 @@ Every success or error update includes the fencing token in its MongoDB filter. 
 
 Choose a `lockTimeoutMs` that comfortably exceeds expected event-loop stalls and temporary MongoDB connectivity interruptions. Heartbeats keep normal long-running asynchronous handlers alive, but blocking the JavaScript event loop can prevent renewal.
 
+Calling `close()` stops acquisition of new work but keeps heartbeats active for callbacks already
+running. Pulse waits for those callbacks to settle before closing MongoDB, preventing another
+replica from reaping intentionally draining work during graceful shutdown.
+
+A handler may initiate and await `close()` without deadlocking itself. Pulse starts the graceful
+close and lets that handler return so its attempt can be acknowledged. Lifecycle code outside the
+handler can call `close()` again to await the shared close promise.
+
 ## Recovery after a crash
 
 Every worker loop runs three recovery steps before looking for new events:
@@ -60,8 +68,21 @@ Reconciliation repairs safe partial states idempotently:
 - History is successful but delivery is still pending.
 - History is errored but its retry was not created.
 - Event discovery was interrupted before the subscription cursor advanced.
+- A terminal delivery was written but its history and delivery TTL dates were not.
 
 Unique indexes on `consumerGroup + eventId` and `deliveryId + attempt` ensure replicas converge on one logical record.
+
+## Concurrent publication ordering
+
+Pulse assigns every new event an internal BSON timestamp in the same MongoDB write that creates the
+event. Discovery advances through that MongoDB-assigned sequence instead of relying on application
+clocks or the order in which concurrent `publish()` promises resolve.
+
+This prevents a slow concurrent insert from appearing behind an already-advanced cursor. The
+public `createdAt` field remains available for application timestamps and delivery ordering.
+Events created by older Pulse versions do not have the internal sequence. Upgraded consumers keep
+an independent `createdAt + _id` cursor for those legacy events and check it before the
+MongoDB-assigned cursor, so old and new publishers can coexist during a rolling upgrade.
 
 ## Crash windows
 
@@ -178,9 +199,15 @@ With the default prefix, Pulse owns:
 | `orionjs.pulse.events` | `eventRetentionMs` from publication time. |
 | `orionjs.pulse.subscriptions` | Durable; no TTL. |
 | `orionjs.pulse.deliveries` | `historyRetentionMs` after terminal completion. |
-| `orionjs.pulse.history` | `historyRetentionMs` after the attempt ends. |
+| `orionjs.pulse.history` | `historyRetentionMs` after its delivery becomes terminal. |
 
 Retention uses absolute `expiresAt` dates and TTL indexes with `expireAfterSeconds: 0`. When retention is `null`, Pulse omits `expiresAt`; MongoDB keeps those documents even though the TTL index remains.
+
+Errored attempts that still have a retry do not receive an expiry date. This preserves the retry
+number and recovery evidence even when the retry delay or a complete service outage lasts longer
+than `historyRetentionMs`. Once the delivery becomes terminal, Pulse assigns the same terminal
+retention deadline to all its completed attempts, then makes the delivery expirable. If a machine
+stops between those writes, the non-expiring terminal delivery remains as a reconciliation marker.
 
 ## Startup safety
 
@@ -188,9 +215,13 @@ During initialization, Pulse creates missing collections and named indexes, then
 
 - MongoDB permissions do not allow the required setup.
 - Existing data violates a required unique index.
-- A named Pulse index has incompatible keys, uniqueness, or TTL configuration.
+- A named Pulse index has incompatible keys, uniqueness, TTL, sparse, hidden, partial-filter, or
+  collation configuration.
 - `changeStreams: 'required'` is used on an unsupported topology.
 
 Pulse never drops or replaces an incompatible index automatically. The error identifies the collection, index name, expected configuration, and actual configuration so an operator can make the migration explicitly.
+
+When existing duplicate data prevents a unique index from being created, the startup error includes
+the affected collection, every unresolved Pulse index name, and MongoDB's duplicate-key detail.
 
 See the [API reference](/overview/other-modules/pulse/api-reference) for the exact index names and configuration defaults.

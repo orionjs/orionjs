@@ -132,6 +132,12 @@ keeps `minPoolSize` at 0, so it creates application connections on demand instea
 five eagerly. Increase `maxPoolSize` only when a replica needs more concurrent MongoDB operations;
 requests wait for an available connection when the pool is full.
 
+New events also receive an internal MongoDB BSON timestamp during publication. Pulse uses this
+server-assigned sequence for durable discovery, so concurrent publishers and skewed application
+clocks cannot leave an event behind an advanced subscription cursor. Legacy events without the
+sequence remain readable through an independent `createdAt + _id` cursor while old and new
+publishers coexist.
+
 ## Subscription options
 
 | Option | Default | Description |
@@ -152,9 +158,18 @@ Pulse stores an execution history record with `status: 'pending'` before invokin
 
 If a process or machine disappears, another replica marks the expired attempt as `error` with code `worker_lost`. At-least-once delivery creates the next attempt; at-most-once delivery finishes with an error. A stale worker cannot acknowledge after losing its fencing token.
 
+Graceful `close()` stops new work while continuing to heartbeat handlers already in progress. It
+waits for those callbacks before closing MongoDB, avoiding unnecessary recovery retries during
+normal deploy shutdowns. A handler may initiate and await `close()` without deadlocking; lifecycle
+code outside the handler can call it again to await the shared close promise.
+
 At-least-once delivery can invoke a handler again when the machine dies after an external side effect but before recording success. Use `event.id` as an idempotency key for external writes.
 
 Ordered subscriptions block later events while the current event is running or waiting for a retry. Concurrent subscriptions lock deliveries independently.
+
+Non-terminal errored attempts are kept without `expiresAt`, even when their retry delay exceeds
+`historyRetentionMs`. Pulse applies retention to all completed attempts only after their delivery
+becomes terminal, and reconciliation repairs a crash between the terminal and TTL writes.
 
 ## History
 

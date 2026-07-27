@@ -1,4 +1,4 @@
-import type {Document} from 'mongodb'
+import type {Document, Timestamp} from 'mongodb'
 
 export type PulseEventMap = Record<string, unknown>
 export type PulseTopic<TEvents extends PulseEventMap> = Extract<keyof TEvents, string>
@@ -133,6 +133,10 @@ export interface EventDocument<TData = unknown> extends Document {
   data: TData
   headers?: PulseHeaders
   createdAt: Date
+  /**
+   * MongoDB-assigned ordering token. Legacy events may not have one.
+   */
+  sequence?: Timestamp
   expiresAt?: Date
 }
 
@@ -150,6 +154,8 @@ export interface SubscriptionDocument extends Document {
   updatedAt: Date
   cursorCreatedAt?: Date
   cursorEventId?: string
+  cursorSequence?: Timestamp
+  cursorSequenceEventId?: string
   discoveryLockOwner?: string
   discoveryLockToken?: string
   discoveryLockedUntil?: Date
