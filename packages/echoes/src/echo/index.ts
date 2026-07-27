@@ -1,8 +1,13 @@
+import {clean, cleanAndValidate, InferSchemaType, SchemaFieldType} from '@orion-js/schema'
 import {EachMessagePayload} from 'kafkajs'
-import {EchoType, EchoConfig, EchoRequestConfig, EchoEventConfig} from '../types'
+import {
+  EchoConfig,
+  EchoEventConfig,
+  EchoesReceivedEvent,
+  EchoRequestConfig,
+  EchoType,
+} from '../types'
 import deserialize from './deserialize'
-import {clean, cleanAndValidate, InferSchemaType} from '@orion-js/schema'
-import {SchemaFieldType} from '@orion-js/schema'
 
 /**
  * @deprecated Use createEchoRequest and createEchoEvent instead
@@ -28,6 +33,21 @@ const echo = function createNewEcho<
     return result
   }
 
+  const onEvent = async (event: EchoesReceivedEvent) => {
+    const context = {
+      ...(event.context || {}),
+      transport: event.transport,
+      eventId: event.id,
+      topic: event.topic,
+      headers: event.headers,
+      createdAt: event.createdAt,
+      attempt: event.attempt,
+      data: event.data,
+    }
+
+    await resolve(event.data.params, context)
+  }
+
   return {
     type: options.type,
     params: options.params,
@@ -35,17 +55,28 @@ const echo = function createNewEcho<
     attemptsBeforeDeadLetter:
       options.type === 'event' ? options.attemptsBeforeDeadLetter : undefined,
     resolve,
+    onEvent,
     onMessage: async (messageData: EachMessagePayload) => {
       const {message} = messageData
 
       const data = deserialize(message.value.toString())
+      const retries = Number.parseInt(message.headers?.retries?.toString() || '0', 10)
+      const timestamp = Number(message.timestamp)
+      const createdAt = Number.isFinite(timestamp) ? new Date(timestamp) : new Date()
+      const eventId =
+        message.headers?.['echoes-event-id']?.toString() ||
+        `kafka:${messageData.topic}:${messageData.partition}:${message.offset}`
 
-      const context = {
-        ...messageData,
+      await onEvent({
+        id: eventId,
+        topic: messageData.topic,
         data,
-      }
-
-      await resolve(data.params, context)
+        transport: 'kafka',
+        headers: message.headers,
+        createdAt,
+        attempt: retries + 1,
+        context: messageData,
+      })
     },
     onRequest: async (serializedParams: string) => {
       const context = {}

@@ -1,10 +1,11 @@
+import {registerRoute} from '@orion-js/http'
 import config from '../config'
+import createEventBus from '../events/createEventBus'
+import EventBus from '../events/EventBus'
 import requestsHandler from '../requestsHandler'
 import {EchoesOptions} from '../types'
-import KafkaManager from './KafkaManager'
-import {registerRoute} from '@orion-js/http'
 
-let kafkaManager: KafkaManager = null
+let eventBus: EventBus = null
 
 export default async function startService(options: EchoesOptions) {
   config.echoes = options.echoes
@@ -14,18 +15,20 @@ export default async function startService(options: EchoesOptions) {
     registerRoute(requestsHandler(options))
   }
 
-  if (options.client) {
-    kafkaManager = new KafkaManager(options)
-    await kafkaManager.start()
-    config.producer = kafkaManager.producer
-    config.consumer = kafkaManager.consumer
+  const nextEventBus = createEventBus(options)
+  if (nextEventBus) {
+    await nextEventBus.start()
+    eventBus = nextEventBus
+    config.eventBus = eventBus
   }
 }
 
 export async function stopService() {
-  if (kafkaManager) {
+  if (eventBus) {
     console.info('Stoping echoes...')
-    await kafkaManager.stop()
+    await eventBus.close()
+    eventBus = null
+    config.eventBus = undefined
     console.info('Echoes stopped')
   }
 }

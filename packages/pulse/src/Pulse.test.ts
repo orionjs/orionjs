@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url'
 import {MongoClient} from 'mongodb'
 import {MongoMemoryReplSet, MongoMemoryServer} from 'mongodb-memory-server'
 import {uuidv7} from 'uuidv7'
-import {connect, type Pulse, PulseIndexError} from './index'
+import {connect, type Pulse, PulseConfigurationError, PulseIndexError} from './index'
 
 setDefaultTimeout(60_000)
 
@@ -19,6 +19,14 @@ const childProcesses = new Set<ChildProcess>()
 
 function uniqueName(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`
+}
+
+function getMaxPoolSize(pulse: Pulse<any>) {
+  return (
+    pulse as unknown as {
+      client: {options: {maxPoolSize: number}}
+    }
+  ).client.options.maxPoolSize
 }
 
 async function waitFor(
@@ -95,6 +103,30 @@ afterAll(async () => {
 })
 
 describe('Pulse persistence', () => {
+  it('uses a small MongoDB pool by default and supports an explicit override', async () => {
+    const defaultPulse = createPulse(uniqueName('default_pool'), 'default-pool-group')
+    const configuredPulse = createPulse(uniqueName('configured_pool'), 'configured-pool-group', {
+      maxPoolSize: 12,
+    })
+
+    await Promise.all([defaultPulse.awaitConnection(), configuredPulse.awaitConnection()])
+
+    expect(getMaxPoolSize(defaultPulse)).toBe(5)
+    expect(getMaxPoolSize(configuredPulse)).toBe(12)
+  })
+
+  it('rejects invalid MongoDB pool sizes before connecting', () => {
+    for (const maxPoolSize of [0, -1, 1.5, Number.POSITIVE_INFINITY]) {
+      expect(() =>
+        connect({
+          connectionString: 'mongodb://localhost/pulse',
+          consumerGroup: 'invalid-pool-group',
+          maxPoolSize,
+        }),
+      ).toThrow(PulseConfigurationError)
+    }
+  })
+
   it('creates, validates, and recreates all indexes during connection', async () => {
     const databaseName = uniqueName('indexes')
     const first = createPulse(databaseName, 'index-group')

@@ -1,11 +1,11 @@
 import {InferSchemaType, SchemaFieldType} from '@orion-js/schema'
 import {
-  ConsumerConfig,
-  KafkaConfig,
-  ProducerConfig,
   Consumer,
-  Producer,
+  ConsumerConfig,
   EachMessagePayload,
+  KafkaConfig,
+  Producer,
+  ProducerConfig,
 } from 'kafkajs'
 
 export interface EchoRequestConfig<
@@ -57,8 +57,29 @@ export type EchoType<
     params?: InferSchemaType<TParamsSchema>,
     context?: any,
   ): Promise<InferSchemaType<TReturnsSchema>>
+  onEvent?(event: EchoesReceivedEvent): Promise<void>
+  /**
+   * @deprecated Kafka compatibility entrypoint. Event transports use onEvent.
+   */
   onMessage(messageData: EachMessagePayload): Promise<void>
   onRequest(serializedParams: string): any
+}
+
+export type EchoesEventTransportName = 'kafka' | 'pulse'
+
+export interface EchoesEventPayload<TParams = any> {
+  params: TParams
+}
+
+export interface EchoesReceivedEvent<TParams = any> {
+  id: string
+  topic: string
+  data: EchoesEventPayload<TParams>
+  transport: EchoesEventTransportName
+  headers?: Record<string, unknown>
+  createdAt: Date
+  attempt: number
+  context?: Record<string, any>
 }
 
 export interface PublishOptions<TParams = any> {
@@ -132,12 +153,77 @@ export interface EchoesMap {
   [key: string]: EchoType<any, any>
 }
 
+export interface EchoesKafkaEventsConfig {
+  client: KafkaConfig
+  producer?: ProducerConfig
+  consumer?: ConsumerConfig
+  /**
+   * Defaults to true. When true, allows a reconnecting service to read missed messages.
+   */
+  readTopicsFromBeginning?: boolean
+  /**
+   * Defaults to 4.
+   */
+  partitionsConsumedConcurrently?: number
+  /**
+   * Defaults to 1.
+   */
+  membersToPartitionsRatio?: number
+}
+
+export interface EchoesPulseEventsConfig {
+  connectionString: string
+  consumerGroup: string
+  databaseName?: string
+  collectionPrefix?: string
+  changeStreams?: 'auto' | 'required' | 'disabled'
+  eventRetentionMs?: number | null
+  historyRetentionMs?: number | null
+  pollIntervalMs?: number
+  workerCount?: number
+  maxPoolSize?: number
+  lockTimeoutMs?: number
+  onError?: (error: Error) => void
+  /**
+   * Subscription defaults used by every Echoes event handled through Pulse.
+   * attemptsBeforeDeadLetter overrides maxRetries per event when configured.
+   */
+  subscription?: {
+    ordered?: boolean
+    offsetReset?: 'latest' | 'earliest'
+    delivery?: 'at-least-once' | 'at-most-once'
+    maxRetries?: number
+    retryDelayMs?: number
+    retryBackoffMultiplier?: number
+    maxConcurrency?: number
+  }
+}
+
+export interface EchoesEventsConfig {
+  kafka?: EchoesKafkaEventsConfig
+  pulse?: EchoesPulseEventsConfig
+  /**
+   * Event transports that execute listeners. Defaults to Kafka when configured,
+   * otherwise Pulse.
+   */
+  consumeFrom?: EchoesEventTransportName[]
+  /**
+   * The only transport used by publish(). Defaults to Kafka when configured,
+   * otherwise Pulse.
+   */
+  publishTo?: EchoesEventTransportName
+}
+
 export interface EchoesOptions {
   client?: KafkaConfig
   producer?: ProducerConfig
   consumer?: ConsumerConfig
   requests?: RequestsConfig
   echoes: EchoesMap
+  /**
+   * Multi-transport event configuration. The legacy Kafka fields above remain supported.
+   */
+  events?: EchoesEventsConfig
 
   /**
    * Defaults to true. When true, allows a reconnecting service to read missed messages.
@@ -158,4 +244,8 @@ export interface EchoesConfigHandler {
   consumer?: Consumer
   requests?: RequestsConfig
   echoes?: EchoesMap
+  eventBus?: {
+    publish<TParams = any>(options: PublishOptions<TParams>): Promise<any>
+    close(): Promise<void>
+  }
 }

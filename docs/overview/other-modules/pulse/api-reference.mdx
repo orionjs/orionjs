@@ -26,10 +26,16 @@ function connect<TEvents extends Record<string, unknown>>(
 | `historyRetentionMs` | `number \| null` | 7 days | Retention written when attempts and deliveries become terminal. |
 | `pollIntervalMs` | `number` | `3000` | Polling, reconciliation, and Change Stream retry interval. |
 | `workerCount` | `number` | `4` | Worker loops in this process. |
+| `maxPoolSize` | `number` | `5` | Maximum MongoDB application connections per server for this Pulse client. |
 | `lockTimeoutMs` | `number` | `30000` | Attempt and ordered lease duration. Heartbeats renew active leases. |
 | `onError` | `(error: Error) => void` | `console.error` | Internal worker and Change Stream error reporter. |
 
-Strings must be non-empty. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it.
+Strings must be non-empty. `maxPoolSize` must be a positive integer. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it.
+
+Pulse sets the MongoDB driver's `maxPoolSize` to 5 instead of its default of 100. `minPoolSize`
+remains at the driver default of 0, so the pool grows on demand. The limit applies to application
+connections in each server pool; the driver also opens monitoring connections for the MongoDB
+topology.
 
 ## `pulse.awaitConnection()`
 

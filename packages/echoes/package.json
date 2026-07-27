@@ -27,11 +27,20 @@
     "serialize-javascript": "^6.0.0"
   },
   "peerDependencies": {
-    "@orion-js/logger": "4.4.0"
+    "@orion-js/logger": "4.4.0",
+    "@orion-js/pulse": "^4.4.1"
+  },
+  "peerDependenciesMeta": {
+    "@orion-js/pulse": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@orion-js/pulse": "4.4.1",
     "@types/node": "^18.0.0",
     "@types/supertest": "2.0.11",
+    "mongodb": "^6.15.0",
+    "mongodb-memory-server": "^10.1.4",
     "supertest": "^6.1.6",
     "tsup": "^8.0.1",
     "typescript": "^7.0.2"

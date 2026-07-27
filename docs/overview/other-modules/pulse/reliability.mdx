@@ -132,6 +132,31 @@ const pulse = connect<AppEvents>({
 })
 ```
 
+## MongoDB connection capacity
+
+Pulse configures `maxPoolSize: 5` by default. With 500 service replicas, that bounds the application
+pool for the active MongoDB server to 2,500 connections instead of the driver's default ceiling of
+50,000. Pools start empty because `minPoolSize` remains 0 and grow only when concurrent operations
+need them.
+
+The limit is per `MongoClient` and per server in the MongoDB topology. The driver also keeps
+monitoring connections outside the application pool. If all five connections are busy, operations
+wait for one to return rather than opening beyond the configured maximum.
+
+Tune the limit per service when needed:
+
+```typescript
+const pulse = connect({
+  connectionString,
+  databaseName: 'commerce',
+  consumerGroup: 'high-throughput-worker',
+  maxPoolSize: 10,
+})
+```
+
+Keep the default for typical ordered consumers. Increase it only after observing pool contention or
+when using higher worker and handler concurrency.
+
 ## Polling and Change Streams
 
 Polling and reconciliation guarantee progress. Change Streams only wake sleeping workers after new event inserts.

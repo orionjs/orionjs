@@ -173,6 +173,114 @@ await startService({
 })
 ```
 
+## Incremental migration from Kafka to Pulse
+
+Echoes can listen through Kafka and Pulse at the same time while publishing through exactly one
+transport. This allows the migration to happen in three independent deployments, without
+dual-publishing an event.
+
+Install Pulse and its MongoDB peer dependency in the application:
+
+```bash
+bun add @orion-js/pulse mongodb
+```
+
+### 1. Prepare every listener
+
+Keep the existing top-level Kafka configuration and add Pulse under `events`. Deploy this version
+to every instance before changing any publisher:
+
+```typescript
+import {startService} from '@orion-js/echoes'
+
+await startService({
+  echoes,
+
+  // Existing Kafka configuration remains valid.
+  client: {
+    clientId: 'billing',
+    brokers: ['kafka:9092'],
+  },
+  consumer: {
+    groupId: 'billing',
+  },
+  producer: {},
+
+  events: {
+    pulse: {
+      connectionString: process.env.MONGO_URL,
+      databaseName: 'events',
+      // Replicas of the same service must share this value.
+      consumerGroup: 'billing',
+    },
+    consumeFrom: ['kafka', 'pulse'],
+    publishTo: 'kafka',
+  },
+})
+```
+
+At this point, handlers accept events from both systems, but `publish()` still sends only to Kafka.
+The event handler API does not change.
+
+The Pulse transport uses a MongoDB application pool of at most five connections per service
+instance by default. Set `events.pulse.maxPoolSize` when a specific service needs a different
+limit.
+
+### 2. Switch publishers
+
+Once every listener is running the dual-consumer configuration, change only `publishTo`:
+
+```typescript
+events: {
+  pulse: {
+    connectionString: process.env.MONGO_URL,
+    databaseName: 'events',
+    consumerGroup: 'billing',
+  },
+  consumeFrom: ['kafka', 'pulse'],
+  publishTo: 'pulse',
+}
+```
+
+This can be rolled out gradually. Old application instances continue publishing to Kafka and new
+instances publish to Pulse; the listener fleet consumes both.
+
+For a controlled switch, `publishTo` can also come from an environment flag:
+
+```typescript
+const publishTo = process.env.ECHOES_PUBLISH_TO === 'pulse' ? 'pulse' : 'kafka'
+```
+
+### 3. Remove Kafka consumption
+
+After every publisher uses Pulse and Kafka has no pending events for the service, stop consuming
+from Kafka:
+
+```typescript
+events: {
+  pulse: {
+    connectionString: process.env.MONGO_URL,
+    databaseName: 'events',
+    consumerGroup: 'billing',
+  },
+  consumeFrom: ['pulse'],
+  publishTo: 'pulse',
+}
+```
+
+The legacy `client`, `consumer`, and `producer` options can then be removed from that application.
+If only Pulse is configured, Echoes defaults both consumption and publishing to Pulse.
+
+<Warning>
+  Echoes never publishes the same call to both transports. During a rolling publisher deployment,
+  Kafka and Pulse form two independent ordered streams, so they do not provide a shared total
+  order. Topics that require strict ordering should use a coordinated publisher cutover after
+  draining Kafka.
+</Warning>
+
+Pulse is an optional peer dependency and is loaded only when configured. Applications that stay on
+Kafka do not need to install or initialize it.
+
 ## Error Handling
 
 Echoes automatically handles errors in request and event handlers:
@@ -286,4 +394,3 @@ createOrder = createEchoRequest({
 9. **Service Discovery**: Keep the service registry updated when adding new services.
 
 10. **Monitoring**: Implement proper logging and monitoring for echo handlers.
-

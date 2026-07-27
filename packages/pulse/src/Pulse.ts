@@ -33,6 +33,8 @@ import type {
 const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000
 const DEFAULT_POLL_INTERVAL_MS = 3000
 const DEFAULT_WORKER_COUNT = 4
+// Four worker loops plus capacity for the Change Stream wake-up cursor.
+const DEFAULT_MAX_POOL_SIZE = 5
 const DEFAULT_LOCK_TIMEOUT_MS = 30_000
 const DISCOVERY_BATCH_SIZE = 100
 const RECONCILIATION_BATCH_SIZE = 25
@@ -47,6 +49,7 @@ interface ResolvedConnectOptions {
   historyRetentionMs: number | null
   pollIntervalMs: number
   workerCount: number
+  maxPoolSize: number
   lockTimeoutMs: number
   onError: (error: Error) => void
 }
@@ -78,6 +81,12 @@ function assertPositiveNumber(value: number, name: string, allowZero = false) {
   }
 }
 
+function assertPositiveInteger(value: number, name: string) {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new PulseConfigurationError(`${name} must be a positive integer.`)
+  }
+}
+
 function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
   assertNonEmptyString(options.connectionString, 'connectionString')
   assertNonEmptyString(options.consumerGroup, 'consumerGroup')
@@ -94,6 +103,7 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
       options.historyRetentionMs === undefined ? WEEK_IN_MS : options.historyRetentionMs,
     pollIntervalMs: options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS,
     workerCount: options.workerCount ?? DEFAULT_WORKER_COUNT,
+    maxPoolSize: options.maxPoolSize ?? DEFAULT_MAX_POOL_SIZE,
     lockTimeoutMs: options.lockTimeoutMs ?? DEFAULT_LOCK_TIMEOUT_MS,
     onError:
       options.onError ??
@@ -105,6 +115,7 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
   assertNonEmptyString(resolved.collectionPrefix, 'collectionPrefix')
   assertPositiveNumber(resolved.pollIntervalMs, 'pollIntervalMs')
   assertPositiveNumber(resolved.workerCount, 'workerCount')
+  assertPositiveInteger(resolved.maxPoolSize, 'maxPoolSize')
   assertPositiveNumber(resolved.lockTimeoutMs, 'lockTimeoutMs')
   if (resolved.eventRetentionMs !== null) {
     assertPositiveNumber(resolved.eventRetentionMs, 'eventRetentionMs', true)
@@ -213,6 +224,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     this.options = resolveOptions(options)
     this.client = new MongoClient(this.options.connectionString, {
       appName: '@orion-js/pulse',
+      maxPoolSize: this.options.maxPoolSize,
     } satisfies MongoClientOptions)
     this.history = new HistoryApi(
       () => this.awaitConnection(),

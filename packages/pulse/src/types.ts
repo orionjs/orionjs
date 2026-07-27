@@ -19,6 +19,7 @@ export interface PulseConnectOptions {
   historyRetentionMs?: number | null
   pollIntervalMs?: number
   workerCount?: number
+  maxPoolSize?: number
   lockTimeoutMs?: number
   onError?: (error: Error) => void
 }
