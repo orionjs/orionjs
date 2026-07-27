@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -28,7 +28,7 @@
   },
   "peerDependencies": {
     "@orion-js/logger": "4.4.0",
-    "@orion-js/pulse": "^4.4.1"
+    "@orion-js/pulse": "^4.4.2"
   },
   "peerDependenciesMeta": {
     "@orion-js/pulse": {
@@ -36,7 +36,7 @@
     }
   },
   "devDependencies": {
-    "@orion-js/pulse": "4.4.1",
+    "@orion-js/pulse": "4.4.2",
     "@types/node": "^18.0.0",
     "@types/supertest": "2.0.11",
     "mongodb": "^6.15.0",

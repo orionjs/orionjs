@@ -1,5 +1,13 @@
 # @orion-js/echoes
 
+## 4.4.1
+
+### Patch Changes
+
+- b10fdca: Add incremental Kafka-to-Pulse event migration with dual transport listeners and single transport publishing.
+- Updated dependencies [b10fdca]
+  - @orion-js/pulse@4.4.2
+
 ## 4.4.0
 
 ### Minor Changes

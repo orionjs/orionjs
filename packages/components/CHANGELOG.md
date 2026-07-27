@@ -1,5 +1,12 @@
 # @orion-js/components
 
+## 4.4.1
+
+### Patch Changes
+
+- Updated dependencies [b10fdca]
+  - @orion-js/echoes@4.4.1
+
 ## 4.4.0
 
 ### Minor Changes

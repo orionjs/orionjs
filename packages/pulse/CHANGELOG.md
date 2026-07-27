@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.4.2
+
+### Patch Changes
+
+- b10fdca: Limit the default MongoDB connection pool to five connections per Pulse client and expose `maxPoolSize` as a connection option.
+
 ## 4.4.1
 
 ### Patch Changes
