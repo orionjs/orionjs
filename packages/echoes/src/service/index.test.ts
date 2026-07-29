@@ -1,4 +1,5 @@
 import {createEchoEvent, createEchoRequest} from '../echo'
+import {typedEchoesSchema} from '../schema'
 import {EchoEvent, Echoes, EchoRequest, getServiceEchoes} from '.'
 
 describe('Echoes with service injections', () => {
@@ -25,16 +26,27 @@ describe('Echoes with service injections', () => {
   })
 
   it('should be able to define echoes using the v4 syntax', async () => {
+    const paramsSchema = typedEchoesSchema<{name: string}>({
+      clean(value: any) {
+        return {name: String(value.name)}
+      },
+      validate(value: any) {
+        if (!value.name) throw new Error('name is required')
+      },
+    })
+    const stringSchema = typedEchoesSchema<string>({
+      clean(value: any) {
+        return String(value)
+      },
+      validate() {},
+    })
+
     @Echoes()
     class ExampleEchoesService {
       @EchoRequest()
       echo = createEchoRequest({
-        params: {
-          name: {
-            type: 'string',
-          },
-        },
-        returns: String,
+        params: paramsSchema,
+        returns: stringSchema,
         resolve: async params => {
           return params.name
         },
@@ -42,8 +54,8 @@ describe('Echoes with service injections', () => {
 
       @EchoEvent()
       echoEvent = createEchoEvent({
-        params: 'string',
-        returns: String,
+        params: stringSchema,
+        returns: stringSchema,
         resolve: async params => {
           return params
         },

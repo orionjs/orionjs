@@ -5,6 +5,36 @@ description: 'Event and request handlers for microservice communication in Orion
 
 Echoes in Orionjs provide a structured way to implement event-driven architecture and handle inter-service communication. Using the `@Echoes()` and `@EchoRequest()` or `@EchoEvent()` decorators, you can easily create handlers for both synchronous requests and asynchronous events.
 
+## Standalone core and Orion integration
+
+`@orion-js/echoes` is framework-independent. Its required dependency graph does not include
+`@orion-js/schema`, `@orion-js/services`, `@orion-js/http`, `@orion-js/logger`, or any other Orion
+runtime package.
+
+Orion applications keep their existing behavior through `@orion-js/echoes-orion`. It connects
+Echoes to Orion schemas, dependency injection, async logger context, HTTP routes, and Orion error
+classes:
+
+```bash
+bun add @orion-js/echoes @orion-js/echoes-orion
+```
+
+Import the adapter once, before modules that declare Echoes controllers:
+
+```typescript
+import '@orion-js/echoes-orion'
+```
+
+Applications using `@orion-js/components` do not need this explicit import because Components
+installs the adapter automatically.
+
+<Note>
+  Schema execution is still runtime behavior, not just TypeScript inference. For every handler,
+  Echoes cleans and validates `params` before calling `resolve`, then cleans `returns` before
+  sending the result. The Orion adapter delegates those operations to `@orion-js/schema`, so
+  existing custom cleaners, defaults, validations, and `ValidationError` values keep working.
+</Note>
+
 ## Creating Echo Controllers
 
 An echoes controller is a class decorated with `@Echoes()` that contains methods decorated with `@EchoRequest()` or `@EchoEvent()`:
@@ -147,10 +177,11 @@ To enable echoes in your application, you need to configure and start the echoes
 
 ```typescript
 import { startService } from '@orion-js/echoes'
-import { app } from '@orion-js/http'
 
 // Start the echoes service
 await startService({
+  echoes,
+
   // Kafka client configuration (for events)
   client: {
     clientId: 'my-app',
@@ -172,6 +203,61 @@ await startService({
   partitionsConsumedConcurrently: 4 // Number of partitions to consume concurrently
 })
 ```
+
+## Using Echoes without Orion
+
+A standalone service can use a SimpleSchema-compatible object directly. Echoes recognizes objects
+with `clean()` and `validate()` methods and executes both at runtime. `typedEchoesSchema()` adds
+the value type when the schema library does not expose it in a form TypeScript can infer:
+
+```typescript
+import SimpleSchema from 'simpl-schema'
+import {
+  createEchoRequest,
+  startService,
+  typedEchoesSchema,
+} from '@orion-js/echoes'
+
+const params = typedEchoesSchema<{email: string}>(
+  new SimpleSchema({
+    email: {type: String},
+  }),
+)
+
+const echoes = {
+  findUser: createEchoRequest({
+    params,
+    async resolve({email}) {
+      return {email}
+    },
+  }),
+}
+```
+
+For synchronous Echoes requests, connect the framework-neutral receiver to the HTTP server of your
+choice:
+
+```typescript
+import express from 'express'
+
+const app = express()
+
+await startService({
+  echoes,
+  requests: {
+    key: process.env.ECHOES_PASSWORD,
+    registerHandler(definition) {
+      app.post(definition.path, express.json({limit: definition.bodyLimit}), async (req, res) => {
+        res.json(await definition.handle(req.body))
+      })
+    },
+  },
+})
+```
+
+Kafka and Pulse are optional transports and are loaded only when selected. Install `kafkajs` for
+Kafka, or `@orion-js/pulse` with its MongoDB peer dependency for Pulse. A service that only uses
+synchronous requests loads neither event transport.
 
 ## Incremental migration from Kafka to Pulse
 

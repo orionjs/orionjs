@@ -1,42 +1,35 @@
-import {InferSchemaType, SchemaFieldType} from '@orion-js/schema'
-import {
-  Consumer,
-  ConsumerConfig,
-  EachMessagePayload,
-  KafkaConfig,
-  Producer,
-  ProducerConfig,
-} from 'kafkajs'
+import type {EchoesRequestHandlerRegistrar} from './runtime'
+import type {EchoesSchema, InferEchoesSchema} from './schema'
 
 export interface EchoRequestConfig<
-  TParamsSchema extends SchemaFieldType,
-  TReturnsSchema extends SchemaFieldType,
+  TParamsSchema extends EchoesSchema,
+  TReturnsSchema extends EchoesSchema,
 > {
   params?: TParamsSchema
   returns?: TReturnsSchema
   resolve(
-    params?: InferSchemaType<TParamsSchema>,
+    params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
-  ): Promise<InferSchemaType<TReturnsSchema>>
+  ): Promise<InferEchoesSchema<TReturnsSchema>>
   attemptsBeforeDeadLetter?: number
 }
 
 export interface EchoEventConfig<
-  TParamsSchema extends SchemaFieldType,
-  TReturnsSchema extends SchemaFieldType,
+  TParamsSchema extends EchoesSchema,
+  TReturnsSchema extends EchoesSchema,
 > {
   params?: TParamsSchema
   returns?: TReturnsSchema
   resolve(
-    params?: InferSchemaType<TParamsSchema>,
+    params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
-  ): Promise<InferSchemaType<TReturnsSchema>>
+  ): Promise<InferEchoesSchema<TReturnsSchema>>
   attemptsBeforeDeadLetter?: number
 }
 
 export type EchoConfig<
-  TParamsSchema extends SchemaFieldType,
-  TReturnsSchema extends SchemaFieldType,
+  TParamsSchema extends EchoesSchema,
+  TReturnsSchema extends EchoesSchema,
   TEchoType extends 'event' | 'request' = 'event' | 'request',
 > = (TEchoType extends 'event'
   ? EchoEventConfig<TParamsSchema, TReturnsSchema>
@@ -45,8 +38,8 @@ export type EchoConfig<
 }
 
 export type EchoType<
-  TParamsSchema extends SchemaFieldType = any,
-  TReturnsSchema extends SchemaFieldType = any,
+  TParamsSchema extends EchoesSchema = any,
+  TReturnsSchema extends EchoesSchema = any,
   TEchoType extends 'event' | 'request' = 'event' | 'request',
 > = {
   params?: TParamsSchema
@@ -54,14 +47,14 @@ export type EchoType<
   attemptsBeforeDeadLetter?: number
   type: TEchoType
   resolve(
-    params?: InferSchemaType<TParamsSchema>,
+    params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
-  ): Promise<InferSchemaType<TReturnsSchema>>
+  ): Promise<InferEchoesSchema<TReturnsSchema>>
   onEvent?(event: EchoesReceivedEvent): Promise<void>
   /**
    * @deprecated Kafka compatibility entrypoint. Event transports use onEvent.
    */
-  onMessage(messageData: EachMessagePayload): Promise<void>
+  onMessage(messageData: EchoesKafkaMessagePayload): Promise<void>
   onRequest(serializedParams: string): any
 }
 
@@ -107,6 +100,7 @@ export interface RequestHandlerResponse {
     message: string // 'Validation Error',
     extra?: any // this.extra
     validationErrors?: any // this.validationErrors
+    labels?: Record<string, string>
   }
 }
 
@@ -144,19 +138,51 @@ export interface RequestsConfig {
     [key: string]: string
   }
   /**
-   * A custom function that make the requests to the services. Uses axios by default
+   * A custom function that makes requests to the services.
    */
   makeRequest?: RequestMaker
+  /**
+   * Registers the HTTP receiver in standalone servers. Orion applications get
+   * this from @orion-js/echoes-orion automatically.
+   */
+  registerHandler?: EchoesRequestHandlerRegistrar
 }
 
 export interface EchoesMap {
   [key: string]: EchoType<any, any>
 }
 
+export interface EchoesKafkaClientConfig {
+  brokers: string[]
+  clientId?: string
+  [key: string]: unknown
+}
+
+export interface EchoesKafkaProducerConfig {
+  [key: string]: unknown
+}
+
+export interface EchoesKafkaConsumerConfig {
+  groupId?: string
+  [key: string]: unknown
+}
+
+export interface EchoesKafkaMessagePayload {
+  topic: string
+  partition: number
+  message: {
+    value: {toString(): string} | null
+    offset: string
+    timestamp?: string
+    headers?: Record<string, any>
+  }
+  heartbeat(): Promise<void>
+}
+
 export interface EchoesKafkaEventsConfig {
-  client: KafkaConfig
-  producer?: ProducerConfig
-  consumer?: ConsumerConfig
+  client: EchoesKafkaClientConfig
+  producer?: EchoesKafkaProducerConfig
+  consumer?: EchoesKafkaConsumerConfig
   /**
    * Defaults to true. When true, allows a reconnecting service to read missed messages.
    */
@@ -215,9 +241,9 @@ export interface EchoesEventsConfig {
 }
 
 export interface EchoesOptions {
-  client?: KafkaConfig
-  producer?: ProducerConfig
-  consumer?: ConsumerConfig
+  client?: EchoesKafkaClientConfig
+  producer?: EchoesKafkaProducerConfig
+  consumer?: EchoesKafkaConsumerConfig
   requests?: RequestsConfig
   echoes: EchoesMap
   /**
@@ -240,8 +266,6 @@ export interface EchoesOptions {
 }
 
 export interface EchoesConfigHandler {
-  producer?: Producer
-  consumer?: Consumer
   requests?: RequestsConfig
   echoes?: EchoesMap
   eventBus?: {

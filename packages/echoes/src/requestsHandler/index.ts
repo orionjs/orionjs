@@ -1,20 +1,17 @@
-import getEcho from './getEcho'
 import serialize from '../publish/serialize'
-import checkSignature from './checkSignature'
-import {route} from '@orion-js/http'
+import {getEchoesLogger} from '../runtime'
 import {EchoesOptions} from '../types'
+import checkSignature from './checkSignature'
+import getEcho from './getEcho'
 
 export default (options: EchoesOptions) =>
-  route({
+  ({
     method: 'post',
     path: options.requests.handlerPath || '/echoes-services',
-    bodyParser: 'json',
-    bodyParserOptions: {
-      limit: '10mb',
-    },
-    async resolve(req) {
+    bodyLimit: '10mb',
+    async handle(requestBody: any) {
       try {
-        const {body, signature} = req.body
+        const {body, signature} = requestBody
 
         checkSignature(body, signature)
 
@@ -23,24 +20,19 @@ export default (options: EchoesOptions) =>
         const echo = getEcho(method)
         const result = await echo.onRequest(serializedParams)
 
-        return {
-          body: {
-            result: serialize(result),
-          },
-        }
+        return {result: serialize(result)}
       } catch (error) {
-        if (!error.getInfo) {
-          console.error('Error at echo requests handler:', error)
+        const caught = error as any
+        if (!caught.getInfo) {
+          getEchoesLogger().error('Error at echo requests handler:', {error: caught})
         }
 
         return {
-          body: {
-            error: error.message,
-            errorInfo: error.getInfo ? error.getInfo() : null,
-            isValidationError: !!error.isValidationError,
-            isUserError: !!error.isUserError,
-          },
+          error: caught.message,
+          errorInfo: caught.getInfo ? caught.getInfo() : null,
+          isValidationError: !!caught.isValidationError,
+          isUserError: !!caught.isUserError,
         }
       }
     },
-  })
+  }) as const

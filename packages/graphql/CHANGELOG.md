@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.5.0
+
+### Minor Changes
+
+- Align this package with the coordinated OrionJS 4.5 release.
+
 ## 4.4.0
 
 ### Minor Changes

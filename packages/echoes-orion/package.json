@@ -1,0 +1,47 @@
+{
+  "name": "@orion-js/echoes-orion",
+  "version": "4.5.0",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "nicolaslopezj",
+  "license": "MIT",
+  "scripts": {
+    "test": "bun test",
+    "prepack": "bun run build",
+    "clean": "rm -rf ./dist",
+    "build": "tsup && bun run ../../scripts/emit-declarations.ts",
+    "dev": "tsup --watch"
+  },
+  "peerDependencies": {
+    "@orion-js/echoes": "^4.5.0",
+    "@orion-js/helpers": "4.5.0",
+    "@orion-js/http": "4.5.0",
+    "@orion-js/logger": "4.5.0",
+    "@orion-js/schema": "4.5.0",
+    "@orion-js/services": "4.5.0"
+  },
+  "devDependencies": {
+    "@orion-js/echoes": "4.5.0",
+    "@orion-js/helpers": "4.5.0",
+    "@orion-js/http": "4.5.0",
+    "@orion-js/logger": "4.5.0",
+    "@orion-js/schema": "4.5.0",
+    "@orion-js/services": "4.5.0",
+    "@types/node": "^18.0.0",
+    "tsup": "^8.0.1",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "./dist/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  }
+}

@@ -6,6 +6,7 @@ const packagesDir = join(import.meta.dirname, '..', 'packages')
 
 interface PkgInfo {
   name: string
+  version: string
   dir: string
   deps: Set<string>
 }
@@ -28,10 +29,43 @@ function getPackages(): Map<string, PkgInfo> {
       }
     }
 
-    packages.set(pkgJson.name, {name: pkgJson.name, dir: entry.name, deps})
+    packages.set(pkgJson.name, {
+      name: pkgJson.name,
+      version: pkgJson.version,
+      dir: entry.name,
+      deps,
+    })
   }
 
   return packages
+}
+
+function assertAlignedMinorVersions(packages: Map<string, PkgInfo>): void {
+  const packagesByMinor = new Map<string, string[]>()
+
+  for (const pkg of packages.values()) {
+    const match = /^(\d+\.\d+)\.\d+(?:-.+)?$/.exec(pkg.version)
+
+    if (!match) {
+      throw new Error(`Invalid package version for ${pkg.name}: ${pkg.version}`)
+    }
+
+    const minor = match[1]
+    const packageVersions = packagesByMinor.get(minor) ?? []
+    packageVersions.push(`${pkg.name}@${pkg.version}`)
+    packagesByMinor.set(minor, packageVersions)
+  }
+
+  if (packagesByMinor.size <= 1) return
+
+  const details = [...packagesByMinor.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([minor, packageVersions]) => `  ${minor}: ${packageVersions.sort().join(', ')}`)
+    .join('\n')
+
+  throw new Error(
+    `All OrionJS packages must share the same major.minor version. Found:\n${details}`,
+  )
 }
 
 function topologicalSort(packages: Map<string, PkgInfo>): string[] {
@@ -63,6 +97,7 @@ function topologicalSort(packages: Map<string, PkgInfo>): string[] {
 }
 
 const packages = getPackages()
+assertAlignedMinorVersions(packages)
 const order = topologicalSort(packages)
 let failed = false
 

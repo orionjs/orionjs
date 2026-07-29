@@ -1,0 +1,216 @@
+---
+title: 'Migrating Echoes to OrionJS 4.5'
+description: 'Move to the standalone Echoes core while preserving Orion schemas, dependency injection, HTTP routes, Kafka, and Pulse'
+---
+
+OrionJS 4.5 separates Echoes from the rest of the framework. `@orion-js/echoes` can now run in a
+plain Node.js service without loading Orion's schema, services, HTTP, environment, helpers, or
+logger packages.
+
+OrionJS minor releases are coordinated: every `@orion-js/*` package is published as `4.5.0`.
+Upgrade all OrionJS packages used by an application together instead of mixing 4.4 and 4.5 package
+dependencies inside the same process.
+
+Existing Orion applications keep the same schema cleaning and validation, dependency injection,
+HTTP routes, logger context, and error classes through the new `@orion-js/echoes-orion` adapter.
+
+The event and request wire formats have not changed, so 4.4 and 4.5 services can communicate while
+you deploy the migration incrementally.
+
+## Choose your migration path
+
+### Applications using Components
+
+Upgrade Echoes and Components, along with the rest of the OrionJS packages used by the application:
+
+```bash
+bun add @orion-js/echoes@^4.5.0 @orion-js/components@^4.5.0
+```
+
+`@orion-js/components` installs and initializes the Orion adapter automatically. Existing Echoes
+controllers can continue using raw Orion schemas and `@Inject()`:
+
+```typescript
+import {createEchoRequest, Echoes, EchoRequest} from '@orion-js/echoes'
+import {Inject} from '@orion-js/services'
+
+@Echoes()
+export class UsersEchoes {
+  @Inject(() => UsersService)
+  private usersService!: UsersService
+
+  @EchoRequest()
+  findUser = createEchoRequest({
+    params: {
+      userId: {type: String},
+    },
+    returns: UserSchema,
+    resolve: ({userId}) => this.usersService.findById(userId),
+  })
+}
+```
+
+No controller rewrite is required.
+
+### Orion applications using Echoes directly
+
+If the application does not import `@orion-js/components`, install the adapter explicitly:
+
+```bash
+bun add @orion-js/echoes@^4.5.0 @orion-js/echoes-orion@^4.5.0
+```
+
+Import it once in the application entrypoint, before importing any module that declares an Echoes
+controller:
+
+```typescript
+import '@orion-js/echoes-orion'
+
+import {startApplication} from './app'
+
+await startApplication()
+```
+
+<Warning>
+  Import order matters for decorated classes. The adapter must be installed before `@Echoes()`
+  runs so Orion can capture `@Inject()` metadata for that controller.
+</Warning>
+
+### Services that do not use Orion
+
+Install only the standalone package:
+
+```bash
+bun add @orion-js/echoes
+```
+
+Echoes accepts SimpleSchema-compatible objects with `clean()` and `validate()` methods. Use
+`typedEchoesSchema()` when you want to attach a TypeScript value type to the runtime schema:
+
+```typescript
+import SimpleSchema from 'simpl-schema'
+import {createEchoRequest, typedEchoesSchema} from '@orion-js/echoes'
+
+const params = typedEchoesSchema<{email: string}>(
+  new SimpleSchema({
+    email: {type: String},
+  }),
+)
+
+export const findUser = createEchoRequest({
+  params,
+  async resolve({email}) {
+    return users.findByEmail(email)
+  },
+})
+```
+
+For another schema library, install an adapter once with `configureEchoesRuntime()`:
+
+```typescript
+import {configureEchoesRuntime} from '@orion-js/echoes'
+
+configureEchoesRuntime({
+  schema: {
+    async parse(schema, value) {
+      return schema.parse(value)
+    },
+    async clean(schema, value) {
+      return schema.clean(value)
+    },
+  },
+})
+```
+
+## Runtime schema behavior is preserved
+
+Echoes 4.5 still executes this pipeline for every handler:
+
+1. Deserialize the incoming value.
+2. Clean handler parameters.
+3. Validate handler parameters.
+4. Run the resolver.
+5. Clean the return value.
+6. Serialize the response.
+
+The Orion adapter delegates parameter cleaning and validation to
+`@orion-js/schema.cleanAndValidate()` and return cleaning to `@orion-js/schema.clean()`. Defaults,
+custom cleaners, custom validators, field types, and `ValidationError` therefore behave as they
+did in 4.4.
+
+## Install the event transports you use
+
+Kafka and Pulse are now optional peers. Neither is loaded when a service only uses synchronous
+Echoes requests.
+
+For Kafka:
+
+```bash
+bun add kafkajs
+```
+
+For Pulse:
+
+```bash
+bun add @orion-js/pulse mongodb
+```
+
+The existing configuration remains valid:
+
+```typescript
+await startService({
+  echoes,
+  events: {
+    pulse: {
+      connectionString: process.env.MONGO_URL,
+      databaseName: 'events',
+      consumerGroup: 'billing',
+      maxPoolSize: 5,
+    },
+    consumeFrom: ['pulse'],
+    publishTo: 'pulse',
+  },
+})
+```
+
+If you are migrating event traffic from Kafka to Pulse, follow the
+[incremental Kafka-to-Pulse rollout](/overview/controllers/echoes#incremental-migration-from-kafka-to-pulse).
+
+## Standalone HTTP receivers
+
+Orion applications continue registering `/echoes-services` through `@orion-js/http`. Standalone
+services provide a small registrar for their HTTP framework:
+
+```typescript
+await startService({
+  echoes,
+  requests: {
+    key: process.env.ECHOES_PASSWORD,
+    registerHandler(definition) {
+      app.post(definition.path, express.json({limit: definition.bodyLimit}), async (req, res) => {
+        res.json(await definition.handle(req.body))
+      })
+    },
+  },
+})
+```
+
+The default request client now uses Node.js HTTP and HTTPS directly, including redirects, retries,
+and timeouts. Axios and `jssha` are no longer required application dependencies.
+
+## Recommended rollout
+
+1. Upgrade listener services first.
+2. Verify that Orion apps load `@orion-js/echoes-orion`, directly or through Components.
+3. Install `kafkajs` explicitly in every service that still uses Kafka.
+4. Deploy publishers after listeners are healthy.
+5. Run the compiler, build, and application tests.
+
+```bash
+bun run typecheck
+bun run build
+bun test
+```
+
+Because the wire format is unchanged, this can be a normal rolling deployment. No MongoDB data
+migration, Kafka topic migration, or coordinated downtime is required for the 4.5 package upgrade.

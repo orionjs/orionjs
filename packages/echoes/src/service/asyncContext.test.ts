@@ -1,4 +1,4 @@
-import {getOrionAsyncContext} from '@orion-js/logger'
+import {getEchoesContext} from '../runtime'
 import {EchoEvent, Echoes, getServiceEchoes} from '.'
 
 describe('Echoes async context', () => {
@@ -7,7 +7,7 @@ describe('Echoes async context', () => {
     class SampleEchoService {
       @EchoEvent()
       async sampleEvent() {
-        const context = getOrionAsyncContext()
+        const context = getEchoesContext()
         expect(context?.contextId).toBeDefined()
         expect(typeof context?.contextId).toBe('string')
         expect(context?.controllerType).toBe('echo')

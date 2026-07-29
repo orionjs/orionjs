@@ -1,17 +1,16 @@
-import getURL from './getURL'
-import getSignature from './getSignature'
-import serialize from '../publish/serialize'
+import config from '../config'
 import deserialize from '../echo/deserialize'
+import serialize from '../publish/serialize'
+import {createEchoesUserError, createEchoesValidationError} from '../runtime'
 import type {
   MakeRequestParams,
   RequestHandlerResponse,
   RequestMaker,
   RequestOptions,
 } from '../types'
-import config from '../config'
+import getSignature from './getSignature'
+import getURL from './getURL'
 import {makeRequest} from './makeRequest'
-import {ValidationError} from '@orion-js/schema'
-import {UserError} from '@orion-js/helpers'
 
 export default async function request<TData = any, TParams = any>(
   options: RequestOptions<TParams>,
@@ -45,10 +44,10 @@ export default async function request<TData = any, TParams = any>(
       const info = data.errorInfo
       if (info) {
         if (data.isValidationError) {
-          throw new ValidationError(info.validationErrors)
+          throw createEchoesValidationError(info)
         }
         if (data.isUserError) {
-          throw new UserError(info.error, info.message, info.extra)
+          throw createEchoesUserError(info)
         }
       }
 
@@ -58,8 +57,9 @@ export default async function request<TData = any, TParams = any>(
     const response = deserialize(data.result)
     return response
   } catch (error) {
-    if (error.isOrionError) throw error
+    const caught = error as any
+    if (caught.isOrionError || caught.isEchoesError) throw caught
 
-    throw new Error(`Echoes request network error calling ${service}/${method}: ${error.message}`)
+    throw new Error(`Echoes request network error calling ${service}/${method}: ${caught.message}`)
   }
 }

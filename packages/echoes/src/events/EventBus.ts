@@ -1,4 +1,4 @@
-import {logger} from '@orion-js/logger'
+import {getEchoesLogger} from '../runtime'
 import type {
   EchoesEventTransportName,
   EchoesMap,
@@ -85,6 +85,7 @@ export default class EventBus {
   }
 
   private async handleEvent(event: EchoesReceivedEvent) {
+    const logger = getEchoesLogger()
     const echo = this.echoes[event.topic]
     if (!echo || echo.type !== 'event') {
       logger.warn(`Echoes: Received a message for an unknown topic: ${event.topic}, ignoring it`)

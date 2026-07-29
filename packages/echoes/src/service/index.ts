@@ -1,7 +1,6 @@
-import {runWithOrionAsyncContext} from '@orion-js/logger'
 import {createEchoEvent, createEchoRequest} from '../echo'
+import {getEchoesRuntime, runWithEchoesContext} from '../runtime'
 import {EchoConfig, EchoesMap} from '../types'
-import {getInstance, Service} from '@orion-js/services'
 
 export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: EchoConfig<any, any>['resolve']
@@ -10,11 +9,12 @@ export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value
 const serviceMetadata = new WeakMap<any, {_serviceType: string}>()
 const echoesMetadata = new WeakMap<any, Record<string, any>>()
 const echoEntriesByClass = new Map<Function, Record<string, (instance: any) => any>>()
+const standaloneInstances = new WeakMap<Function, any>()
 let pendingEchoEntries: Record<string, (instance: any) => any> = {}
 
 export function Echoes() {
   return (target: any, context: ClassDecoratorContext<any>) => {
-    Service()(target, context)
+    getEchoesRuntime().decorateService?.(target, context)
     serviceMetadata.set(target, {_serviceType: 'echoes'})
 
     if (Object.keys(pendingEchoEntries).length > 0) {
@@ -41,7 +41,7 @@ export function EchoEvent(options = {}) {
         return createEchoEvent({
           ...options,
           resolve: async (params, contextData) => {
-            return await runWithOrionAsyncContext(
+            return await runWithEchoesContext(
               {
                 controllerType: 'echo',
                 echoName: propertyKey,
@@ -81,7 +81,7 @@ export function EchoRequest(options = {}) {
         return createEchoRequest({
           ...options,
           resolve: async (params, contextData) => {
-            return await runWithOrionAsyncContext(
+            return await runWithEchoesContext(
               {
                 controllerType: 'echo',
                 echoName: propertyKey,
@@ -115,7 +115,18 @@ function initializeEchoesIfNeeded(instance: any) {
 }
 
 export function getServiceEchoes(target: any): EchoesMap {
-  const instance = getInstance(target)
+  let instance: any
+  if (typeof target !== 'function') {
+    instance = target
+  } else if (getEchoesRuntime().getInstance) {
+    instance = getEchoesRuntime().getInstance(target)
+  } else {
+    instance = standaloneInstances.get(target)
+    if (!instance) {
+      instance = new target()
+      standaloneInstances.set(target, instance)
+    }
+  }
 
   if (!serviceMetadata.has(instance.constructor)) {
     throw new Error('You must pass a class decorated with @Echoes to getServiceEchoes')

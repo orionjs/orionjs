@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -11,17 +11,20 @@
     "build": "tsup && bun run ../../scripts/emit-declarations.ts",
     "dev": "tsup --watch"
   },
+  "dependencies": {
+    "@orion-js/echoes-orion": "4.5.0"
+  },
   "peerDependencies": {
-    "@orion-js/dogs": "4.4.0",
-    "@orion-js/echoes": "4.4.1",
-    "@orion-js/graphql": "4.4.0",
-    "@orion-js/helpers": "4.4.0",
-    "@orion-js/http": "4.4.0",
-    "@orion-js/logger": "4.4.0",
-    "@orion-js/models": "4.4.0",
-    "@orion-js/mongodb": "4.4.0",
-    "@orion-js/services": "4.4.0",
-    "@orion-js/trpc": "4.4.0",
+    "@orion-js/dogs": "4.5.0",
+    "@orion-js/echoes": "^4.5.0",
+    "@orion-js/graphql": "4.5.0",
+    "@orion-js/helpers": "4.5.0",
+    "@orion-js/http": "4.5.0",
+    "@orion-js/logger": "4.5.0",
+    "@orion-js/models": "4.5.0",
+    "@orion-js/mongodb": "4.5.0",
+    "@orion-js/services": "4.5.0",
+    "@orion-js/trpc": "4.5.0",
     "@trpc/server": "^11.0.0"
   },
   "peerDependenciesMeta": {
@@ -33,14 +36,15 @@
     }
   },
   "devDependencies": {
-    "@orion-js/dogs": "4.4.0",
-    "@orion-js/echoes": "4.4.1",
-    "@orion-js/graphql": "4.4.0",
-    "@orion-js/helpers": "4.4.0",
-    "@orion-js/http": "4.4.0",
-    "@orion-js/models": "4.4.0",
-    "@orion-js/services": "4.4.0",
-    "@orion-js/trpc": "4.4.0",
+    "@orion-js/dogs": "4.5.0",
+    "@orion-js/echoes": "4.5.0",
+    "@orion-js/echoes-orion": "4.5.0",
+    "@orion-js/graphql": "4.5.0",
+    "@orion-js/helpers": "4.5.0",
+    "@orion-js/http": "4.5.0",
+    "@orion-js/models": "4.5.0",
+    "@orion-js/services": "4.5.0",
+    "@orion-js/trpc": "4.5.0",
     "@trpc/server": "^11.0.0",
     "typescript": "^7.0.2",
     "@types/node": "^18.0.0",

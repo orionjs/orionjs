@@ -1,11 +1,10 @@
-import {logger} from '@orion-js/logger'
 import config from '../config'
-import {internalGetEnv} from '@orion-js/env'
+import {getEchoesLogger} from '../runtime'
 
 export function getEchoesPassword() {
-  const secret = config?.requests?.key || internalGetEnv('echoes_password', 'ECHOES_PASSWORD')
+  const secret = config?.requests?.key || process.env.echoes_password || process.env.ECHOES_PASSWORD
   if (!secret) {
-    logger.warn(
+    getEchoesLogger().warn(
       'Warning: no secret key found for echoes requests. Init echoes or set the env var "echoes_password" or process.env.ECHOES_PASSWORD',
     )
   }

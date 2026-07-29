@@ -107,7 +107,7 @@
       },
       {
         "tab": "Blog",
-        "pages": ["blog/typescript-7", "blog/repl-command"]
+        "pages": ["blog/orionjs-4-5-migration", "blog/typescript-7", "blog/repl-command"]
       }
     ],
     "global": {

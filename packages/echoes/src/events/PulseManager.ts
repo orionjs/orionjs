@@ -1,10 +1,4 @@
 import type {
-  Pulse,
-  PulseReceivedEvent,
-  PulseSubscribeOptions,
-  PulseSubscription,
-} from '@orion-js/pulse'
-import type {
   EchoesEventPayload,
   EchoesPulseEventsConfig,
   EchoesReceivedEvent,
@@ -12,21 +6,30 @@ import type {
 } from '../types'
 import type {EventTransport, EventTransportStartOptions} from './EventTransport'
 
-type EchoesPulseEventMap = Record<string, EchoesEventPayload>
+type PulseSubscribeOptions = NonNullable<EchoesPulseEventsConfig['subscription']>
+
+interface PulseReceivedEvent {
+  id: string
+  topic: string
+  data: EchoesEventPayload
+  headers?: Record<string, unknown>
+  createdAt: Date
+  attempt: number
+}
 
 export default class PulseManager implements EventTransport {
   readonly name = 'pulse' as const
 
   private readonly options: EchoesPulseEventsConfig
-  private pulse?: Pulse<EchoesPulseEventMap>
-  private subscriptions: PulseSubscription[] = []
+  private pulse?: any
+  private subscriptions: Array<{unsubscribe(): Promise<void>}> = []
 
   constructor(options: EchoesPulseEventsConfig) {
     this.options = options
   }
 
   async start(options: EventTransportStartOptions) {
-    let pulseModule: typeof import('@orion-js/pulse')
+    let pulseModule: any
     try {
       pulseModule = await import('@orion-js/pulse')
     } catch (error) {
@@ -38,7 +41,7 @@ export default class PulseManager implements EventTransport {
     }
 
     const {subscription, ...connectOptions} = this.options
-    this.pulse = pulseModule.connect<EchoesPulseEventMap>(connectOptions)
+    this.pulse = pulseModule.connect(connectOptions)
     await this.pulse.awaitConnection()
 
     if (!options.consume) return
@@ -80,9 +83,7 @@ export default class PulseManager implements EventTransport {
     }
   }
 
-  private createReceivedEvent(
-    event: PulseReceivedEvent<string, EchoesEventPayload>,
-  ): EchoesReceivedEvent {
+  private createReceivedEvent(event: PulseReceivedEvent): EchoesReceivedEvent {
     return {
       id: event.id,
       topic: event.topic,

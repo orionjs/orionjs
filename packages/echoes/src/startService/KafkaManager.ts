@@ -1,6 +1,4 @@
 import {randomUUID} from 'node:crypto'
-import {logger} from '@orion-js/logger'
-import {Consumer, EachMessagePayload, Kafka, Producer} from 'kafkajs'
 import deserialize from '../echo/deserialize'
 import type {
   EventSubscriptionDefinition,
@@ -8,7 +6,13 @@ import type {
   EventTransportStartOptions,
 } from '../events/EventTransport'
 import serialize from '../publish/serialize'
-import type {EchoesKafkaEventsConfig, EchoesReceivedEvent, PublishOptions} from '../types'
+import {getEchoesLogger} from '../runtime'
+import type {
+  EchoesKafkaEventsConfig,
+  EchoesKafkaMessagePayload,
+  EchoesReceivedEvent,
+  PublishOptions,
+} from '../types'
 
 const HEARTBEAT_INTERVAL_SECONDS = 5
 const CHECK_JOIN_CONSUMER_INTERVAL_SECONDS = 30
@@ -21,10 +25,10 @@ const DEFAULT_MEMBERS_TO_PARTITIONS_RATIO = 1
 class KafkaManager implements EventTransport {
   readonly name = 'kafka' as const
 
-  private readonly kafka: Kafka
+  private kafka?: any
   private readonly options: EchoesKafkaEventsConfig
-  private producer?: Producer
-  private consumer?: Consumer
+  private producer?: any
+  private consumer?: any
   private topics: string[] = []
   private subscriptions = new Map<string, EventSubscriptionDefinition>()
   private onEvent?: (event: EchoesReceivedEvent) => Promise<void>
@@ -33,11 +37,22 @@ class KafkaManager implements EventTransport {
   private interval?: NodeJS.Timeout
 
   constructor(options: EchoesKafkaEventsConfig) {
-    this.kafka = new Kafka(options.client)
     this.options = options
   }
 
   async start(options: EventTransportStartOptions) {
+    let kafkaModule: typeof import('kafkajs')
+    try {
+      kafkaModule = await import('kafkajs')
+    } catch (error) {
+      const wrapped = new Error(
+        'Echoes Kafka transport requires kafkajs to be installed in the application',
+      )
+      ;(wrapped as any).cause = error
+      throw wrapped
+    }
+    this.kafka = new kafkaModule.Kafka(this.options.client as any)
+
     this.onEvent = options.onEvent
     this.subscriptions = new Map(
       options.subscriptions.map(subscription => [subscription.topic, subscription]),
@@ -60,7 +75,7 @@ class KafkaManager implements EventTransport {
     this.consumerStarted = await this.conditionalStart()
     if (this.consumerStarted) return
 
-    logger.info('Echoes: Delaying consumer group join, waiting for conditions to be met')
+    getEchoesLogger().info('Echoes: Delaying consumer group join, waiting for conditions to be met')
     this.interval = setInterval(async () => {
       this.consumerStarted = await this.conditionalStart()
       if (this.consumerStarted) clearInterval(this.interval)
@@ -88,6 +103,7 @@ class KafkaManager implements EventTransport {
   }
 
   async close() {
+    const logger = getEchoesLogger()
     logger.warn('Echoes: Stopping Kafka transport')
     if (this.interval) clearInterval(this.interval)
     await Promise.all([
@@ -99,6 +115,7 @@ class KafkaManager implements EventTransport {
   }
 
   private async checkJoinConsumerGroupConditions(): Promise<boolean> {
+    const logger = getEchoesLogger()
     const admin = this.kafka.admin()
     try {
       await admin.connect()
@@ -155,7 +172,8 @@ class KafkaManager implements EventTransport {
     return false
   }
 
-  private async handleMessage(params: EachMessagePayload) {
+  private async handleMessage(params: EchoesKafkaMessagePayload) {
+    const logger = getEchoesLogger()
     const subscription = this.subscriptions.get(params.topic)
     if (!subscription) {
       logger.warn(`Echoes: Received a message for an unknown topic: ${params.topic}, ignoring it`)
@@ -193,8 +211,11 @@ class KafkaManager implements EventTransport {
     }
   }
 
-  private createReceivedEvent(params: EachMessagePayload): EchoesReceivedEvent {
+  private createReceivedEvent(params: EchoesKafkaMessagePayload): EchoesReceivedEvent {
     const {message, topic, partition} = params
+    if (!message.value) {
+      throw new Error(`Echoes received an empty Kafka message for ${topic}`)
+    }
     const data = deserialize(message.value.toString())
     const retries = Number.parseInt(message.headers?.retries?.toString() || '0', 10)
     const timestamp = Number.parseInt(message.timestamp || '', 10)
@@ -215,9 +236,10 @@ class KafkaManager implements EventTransport {
 
   private async handleRetries(
     subscription: EventSubscriptionDefinition,
-    params: EachMessagePayload,
+    params: EchoesKafkaMessagePayload,
     error: Error,
   ) {
+    const logger = getEchoesLogger()
     const {message, topic} = params
     const retries = Number.parseInt(message?.headers?.retries?.toString() || '0', 10)
     if (
@@ -229,6 +251,7 @@ class KafkaManager implements EventTransport {
     const maxRetries = subscription.attemptsBeforeDeadLetter || 0
     const exceededMaxRetries = retries >= maxRetries
     const nextTopic = exceededMaxRetries ? `DLQ-${topic}` : topic
+    if (!message.value) throw error
     await this.producer.send({
       topic: nextTopic,
       messages: [

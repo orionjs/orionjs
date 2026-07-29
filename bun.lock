@@ -20,16 +20,20 @@
     },
     "packages/components": {
       "name": "@orion-js/components",
-      "version": "4.4.0",
+      "version": "4.5.0",
+      "dependencies": {
+        "@orion-js/echoes-orion": "4.5.0",
+      },
       "devDependencies": {
-        "@orion-js/dogs": "4.4.0",
-        "@orion-js/echoes": "4.4.0",
-        "@orion-js/graphql": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/http": "4.4.0",
-        "@orion-js/models": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/trpc": "4.4.0",
+        "@orion-js/dogs": "4.5.0",
+        "@orion-js/echoes": "4.5.0",
+        "@orion-js/echoes-orion": "4.5.0",
+        "@orion-js/graphql": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/http": "4.5.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/trpc": "4.5.0",
         "@trpc/server": "^11.0.0",
         "@types/node": "^18.0.0",
         "mongodb-memory-server": "^10.1.4",
@@ -37,16 +41,16 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/dogs": "4.4.0",
-        "@orion-js/echoes": "4.4.0",
-        "@orion-js/graphql": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/http": "4.4.0",
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/models": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/trpc": "4.4.0",
+        "@orion-js/dogs": "4.5.0",
+        "@orion-js/echoes": "^4.5.0",
+        "@orion-js/graphql": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/http": "4.5.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/trpc": "4.5.0",
         "@trpc/server": "^11.0.0",
       },
       "optionalPeers": [
@@ -56,13 +60,13 @@
     },
     "packages/core": {
       "name": "@orion-js/core",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "bin": {
         "orion": "./dist/index.js",
       },
       "dependencies": {
         "@jgoz/esbuild-plugin-typecheck": "^4.0.3",
-        "@orion-js/env": "4.3.1",
+        "@orion-js/env": "4.5.0",
         "chalk": "^4.1.2",
         "chokidar": "3.5.3",
         "commander": "^9.4.1",
@@ -79,7 +83,7 @@
         "tsup": "^8.0.1",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.3.1",
+        "@orion-js/logger": "4.5.0",
         "tsx": "*",
       },
       "optionalPeers": [
@@ -88,9 +92,9 @@
     },
     "packages/crypto": {
       "name": "@orion-js/crypto",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/services": "4.3.1",
+        "@orion-js/services": "4.5.0",
         "bcryptjs": "^2.4.3",
         "tweetnacl-es6": "^1.0.3",
       },
@@ -101,53 +105,46 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.3.1",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/dogs": {
       "name": "@orion-js/dogs",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "@opentelemetry/api": "^1.9.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/typed-model": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/typed-model": "4.5.0",
         "cron-parser": "^5.5.0",
         "dataloader": "2.2.2",
         "dot-object": "^2.1.5",
         "parse-duration": "^2.1.3",
       },
       "devDependencies": {
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
         "mongodb-memory-server": "^10.1.4",
         "tsup": "^8.0.1",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
       },
     },
     "packages/echoes": {
       "name": "@orion-js/echoes",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/env": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/http": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "axios": "^0.24.0",
-        "jssha": "^3.2.0",
-        "kafkajs": "^2.2.4",
         "serialize-javascript": "^6.0.0",
       },
       "devDependencies": {
-        "@orion-js/pulse": "4.4.1",
+        "@orion-js/pulse": "4.5.0",
         "@types/node": "^18.0.0",
         "@types/supertest": "2.0.11",
+        "kafkajs": "^2.2.4",
         "mongodb": "^6.15.0",
         "mongodb-memory-server": "^10.1.4",
         "supertest": "^6.1.6",
@@ -155,16 +152,40 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/pulse": "^4.4.1",
+        "@orion-js/pulse": "^4.5.0",
+        "kafkajs": "^2.2.4",
       },
       "optionalPeers": [
         "@orion-js/pulse",
+        "kafkajs",
       ],
+    },
+    "packages/echoes-orion": {
+      "name": "@orion-js/echoes-orion",
+      "version": "4.5.0",
+      "devDependencies": {
+        "@orion-js/echoes": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/http": "4.5.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@types/node": "^18.0.0",
+        "tsup": "^8.0.1",
+        "typescript": "^7.0.2",
+      },
+      "peerDependencies": {
+        "@orion-js/echoes": "^4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/http": "4.5.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+      },
     },
     "packages/env": {
       "name": "@orion-js/env",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "bin": {
         "orion-env": "./dist-cli/index.js",
       },
@@ -182,25 +203,25 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/file-manager": {
       "name": "@orion-js/file-manager",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/models": "4.4.0",
-        "@orion-js/paginated-mongodb": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/typed-model": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/paginated-mongodb": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/typed-model": "4.5.0",
         "aws-sdk": "^2.1367.0",
         "escape-string-regexp": "^4.0.0",
         "luxon": "^2.1.1",
       },
       "devDependencies": {
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/mongodb": "4.5.0",
         "@types/dot-object": "^2.1.2",
         "@types/node": "^18.0.0",
         "mongodb-memory-server": "^10.1.4",
@@ -208,24 +229,24 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
       },
     },
     "packages/graphql": {
       "name": "@orion-js/graphql",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "@apollo/server": "^4.3.0",
         "@graphql-tools/schema": "^9.0.12",
-        "@orion-js/env": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/http": "4.4.0",
-        "@orion-js/models": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/typed-model": "4.4.0",
+        "@orion-js/env": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/http": "4.5.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/typed-model": "4.5.0",
         "graphql-scalars": "^1.24.1",
         "graphql-subscriptions": "2.0.0",
         "graphql-tag": "^2.12.6",
@@ -245,13 +266,13 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
         "graphql": "*",
       },
     },
     "packages/helpers": {
       "name": "@orion-js/helpers",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "uuid": "^11.1.0",
       },
@@ -261,18 +282,18 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/http": {
       "name": "@orion-js/http",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/env": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
+        "@orion-js/env": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
         "body-parser": "1.20.3",
         "express": "4.21.2",
       },
@@ -287,12 +308,12 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/logger": {
       "name": "@orion-js/logger",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "@opentelemetry/api": "^1.9.0",
         "color": "^4.2.3",
@@ -307,34 +328,34 @@
     },
     "packages/migrations": {
       "name": "@orion-js/migrations",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/typed-model": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/typed-model": "4.5.0",
       },
       "devDependencies": {
-        "@orion-js/dogs": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/dogs": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
         "@types/node": "^18.0.0",
         "mongodb-memory-server": "^10.1.4",
         "tsup": "^8.0.1",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/dogs": "4.4.0",
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/dogs": "4.5.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
       },
     },
     "packages/models": {
       "name": "@orion-js/models",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
       },
       "devDependencies": {
         "@types/node": "^18.0.0",
@@ -342,21 +363,21 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/mongodb": {
       "name": "@orion-js/mongodb",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "@aws-sdk/credential-providers": "^3.782.0",
-        "@orion-js/env": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/models": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/typed-model": "4.4.0",
+        "@orion-js/env": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/typed-model": "4.5.0",
         "bson": "^6.10.3",
         "dataloader": "2.2.3",
         "dot-object": "2.1.5",
@@ -371,36 +392,36 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/paginated-mongodb": {
       "name": "@orion-js/paginated-mongodb",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/graphql": "4.4.0",
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/models": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
-        "@orion-js/typed-model": "4.4.0",
+        "@orion-js/graphql": "4.5.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
+        "@orion-js/typed-model": "4.5.0",
       },
       "devDependencies": {
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/mongodb": "4.5.0",
         "@types/node": "^18.0.0",
         "mongodb-memory-server": "^10.1.4",
         "tsup": "^8.0.1",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
-        "@orion-js/mongodb": "4.4.0",
+        "@orion-js/logger": "4.5.0",
+        "@orion-js/mongodb": "4.5.0",
       },
     },
     "packages/pulse": {
       "name": "@orion-js/pulse",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "bin": {
         "orion-pulse": "./dist-cli/orion-pulse.js",
       },
@@ -434,10 +455,10 @@
     },
     "packages/resolvers": {
       "name": "@orion-js/resolvers",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
       },
       "devDependencies": {
         "@types/node": "^18.0.0",
@@ -445,12 +466,12 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/schema": {
       "name": "@orion-js/schema",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "dot-object": "^2.1.4",
       },
@@ -461,14 +482,14 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/services": {
       "name": "@orion-js/services",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/helpers": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
         "typedi": "^0.10.0",
       },
       "devDependencies": {
@@ -477,12 +498,12 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/telemetry": {
       "name": "@orion-js/telemetry",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
         "@opentelemetry/auto-instrumentations-node": "^0.56.1",
         "@opentelemetry/exporter-prometheus": "^0.57.2",
@@ -495,17 +516,17 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.3.1",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/trpc": {
       "name": "@orion-js/trpc",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/helpers": "4.4.0",
-        "@orion-js/http": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
+        "@orion-js/helpers": "4.5.0",
+        "@orion-js/http": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
         "@trpc/server": "^11.0.0",
       },
       "devDependencies": {
@@ -516,12 +537,12 @@
     },
     "packages/typed-model": {
       "name": "@orion-js/typed-model",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "dependencies": {
-        "@orion-js/models": "4.4.0",
-        "@orion-js/resolvers": "4.4.0",
-        "@orion-js/schema": "4.4.0",
-        "@orion-js/services": "4.4.0",
+        "@orion-js/models": "4.5.0",
+        "@orion-js/resolvers": "4.5.0",
+        "@orion-js/schema": "4.5.0",
+        "@orion-js/services": "4.5.0",
       },
       "devDependencies": {
         "@types/node": "^18.0.0",
@@ -529,12 +550,12 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@orion-js/logger": "4.4.0",
+        "@orion-js/logger": "4.5.0",
       },
     },
     "packages/vectors": {
       "name": "@orion-js/vectors",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "devDependencies": {
         "@aws-sdk/client-s3vectors": "^3.911.0",
         "@types/node": "^18.19.86",
@@ -543,7 +564,7 @@
       },
       "peerDependencies": {
         "@aws-sdk/client-s3vectors": "*",
-        "@orion-js/logger": "4.3.1",
+        "@orion-js/logger": "4.5.0",
       },
     },
   },
@@ -1008,6 +1029,8 @@
 
     "@orion-js/echoes": ["@orion-js/echoes@workspace:packages/echoes"],
 
+    "@orion-js/echoes-orion": ["@orion-js/echoes-orion@workspace:packages/echoes-orion"],
+
     "@orion-js/env": ["@orion-js/env@workspace:packages/env"],
 
     "@orion-js/file-manager": ["@orion-js/file-manager@workspace:packages/file-manager"],
@@ -1450,8 +1473,6 @@
 
     "aws-sdk": ["aws-sdk@2.1693.0", "", { "dependencies": { "buffer": "4.9.2", "events": "1.1.1", "ieee754": "1.1.13", "jmespath": "0.16.0", "querystring": "0.2.0", "sax": "1.2.1", "url": "0.10.3", "util": "^0.12.4", "uuid": "8.0.0", "xml2js": "0.6.2" } }, "sha512-cJmb8xEnVLT+R6fBS5sn/EFJiX7tUnDaPtOPZ1vFbOJtd0fnZn/Ky2XGgsvvoeliWeH7mL3TWSX5zXXGSQV6gQ=="],
 
-    "axios": ["axios@0.24.0", "", { "dependencies": { "follow-redirects": "^1.14.4" } }, "sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA=="],
-
     "b4a": ["b4a@1.8.0", "", { "peerDependencies": { "react-native-b4a": "*" }, "optionalPeers": ["react-native-b4a"] }, "sha512-qRuSmNSkGQaHwNbM7J78Wwy+ghLEYF1zNrSeMxj4Kgw6y33O3mXcQ6Ie9fRvfU/YnxWkOchPXbaLb73TkIsfdg=="],
 
     "backo2": ["backo2@1.0.2", "", {}, "sha512-zj6Z6M7Eq+PBZ7PQxl5NT665MvJdAkzp0f60nAJ+sLaSCBPMwVak5ZegFbgVCzFcCJTKFoMizvM5Ld7+JrRJHA=="],
@@ -1881,8 +1902,6 @@
     "json5": ["json5@2.2.3", "", { "bin": { "json5": "lib/cli.js" } }, "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg=="],
 
     "jsonfile": ["jsonfile@4.0.0", "", { "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg=="],
-
-    "jssha": ["jssha@3.3.1", "", {}, "sha512-VCMZj12FCFMQYcFLPRm/0lOBbLi8uM2BhXPTqw3U4YAfs4AZfiApOoBLoN8cQE60Z50m1MYMTQVCfgF/KaCVhQ=="],
 
     "kafkajs": ["kafkajs@2.2.4", "", {}, "sha512-j/YeapB1vfPT2iOIUn/vxdyKEuhuY2PxMBvf5JWux6iSaukAccrMtXEY/Lb7OvavDhOWME589bpLrEdnVHjfjA=="],
 
@@ -2458,6 +2477,8 @@
 
     "@orion-js/echoes/@types/node": ["@types/node@18.19.130", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg=="],
 
+    "@orion-js/echoes-orion/@types/node": ["@types/node@18.19.130", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg=="],
+
     "@orion-js/env/@types/node": ["@types/node@18.19.130", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg=="],
 
     "@orion-js/file-manager/@types/node": ["@types/node@18.19.130", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg=="],
@@ -2611,6 +2632,8 @@
     "@orion-js/core/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
 
     "@orion-js/crypto/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
+
+    "@orion-js/echoes-orion/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
 
     "@orion-js/echoes/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
 

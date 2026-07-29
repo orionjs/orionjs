@@ -1,8 +1,9 @@
-import {clean, cleanAndValidate, InferSchemaType, SchemaFieldType} from '@orion-js/schema'
-import {EachMessagePayload} from 'kafkajs'
+import {cleanEchoesSchema, parseEchoesSchema} from '../runtime'
+import type {EchoesSchema, InferEchoesSchema} from '../schema'
 import {
   EchoConfig,
   EchoEventConfig,
+  EchoesKafkaMessagePayload,
   EchoesReceivedEvent,
   EchoRequestConfig,
   EchoType,
@@ -13,21 +14,21 @@ import deserialize from './deserialize'
  * @deprecated Use createEchoRequest and createEchoEvent instead
  */
 const echo = function createNewEcho<
-  TParamsSchema extends SchemaFieldType,
-  TReturnsSchema extends SchemaFieldType,
+  TParamsSchema extends EchoesSchema,
+  TReturnsSchema extends EchoesSchema,
   TEchoType extends 'event' | 'request',
 >(
   options: EchoConfig<TParamsSchema, TReturnsSchema, TEchoType>,
 ): EchoType<TParamsSchema, TReturnsSchema, TEchoType> {
-  const resolve = async (params: InferSchemaType<TParamsSchema>, context: any) => {
+  const resolve = async (params: InferEchoesSchema<TParamsSchema>, context: any) => {
     const cleaned = options.params
-      ? await cleanAndValidate(options.params, params)
-      : (params ?? ({} as InferSchemaType<TParamsSchema>))
+      ? await parseEchoesSchema<InferEchoesSchema<TParamsSchema>>(options.params, params)
+      : (params ?? ({} as InferEchoesSchema<TParamsSchema>))
 
     const result = await options.resolve(cleaned, context)
 
     if (options.returns) {
-      return await clean(options.returns, result)
+      return await cleanEchoesSchema<InferEchoesSchema<TReturnsSchema>>(options.returns, result)
     }
 
     return result
@@ -56,8 +57,11 @@ const echo = function createNewEcho<
       options.type === 'event' ? options.attemptsBeforeDeadLetter : undefined,
     resolve,
     onEvent,
-    onMessage: async (messageData: EachMessagePayload) => {
+    onMessage: async (messageData: EchoesKafkaMessagePayload) => {
       const {message} = messageData
+      if (!message.value) {
+        throw new Error(`Echoes received an empty Kafka message for ${messageData.topic}`)
+      }
 
       const data = deserialize(message.value.toString())
       const retries = Number.parseInt(message.headers?.retries?.toString() || '0', 10)
@@ -88,16 +92,16 @@ const echo = function createNewEcho<
 }
 
 export function createEchoRequest<
-  TParamsSchema extends SchemaFieldType,
-  TReturnsSchema extends SchemaFieldType,
+  TParamsSchema extends EchoesSchema,
+  TReturnsSchema extends EchoesSchema,
 >(
   options: EchoRequestConfig<TParamsSchema, TReturnsSchema>,
 ): EchoType<TParamsSchema, TReturnsSchema, 'request'> {
   return echo({...options, type: 'request'})
 }
 export function createEchoEvent<
-  TParamsSchema extends SchemaFieldType,
-  TReturnsSchema extends SchemaFieldType,
+  TParamsSchema extends EchoesSchema,
+  TReturnsSchema extends EchoesSchema,
 >(
   options: EchoEventConfig<TParamsSchema, TReturnsSchema>,
 ): EchoType<TParamsSchema, TReturnsSchema, 'event'> {
