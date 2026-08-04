@@ -26,7 +26,7 @@
       },
       "devDependencies": {
         "@orion-js/dogs": "4.5.0",
-        "@orion-js/echoes": "4.5.0",
+        "@orion-js/echoes": "4.5.1",
         "@orion-js/echoes-orion": "4.5.0",
         "@orion-js/graphql": "4.5.0",
         "@orion-js/helpers": "4.5.0",
@@ -136,7 +136,7 @@
     },
     "packages/echoes": {
       "name": "@orion-js/echoes",
-      "version": "4.5.0",
+      "version": "4.5.1",
       "dependencies": {
         "serialize-javascript": "^6.0.0",
       },
@@ -164,7 +164,7 @@
       "name": "@orion-js/echoes-orion",
       "version": "4.5.0",
       "devDependencies": {
-        "@orion-js/echoes": "4.5.0",
+        "@orion-js/echoes": "4.5.1",
         "@orion-js/helpers": "4.5.0",
         "@orion-js/http": "4.5.0",
         "@orion-js/logger": "4.5.0",

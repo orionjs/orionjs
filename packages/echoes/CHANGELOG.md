@@ -1,5 +1,11 @@
 # @orion-js/echoes
 
+## 4.5.1
+
+### Patch Changes
+
+- Prevent Kafka publish and HTTP request serialization from mutating caller-owned payloads while continuing to omit functions from the wire format.
+
 ## 4.5.0
 
 ### Minor Changes
