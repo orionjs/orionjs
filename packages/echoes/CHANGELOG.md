@@ -1,5 +1,14 @@
 # @orion-js/echoes
 
+## 4.5.2
+
+### Patch Changes
+
+- 2b9f41a: Allow Echoes Pulse transports to configure the discovery-leader lease timeout independently from
+  handler locks.
+- Updated dependencies [2b9f41a]
+  - @orion-js/pulse@4.5.1
+
 ## 4.5.1
 
 ### Patch Changes
