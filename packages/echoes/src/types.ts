@@ -202,13 +202,13 @@ export interface EchoesPulseEventsConfig {
   consumerGroup: string
   databaseName?: string
   collectionPrefix?: string
-  changeStreams?: 'auto' | 'required' | 'disabled'
   eventRetentionMs?: number | null
   historyRetentionMs?: number | null
   pollIntervalMs?: number
   workerCount?: number
   maxPoolSize?: number
   lockTimeoutMs?: number
+  discoveryLockTimeoutMs?: number
   onError?: (error: Error) => void
   /**
    * Subscription defaults used by every Echoes event handled through Pulse.

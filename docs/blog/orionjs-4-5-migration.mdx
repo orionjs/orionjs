@@ -173,6 +173,11 @@ await startService({
 })
 ```
 
+Pulse now uses polling and reconciliation exclusively. If an application previously configured
+`events.pulse.changeStreams`, remove that field during the upgrade. It is no longer part of the
+Echoes or Pulse public types, and leaving it in a JavaScript configuration makes startup fail fast
+instead of silently selecting another mode.
+
 If you are migrating event traffic from Kafka to Pulse, follow the
 [incremental Kafka-to-Pulse rollout](/overview/controllers/echoes#incremental-migration-from-kafka-to-pulse).
 

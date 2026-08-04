@@ -310,7 +310,14 @@ The event handler API does not change.
 
 The Pulse transport uses a MongoDB application pool of at most five connections per service
 instance by default. Set `events.pulse.maxPoolSize` when a specific service needs a different
-limit.
+limit. `events.pulse.discoveryLockTimeoutMs` can independently tune discovery-leader failover;
+handler and ordered-delivery locks continue using `events.pulse.lockTimeoutMs`.
+
+<Warning>
+  Pulse no longer supports `events.pulse.changeStreams`. Event discovery always uses polling and
+  reconciliation. Remove the legacy field before deploying this configuration; Echoes fails during
+  startup if the field is still present, including when its value is `"disabled"`.
+</Warning>
 
 ### 2. Switch publishers
 

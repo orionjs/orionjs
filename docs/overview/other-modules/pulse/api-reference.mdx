@@ -11,7 +11,7 @@ function connect<TEvents extends Record<string, unknown>>(
 ): Pulse<TEvents>
 ```
 
-`connect()` constructs Pulse immediately and creates one background readiness promise. Use `awaitConnection()` during application startup to surface connection, topology, permission, and index errors before accepting traffic.
+`connect()` constructs Pulse immediately and creates one background readiness promise. Use `awaitConnection()` during application startup to surface connection, permission, and index errors before accepting traffic.
 
 ### Connection options
 
@@ -21,14 +21,14 @@ function connect<TEvents extends Record<string, unknown>>(
 | `consumerGroup` | `string` | Required | Stable identity shared by replicas performing the same work. |
 | `databaseName` | `string` | Database in URI | MongoDB database. Startup fails if neither source provides it. |
 | `collectionPrefix` | `string` | `orionjs.pulse` | Prefix for all four collections. |
-| `changeStreams` | `'auto' \| 'required' \| 'disabled'` | `auto` | Change Stream wake-up policy. Polling always remains enabled. |
 | `eventRetentionMs` | `number \| null` | 7 days | Retention written on new events; `null` keeps them indefinitely. |
 | `historyRetentionMs` | `number \| null` | 7 days | Retention applied to a delivery and all its completed attempts once the delivery is terminal. |
-| `pollIntervalMs` | `number` | `3000` | Polling, reconciliation, and Change Stream retry interval. |
-| `workerCount` | `number` | `4` | Worker loops in this process. |
+| `pollIntervalMs` | `number` | `3000` | Event discovery, work acquisition, and reconciliation interval. |
+| `workerCount` | `number` | `4` | Maximum concurrent handler executions in this process. |
 | `maxPoolSize` | `number` | `5` | Maximum MongoDB application connections per server for this Pulse client. |
 | `lockTimeoutMs` | `number` | `30000` | Attempt and ordered lease duration. Heartbeats renew active leases. |
-| `onError` | `(error: Error) => void` | `console.error` | Internal worker and Change Stream error reporter. |
+| `discoveryLockTimeoutMs` | `number` | `10000` | Discovery-leader lease duration; controls replica failover independently from handler locks. |
+| `onError` | `(error: Error) => void` | `console.error` | Internal coordinator and worker error reporter. |
 
 Strings must be non-empty. `maxPoolSize` must be a positive integer. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it. Retry settings are rejected when their largest computed delay falls outside MongoDB's supported date range.
 
@@ -37,13 +37,20 @@ remains at the driver default of 0, so the pool grows on demand. The limit appli
 connections in each server pool; the driver also opens monitoring connections for the MongoDB
 topology.
 
+<Warning>
+  `changeStreams` has been removed and cannot be enabled or disabled. Pulse always uses polling and
+  reconciliation. Remove the field from existing JavaScript and TypeScript configurations;
+  providing it, even as `changeStreams: 'disabled'`, makes `connect()` fail immediately with a
+  `PulseConfigurationError`.
+</Warning>
+
 ## `pulse.awaitConnection()`
 
 ```typescript
 await pulse.awaitConnection(): Promise<void>
 ```
 
-Resolves after the MongoDB client connects, the database is selected, collections and indexes are ready, and Change Stream support is resolved. Workers start only after successful initialization.
+Resolves after the MongoDB client connects, the database is selected, and collections and indexes are ready. Workers start only after successful initialization.
 
 `publish()`, `subscribe()`, and `history.find()` call it internally.
 
@@ -152,7 +159,7 @@ Each record exposes delivery and event IDs, topic, group, attempt number, status
 await pulse.close()
 ```
 
-Stops worker loops, wakes sleepers, closes the Change Stream, waits for background loops to settle, and closes the MongoDB client. Repeated calls return the same close promise.
+Stops coordinator and worker execution, wakes sleepers, waits for background work to settle, and closes the MongoDB client. Repeated calls return the same close promise.
 
 When called and awaited from inside a handler, shutdown starts but that call returns before the
 shared promise so the current worker cannot deadlock waiting for itself. A call from outside the
@@ -163,7 +170,7 @@ handler can await complete shutdown.
 | Error | When it is used |
 | --- | --- |
 | `PulseError` | Base class for Pulse-specific errors. |
-| `PulseConfigurationError` | Invalid options, missing database, subscription conflicts, or required Change Streams unavailable. |
+| `PulseConfigurationError` | Invalid or removed options, missing database, or subscription conflicts. |
 | `PulseIndexError` | Required index creation or compatibility validation failed. |
 | `PulseLockLostError` | A stale worker lost its fencing token while executing or acknowledging. Usually reported through `onError`. |
 
@@ -232,7 +239,6 @@ const pulse = connect<Events>({
   connectionString: process.env.MONGODB_URI!,
   databaseName: 'commerce',
   consumerGroup: 'billing',
-  changeStreams: 'auto',
   onError: error => console.error('[billing/pulse]', error),
 })
 

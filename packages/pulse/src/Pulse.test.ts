@@ -3,7 +3,7 @@ import {type ChildProcess, spawn} from 'node:child_process'
 import {join} from 'node:path'
 import {fileURLToPath} from 'node:url'
 import {MongoClient, Timestamp} from 'mongodb'
-import {MongoMemoryReplSet, MongoMemoryServer} from 'mongodb-memory-server'
+import {MongoMemoryServer} from 'mongodb-memory-server'
 import {uuidv7} from 'uuidv7'
 import {connect, type Pulse, PulseConfigurationError, PulseIndexError} from './index'
 
@@ -12,7 +12,6 @@ setDefaultTimeout(60_000)
 const uuidV7Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
 let standalone: MongoMemoryServer
-let replicaSet: MongoMemoryReplSet
 const pulseClients: Array<Pulse<any>> = []
 const mongoClients: MongoClient[] = []
 const childProcesses = new Set<ChildProcess>()
@@ -27,6 +26,20 @@ function getMaxPoolSize(pulse: Pulse<any>) {
       client: {options: {maxPoolSize: number}}
     }
   ).client.options.maxPoolSize
+}
+
+function getRuntimeState(pulse: Pulse<any>) {
+  return pulse as unknown as {
+    coordinatorPromise?: Promise<void>
+    activeExecutions: Set<Promise<void>>
+    discoveryLeases: Map<string, unknown>
+    collections: {
+      events: any
+      subscriptions: any
+    }
+    reapExpiredAttempts(topics: string[]): Promise<number>
+    reconcileDeliveries(topics: string[]): Promise<number>
+  }
 }
 
 async function waitFor(
@@ -48,15 +61,11 @@ function createPulse(
   databaseName: string,
   consumerGroup: string,
   options: Partial<Parameters<typeof connect>[0]> = {},
-  useReplicaSet = false,
 ) {
   const pulse = connect({
-    connectionString: useReplicaSet
-      ? replicaSet.getUri(databaseName)
-      : standalone.getUri(databaseName),
+    connectionString: standalone.getUri(databaseName),
     databaseName,
     consumerGroup,
-    changeStreams: useReplicaSet ? 'auto' : 'disabled',
     pollIntervalMs: 20,
     workerCount: 4,
     lockTimeoutMs: 300,
@@ -69,10 +78,8 @@ function createPulse(
   return pulse
 }
 
-async function rawDatabase(databaseName: string, useReplicaSet = false) {
-  const client = new MongoClient(
-    useReplicaSet ? replicaSet.getUri(databaseName) : standalone.getUri(databaseName),
-  )
+async function rawDatabase(databaseName: string) {
+  const client = new MongoClient(standalone.getUri(databaseName))
   mongoClients.push(client)
   await client.connect()
   return client.db(databaseName)
@@ -81,10 +88,6 @@ async function rawDatabase(databaseName: string, useReplicaSet = false) {
 beforeAll(async () => {
   standalone = await MongoMemoryServer.create({
     instance: {args: ['--setParameter', 'ttlMonitorSleepSecs=1']},
-  })
-  replicaSet = await MongoMemoryReplSet.create({
-    replSet: {count: 1},
-    instanceOpts: [{args: ['--setParameter', 'ttlMonitorSleepSecs=1']}],
   })
 })
 
@@ -98,7 +101,6 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await replicaSet?.stop()
   await standalone?.stop()
 })
 
@@ -370,11 +372,174 @@ describe('Pulse persistence', () => {
 })
 
 describe('Pulse delivery semantics', () => {
-  it('delivers once per consumer group while replicas compete through Change Streams', async () => {
+  it('rejects the removed Change Streams option before connecting', () => {
+    for (const changeStreams of ['auto', 'required', 'disabled']) {
+      expect(() =>
+        connect({
+          connectionString: 'mongodb://localhost/pulse',
+          consumerGroup: 'removed-change-streams-group',
+          changeStreams,
+        } as any),
+      ).toThrow('changeStreams is no longer supported')
+    }
+  })
+
+  it('elects one discovery reader across competing replicas', async () => {
+    const databaseName = uniqueName('single_reader')
+    const consumerGroup = 'single-reader-group'
+    const topic = 'single-reader.topic'
+    const replicas = Array.from({length: 8}, () =>
+      createPulse(databaseName, consumerGroup, {
+        workerCount: 4,
+        pollIntervalMs: 120,
+        lockTimeoutMs: 300,
+        discoveryLockTimeoutMs: 60,
+      }),
+    )
+    await Promise.all(replicas.map(replica => replica.awaitConnection()))
+    const subscriptions = await Promise.all(
+      replicas.map(replica =>
+        replica.subscribe(topic, async () => {}, {
+          ordered: false,
+          offsetReset: 'latest',
+          maxConcurrency: 4,
+        }),
+      ),
+    )
+    const states = replicas.map(getRuntimeState)
+
+    await waitFor(
+      () => states.reduce((total, state) => total + state.discoveryLeases.size, 0) === 1,
+    )
+
+    const db = await rawDatabase(databaseName)
+    const initialLease = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    const initialToken = initialLease?.discoveryLockToken
+    expect(initialToken).toMatch(uuidV7Pattern)
+
+    await new Promise(resolve => setTimeout(resolve, 140))
+    const renewedLease = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(renewedLease?.discoveryLockToken).toBe(initialToken)
+    expect(renewedLease?.discoveryLockedUntil.getTime()).toBeGreaterThan(Date.now())
+
+    const leaderIndex = states.findIndex(state => state.discoveryLeases.size === 1)
+    expect(leaderIndex).toBeGreaterThanOrEqual(0)
+    await subscriptions[leaderIndex].unsubscribe()
+
+    await waitFor(
+      () =>
+        states.reduce((total, state) => total + state.discoveryLeases.size, 0) === 1 &&
+        states[leaderIndex].discoveryLeases.size === 0,
+    )
+    const replacementLease = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(replacementLease?.discoveryLockToken).toMatch(uuidV7Pattern)
+    expect(replacementLease?.discoveryLockToken).not.toBe(initialToken)
+  })
+
+  it('keeps discovery leadership after a transient query error', async () => {
+    const databaseName = uniqueName('transient_discovery_error')
+    const errors: Error[] = []
+    const pulse = createPulse(databaseName, 'transient-discovery-group', {
+      pollIntervalMs: 30,
+      discoveryLockTimeoutMs: 300,
+      onError: error => errors.push(error),
+    })
+    await pulse.awaitConnection()
+
+    let deliveries = 0
+    await pulse.subscribe('transient-discovery.topic', async () => {
+      deliveries++
+    })
+
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.size === 1)
+    const db = await rawDatabase(databaseName)
+    const before = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup: 'transient-discovery-group',
+      topic: 'transient-discovery.topic',
+    })
+
+    const originalFind = runtime.collections.events.find.bind(runtime.collections.events)
+    let failNextFind = true
+    runtime.collections.events.find = (...args: any[]) => {
+      if (failNextFind) {
+        failNextFind = false
+        throw new Error('synthetic transient discovery error')
+      }
+      return originalFind(...args)
+    }
+
+    await pulse.publish({topic: 'transient-discovery.topic', data: null})
+    await waitFor(() => errors.some(error => error.message.includes('synthetic transient')))
+
+    expect(runtime.discoveryLeases.size).toBe(1)
+    const after = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup: 'transient-discovery-group',
+      topic: 'transient-discovery.topic',
+    })
+    expect(after?.discoveryLockToken).toBe(before?.discoveryLockToken)
+    await waitFor(() => deliveries === 1)
+  })
+
+  it('does not churn ordered leases while a retry is delayed', async () => {
+    const databaseName = uniqueName('ordered_retry_lease')
+    const pulse = createPulse(databaseName, 'ordered-retry-lease-group', {
+      pollIntervalMs: 10,
+    })
+    await pulse.awaitConnection()
+
+    let callbacks = 0
+    await pulse.subscribe(
+      'ordered-retry-lease.topic',
+      async () => {
+        callbacks++
+        if (callbacks === 1) throw new Error('retry once')
+      },
+      {retryDelayMs: 400, maxRetries: 1},
+    )
+
+    const subscriptions = getRuntimeState(pulse).collections.subscriptions
+    const originalFindOneAndUpdate = subscriptions.findOneAndUpdate.bind(subscriptions)
+    let orderedLeaseAcquisitions = 0
+    subscriptions.findOneAndUpdate = async (...args: any[]) => {
+      if (args[1]?.$set?.orderedLockToken) orderedLeaseAcquisitions++
+      return await originalFindOneAndUpdate(...args)
+    }
+
+    await pulse.publish({topic: 'ordered-retry-lease.topic', data: null})
+    const db = await rawDatabase(databaseName)
+    await waitFor(async () => {
+      const retry = await db.collection('orionjs.pulse.history').findOne({
+        consumerGroup: 'ordered-retry-lease-group',
+        topic: 'ordered-retry-lease.topic',
+        attempt: 2,
+        status: 'pending',
+      })
+      return Boolean(retry)
+    })
+
+    expect(orderedLeaseAcquisitions).toBe(1)
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(orderedLeaseAcquisitions).toBe(1)
+
+    await waitFor(() => callbacks === 2)
+    expect(orderedLeaseAcquisitions).toBe(2)
+  })
+
+  it('delivers once per consumer group while replicas compete through polling', async () => {
     const databaseName = uniqueName('groups')
-    const replicaA = createPulse(databaseName, 'group-a', {}, true)
-    const replicaB = createPulse(databaseName, 'group-a', {}, true)
-    const otherGroup = createPulse(databaseName, 'group-b', {}, true)
+    const replicaA = createPulse(databaseName, 'group-a')
+    const replicaB = createPulse(databaseName, 'group-a')
+    const otherGroup = createPulse(databaseName, 'group-b')
     await Promise.all([
       replicaA.awaitConnection(),
       replicaB.awaitConnection(),
@@ -600,6 +765,7 @@ describe('Pulse delivery semantics', () => {
     const recovery = createPulse(databaseName, consumerGroup, {
       workerCount: 1,
       lockTimeoutMs: 200,
+      discoveryLockTimeoutMs: 200,
     })
     await recovery.awaitConnection()
     await recovery.subscribe(
@@ -738,12 +904,98 @@ describe('Pulse delivery semantics', () => {
 })
 
 describe('Pulse disaster recovery and edge cases', () => {
+  it('reaps and reconciles multiple damaged deliveries in one coordinator pass', async () => {
+    const databaseName = uniqueName('batched_recovery')
+    const consumerGroup = 'batched-recovery-group'
+    const topic = 'batched-recovery.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const subscription = await pulse.subscribe(topic, async () => {}, {
+      offsetReset: 'earliest',
+      maxRetries: 1,
+      retryDelayMs: 1000,
+    })
+    await subscription.unsubscribe()
+
+    const db = await rawDatabase(databaseName)
+    const now = new Date()
+    const expiredAt = new Date(now.getTime() - 1000)
+    const expiredDeliveries = Array.from({length: 3}, () => ({
+      _id: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic,
+      eventCreatedAt: now,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    }))
+    const tornDeliveries = Array.from({length: 3}, () => ({
+      _id: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic,
+      eventCreatedAt: now,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    }))
+    await db
+      .collection('orionjs.pulse.deliveries')
+      .insertMany([...expiredDeliveries, ...tornDeliveries])
+    await db.collection('orionjs.pulse.history').insertMany(
+      expiredDeliveries.map(delivery => ({
+        _id: uuidv7(),
+        deliveryId: delivery._id,
+        eventId: delivery.eventId,
+        consumerGroup,
+        topic,
+        attempt: 1,
+        status: 'pending',
+        createdAt: expiredAt,
+        nextAttemptAt: expiredAt,
+        startedAt: expiredAt,
+        lockOwner: uuidv7(),
+        lockToken: uuidv7(),
+        lockedAt: expiredAt,
+        lockedUntil: expiredAt,
+        heartbeatAt: expiredAt,
+      })),
+    )
+
+    const runtime = getRuntimeState(pulse)
+    expect(await runtime.reapExpiredAttempts([topic])).toBe(3)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({
+        deliveryId: {$in: expiredDeliveries.map(delivery => delivery._id)},
+        status: 'error',
+        'error.code': 'worker_lost',
+      }),
+    ).toBe(3)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({
+        deliveryId: {$in: expiredDeliveries.map(delivery => delivery._id)},
+        attempt: 2,
+        status: 'pending',
+      }),
+    ).toBe(3)
+
+    expect(await runtime.reconcileDeliveries([topic])).toBe(3)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({
+        deliveryId: {$in: tornDeliveries.map(delivery => delivery._id)},
+        attempt: 1,
+        status: 'pending',
+      }),
+    ).toBe(3)
+  })
+
   it('rejects invalid runtime configuration before starting work', async () => {
     const invalidConnectOptions: Array<Partial<Parameters<typeof connect>[0]>> = [
       {workerCount: 1.5},
-      {changeStreams: 'broken' as any},
       {databaseName: '   '},
       {onError: 'not-a-function' as any},
+      {discoveryLockTimeoutMs: 0},
     ]
 
     for (const options of invalidConnectOptions) {
@@ -1740,15 +1992,31 @@ describe('Pulse disaster recovery and edge cases', () => {
       ),
     )
 
-    await waitFor(
-      async () =>
-        (await db.collection('orionjs.pulse.deliveries').countDocuments({
-          consumerGroup,
-          topic,
-          status: 'pending',
-        })) === 0,
-      {timeoutMs: 20_000},
-    )
+    try {
+      await waitFor(
+        async () =>
+          (await db.collection('orionjs.pulse.deliveries').countDocuments({
+            consumerGroup,
+            topic,
+            status: 'pending',
+          })) === 0,
+        {timeoutMs: 20_000},
+      )
+    } catch (error) {
+      const deliveryStatuses = await db
+        .collection('orionjs.pulse.deliveries')
+        .aggregate([{$group: {_id: '$status', count: {$sum: 1}}}])
+        .toArray()
+      const historyStatuses = await db
+        .collection('orionjs.pulse.history')
+        .aggregate([{$group: {_id: {status: '$status', code: '$error.code'}, count: {$sum: 1}}}])
+        .toArray()
+      throw new Error(
+        `Mixed torn states stalled. Deliveries=${JSON.stringify(deliveryStatuses)}, ` +
+          `history=${JSON.stringify(historyStatuses)}.`,
+        {cause: error},
+      )
+    }
     await new Promise(resolve => setTimeout(resolve, 250))
 
     expect(callbackCounts.size).toBe(expectedCallbacks.size)
@@ -2224,13 +2492,5 @@ describe('Pulse disaster recovery and edge cases', () => {
 
     await waitFor(() => received.length === documents.length)
     expect(received).toEqual(expected)
-  })
-
-  it('fails required Change Streams on standalone MongoDB', async () => {
-    const pulse = createPulse(uniqueName('required_change_streams'), 'required-streams-group', {
-      changeStreams: 'required',
-    })
-
-    await expect(pulse.awaitConnection()).rejects.toBeInstanceOf(PulseConfigurationError)
   })
 })

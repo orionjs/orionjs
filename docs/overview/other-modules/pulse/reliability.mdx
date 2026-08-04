@@ -54,10 +54,10 @@ handler can call `close()` again to await the shared close promise.
 
 ## Recovery after a crash
 
-Every worker loop runs three recovery steps before looking for new events:
+The process coordinator runs three recovery steps before looking for new events:
 
-1. Reap one expired attempt.
-2. Reconcile incomplete delivery state.
+1. Reap a bounded batch of expired attempts.
+2. Reconcile a bounded batch of incomplete delivery state.
 3. Acquire existing work or discover new events.
 
 An expired attempt is atomically changed from `pending` to `error` with code `worker_lost`. At-least-once mode then creates the next numbered attempt; at-most-once mode makes the delivery terminal.
@@ -178,17 +178,16 @@ const pulse = connect({
 Keep the default for typical ordered consumers. Increase it only after observing pool contention or
 when using higher worker and handler concurrency.
 
-## Polling and Change Streams
+## Polling
 
-Polling and reconciliation guarantee progress. Change Streams only wake sleeping workers after new event inserts.
+Polling and reconciliation are Pulse's only discovery, acquisition, and recovery mechanisms. Pulse
+does not open MongoDB Change Streams. Every process has one coordinator regardless of
+`workerCount`; use `pollIntervalMs` to balance idle query volume against delivery latency.
 
-| `changeStreams` | Behavior |
-| --- | --- |
-| `auto` | Enable on replica sets or sharded clusters; fall back to polling on standalone MongoDB. Default. |
-| `required` | Fail `awaitConnection()` unless MongoDB supports Change Streams. |
-| `disabled` | Use polling only. |
-
-If an active Change Stream fails, Pulse reports the error and attempts to open it again after `pollIntervalMs`. Missing a notification does not lose the event.
+Discovery leadership uses its own renewable lease, configured with `discoveryLockTimeoutMs` and
+defaulting to 10 seconds. This keeps leader failover prompt without forcing long-running handler
+locks to use the same short timeout. Temporary discovery-query errors do not voluntarily abandon
+the lease; fencing loss or expiry still allows another replica to take over safely.
 
 ## Collections and retention
 
@@ -217,7 +216,6 @@ During initialization, Pulse creates missing collections and named indexes, then
 - Existing data violates a required unique index.
 - A named Pulse index has incompatible keys, uniqueness, TTL, sparse, hidden, partial-filter, or
   collation configuration.
-- `changeStreams: 'required'` is used on an unsupported topology.
 
 Pulse never drops or replaces an incompatible index automatically. The error identifies the collection, index name, expected configuration, and actual configuration so an operator can make the migration explicitly.
 

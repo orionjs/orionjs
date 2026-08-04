@@ -105,7 +105,7 @@ order.created
      └── analytics     → one independent delivery
 ```
 
-Pulse writes the attempt as `pending` before it calls your handler. A renewable lease and UUIDv7 fencing token protect the attempt while it is running. Polling and reconciliation recover partial writes or dead workers; MongoDB Change Streams can reduce latency but are never the source of correctness.
+Pulse writes the attempt as `pending` before it calls your handler. A renewable lease and UUIDv7 fencing token protect the attempt while it is running. Polling and reconciliation discover events and recover partial writes or dead workers; Pulse never opens MongoDB Change Streams.
 
 ## Choose a consumer group
 

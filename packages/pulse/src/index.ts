@@ -6,7 +6,6 @@ export {
 } from './errors'
 export {connect, Pulse} from './Pulse'
 export type {
-  PulseChangeStreamsMode,
   PulseConnectOptions,
   PulseDeliveryMode,
   PulseEventHandler,

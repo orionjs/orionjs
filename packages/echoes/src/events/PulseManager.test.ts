@@ -33,10 +33,10 @@ it('publishes and consumes Echoes events through Pulse', async () => {
       pulse: {
         connectionString: mongo.getUri('echoes'),
         consumerGroup: 'billing',
-        changeStreams: 'disabled',
         pollIntervalMs: 10,
         maxPoolSize: 2,
         lockTimeoutMs: 1000,
+        discoveryLockTimeoutMs: 500,
         subscription: {
           offsetReset: 'latest',
         },
@@ -64,3 +64,20 @@ it('publishes and consumes Echoes events through Pulse', async () => {
     await mongo.stop()
   }
 }, 20_000)
+
+it('does not allow Change Streams through the Echoes Pulse configuration', async () => {
+  await expect(
+    startService({
+      echoes: {},
+      events: {
+        pulse: {
+          connectionString: 'mongodb://localhost/pulse',
+          consumerGroup: 'removed-change-streams-group',
+          changeStreams: 'auto',
+        },
+        consumeFrom: ['pulse'],
+        publishTo: 'pulse',
+      },
+    } as any),
+  ).rejects.toThrow('changeStreams is no longer supported')
+})

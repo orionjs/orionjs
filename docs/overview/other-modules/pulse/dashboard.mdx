@@ -126,6 +126,5 @@ bunx orion-pulse dashboard 'mongodb://localhost:27017/commerce'
 
 Reinstall or rebuild `@orion-js/pulse`. Published packages include `assets`, `dist`, and `dist-cli`; source-only checkouts must run the package build before using the CLI.
 
-### Change Streams are unavailable
-
-The dashboard does not use Change Streams. It queries the current collection state directly, regardless of the topology used by Pulse workers.
+The dashboard and Pulse workers query MongoDB directly through polling; neither requires or opens
+Change Streams.

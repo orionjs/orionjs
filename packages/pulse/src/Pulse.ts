@@ -1,11 +1,5 @@
 import {AsyncLocalStorage} from 'node:async_hooks'
-import {
-  type ChangeStream,
-  type Db,
-  type Filter,
-  MongoClient,
-  type MongoClientOptions,
-} from 'mongodb'
+import {type Db, type Filter, MongoClient, type MongoClientOptions} from 'mongodb'
 import {uuidv7} from 'uuidv7'
 import {PulseConfigurationError, PulseLockLostError} from './errors'
 import {HistoryApi} from './HistoryApi'
@@ -34,9 +28,10 @@ import type {
 const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000
 const DEFAULT_POLL_INTERVAL_MS = 3000
 const DEFAULT_WORKER_COUNT = 4
-// Four worker loops plus capacity for the Change Stream wake-up cursor.
+// Handler slots and coordinator work share a deliberately small pool.
 const DEFAULT_MAX_POOL_SIZE = 5
 const DEFAULT_LOCK_TIMEOUT_MS = 30_000
+const DEFAULT_DISCOVERY_LOCK_TIMEOUT_MS = 10_000
 const DISCOVERY_BATCH_SIZE = 100
 const RECONCILIATION_BATCH_SIZE = 25
 const MAX_DATE_MS = 8_640_000_000_000_000
@@ -46,13 +41,13 @@ interface ResolvedConnectOptions {
   consumerGroup: string
   databaseName?: string
   collectionPrefix: string
-  changeStreams: 'auto' | 'required' | 'disabled'
   eventRetentionMs: number | null
   historyRetentionMs: number | null
   pollIntervalMs: number
   workerCount: number
   maxPoolSize: number
   lockTimeoutMs: number
+  discoveryLockTimeoutMs: number
   onError: (error: Error) => void
 }
 
@@ -61,8 +56,22 @@ interface OrderedLease {
   lockToken: string
 }
 
-function sleep(ms: number) {
-  return new Promise<void>(resolve => setTimeout(resolve, ms))
+interface DiscoveryLease {
+  subscription: SubscriptionDocument
+  lockToken: string
+  lockedUntil: Date
+}
+
+interface ClaimedExecution {
+  local: LocalSubscription
+  delivery: DeliveryDocument
+  attempt: HistoryDocument
+  orderedLease?: OrderedLease
+}
+
+interface DiscoveryResult {
+  discovered: boolean
+  scanned: boolean
 }
 
 function isDuplicateKeyError(error: unknown) {
@@ -141,13 +150,17 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
   if (options.databaseName !== undefined) {
     assertNonEmptyString(options.databaseName, 'databaseName')
   }
+  if ('changeStreams' in options) {
+    throw new PulseConfigurationError(
+      'changeStreams is no longer supported. Pulse always uses polling and reconciliation.',
+    )
+  }
 
   const resolved: ResolvedConnectOptions = {
     connectionString: options.connectionString,
     consumerGroup: options.consumerGroup,
     databaseName: options.databaseName,
     collectionPrefix: options.collectionPrefix ?? 'orionjs.pulse',
-    changeStreams: options.changeStreams ?? 'auto',
     eventRetentionMs:
       options.eventRetentionMs === undefined ? WEEK_IN_MS : options.eventRetentionMs,
     historyRetentionMs:
@@ -156,6 +169,7 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
     workerCount: options.workerCount ?? DEFAULT_WORKER_COUNT,
     maxPoolSize: options.maxPoolSize ?? DEFAULT_MAX_POOL_SIZE,
     lockTimeoutMs: options.lockTimeoutMs ?? DEFAULT_LOCK_TIMEOUT_MS,
+    discoveryLockTimeoutMs: options.discoveryLockTimeoutMs ?? DEFAULT_DISCOVERY_LOCK_TIMEOUT_MS,
     onError:
       options.onError ??
       ((error: Error) => {
@@ -164,11 +178,11 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
   }
 
   assertNonEmptyString(resolved.collectionPrefix, 'collectionPrefix')
-  assertOneOf(resolved.changeStreams, ['auto', 'required', 'disabled'], 'changeStreams')
   assertPositiveNumber(resolved.pollIntervalMs, 'pollIntervalMs')
   assertPositiveInteger(resolved.workerCount, 'workerCount')
   assertPositiveInteger(resolved.maxPoolSize, 'maxPoolSize')
   assertPositiveNumber(resolved.lockTimeoutMs, 'lockTimeoutMs')
+  assertPositiveNumber(resolved.discoveryLockTimeoutMs, 'discoveryLockTimeoutMs')
   assertFunction(resolved.onError, 'onError')
   if (resolved.eventRetentionMs !== null) {
     assertPositiveNumber(resolved.eventRetentionMs, 'eventRetentionMs', true)
@@ -307,15 +321,19 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private readonly subscribingTopics = new Set<string>()
   private readonly wakeWaiters = new Set<() => void>()
   private readonly handlerContext = new AsyncLocalStorage<boolean>()
+  private readonly coordinatorId = uuidv7()
+  private readonly activeExecutions = new Set<Promise<void>>()
+  private readonly discoveryLeases = new Map<string, DiscoveryLease>()
+  private readonly discoveryRetryAt = new Map<string, number>()
   private localSubscriptionOffset = 0
   private db?: Db
   private collections?: PulseCollections
-  private workerPromises: Promise<void>[] = []
-  private changeStreamPromise?: Promise<void>
-  private changeStream?: ChangeStream
+  private coordinatorPromise?: Promise<void>
+  private discoveryRequestRevision = 0
+  private handledDiscoveryRequestRevision = 0
+  private nextDiscoveryAt = 0
   private running = true
   private closePromise?: Promise<void>
-  private changeStreamsEnabled = false
 
   constructor(options: PulseConnectOptions) {
     this.options = resolveOptions(options)
@@ -365,7 +383,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     if (!document) {
       throw new Error(`MongoDB did not return published event ${candidate._id}.`)
     }
-    this.wakeWorkers()
+    this.requestDiscovery()
 
     return {
       id: document._id,
@@ -408,7 +426,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         unsubscribed: false,
       }
       this.localSubscriptions.set(topic, local)
-      this.wakeWorkers()
+      this.discoveryRetryAt.delete(topic)
+      this.requestDiscovery()
 
       let unsubscribed = false
       const subscription: PulseSubscription = {
@@ -420,7 +439,9 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           if (this.localSubscriptions.get(topic) === local) {
             this.localSubscriptions.delete(topic)
           }
-          this.wakeWorkers()
+          await this.releaseDiscoveryLeaseForTopic(topic)
+          this.discoveryRetryAt.delete(topic)
+          this.wakeCoordinator()
         },
       }
 
@@ -438,7 +459,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   async close() {
     if (!this.closePromise) this.closePromise = this.closeInternal()
-    // Waiting for all workers from inside one of those workers would deadlock.
+    // Waiting for active execution from inside its own handler would deadlock.
     // Start the graceful close, then let the callback return and acknowledge.
     if (this.handlerContext.getStore()) return
     return this.closePromise
@@ -457,11 +478,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
       this.db = this.client.db(databaseName)
       this.collections = await createCollectionsAndIndexes(this.db, this.options.collectionPrefix)
-      this.changeStreamsEnabled = await this.resolveChangeStreamsSupport()
-      this.startWorkers()
-      if (this.changeStreamsEnabled) {
-        this.changeStreamPromise = this.runChangeStreamLoop()
-      }
+      this.coordinatorPromise = this.runCoordinator()
     } catch (error) {
       this.running = false
       await this.client.close().catch(() => undefined)
@@ -469,66 +486,59 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private async resolveChangeStreamsSupport() {
-    if (this.options.changeStreams === 'disabled') return false
-
-    const hello = await this.client.db('admin').command({hello: 1})
-    const supported = Boolean(hello.setName || hello.msg === 'isdbgrid')
-    if (!supported && this.options.changeStreams === 'required') {
-      throw new PulseConfigurationError(
-        'Change Streams require a MongoDB replica set or sharded cluster.',
-      )
-    }
-    return supported
-  }
-
-  private startWorkers() {
-    this.workerPromises = Array.from({length: this.options.workerCount}, () =>
-      this.runWorker(uuidv7()),
-    )
-  }
-
-  private async runWorker(workerId: string) {
+  private async runCoordinator() {
     while (this.running) {
       try {
-        const didWork = await this.workOnce(workerId)
-        if (!didWork) await this.waitForWork()
+        const didWork = await this.coordinateOnce()
+        if (!didWork) await this.waitForCoordinator()
       } catch (error) {
         this.reportError(error)
-        await this.waitForWork()
+        await this.waitForCoordinator()
       }
     }
   }
 
-  private async workOnce(workerId: string) {
+  private async coordinateOnce() {
     if (this.localSubscriptions.size === 0) return false
-    if (await this.reapOneExpiredAttempt()) return true
-    if (await this.reconcileDeliveries()) return true
-    if (await this.acquireAndExecuteOne(workerId)) return true
-    return await this.discoverEvents(workerId)
+
+    const requestedRevision = this.discoveryRequestRevision
+    const shouldScanEvents =
+      requestedRevision !== this.handledDiscoveryRequestRevision ||
+      Date.now() >= this.nextDiscoveryAt
+    const discovery = await this.discoverEvents(shouldScanEvents)
+    if (shouldScanEvents || discovery.scanned) {
+      this.handledDiscoveryRequestRevision = requestedRevision
+      this.nextDiscoveryAt = discovery.discovered ? 0 : Date.now() + this.options.pollIntervalMs
+    }
+
+    const leaderTopics = this.getDiscoveryLeaderTopics()
+    let reaped = 0
+    let reconciled = 0
+    if (leaderTopics.length > 0) {
+      reaped = await this.reapExpiredAttempts(leaderTopics)
+      reconciled = await this.reconcileDeliveries(leaderTopics)
+    }
+
+    let dispatched = false
+    while (this.running && this.activeExecutions.size < this.options.workerCount) {
+      const execution = await this.claimExecution(uuidv7())
+      if (!execution) break
+      this.startExecution(execution)
+      dispatched = true
+    }
+    return discovery.discovered || reaped > 0 || reconciled > 0 || dispatched
   }
 
-  private async discoverEvents(workerId: string) {
+  private async discoverEvents(scanEvents: boolean): Promise<DiscoveryResult> {
+    let discovered = false
+    let scanned = false
     for (const local of this.localSubscriptionsInFairOrder()) {
       if (local.unsubscribed) continue
-      const token = uuidv7()
-      const now = new Date()
-      const lockedUntil = new Date(now.getTime() + this.options.lockTimeoutMs)
-      const subscription = await this.getCollections().subscriptions.findOneAndUpdate(
-        {
-          _id: local.document._id,
-          $or: [{discoveryLockedUntil: {$exists: false}}, {discoveryLockedUntil: {$lte: now}}],
-        },
-        {
-          $set: {
-            discoveryLockOwner: workerId,
-            discoveryLockToken: token,
-            discoveryLockedUntil: lockedUntil,
-          },
-        },
-        {returnDocument: 'after'},
-      )
-      if (!subscription) continue
+      const wasLeader = this.discoveryLeases.has(local.document.topic)
+      const lease = await this.getOrRenewDiscoveryLease(local)
+      if (!lease || (!scanEvents && wasLeader)) continue
+      scanned = true
+      const subscription = lease.subscription
 
       try {
         const legacyCursorFilter = subscription.cursorCreatedAt
@@ -558,11 +568,12 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           }
           const lastLegacy = legacyEvents.at(-1)
           if (lastLegacy) {
-            await this.advanceDiscoveryCursor(subscription, token, {
+            await this.advanceDiscoveryCursor(lease, {
               cursorCreatedAt: lastLegacy.createdAt,
               cursorEventId: lastLegacy._id,
             })
-            return true
+            discovered = true
+            continue
           }
         }
 
@@ -588,7 +599,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           .toArray()
 
         if (sequencedEvents.length === 0) {
-          await this.releaseDiscoveryLease(subscription._id, token)
           continue
         }
 
@@ -598,20 +608,21 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
         const lastSequenced = sequencedEvents.at(-1)
         if (!lastSequenced?.sequence) {
-          await this.releaseDiscoveryLease(subscription._id, token)
           continue
         }
-        await this.advanceDiscoveryCursor(subscription, token, {
+        await this.advanceDiscoveryCursor(lease, {
           cursorSequence: lastSequenced.sequence,
           cursorSequenceEventId: lastSequenced._id,
         })
-        return true
+        discovered = true
       } catch (error) {
-        await this.releaseDiscoveryLease(subscription._id, token).catch(() => undefined)
+        if (error instanceof PulseLockLostError) {
+          await this.forgetDiscoveryLease(local.document.topic, lease)
+        }
         throw error
       }
     }
-    return false
+    return {discovered, scanned}
   }
 
   private async materializeDelivery(subscription: SubscriptionDocument, event: EventDocument) {
@@ -647,12 +658,10 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private async acquireAndExecuteOne(workerId: string) {
+  private async claimExecution(workerId: string): Promise<ClaimedExecution | undefined> {
     const fairSubscriptions = this.localSubscriptionsInFairOrder()
     for (const local of fairSubscriptions) {
       if (local.unsubscribed || !local.options.ordered || local.running > 0) continue
-      const lease = await this.acquireOrderedLease(local, workerId)
-      if (!lease) continue
 
       const delivery = await this.getCollections().deliveries.findOne(
         {
@@ -662,25 +671,33 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         },
         {sort: {eventCreatedAt: 1, eventId: 1}},
       )
-      if (!delivery) {
+      if (!delivery) continue
+
+      const candidate = await this.findClaimableAttemptForDelivery(delivery)
+      if (!candidate) continue
+
+      const lease = await this.acquireOrderedLease(local, workerId)
+      if (!lease) continue
+
+      if (this.localSubscriptions.get(local.document.topic) !== local || local.unsubscribed) {
         await this.releaseOrderedLease(lease)
         continue
       }
 
-      const attempt = await this.claimAttemptForDelivery(delivery, workerId)
+      let attempt: HistoryDocument | undefined
+      try {
+        attempt = await this.claimAttempt(candidate, workerId)
+      } catch (error) {
+        await this.releaseOrderedLease(lease).catch(releaseError => this.reportError(releaseError))
+        throw error
+      }
       if (!attempt) {
         await this.releaseOrderedLease(lease)
         continue
       }
 
       local.running++
-      try {
-        await this.executeAttempt(local, delivery, attempt, lease)
-      } finally {
-        local.running--
-        await this.releaseOrderedLease(lease).catch(error => this.reportError(error))
-      }
-      return true
+      return {local, delivery, attempt, orderedLease: lease}
     }
 
     const concurrent = fairSubscriptions.filter(
@@ -688,52 +705,85 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     )
 
     for (const local of concurrent) {
-      // Reserve the local slot before yielding to MongoDB. Multiple worker loops share
-      // this counter in one JS process, so this synchronous update is the concurrency fence.
       if (local.running >= local.options.maxConcurrency) continue
-      local.running++
-      try {
-        const now = new Date()
-        const lockToken = uuidv7()
-        const attempt = await this.getCollections().history.findOneAndUpdate(
-          {
-            consumerGroup: this.options.consumerGroup,
-            topic: local.document.topic,
-            status: 'pending',
-            nextAttemptAt: {$lte: now},
-            lockToken: {$exists: false},
+      const now = new Date()
+      const lockToken = uuidv7()
+      const attempt = await this.getCollections().history.findOneAndUpdate(
+        {
+          consumerGroup: this.options.consumerGroup,
+          topic: local.document.topic,
+          status: 'pending',
+          nextAttemptAt: {$lte: now},
+          lockToken: {$exists: false},
+        },
+        {
+          $set: {
+            startedAt: now,
+            lockOwner: workerId,
+            lockToken,
+            lockedAt: now,
+            lockedUntil: new Date(now.getTime() + this.options.lockTimeoutMs),
+            heartbeatAt: now,
           },
-          {
-            $set: {
-              startedAt: now,
-              lockOwner: workerId,
-              lockToken,
-              lockedAt: now,
-              lockedUntil: new Date(now.getTime() + this.options.lockTimeoutMs),
-              heartbeatAt: now,
-            },
-          },
-          {sort: {nextAttemptAt: 1, createdAt: 1}, returnDocument: 'after'},
-        )
-        if (!attempt) continue
+        },
+        {sort: {nextAttemptAt: 1, createdAt: 1}, returnDocument: 'after'},
+      )
+      if (!attempt) continue
 
-        const delivery = await this.getCollections().deliveries.findOne({_id: attempt.deliveryId})
-        const current = this.localSubscriptions.get(attempt.topic)
-        if (current !== local || local.unsubscribed || !delivery) {
-          await this.releaseUnstartedAttempt(attempt)
-          continue
-        }
-
-        await this.executeAttempt(local, delivery, attempt)
-        return true
-      } finally {
-        local.running--
+      const delivery = await this.getCollections().deliveries.findOne({_id: attempt.deliveryId})
+      const current = this.localSubscriptions.get(attempt.topic)
+      if (current !== local || local.unsubscribed || !delivery) {
+        await this.releaseUnstartedAttempt(attempt)
+        continue
       }
+      if (delivery.status !== 'pending') {
+        const history = await this.finishAttemptWithError(
+          attempt,
+          serializeError(
+            new Error('The delivery became terminal before this attempt could start.'),
+            'delivery_already_terminal',
+          ),
+        )
+        if (history) await this.applyTerminalRetention(delivery)
+        continue
+      }
+
+      local.running++
+      return {local, delivery, attempt}
     }
-    return false
+    return undefined
   }
 
-  private async claimAttemptForDelivery(delivery: DeliveryDocument, workerId: string) {
+  private startExecution(execution: ClaimedExecution) {
+    const promise = this.runExecution(execution)
+    this.activeExecutions.add(promise)
+    void promise.finally(() => {
+      this.activeExecutions.delete(promise)
+      this.wakeCoordinator()
+    })
+  }
+
+  private async runExecution(execution: ClaimedExecution) {
+    try {
+      await this.executeAttempt(
+        execution.local,
+        execution.delivery,
+        execution.attempt,
+        execution.orderedLease,
+      )
+    } catch (error) {
+      this.reportError(error)
+    } finally {
+      execution.local.running--
+      if (execution.orderedLease) {
+        await this.releaseOrderedLease(execution.orderedLease).catch(error =>
+          this.reportError(error),
+        )
+      }
+    }
+  }
+
+  private async findClaimableAttemptForDelivery(delivery: DeliveryDocument) {
     const now = new Date()
     const candidate = await this.getCollections().history.findOne(
       {deliveryId: delivery._id, status: 'pending'},
@@ -742,10 +792,20 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     if (!candidate || candidate.nextAttemptAt.getTime() > now.getTime() || candidate.lockToken) {
       return undefined
     }
+    return candidate
+  }
+
+  private async claimAttempt(candidate: HistoryDocument, workerId: string) {
+    const now = new Date()
     const lockToken = uuidv7()
     return (
       (await this.getCollections().history.findOneAndUpdate(
-        {_id: candidate._id, status: 'pending', lockToken: {$exists: false}},
+        {
+          _id: candidate._id,
+          status: 'pending',
+          nextAttemptAt: {$lte: now},
+          lockToken: {$exists: false},
+        },
         {
           $set: {
             startedAt: now,
@@ -932,7 +992,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       {_id: delivery._id, status: 'pending'},
       {$set: {updatedAt: new Date()}},
     )
-    this.wakeWorkers()
+    this.wakeCoordinator()
   }
 
   private async finishDeliveryWithSuccess(delivery: DeliveryDocument, history: HistoryDocument) {
@@ -951,7 +1011,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       {returnDocument: 'after'},
     )
     if (finalized) await this.applyTerminalRetention(finalized)
-    this.wakeWorkers()
+    this.wakeCoordinator()
   }
 
   private async finishDeliveryWithError(delivery: DeliveryDocument, history: HistoryDocument) {
@@ -971,7 +1031,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       {returnDocument: 'after'},
     )
     if (finalized) await this.applyTerminalRetention(finalized)
-    this.wakeWorkers()
+    this.wakeCoordinator()
   }
 
   private async applyTerminalRetention(delivery: DeliveryDocument) {
@@ -1013,7 +1073,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
     try {
       await this.getCollections().history.insertOne(document)
-      this.wakeWorkers()
+      this.wakeCoordinator()
       return document
     } catch (error) {
       if (!isDuplicateKeyError(error)) throw error
@@ -1021,54 +1081,57 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private async reapOneExpiredAttempt() {
-    const topics = [...this.localSubscriptions.keys()]
-    if (topics.length === 0) return false
-    const now = new Date()
-    const candidate = await this.getCollections().history.findOne(
-      {
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        status: 'pending',
-        lockedUntil: {$lte: now},
-        lockToken: {$exists: true},
-      },
-      {sort: {lockedUntil: 1}},
-    )
-    if (!candidate) return false
+  private async reapExpiredAttempts(topics: string[]) {
+    if (topics.length === 0) return 0
+    let reaped = 0
 
-    const endedAt = new Date()
-    const history = await this.getCollections().history.findOneAndUpdate(
-      {
-        _id: candidate._id,
-        status: 'pending',
-        lockToken: candidate.lockToken,
-        lockedUntil: {$lte: endedAt},
-      },
-      {
-        $set: {
-          status: 'error',
-          error: serializeError(
-            new Error('The worker lock expired before the attempt completed.'),
-            'worker_lost',
-          ),
-          endedAt,
-          durationMs: candidate.startedAt ? endedAt.getTime() - candidate.startedAt.getTime() : 0,
+    for (let inspected = 0; inspected < RECONCILIATION_BATCH_SIZE; inspected++) {
+      const now = new Date()
+      const candidate = await this.getCollections().history.findOne(
+        {
+          consumerGroup: this.options.consumerGroup,
+          topic: {$in: topics},
+          status: 'pending',
+          lockedUntil: {$lte: now},
+          lockToken: {$exists: true},
         },
-        $unset: {expiresAt: ''},
-      },
-      {returnDocument: 'after'},
-    )
-    if (!history) return false
+        {sort: {lockedUntil: 1}},
+      )
+      if (!candidate) break
 
-    const delivery = await this.getCollections().deliveries.findOne({_id: history.deliveryId})
-    if (delivery?.status === 'pending') await this.afterAttemptError(delivery, history)
-    return true
+      const endedAt = new Date()
+      const history = await this.getCollections().history.findOneAndUpdate(
+        {
+          _id: candidate._id,
+          status: 'pending',
+          lockToken: candidate.lockToken,
+          lockedUntil: {$lte: endedAt},
+        },
+        {
+          $set: {
+            status: 'error',
+            error: serializeError(
+              new Error('The worker lock expired before the attempt completed.'),
+              'worker_lost',
+            ),
+            endedAt,
+            durationMs: candidate.startedAt ? endedAt.getTime() - candidate.startedAt.getTime() : 0,
+          },
+          $unset: {expiresAt: ''},
+        },
+        {returnDocument: 'after'},
+      )
+      if (!history) continue
+
+      const delivery = await this.getCollections().deliveries.findOne({_id: history.deliveryId})
+      if (delivery?.status === 'pending') await this.afterAttemptError(delivery, history)
+      reaped++
+    }
+    return reaped
   }
 
-  private async reconcileDeliveries() {
-    const topics = [...this.localSubscriptions.keys()]
-    if (topics.length === 0) return false
+  private async reconcileDeliveries(topics: string[]) {
+    if (topics.length === 0) return 0
     const deliveryFilter: Filter<DeliveryDocument> = {
       consumerGroup: this.options.consumerGroup,
       topic: {$in: topics},
@@ -1090,10 +1153,12 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       .limit(RECONCILIATION_BATCH_SIZE)
       .toArray()
 
+    let reconciled = 0
     for (const delivery of deliveries) {
       if (delivery.status !== 'pending') {
         await this.applyTerminalRetention(delivery)
-        return true
+        reconciled++
+        continue
       }
 
       const successful = await this.getCollections().history.findOne(
@@ -1102,7 +1167,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       )
       if (successful) {
         await this.finishDeliveryWithSuccess(delivery, successful)
-        return true
+        reconciled++
+        continue
       }
 
       const latest = await this.getCollections().history.findOne(
@@ -1111,14 +1177,15 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       )
       if (!latest) {
         await this.ensureAttempt(delivery, 1, delivery.createdAt)
-        return true
+        reconciled++
+        continue
       }
       if (latest.status === 'error') {
         await this.afterAttemptError(delivery, latest)
-        return true
+        reconciled++
       }
     }
-    return false
+    return reconciled
   }
 
   private async acquireOrderedLease(
@@ -1157,9 +1224,94 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     )
   }
 
-  private async releaseDiscoveryLease(subscriptionId: string, lockToken: string) {
+  private async getOrRenewDiscoveryLease(
+    local: LocalSubscription,
+  ): Promise<DiscoveryLease | undefined> {
+    const topic = local.document.topic
+    const existing = this.discoveryLeases.get(topic)
+    const now = new Date()
+    const renewalWindow = Math.max(1, Math.floor(this.options.discoveryLockTimeoutMs / 3))
+
+    if (existing) {
+      if (
+        local.unsubscribed ||
+        this.localSubscriptions.get(topic) !== local ||
+        existing.subscription._id !== local.document._id
+      ) {
+        await this.releaseDiscoveryLeaseForTopic(topic)
+        return undefined
+      }
+      if (existing.lockedUntil.getTime() - now.getTime() > renewalWindow) return existing
+
+      const lockedUntil = new Date(now.getTime() + this.options.discoveryLockTimeoutMs)
+      const subscription = await this.getCollections().subscriptions.findOneAndUpdate(
+        {_id: existing.subscription._id, discoveryLockToken: existing.lockToken},
+        {
+          $set: {
+            discoveryLockOwner: this.coordinatorId,
+            discoveryLockedUntil: lockedUntil,
+          },
+        },
+        {returnDocument: 'after'},
+      )
+      if (subscription) {
+        existing.subscription = subscription
+        existing.lockedUntil = lockedUntil
+        return existing
+      }
+
+      await this.forgetDiscoveryLease(topic, existing)
+    }
+
+    if ((this.discoveryRetryAt.get(topic) ?? 0) > now.getTime()) return undefined
+
+    const lockToken = uuidv7()
+    const lockedUntil = new Date(now.getTime() + this.options.discoveryLockTimeoutMs)
+    const subscription = await this.getCollections().subscriptions.findOneAndUpdate(
+      {
+        _id: local.document._id,
+        $or: [{discoveryLockedUntil: {$exists: false}}, {discoveryLockedUntil: {$lte: now}}],
+      },
+      {
+        $set: {
+          discoveryLockOwner: this.coordinatorId,
+          discoveryLockToken: lockToken,
+          discoveryLockedUntil: lockedUntil,
+        },
+      },
+      {returnDocument: 'after'},
+    )
+    if (subscription) {
+      const lease = {subscription, lockToken, lockedUntil}
+      this.discoveryLeases.set(topic, lease)
+      this.discoveryRetryAt.delete(topic)
+      return lease
+    }
+
+    const observed = await this.getCollections().subscriptions.findOne(
+      {_id: local.document._id},
+      {projection: {discoveryLockedUntil: 1}},
+    )
+    const maximumRetryDelay = Math.max(
+      this.options.pollIntervalMs,
+      Math.min(this.options.discoveryLockTimeoutMs / 2, this.options.pollIntervalMs * 5),
+    )
+    const observedExpiry = observed?.discoveryLockedUntil?.getTime() ?? now.getTime()
+    const retryBase = Math.min(observedExpiry, now.getTime() + maximumRetryDelay)
+    const jitter = Math.floor(Math.random() * this.options.pollIntervalMs)
+    this.discoveryRetryAt.set(
+      topic,
+      Math.max(now.getTime() + this.options.pollIntervalMs, retryBase) + jitter,
+    )
+    return undefined
+  }
+
+  private async releaseDiscoveryLeaseForTopic(topic: string) {
+    const lease = this.discoveryLeases.get(topic)
+    if (!lease) return
+    this.discoveryLeases.delete(topic)
     await this.getCollections().subscriptions.updateOne(
-      {_id: subscriptionId, discoveryLockToken: lockToken},
+      {_id: lease.subscription._id, discoveryLockToken: lease.lockToken},
       {
         $unset: {
           discoveryLockOwner: '',
@@ -1170,33 +1322,42 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     )
   }
 
+  private async forgetDiscoveryLease(topic: string, lease: DiscoveryLease) {
+    if (this.discoveryLeases.get(topic) !== lease) return
+    this.discoveryLeases.delete(topic)
+    this.discoveryRetryAt.set(topic, Date.now() + this.options.pollIntervalMs)
+  }
+
+  private getDiscoveryLeaderTopics() {
+    return [...this.discoveryLeases.keys()].filter(topic => this.localSubscriptions.has(topic))
+  }
+
   private async advanceDiscoveryCursor(
-    subscription: SubscriptionDocument,
-    lockToken: string,
+    lease: DiscoveryLease,
     cursor: Pick<
       SubscriptionDocument,
       'cursorCreatedAt' | 'cursorEventId' | 'cursorSequence' | 'cursorSequenceEventId'
     >,
   ) {
-    const result = await this.getCollections().subscriptions.updateOne(
-      {_id: subscription._id, discoveryLockToken: lockToken},
+    const lockedUntil = new Date(Date.now() + this.options.discoveryLockTimeoutMs)
+    const subscription = await this.getCollections().subscriptions.findOneAndUpdate(
+      {_id: lease.subscription._id, discoveryLockToken: lease.lockToken},
       {
         $set: {
           ...cursor,
           updatedAt: new Date(),
-        },
-        $unset: {
-          discoveryLockOwner: '',
-          discoveryLockToken: '',
-          discoveryLockedUntil: '',
+          discoveryLockedUntil: lockedUntil,
         },
       },
+      {returnDocument: 'after'},
     )
-    if (result.modifiedCount === 0) {
+    if (!subscription) {
       throw new PulseLockLostError(
-        `Discovery lease was lost for ${subscription.consumerGroup}/${subscription.topic}.`,
+        `Discovery lease was lost for ${lease.subscription.consumerGroup}/${lease.subscription.topic}.`,
       )
     }
+    lease.subscription = subscription
+    lease.lockedUntil = lockedUntil
   }
 
   private async releaseUnstartedAttempt(attempt: HistoryDocument) {
@@ -1313,30 +1474,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     return [...subscriptions.slice(offset), ...subscriptions.slice(0, offset)]
   }
 
-  private async runChangeStreamLoop() {
-    while (this.running && this.changeStreamsEnabled) {
-      try {
-        this.changeStream = this.getCollections().events.watch(
-          [{$match: {operationType: 'insert'}}],
-          {maxAwaitTimeMS: this.options.pollIntervalMs},
-        )
-        for await (const _change of this.changeStream) {
-          if (!this.running) break
-          this.wakeWorkers()
-        }
-      } catch (error) {
-        if (this.running) {
-          this.reportError(error)
-          await sleep(this.options.pollIntervalMs)
-        }
-      } finally {
-        await this.changeStream?.close().catch(() => undefined)
-        this.changeStream = undefined
-      }
-    }
-  }
-
-  private waitForWork() {
+  private waitForCoordinator() {
     if (!this.running) return Promise.resolve()
     return new Promise<void>(resolve => {
       let done = false
@@ -1347,14 +1485,24 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         this.wakeWaiters.delete(finish)
         resolve()
       }
-      const timer = setTimeout(finish, this.options.pollIntervalMs)
+      const leaseRenewalInterval = Math.max(1, Math.floor(this.options.discoveryLockTimeoutMs / 3))
+      const waitMs =
+        this.discoveryLeases.size === 0
+          ? this.options.pollIntervalMs
+          : Math.min(this.options.pollIntervalMs, leaseRenewalInterval)
+      const timer = setTimeout(finish, waitMs)
       timer.unref?.()
       this.wakeWaiters.add(finish)
     })
   }
 
-  private wakeWorkers() {
+  private wakeCoordinator() {
     for (const wake of [...this.wakeWaiters]) wake()
+  }
+
+  private requestDiscovery() {
+    this.discoveryRequestRevision++
+    this.wakeCoordinator()
   }
 
   private reportError(error: unknown) {
@@ -1373,11 +1521,13 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   private async closeInternal() {
     this.running = false
-    this.wakeWorkers()
-    await this.changeStream?.close().catch(() => undefined)
+    this.wakeCoordinator()
     await this.readyPromise.catch(() => undefined)
-    await Promise.allSettled(this.workerPromises)
-    await this.changeStreamPromise?.catch(() => undefined)
+    await this.coordinatorPromise?.catch(() => undefined)
+    await Promise.allSettled(
+      [...this.discoveryLeases.keys()].map(topic => this.releaseDiscoveryLeaseForTopic(topic)),
+    )
+    await Promise.allSettled([...this.activeExecutions])
     await this.client.close()
   }
 }

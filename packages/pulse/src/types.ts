@@ -3,7 +3,6 @@ import type {Document, Timestamp} from 'mongodb'
 export type PulseEventMap = Record<string, unknown>
 export type PulseTopic<TEvents extends PulseEventMap> = Extract<keyof TEvents, string>
 export type PulseHeaders = Record<string, string>
-export type PulseChangeStreamsMode = 'auto' | 'required' | 'disabled'
 export type PulseDeliveryMode = 'at-least-once' | 'at-most-once'
 export type PulseOffsetReset = 'latest' | 'earliest'
 export type PulseHistoryStatus = 'pending' | 'success' | 'error'
@@ -14,13 +13,13 @@ export interface PulseConnectOptions {
   consumerGroup: string
   databaseName?: string
   collectionPrefix?: string
-  changeStreams?: PulseChangeStreamsMode
   eventRetentionMs?: number | null
   historyRetentionMs?: number | null
   pollIntervalMs?: number
   workerCount?: number
   maxPoolSize?: number
   lockTimeoutMs?: number
+  discoveryLockTimeoutMs?: number
   onError?: (error: Error) => void
 }
 

@@ -1,6 +1,6 @@
 # @orion-js/pulse
 
-Pulse is a distributed, recoverable pub/sub system backed only by MongoDB. It supports consumer groups, ordered or concurrent delivery, retries, durable execution history, polling recovery, and optional MongoDB Change Streams.
+Pulse is a distributed, recoverable pub/sub system backed only by MongoDB. It supports consumer groups, ordered or concurrent delivery, retries, durable execution history, polling, and crash recovery.
 
 Pulse has no runtime dependency on OrionJS. MongoDB is a peer dependency, and every MongoDB document ID is generated as a UUIDv7 string.
 
@@ -116,14 +116,14 @@ Dashboard options:
 | `consumerGroup` | required | Replicas sharing this value compete for each delivery. |
 | `databaseName` | database in URI | MongoDB database. Pulse fails if neither is present. |
 | `collectionPrefix` | `orionjs.pulse` | Prefix for the four Pulse collections. |
-| `changeStreams` | `auto` | `auto`, `required`, or `disabled`. Polling always remains enabled. |
 | `eventRetentionMs` | 7 days | Event retention, or `null` to disable expiration. |
 | `historyRetentionMs` | 7 days | Completed delivery/history retention, or `null`. |
 | `pollIntervalMs` | 3000 | Polling and reconciliation interval. |
-| `workerCount` | 4 | Maximum worker loops in this process. |
+| `workerCount` | 4 | Maximum concurrent handler executions in this process. |
 | `maxPoolSize` | 5 | Maximum MongoDB application connections per server for this Pulse client. |
 | `lockTimeoutMs` | 30000 | Distributed lease duration. Active handlers renew it automatically. |
-| `onError` | `console.error` | Receives internal worker and Change Stream errors. |
+| `discoveryLockTimeoutMs` | 10000 | Discovery-leader lease duration. Controls replica failover independently from handler locks. |
+| `onError` | `console.error` | Receives internal coordinator and worker errors. |
 
 Connection initialization creates and validates every collection index automatically, including TTL indexes. `awaitConnection()`, `publish()`, `subscribe()`, and history reads do not resolve until those indexes are ready.
 
@@ -131,6 +131,14 @@ Pulse intentionally lowers the MongoDB driver's `maxPoolSize` default from 100 t
 keeps `minPoolSize` at 0, so it creates application connections on demand instead of opening all
 five eagerly. Increase `maxPoolSize` only when a replica needs more concurrent MongoDB operations;
 requests wait for an available connection when the pool is full.
+
+Each Pulse process has one MongoDB coordinator regardless of `workerCount`. The coordinator performs
+polling, recovery, and local dispatch; the worker slots only execute claimed handlers. Replicas hold
+a renewable discovery lease per `consumerGroup + topic`, so one leader advances the durable cursor
+and materializes deliveries while every replica remains available to execute them. Discovery uses
+bounded polling only; Pulse does not open MongoDB Change Streams or persistent event cursors.
+Discovery leases default to 10 seconds so a dead leader can be replaced promptly without shortening
+the separate lock used by long-running handlers.
 
 New events also receive an internal MongoDB BSON timestamp during publication. Pulse uses this
 server-assigned sequence for durable discovery, so concurrent publishers and skewed application
@@ -188,6 +196,12 @@ for (const attempt of result.records) {
 
 `history.find()` supports `topic`, `eventId`, `consumerGroup`, `status`, `lockState`, `from`, `to`, `cursor`, and `limit`. Lock state is `queued`, `active`, or `expired` for pending attempts.
 
-## MongoDB topology
+## Polling
 
-Polling and reconciliation are the source of correctness and work with standalone MongoDB. In `auto` mode, Pulse enables Change Streams on replica sets and sharded clusters to reduce delivery latency. Change Streams only wake workers; missed notifications do not lose events.
+Polling and reconciliation are the only discovery and recovery mechanisms. Pulse works with
+standalone MongoDB, replica sets, and sharded clusters without opening Change Streams. Tune
+`pollIntervalMs` to balance idle query volume and delivery latency.
+
+`changeStreams` is not a supported connection option. Remove it from existing configurations
+before upgrading. Pulse rejects the legacy field at startup, including `changeStreams: 'disabled'`,
+so a stale deployment cannot suggest that a Change Stream mode is still available.

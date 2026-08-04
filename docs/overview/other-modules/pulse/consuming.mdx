@@ -184,7 +184,7 @@ await subscription.unsubscribe()
 await pulse.close()
 ```
 
-`getSubscriptions()` is synchronous and reports local subscriptions. `unsubscribe()` is idempotent and preserves the durable MongoDB subscription. `close()` stops workers and Change Streams, waits for their loops to settle, and closes the MongoDB client.
+`getSubscriptions()` is synchronous and reports local subscriptions. `unsubscribe()` is idempotent and preserves the durable MongoDB subscription. `close()` stops coordinator and worker execution, waits for background work to settle, and closes the MongoDB client.
 
 If a handler itself calls and awaits `close()`, Pulse initiates shutdown but lets that call return
 so the current attempt can finish and be acknowledged. Call `close()` again from the process
