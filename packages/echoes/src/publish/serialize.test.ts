@@ -3,6 +3,29 @@ import serializeJavascript from 'serialize-javascript'
 import deserialize from '../echo/deserialize'
 import serializeEchoesPayload from './serialize'
 
+class PrivateModel {
+  readonly #status: string
+
+  constructor(
+    public readonly _id: string,
+    status: string,
+  ) {
+    this.#status = status
+  }
+
+  update() {}
+
+  toJSON() {
+    return {
+      _id: this._id,
+      status: this.#status,
+      nested: {
+        resolve() {},
+      },
+    }
+  }
+}
+
 function createOrder(id = 'order-id') {
   return {
     _id: id,
@@ -50,6 +73,7 @@ function createRepresentativePayload() {
       first: order,
       second: order,
     },
+    privateModel: new PrivateModel('private-model', 'ready'),
   }
 }
 
@@ -151,6 +175,7 @@ describe('serializeEchoesPayload', () => {
   it('preserves the existing supported runtime types and sparse arrays', () => {
     const payload = createRepresentativePayload()
     const sparseFunction = payload.sparse[3]
+    const privateModelUpdate = payload.privateModel.update
     const result = deserialize(serializeEchoesPayload(payload))
 
     expect(result.date).toEqual(new Date('2026-08-04T12:00:00.000Z'))
@@ -179,6 +204,12 @@ describe('serializeEchoesPayload', () => {
     // are intentionally kept unchanged.
     expect(result.buffer).toEqual({type: 'Buffer', data: [0, 127, 255]})
     expect(result.typedArray).toEqual({0: 1, 1: 256, 2: 65535})
+    expect(payload.privateModel.update).toBe(privateModelUpdate)
+    expect(result.privateModel).toEqual({
+      _id: 'private-model',
+      status: 'ready',
+      nested: {},
+    })
   })
 
   it('preserves prototypes and repeated references while cloning', () => {

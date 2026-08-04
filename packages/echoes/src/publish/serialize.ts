@@ -27,6 +27,20 @@ function copyOwnProperties(
   }
 }
 
+function preserveCustomToJSON(source: object, target: object, references: WeakMap<object, any>) {
+  const toJSON = (source as any).toJSON
+  if (typeof toJSON !== 'function') return
+
+  Object.defineProperty(target, 'toJSON', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value(key: string) {
+      return cloneForSerialization(toJSON.call(source, key), references)
+    },
+  })
+}
+
 function cloneArrayBufferView<T extends ArrayBufferView>(
   value: T,
   references: WeakMap<object, any>,
@@ -149,6 +163,7 @@ function cloneForSerialization<T>(value: T, references = new WeakMap<object, any
   const clone = Object.create(Object.getPrototypeOf(value))
   references.set(source, clone)
   copyOwnProperties(value, clone, references)
+  preserveCustomToJSON(source, clone, references)
   return clone
 }
 
