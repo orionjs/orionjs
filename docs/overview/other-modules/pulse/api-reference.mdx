@@ -181,7 +181,7 @@ The names use `collectionPrefix`, which defaults to `orionjs.pulse`:
 | Suffix | Default collection | Purpose |
 | --- | --- | --- |
 | `.events` | `orionjs.pulse.events` | Immutable published events. |
-| `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and leases. |
+| `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and discovery/ordered leases. |
 | `.deliveries` | `orionjs.pulse.deliveries` | Logical group outcome for an event. |
 | `.history` | `orionjs.pulse.history` | Individual execution attempts and their locks. |
 
@@ -197,6 +197,7 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | --- | --- | --- |
 | `pulse_events_topic_created_id` | `{topic: 1, createdAt: 1, _id: 1}` | — |
 | `pulse_events_topic_sequence_id` | `{topic: 1, sequence: 1, _id: 1}` | — |
+| `pulse_events_legacy_topic_created_id` | `{topic: 1, sequence: 1, createdAt: 1, _id: 1}` | — |
 | `pulse_events_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
 
 ### Subscriptions
@@ -213,6 +214,7 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | --- | --- | --- |
 | `pulse_deliveries_group_event_unique` | `{consumerGroup: 1, eventId: 1}` | Unique |
 | `pulse_deliveries_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1}` | — |
+| `pulse_deliveries_sequence_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1}` | — |
 | `pulse_deliveries_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
 
 ### History
@@ -223,6 +225,7 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | `pulse_history_group_topic_created` | `{consumerGroup: 1, topic: 1, createdAt: -1, _id: -1}` | — |
 | `pulse_history_event` | `{eventId: 1, createdAt: -1}` | — |
 | `pulse_history_dead_locks` | `{status: 1, lockedUntil: 1}` | — |
+| `pulse_history_group_dead_locks` | `{consumerGroup: 1, status: 1, lockedUntil: 1}` | — |
 | `pulse_history_pending_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1}` | — |
 | `pulse_history_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
 

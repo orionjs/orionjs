@@ -133,18 +133,28 @@ five eagerly. Increase `maxPoolSize` only when a replica needs more concurrent M
 requests wait for an available connection when the pool is full.
 
 Each Pulse process has one MongoDB coordinator regardless of `workerCount`. The coordinator performs
-polling, recovery, and local dispatch; the worker slots only execute claimed handlers. Replicas hold
-a renewable discovery lease per `consumerGroup + topic`, so one leader advances the durable cursor
-and materializes deliveries while every replica remains available to execute them. Discovery uses
-bounded polling only; Pulse does not open MongoDB Change Streams or persistent event cursors.
+one work-poll query across all locally subscribed topics, then distributes returned candidates to
+the worker slots. Replicas share renewable discovery leases per `consumerGroup + topic`; every
+process acquires and renews its leases in bulk and discovers all topics it owns with one aggregate
+query. Idle polling therefore scales with processes, not processes multiplied by topics, while
+replicas with intentionally different topic sets remain safe. Discovery uses bounded polling only;
+Pulse does not open MongoDB Change Streams or persistent event cursors.
 Discovery leases default to 10 seconds so a dead leader can be replaced promptly without shortening
 the separate lock used by long-running handlers.
 
+Discovery cursor writes carry the topic's fencing token. A stale reader that finishes a query after
+losing leadership cannot move the cursor; its idempotent delivery writes can safely be repeated by
+the replacement reader.
+
 New events also receive an internal MongoDB BSON timestamp during publication. Pulse uses this
 server-assigned sequence for durable discovery, so concurrent publishers and skewed application
-clocks cannot leave an event behind an advanced subscription cursor. Legacy events without the
-sequence remain readable through an independent `createdAt + _id` cursor while old and new
-publishers coexist.
+clocks cannot leave an event behind an advanced subscription cursor. Ordered consumers use that
+same sequence; legacy events without one fall back to `createdAt + eventId` and remain readable
+through an independent cursor while old and new publishers coexist.
+
+Subscriptions created before Pulse 4.4.3 may initially have only the legacy cursor. Keep completed
+delivery history at least as long as retained events during that one-time upgrade scan. If an old
+delivery row has already expired, at-least-once semantics allow the retained event to run again.
 
 ## Subscription options
 

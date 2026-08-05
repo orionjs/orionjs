@@ -2,7 +2,14 @@ import {afterAll, afterEach, beforeAll, describe, expect, it, setDefaultTimeout}
 import {type ChildProcess, spawn} from 'node:child_process'
 import {join} from 'node:path'
 import {fileURLToPath} from 'node:url'
-import {MongoClient, Timestamp} from 'mongodb'
+import {
+  type Collection,
+  type CollectionOptions,
+  type Db,
+  type Document,
+  MongoClient,
+  Timestamp,
+} from 'mongodb'
 import {MongoMemoryServer} from 'mongodb-memory-server'
 import {uuidv7} from 'uuidv7'
 import {connect, type Pulse, PulseConfigurationError, PulseIndexError} from './index'
@@ -15,6 +22,13 @@ let standalone: MongoMemoryServer
 const pulseClients: Array<Pulse<any>> = []
 const mongoClients: MongoClient[] = []
 const childProcesses = new Set<ChildProcess>()
+
+type TestDatabase = Omit<Db, 'collection'> & {
+  collection<TSchema extends Document = any>(
+    name: string,
+    options?: CollectionOptions,
+  ): Collection<TSchema>
+}
 
 function uniqueName(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`
@@ -33,10 +47,20 @@ function getRuntimeState(pulse: Pulse<any>) {
     coordinatorPromise?: Promise<void>
     activeExecutions: Set<Promise<void>>
     discoveryLeases: Map<string, unknown>
+    discoveryRefreshAt: number
+    localSubscriptions: Map<string, {running: number}>
+    running: boolean
     collections: {
       events: any
       subscriptions: any
+      deliveries: any
+      history: any
     }
+    wakeCoordinator(): void
+    discoverEvents(scanEvents: boolean): Promise<{discovered: boolean; scanned: boolean}>
+    refreshDiscoveryLeases(): Promise<void>
+    findExecutionCandidates(capacity: number): Promise<unknown[]>
+    claimExecutions(capacity: number): Promise<unknown[]>
     reapExpiredAttempts(topics: string[]): Promise<number>
     reconcileDeliveries(topics: string[]): Promise<number>
   }
@@ -55,6 +79,15 @@ async function waitFor(
     }
     await new Promise(resolve => setTimeout(resolve, intervalMs))
   }
+}
+
+function collectNumericFields(value: unknown, field: string, result: number[] = []) {
+  if (!value || typeof value !== 'object') return result
+  for (const [key, nested] of Object.entries(value)) {
+    if (key === field && typeof nested === 'number') result.push(nested)
+    else collectNumericFields(nested, field, result)
+  }
+  return result
 }
 
 function createPulse(
@@ -82,7 +115,7 @@ async function rawDatabase(databaseName: string) {
   const client = new MongoClient(standalone.getUri(databaseName))
   mongoClients.push(client)
   await client.connect()
-  return client.db(databaseName)
+  return client.db(databaseName) as TestDatabase
 }
 
 beforeAll(async () => {
@@ -147,6 +180,10 @@ describe('Pulse persistence', () => {
           key: {topic: 1, sequence: 1, _id: 1},
         },
         {
+          name: 'pulse_events_legacy_topic_created_id',
+          key: {topic: 1, sequence: 1, createdAt: 1, _id: 1},
+        },
+        {
           name: 'pulse_events_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
@@ -178,6 +215,10 @@ describe('Pulse persistence', () => {
           key: {consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1},
         },
         {
+          name: 'pulse_deliveries_sequence_acquisition',
+          key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
+        },
+        {
           name: 'pulse_deliveries_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
@@ -195,6 +236,10 @@ describe('Pulse persistence', () => {
         },
         {name: 'pulse_history_event', key: {eventId: 1, createdAt: -1}},
         {name: 'pulse_history_dead_locks', key: {status: 1, lockedUntil: 1}},
+        {
+          name: 'pulse_history_group_dead_locks',
+          key: {consumerGroup: 1, status: 1, lockedUntil: 1},
+        },
         {
           name: 'pulse_history_pending_acquisition',
           key: {consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1},
@@ -245,6 +290,177 @@ describe('Pulse persistence', () => {
 
     const pulse = createPulse(databaseName, 'bad-index-group')
     await expect(pulse.awaitConnection()).rejects.toBeInstanceOf(PulseIndexError)
+  })
+
+  it('uses indexed, non-blocking sorts for every hot polling branch', async () => {
+    const databaseName = uniqueName('poll_explain')
+    const consumerGroup = 'poll-explain-group'
+    const topic = 'poll-explain.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const db = await rawDatabase(databaseName)
+    const now = new Date()
+
+    await db.collection<any>('orionjs.pulse.events').insertMany([
+      ...Array.from({length: 500}, (_, index) => ({
+        _id: uuidv7(),
+        topic,
+        data: {index},
+        createdAt: new Date(now.getTime() + index),
+        sequence: new Timestamp({t: 1, i: index}),
+      })),
+      {_id: uuidv7(), topic, data: {legacy: true}, createdAt: now},
+    ])
+    const deliveries = Array.from({length: 500}, (_, index) => ({
+      _id: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic,
+      eventCreatedAt: new Date(now.getTime() + index),
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    }))
+    await db.collection<any>('orionjs.pulse.deliveries').insertMany(deliveries)
+    await db.collection<any>('orionjs.pulse.history').insertMany(
+      deliveries.map((delivery, index) => ({
+        _id: uuidv7(),
+        deliveryId: delivery._id,
+        eventId: delivery.eventId,
+        consumerGroup,
+        topic,
+        attempt: 1,
+        status: 'pending',
+        createdAt: new Date(now.getTime() + index),
+        nextAttemptAt: now,
+      })),
+    )
+
+    const legacyExplain = await db
+      .collection('orionjs.pulse.events')
+      .find({topic, sequence: {$exists: false}, createdAt: {$gte: now}})
+      .sort({createdAt: 1, _id: 1})
+      .limit(100)
+      .explain('executionStats')
+    const deliveryExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({consumerGroup, topic, status: 'pending'})
+      .sort({eventCreatedAt: 1, eventId: 1})
+      .limit(1)
+      .explain('executionStats')
+    const historyExplain = await db
+      .collection('orionjs.pulse.history')
+      .find({
+        consumerGroup,
+        topic,
+        status: 'pending',
+        nextAttemptAt: {$lte: now},
+        lockToken: {$exists: false},
+      })
+      .sort({nextAttemptAt: 1, createdAt: 1})
+      .limit(16)
+      .explain('executionStats')
+    const deadLockExplain = await db
+      .collection('orionjs.pulse.history')
+      .find({
+        consumerGroup,
+        topic: {$in: [topic]},
+        status: 'pending',
+        lockedUntil: {$lte: now},
+        lockToken: {$exists: true},
+      })
+      .sort({lockedUntil: 1})
+      .limit(25)
+      .explain('executionStats')
+
+    const assertions: Array<[unknown, string]> = [
+      [legacyExplain, 'pulse_events_legacy_topic_created_id'],
+      [deliveryExplain, 'pulse_deliveries_acquisition'],
+      [historyExplain, 'pulse_history_pending_acquisition'],
+      [deadLockExplain, 'pulse_history_group_dead_locks'],
+    ]
+    for (const [explain, expectedIndex] of assertions) {
+      const winningPlan = JSON.stringify((explain as any).queryPlanner.winningPlan)
+      expect(winningPlan).toContain(expectedIndex)
+      expect(winningPlan).not.toContain('COLLSCAN')
+      expect(winningPlan).not.toContain('"stage":"SORT"')
+    }
+  })
+
+  it('keeps the real aggregate pipelines bounded at late cursors', async () => {
+    const databaseName = uniqueName('real_pipeline_explain')
+    const consumerGroup = 'real-pipeline-explain-group'
+    const topic = 'real-pipeline-explain.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {
+      pollIntervalMs: 20,
+      discoveryLockTimeoutMs: 1_000,
+    })
+    await pulse.awaitConnection()
+    const db = await rawDatabase(databaseName)
+    const base = Date.now() - 10_000
+    await db.collection<any>('orionjs.pulse.events').insertMany([
+      ...Array.from({length: 2_000}, (_, index) => ({
+        _id: uuidv7(),
+        topic,
+        data: {index},
+        createdAt: new Date(base + index),
+        sequence: new Timestamp({t: 40, i: index}),
+      })),
+      ...Array.from({length: 2_000}, (_, index) => ({
+        _id: uuidv7(),
+        topic,
+        data: {index},
+        createdAt: new Date(base + index),
+      })),
+    ])
+    await pulse.subscribe(topic, async () => {}, {ordered: true, offsetReset: 'latest'})
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const originalEventsAggregate = runtime.collections.events.aggregate.bind(
+      runtime.collections.events,
+    )
+    let discoveryPipeline: any[] | undefined
+    runtime.collections.events.aggregate = (...args: any[]) => {
+      discoveryPipeline = args[0]
+      return originalEventsAggregate(...args)
+    }
+    await runtime.discoverEvents(true)
+    if (!discoveryPipeline) throw new Error('Discovery did not issue an aggregate pipeline.')
+    const discoveryExplain = await db
+      .collection('orionjs.pulse.events')
+      .aggregate(discoveryPipeline)
+      .explain('executionStats')
+    const discoveryPlan = JSON.stringify(discoveryExplain)
+    expect(discoveryPlan).toContain('pulse_events_topic_sequence_id')
+    expect(discoveryPlan).toContain('pulse_events_legacy_topic_created_id')
+    expect(discoveryPlan).not.toContain('COLLSCAN')
+    expect(collectNumericFields(discoveryExplain, 'totalKeysExamined').length).toBeGreaterThan(0)
+    expect(Math.max(...collectNumericFields(discoveryExplain, 'totalKeysExamined'))).toBeLessThan(
+      25,
+    )
+
+    const originalDeliveriesAggregate = runtime.collections.deliveries.aggregate.bind(
+      runtime.collections.deliveries,
+    )
+    let workPipeline: any[] | undefined
+    runtime.collections.deliveries.aggregate = (...args: any[]) => {
+      workPipeline = args[0]
+      return originalDeliveriesAggregate(...args)
+    }
+    await runtime.findExecutionCandidates(1)
+    if (!workPipeline) throw new Error('Work polling did not issue an aggregate pipeline.')
+    const workExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .aggregate(workPipeline)
+      .explain('executionStats')
+    const workPlan = JSON.stringify(workExplain)
+    expect(workPlan).toContain('pulse_deliveries_acquisition')
+    expect(workPlan).toContain('pulse_deliveries_sequence_acquisition')
+    expect(workPlan).not.toContain('COLLSCAN')
   })
 
   it('rejects named indexes whose semantic options weaken or alter uniqueness', async () => {
@@ -384,10 +600,10 @@ describe('Pulse delivery semantics', () => {
     }
   })
 
-  it('elects one discovery reader across competing replicas', async () => {
+  it('elects one discovery reader per consumer group across topics and replicas', async () => {
     const databaseName = uniqueName('single_reader')
     const consumerGroup = 'single-reader-group'
-    const topic = 'single-reader.topic'
+    const topics = ['single-reader.a', 'single-reader.b', 'single-reader.c']
     const replicas = Array.from({length: 8}, () =>
       createPulse(databaseName, consumerGroup, {
         workerCount: 4,
@@ -399,23 +615,28 @@ describe('Pulse delivery semantics', () => {
     await Promise.all(replicas.map(replica => replica.awaitConnection()))
     const subscriptions = await Promise.all(
       replicas.map(replica =>
-        replica.subscribe(topic, async () => {}, {
-          ordered: false,
-          offsetReset: 'latest',
-          maxConcurrency: 4,
-        }),
+        Promise.all(
+          topics.map(topic =>
+            replica.subscribe(topic, async () => {}, {
+              ordered: false,
+              offsetReset: 'latest',
+              maxConcurrency: 4,
+            }),
+          ),
+        ),
       ),
     )
     const states = replicas.map(getRuntimeState)
 
     await waitFor(
-      () => states.reduce((total, state) => total + state.discoveryLeases.size, 0) === 1,
+      () =>
+        states.reduce((total, state) => total + state.discoveryLeases.size, 0) === topics.length,
     )
 
     const db = await rawDatabase(databaseName)
     const initialLease = await db.collection('orionjs.pulse.subscriptions').findOne({
       consumerGroup,
-      topic,
+      topic: topics[0],
     })
     const initialToken = initialLease?.discoveryLockToken
     expect(initialToken).toMatch(uuidV7Pattern)
@@ -423,23 +644,23 @@ describe('Pulse delivery semantics', () => {
     await new Promise(resolve => setTimeout(resolve, 140))
     const renewedLease = await db.collection('orionjs.pulse.subscriptions').findOne({
       consumerGroup,
-      topic,
+      topic: topics[0],
     })
     expect(renewedLease?.discoveryLockToken).toBe(initialToken)
     expect(renewedLease?.discoveryLockedUntil.getTime()).toBeGreaterThan(Date.now())
 
-    const leaderIndex = states.findIndex(state => state.discoveryLeases.size === 1)
+    const leaderIndex = states.findIndex(state => state.discoveryLeases.has(topics[0]))
     expect(leaderIndex).toBeGreaterThanOrEqual(0)
-    await subscriptions[leaderIndex].unsubscribe()
+    await subscriptions[leaderIndex][0].unsubscribe()
 
     await waitFor(
       () =>
-        states.reduce((total, state) => total + state.discoveryLeases.size, 0) === 1 &&
-        states[leaderIndex].discoveryLeases.size === 0,
+        states.reduce((total, state) => total + state.discoveryLeases.size, 0) === topics.length &&
+        !states[leaderIndex].discoveryLeases.has(topics[0]),
     )
     const replacementLease = await db.collection('orionjs.pulse.subscriptions').findOne({
       consumerGroup,
-      topic,
+      topic: topics[0],
     })
     expect(replacementLease?.discoveryLockToken).toMatch(uuidV7Pattern)
     expect(replacementLease?.discoveryLockToken).not.toBe(initialToken)
@@ -461,33 +682,190 @@ describe('Pulse delivery semantics', () => {
     })
 
     const runtime = getRuntimeState(pulse)
-    await waitFor(() => runtime.discoveryLeases.size === 1)
+    await waitFor(() => runtime.discoveryLeases.has('transient-discovery.topic'))
     const db = await rawDatabase(databaseName)
     const before = await db.collection('orionjs.pulse.subscriptions').findOne({
       consumerGroup: 'transient-discovery-group',
       topic: 'transient-discovery.topic',
     })
 
-    const originalFind = runtime.collections.events.find.bind(runtime.collections.events)
-    let failNextFind = true
-    runtime.collections.events.find = (...args: any[]) => {
-      if (failNextFind) {
-        failNextFind = false
+    const originalAggregate = runtime.collections.events.aggregate.bind(runtime.collections.events)
+    let failNextAggregate = true
+    runtime.collections.events.aggregate = (...args: any[]) => {
+      if (failNextAggregate) {
+        failNextAggregate = false
         throw new Error('synthetic transient discovery error')
       }
-      return originalFind(...args)
+      return originalAggregate(...args)
     }
 
     await pulse.publish({topic: 'transient-discovery.topic', data: null})
     await waitFor(() => errors.some(error => error.message.includes('synthetic transient')))
 
-    expect(runtime.discoveryLeases.size).toBe(1)
+    expect(runtime.discoveryLeases.has('transient-discovery.topic')).toBe(true)
     const after = await db.collection('orionjs.pulse.subscriptions').findOne({
       consumerGroup: 'transient-discovery-group',
       topic: 'transient-discovery.topic',
     })
     expect(after?.discoveryLockToken).toBe(before?.discoveryLockToken)
     await waitFor(() => deliveries === 1)
+  })
+
+  it('coexists with an active old-version per-topic discovery lease during a rolling deploy', async () => {
+    const databaseName = uniqueName('mixed_version_discovery')
+    const consumerGroup = 'mixed-version-discovery-group'
+    const topic = 'mixed-version-discovery.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {
+      pollIntervalMs: 20,
+      discoveryLockTimeoutMs: 180,
+    })
+    await pulse.awaitConnection()
+    let deliveries = 0
+    await pulse.subscribe(topic, async () => {
+      deliveries++
+    })
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+
+    const db = await rawDatabase(databaseName)
+    const oldToken = uuidv7()
+    const oldLockedUntil = new Date(Date.now() + 260)
+    await db.collection('orionjs.pulse.subscriptions').updateOne(
+      {consumerGroup, topic},
+      {
+        $set: {
+          discoveryLockOwner: 'old-version-reader',
+          discoveryLockToken: oldToken,
+          discoveryLockedUntil: oldLockedUntil,
+        },
+      },
+    )
+    await waitFor(() => !runtime.discoveryLeases.has(topic))
+
+    const event = await pulse.publish({topic, data: {rolling: true}})
+    await new Promise(resolve => setTimeout(resolve, 80))
+    expect(deliveries).toBe(0)
+    const whileOldLeaseIsActive = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(whileOldLeaseIsActive?.discoveryLockToken).toBe(oldToken)
+
+    await waitFor(() => deliveries === 1)
+    const afterFailover = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(afterFailover?.discoveryLockToken).not.toBe(oldToken)
+    expect(
+      await db.collection('orionjs.pulse.deliveries').countDocuments({eventId: event.id}),
+    ).toBe(1)
+  })
+
+  it('uses one empty work poll and one discovery query for all local topics', async () => {
+    const databaseName = uniqueName('aggregate_poll')
+    const pulse = createPulse(databaseName, 'aggregate-poll-group', {
+      pollIntervalMs: 30,
+      discoveryLockTimeoutMs: 30_000,
+    })
+    await pulse.awaitConnection()
+
+    const topics = ['aggregate.a', 'aggregate.b', 'aggregate.c', 'aggregate.d']
+    await Promise.all([
+      pulse.subscribe(topics[0], async () => {}, {ordered: true}),
+      pulse.subscribe(topics[1], async () => {}, {ordered: true}),
+      pulse.subscribe(topics[2], async () => {}, {ordered: false}),
+      pulse.subscribe(topics[3], async () => {}, {ordered: false}),
+    ])
+
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.size === topics.length)
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const originalDeliveriesAggregate = runtime.collections.deliveries.aggregate.bind(
+      runtime.collections.deliveries,
+    )
+    const originalHistoryAggregate = runtime.collections.history.aggregate.bind(
+      runtime.collections.history,
+    )
+    let workPolls = 0
+    runtime.collections.deliveries.aggregate = (...args: any[]) => {
+      workPolls++
+      return originalDeliveriesAggregate(...args)
+    }
+    runtime.collections.history.aggregate = (...args: any[]) => {
+      workPolls++
+      return originalHistoryAggregate(...args)
+    }
+
+    expect(await runtime.findExecutionCandidates(4)).toEqual([])
+    expect(workPolls).toBe(1)
+
+    const originalEventsAggregate = runtime.collections.events.aggregate.bind(
+      runtime.collections.events,
+    )
+    let discoveryPolls = 0
+    let discoveryPipeline: unknown
+    runtime.collections.events.aggregate = (...args: any[]) => {
+      discoveryPolls++
+      discoveryPipeline = args[0]
+      return originalEventsAggregate(...args)
+    }
+
+    expect(await runtime.discoverEvents(true)).toEqual({discovered: false, scanned: true})
+    expect(discoveryPolls).toBe(1)
+    const serializedPipeline = JSON.stringify(discoveryPipeline)
+    for (const topic of topics) expect(serializedPipeline).toContain(topic)
+  })
+
+  it('materializes a full discovery batch with bounded bulk commands', async () => {
+    const databaseName = uniqueName('bulk_materialization')
+    const consumerGroup = 'bulk-materialization-group'
+    const topic = 'bulk-materialization.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {
+      pollIntervalMs: 20,
+      discoveryLockTimeoutMs: 1_000,
+    })
+    await pulse.awaitConnection()
+    await pulse.subscribe(topic, async () => {}, {ordered: false})
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+    await Promise.all(
+      Array.from({length: 100}, (_, index) => pulse.publish({topic, data: {index}})),
+    )
+
+    let deliveryBulkWrites = 0
+    let historyBulkWrites = 0
+    const originalDeliveryBulkWrite = runtime.collections.deliveries.bulkWrite.bind(
+      runtime.collections.deliveries,
+    )
+    const originalHistoryBulkWrite = runtime.collections.history.bulkWrite.bind(
+      runtime.collections.history,
+    )
+    runtime.collections.deliveries.bulkWrite = (...args: any[]) => {
+      deliveryBulkWrites++
+      return originalDeliveryBulkWrite(...args)
+    }
+    runtime.collections.history.bulkWrite = (...args: any[]) => {
+      historyBulkWrites++
+      return originalHistoryBulkWrite(...args)
+    }
+
+    await runtime.discoverEvents(true)
+    expect(deliveryBulkWrites).toBe(4)
+    expect(historyBulkWrites).toBe(4)
+    const db = await rawDatabase(databaseName)
+    expect(
+      await db.collection('orionjs.pulse.deliveries').countDocuments({consumerGroup, topic}),
+    ).toBe(100)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({consumerGroup, topic}),
+    ).toBe(100)
   })
 
   it('does not churn ordered leases while a retry is delayed', async () => {
@@ -1522,6 +1900,63 @@ describe('Pulse disaster recovery and edge cases', () => {
     expect(await db.collection('orionjs.pulse.history').countDocuments({deliveryId})).toBe(1)
   })
 
+  it('rotates reconciliation past healthy heads in at least twenty-five topics', async () => {
+    const databaseName = uniqueName('reconciliation_head_rotation')
+    const consumerGroup = 'reconciliation-head-rotation-group'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const runtime = getRuntimeState(pulse)
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+    const db = await rawDatabase(databaseName)
+    const topics = Array.from({length: 25}, (_, index) => `reconciliation-head.${index}`)
+    const now = new Date()
+    const deliveries = topics.map((topic, index) => ({
+      _id: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic,
+      eventCreatedAt: new Date(now.getTime() + index),
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    }))
+    const torn = {
+      _id: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic: topics[0],
+      eventCreatedAt: new Date(now.getTime() + 10_000),
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    }
+    await db.collection<any>('orionjs.pulse.deliveries').insertMany([...deliveries, torn])
+    await db.collection<any>('orionjs.pulse.history').insertMany(
+      deliveries.map(delivery => ({
+        _id: uuidv7(),
+        deliveryId: delivery._id,
+        eventId: delivery.eventId,
+        consumerGroup,
+        topic: delivery.topic,
+        attempt: 1,
+        status: 'pending',
+        createdAt: now,
+        nextAttemptAt: new Date(now.getTime() + 60_000),
+      })),
+    )
+
+    expect(await runtime.reconcileDeliveries(topics)).toBe(0)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({deliveryId: torn._id}),
+    ).toBe(0)
+    expect(await runtime.reconcileDeliveries(topics)).toBe(1)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({deliveryId: torn._id}),
+    ).toBe(1)
+  })
+
   it('creates exactly one retry when replicas reconcile the same partial error', async () => {
     const databaseName = uniqueName('partial_error')
     const consumerGroup = 'partial-error-group'
@@ -1747,6 +2182,17 @@ describe('Pulse disaster recovery and edge cases', () => {
       ),
     )
 
+    let orderedLeaseAttempts = 0
+    for (const runtime of replicas.map(getRuntimeState)) {
+      const original = runtime.collections.subscriptions.findOneAndUpdate.bind(
+        runtime.collections.subscriptions,
+      )
+      runtime.collections.subscriptions.findOneAndUpdate = (...args: any[]) => {
+        if (args[1]?.$set?.orderedLockToken) orderedLeaseAttempts++
+        return original(...args)
+      }
+    }
+
     const events = await Promise.all(
       Array.from({length: 100}, (_, index) =>
         replicas[index % replicas.length].publish({topic, data: {index}}),
@@ -1757,6 +2203,7 @@ describe('Pulse disaster recovery and edge cases', () => {
 
     expect(maximumActive).toBe(1)
     expect([...calls.values()].every(count => count === 1)).toBe(true)
+    expect(orderedLeaseAttempts).toBeLessThan(events.length * 2)
   })
 
   it('rejects split-brain subscription configuration without disturbing the winner', async () => {
@@ -2319,6 +2766,444 @@ describe('Pulse disaster recovery and edge cases', () => {
     ).toBe(100)
   })
 
+  it('drains many ordered and concurrent topics through one poll per replica', async () => {
+    const databaseName = uniqueName('multi_topic_poll')
+    const consumerGroup = 'multi-topic-poll-group'
+    const topics = Array.from({length: 12}, (_, index) => `multi-topic.${index}`)
+    const replicas = Array.from({length: 6}, () =>
+      createPulse(databaseName, consumerGroup, {
+        workerCount: 4,
+        pollIntervalMs: 10,
+        lockTimeoutMs: 500,
+        discoveryLockTimeoutMs: 200,
+      }),
+    )
+    await Promise.all(replicas.map(replica => replica.awaitConnection()))
+
+    const calls = new Map<string, number>()
+    await Promise.all(
+      replicas.flatMap(replica =>
+        topics.map((topic, index) =>
+          replica.subscribe(
+            topic,
+            async event => {
+              calls.set(event.id, (calls.get(event.id) ?? 0) + 1)
+            },
+            {
+              ordered: index % 2 === 0,
+              offsetReset: 'latest',
+              maxConcurrency: 2,
+            },
+          ),
+        ),
+      ),
+    )
+
+    const events = await Promise.all(
+      Array.from({length: 240}, (_, index) =>
+        replicas[index % replicas.length].publish({
+          topic: topics[index % topics.length],
+          data: {index},
+        }),
+      ),
+    )
+    await waitFor(() => calls.size === events.length, {timeoutMs: 30_000})
+    await new Promise(resolve => setTimeout(resolve, 250))
+
+    expect([...calls.values()].every(count => count === 1)).toBe(true)
+    const db = await rawDatabase(databaseName)
+    expect(
+      await db.collection('orionjs.pulse.subscriptions').countDocuments({
+        consumerGroup,
+        discoveryLockedUntil: {$gt: new Date()},
+      }),
+    ).toBe(topics.length)
+    expect(
+      await db.collection('orionjs.pulse.deliveries').countDocuments({
+        consumerGroup,
+        status: 'success',
+      }),
+    ).toBe(events.length)
+  })
+
+  it('cannot starve the last topic behind more than one discovery batch in the first topic', async () => {
+    const databaseName = uniqueName('discovery_topic_fairness')
+    const consumerGroup = 'discovery-topic-fairness-group'
+    const db = await rawDatabase(databaseName)
+    const firstTopic = 'aaa.backlog'
+    const lastTopic = 'zzz.single'
+    const createdAt = new Date()
+    await db.collection<any>('orionjs.pulse.events').insertMany([
+      ...Array.from({length: 180}, (_, index) => ({
+        _id: uuidv7(),
+        topic: firstTopic,
+        data: {index},
+        createdAt: new Date(createdAt.getTime() + index),
+      })),
+      {
+        _id: uuidv7(),
+        topic: lastTopic,
+        data: {index: 0},
+        createdAt,
+      },
+    ])
+
+    const pulse = createPulse(databaseName, consumerGroup, {workerCount: 8})
+    await pulse.awaitConnection()
+    let firstReceived = 0
+    let firstCountWhenLastArrived = Number.POSITIVE_INFINITY
+    await Promise.all([
+      pulse.subscribe(
+        firstTopic,
+        async () => {
+          firstReceived++
+        },
+        {ordered: false, offsetReset: 'earliest', maxConcurrency: 8},
+      ),
+      pulse.subscribe(
+        lastTopic,
+        async () => {
+          firstCountWhenLastArrived = firstReceived
+        },
+        {ordered: false, offsetReset: 'earliest', maxConcurrency: 8},
+      ),
+    ])
+
+    await waitFor(() => Number.isFinite(firstCountWhenLastArrived))
+    expect(firstCountWhenLastArrived).toBeLessThanOrEqual(100)
+    await waitFor(() => firstReceived === 180)
+  })
+
+  it('discovers topics owned by replicas with disjoint local subscription sets', async () => {
+    const databaseName = uniqueName('disjoint_topic_sets')
+    const consumerGroup = 'disjoint-topic-sets-group'
+    const first = createPulse(databaseName, consumerGroup, {discoveryLockTimeoutMs: 200})
+    const second = createPulse(databaseName, consumerGroup, {discoveryLockTimeoutMs: 200})
+    await Promise.all([first.awaitConnection(), second.awaitConnection()])
+
+    const received = new Set<string>()
+    await Promise.all([
+      first.subscribe('disjoint.first', async event => void received.add(event.id), {
+        ordered: false,
+      }),
+      second.subscribe('disjoint.second', async event => void received.add(event.id), {
+        ordered: false,
+      }),
+    ])
+    await waitFor(
+      () =>
+        getRuntimeState(first).discoveryLeases.has('disjoint.first') &&
+        getRuntimeState(second).discoveryLeases.has('disjoint.second'),
+    )
+
+    const events = await Promise.all([
+      first.publish({topic: 'disjoint.first', data: {replica: 1}}),
+      first.publish({topic: 'disjoint.second', data: {replica: 2}}),
+    ])
+    await waitFor(() => received.size === events.length)
+    expect(events.every(event => received.has(event.id))).toBe(true)
+  })
+
+  it('drains mixed legacy and sequenced backlogs larger than the aggregate batch', async () => {
+    const databaseName = uniqueName('mixed_discovery_backlog')
+    const consumerGroup = 'mixed-discovery-backlog-group'
+    const topic = 'mixed-discovery.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {workerCount: 8})
+    await pulse.awaitConnection()
+    const sequenced = await Promise.all(
+      Array.from({length: 130}, (_, index) =>
+        pulse.publish({topic, data: {kind: 'sequenced', index}}),
+      ),
+    )
+    const db = await rawDatabase(databaseName)
+    const legacy = Array.from({length: 130}, (_, index) => ({
+      _id: uuidv7(),
+      topic,
+      data: {kind: 'legacy', index},
+      createdAt: new Date(Date.now() + index),
+    }))
+    await db.collection<any>('orionjs.pulse.events').insertMany(legacy)
+
+    const received = new Set<string>()
+    await pulse.subscribe(topic, async event => void received.add(event.id), {
+      ordered: false,
+      offsetReset: 'earliest',
+      maxConcurrency: 8,
+    })
+    await waitFor(() => received.size === sequenced.length + legacy.length, {timeoutMs: 20_000})
+    expect(sequenced.every(event => received.has(event.id))).toBe(true)
+    expect(legacy.every(event => received.has(event._id))).toBe(true)
+  })
+
+  it('fences a discovery reader that loses its lease while a batch query is in flight', async () => {
+    const databaseName = uniqueName('discovery_mid_batch_failover')
+    const consumerGroup = 'discovery-mid-batch-failover-group'
+    const topic = 'discovery-mid-batch.topic'
+    const replicas = Array.from({length: 2}, () =>
+      createPulse(databaseName, consumerGroup, {
+        workerCount: 4,
+        pollIntervalMs: 20,
+        discoveryLockTimeoutMs: 100,
+      }),
+    )
+    await Promise.all(replicas.map(replica => replica.awaitConnection()))
+    const calls = new Map<string, number>()
+    await Promise.all(
+      replicas.map(replica =>
+        replica.subscribe(
+          topic,
+          async event => {
+            calls.set(event.id, (calls.get(event.id) ?? 0) + 1)
+          },
+          {ordered: false, maxConcurrency: 4},
+        ),
+      ),
+    )
+    const states = replicas.map(getRuntimeState)
+    await waitFor(
+      () => states.reduce((total, state) => total + state.discoveryLeases.size, 0) === 1,
+    )
+    const leaderIndex = states.findIndex(state => state.discoveryLeases.has(topic))
+    const leader = states[leaderIndex]
+    const db = await rawDatabase(databaseName)
+    const before = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+
+    const originalAggregate = leader.collections.events.aggregate.bind(leader.collections.events)
+    let delayNextBatch = true
+    leader.collections.events.aggregate = (...args: any[]) => {
+      const cursor = originalAggregate(...args)
+      if (!delayNextBatch) return cursor
+      delayNextBatch = false
+      const originalToArray = cursor.toArray.bind(cursor)
+      cursor.toArray = async () => {
+        await new Promise(resolve => setTimeout(resolve, 260))
+        return await originalToArray()
+      }
+      return cursor
+    }
+
+    const events = await Promise.all(
+      Array.from({length: 120}, (_, index) => replicas[index % 2].publish({topic, data: {index}})),
+    )
+    await waitFor(
+      async () => {
+        const current = await db.collection('orionjs.pulse.subscriptions').findOne({
+          consumerGroup,
+          topic,
+        })
+        return current?.discoveryLockToken !== before?.discoveryLockToken
+      },
+      {timeoutMs: 10_000},
+    )
+    await waitFor(() => calls.size === events.length, {timeoutMs: 20_000})
+    await new Promise(resolve => setTimeout(resolve, 250))
+    expect([...calls.values()].every(count => count === 1)).toBe(true)
+  })
+
+  it('does not advance a cursor across events skipped during lease loss and reacquisition', async () => {
+    const databaseName = uniqueName('discovery_lease_flap')
+    const consumerGroup = 'discovery-lease-flap-group'
+    const topic = 'discovery-lease-flap.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {
+      pollIntervalMs: 20,
+      discoveryLockTimeoutMs: 1_000,
+    })
+    await pulse.awaitConnection()
+    await pulse.subscribe(topic, async () => {}, {ordered: false})
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const db = await rawDatabase(databaseName)
+    const events = Array.from({length: 60}, (_, index) => ({
+      _id: uuidv7(),
+      topic,
+      data: {index},
+      createdAt: new Date(Date.now() + index),
+      sequence: new Timestamp({t: 10, i: index}),
+    }))
+    await db.collection<any>('orionjs.pulse.events').insertMany(events)
+
+    const originalRefresh = runtime.refreshDiscoveryLeases.bind(runtime)
+    let refreshes = 0
+    runtime.refreshDiscoveryLeases = async () => {
+      refreshes++
+      if (refreshes === 2) {
+        await db.collection('orionjs.pulse.subscriptions').updateOne(
+          {consumerGroup, topic},
+          {
+            $set: {
+              discoveryLockOwner: 'foreign-reader',
+              discoveryLockToken: uuidv7(),
+              discoveryLockedUntil: new Date(Date.now() + 1_000),
+            },
+          },
+        )
+        runtime.discoveryRefreshAt = 0
+      } else if (refreshes === 3) {
+        await db
+          .collection('orionjs.pulse.subscriptions')
+          .updateOne(
+            {consumerGroup, topic},
+            {$set: {discoveryLockedUntil: new Date(Date.now() - 1)}},
+          )
+        runtime.discoveryRefreshAt = 0
+      }
+      await originalRefresh()
+    }
+
+    await runtime.discoverEvents(true)
+    expect(
+      await db.collection('orionjs.pulse.deliveries').countDocuments({consumerGroup, topic}),
+    ).toBe(25)
+    const afterFlap = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(afterFlap?.cursorSequence).toBeUndefined()
+
+    runtime.refreshDiscoveryLeases = originalRefresh
+    runtime.discoveryRefreshAt = 0
+    await runtime.discoverEvents(true)
+    expect(
+      await db.collection('orionjs.pulse.deliveries').countDocuments({consumerGroup, topic}),
+    ).toBe(events.length)
+    const recovered = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(recovered?.cursorSequenceEventId).toBe(events.at(-1)?._id)
+  })
+
+  it('cleans every earlier batch claim when a later claim gets a transient MongoDB error', async () => {
+    const databaseName = uniqueName('claim_batch_cleanup')
+    const consumerGroup = 'claim-batch-cleanup-group'
+    const topic = 'claim-batch-cleanup.topic'
+    const errors: Error[] = []
+    const pulse = createPulse(databaseName, consumerGroup, {
+      workerCount: 3,
+      onError: error => errors.push(error),
+    })
+    await pulse.awaitConnection()
+    await pulse.subscribe(topic, async () => {}, {
+      ordered: false,
+      maxConcurrency: 3,
+    })
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    await Promise.all(Array.from({length: 3}, (_, index) => pulse.publish({topic, data: {index}})))
+    await runtime.discoverEvents(true)
+    const originalClaim = runtime.collections.history.findOneAndUpdate.bind(
+      runtime.collections.history,
+    )
+    let claims = 0
+    runtime.collections.history.findOneAndUpdate = (...args: any[]) => {
+      if (args[0]?.lockToken?.$exists === false && args[1]?.$set?.lockToken) {
+        claims++
+        if (claims === 2) throw new Error('synthetic second claim failure')
+      }
+      return originalClaim(...args)
+    }
+
+    runtime.running = true
+    await expect(runtime.claimExecutions(3)).rejects.toThrow('synthetic second claim failure')
+    runtime.running = false
+    expect(runtime.localSubscriptions.get(topic)?.running).toBe(0)
+    const db = await rawDatabase(databaseName)
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({
+        consumerGroup,
+        topic,
+        status: 'pending',
+        lockToken: {$exists: true},
+      }),
+    ).toBe(0)
+    expect(errors.some(error => error.message.includes('synthetic second'))).toBe(false)
+  })
+
+  it('rotates discovery and work fairly across more topics than one aggregate can hold', async () => {
+    const databaseName = uniqueName('many_topic_rotation')
+    const consumerGroup = 'many-topic-rotation-group'
+    const topics = Array.from({length: 80}, (_, index) => `rotation.${index}`)
+    const pulse = createPulse(databaseName, consumerGroup, {
+      workerCount: 8,
+      discoveryLockTimeoutMs: 500,
+    })
+    await pulse.awaitConnection()
+    const received = new Set<string>()
+    await Promise.all(
+      topics.map(topic =>
+        pulse.subscribe(topic, async event => void received.add(event.id), {
+          ordered: false,
+          maxConcurrency: 2,
+        }),
+      ),
+    )
+    await waitFor(() => getRuntimeState(pulse).discoveryLeases.size === topics.length)
+
+    const events = await Promise.all(
+      topics.map((topic, index) => pulse.publish({topic, data: {index}})),
+    )
+    await waitFor(() => received.size === topics.length, {timeoutMs: 20_000})
+    expect(events.every(event => received.has(event.id))).toBe(true)
+  })
+
+  it('keeps claim contention bounded across twenty replicas', async () => {
+    const databaseName = uniqueName('twenty_replica_contention')
+    const consumerGroup = 'twenty-replica-contention-group'
+    const topic = 'twenty-replica-contention.topic'
+    const replicas = Array.from({length: 20}, () =>
+      createPulse(databaseName, consumerGroup, {
+        workerCount: 1,
+        maxPoolSize: 2,
+        pollIntervalMs: 20,
+        lockTimeoutMs: 500,
+      }),
+    )
+    await Promise.all(replicas.map(replica => replica.awaitConnection()))
+    const calls = new Map<string, number>()
+    await Promise.all(
+      replicas.map(replica =>
+        replica.subscribe(
+          topic,
+          async event => {
+            calls.set(event.id, (calls.get(event.id) ?? 0) + 1)
+          },
+          {ordered: false, maxConcurrency: 1},
+        ),
+      ),
+    )
+
+    let claimAttempts = 0
+    for (const runtime of replicas.map(getRuntimeState)) {
+      const original = runtime.collections.history.findOneAndUpdate.bind(
+        runtime.collections.history,
+      )
+      runtime.collections.history.findOneAndUpdate = (...args: any[]) => {
+        if (args[0]?.lockToken?.$exists === false && args[1]?.$set?.lockToken) claimAttempts++
+        return original(...args)
+      }
+    }
+    const events = await Promise.all(
+      Array.from({length: 60}, (_, index) =>
+        replicas[index % replicas.length].publish({topic, data: {index}}),
+      ),
+    )
+    await waitFor(() => calls.size === events.length, {timeoutMs: 30_000})
+    await new Promise(resolve => setTimeout(resolve, 250))
+    expect([...calls.values()].every(count => count === 1)).toBe(true)
+    expect(claimAttempts).toBeLessThan(events.length * 10)
+  })
+
   it('survives a multi-publisher flood across eight competing replicas', async () => {
     const databaseName = uniqueName('multi_publisher_flood')
     const consumerGroup = 'multi-publisher-flood-group'
@@ -2460,6 +3345,109 @@ describe('Pulse disaster recovery and edge cases', () => {
 
     await waitFor(() => received.includes('legacy'))
     expect(received).toEqual(['sequenced', 'legacy'])
+  })
+
+  it('migrates a pre-sequence subscription without re-executing retained deliveries', async () => {
+    const databaseName = uniqueName('pre_sequence_subscription')
+    const consumerGroup = 'pre-sequence-subscription-group'
+    const topic = 'pre-sequence-subscription.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const db = await rawDatabase(databaseName)
+    const cursorCreatedAt = new Date()
+    const oldEvent = {
+      _id: uuidv7(),
+      topic,
+      data: {kind: 'already-processed'},
+      createdAt: new Date(cursorCreatedAt.getTime() - 1_000),
+      sequence: new Timestamp({t: 20, i: 1}),
+    }
+    const newEvent = {
+      _id: uuidv7(),
+      topic,
+      data: {kind: 'new'},
+      createdAt: new Date(cursorCreatedAt.getTime() + 1_000),
+      sequence: new Timestamp({t: 20, i: 2}),
+    }
+    await db.collection<any>('orionjs.pulse.events').insertMany([oldEvent, newEvent])
+    const now = new Date()
+    await db.collection<any>('orionjs.pulse.subscriptions').insertOne({
+      _id: uuidv7(),
+      consumerGroup,
+      topic,
+      ordered: false,
+      offsetReset: 'latest',
+      delivery: 'at-least-once',
+      maxRetries: 3,
+      retryDelayMs: 1_000,
+      retryBackoffMultiplier: 2,
+      createdAt: now,
+      updatedAt: now,
+      cursorCreatedAt,
+      cursorEventId: '',
+    })
+    await db.collection<any>('orionjs.pulse.deliveries').insertOne({
+      _id: uuidv7(),
+      eventId: oldEvent._id,
+      consumerGroup,
+      topic,
+      eventCreatedAt: oldEvent.createdAt,
+      eventSequence: oldEvent.sequence,
+      status: 'success',
+      createdAt: now,
+      updatedAt: now,
+      endedAt: now,
+      finalAttempt: 1,
+    })
+
+    const received: string[] = []
+    await pulse.subscribe(topic, async event => void received.push(event.id), {
+      ordered: false,
+      offsetReset: 'latest',
+    })
+    await waitFor(() => received.includes(newEvent._id))
+    await new Promise(resolve => setTimeout(resolve, 150))
+    expect(received).toEqual([newEvent._id])
+    const migrated = await db.collection('orionjs.pulse.subscriptions').findOne({
+      consumerGroup,
+      topic,
+    })
+    expect(migrated?.cursorSequenceEventId).toBe(newEvent._id)
+  })
+
+  it('executes sequenced ordered events by MongoDB order instead of publisher clocks', async () => {
+    const databaseName = uniqueName('sequence_execution_order')
+    const consumerGroup = 'sequence-execution-order-group'
+    const topic = 'sequence-execution-order.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const db = await rawDatabase(databaseName)
+    const first = {
+      _id: uuidv7(),
+      topic,
+      data: {order: 1},
+      createdAt: new Date(Date.now() + 60_000),
+      sequence: new Timestamp({t: 30, i: 1}),
+    }
+    const second = {
+      _id: uuidv7(),
+      topic,
+      data: {order: 2},
+      createdAt: new Date(Date.now() - 60_000),
+      sequence: new Timestamp({t: 30, i: 2}),
+    }
+    await db.collection<any>('orionjs.pulse.events').insertMany([first, second])
+
+    const received: number[] = []
+    await pulse.subscribe(
+      topic,
+      async event => {
+        received.push((event.data as {order: number}).order)
+      },
+      {ordered: true, offsetReset: 'earliest'},
+    )
+    await waitFor(() => received.length === 2)
+    expect(received).toEqual([1, 2])
   })
 
   it('preserves deterministic ordered delivery when timestamps collide', async () => {

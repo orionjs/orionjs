@@ -79,10 +79,18 @@ event. Discovery advances through that MongoDB-assigned sequence instead of rely
 clocks or the order in which concurrent `publish()` promises resolve.
 
 This prevents a slow concurrent insert from appearing behind an already-advanced cursor. The
-public `createdAt` field remains available for application timestamps and delivery ordering.
+public `createdAt` field remains available as the application timestamp. Ordered consumers execute
+new events by the same MongoDB sequence; legacy events without a sequence fall back to
+`createdAt + eventId`.
 Events created by older Pulse versions do not have the internal sequence. Upgraded consumers keep
 an independent `createdAt + _id` cursor for those legacy events and check it before the
 MongoDB-assigned cursor, so old and new publishers can coexist during a rolling upgrade.
+
+Subscriptions first created before Pulse 4.4.3 may have only the legacy cursor. Their first current
+consumer safely scans the retained sequenced backlog and relies on the delivery unique key to avoid
+re-execution. Keep `historyRetentionMs` at least as long as `eventRetentionMs` until every durable
+subscription has a `cursorSequence`; otherwise an event whose old delivery record already expired
+can be delivered again, consistent with Pulse's at-least-once guarantee.
 
 ## Crash windows
 
@@ -182,12 +190,20 @@ when using higher worker and handler concurrency.
 
 Polling and reconciliation are Pulse's only discovery, acquisition, and recovery mechanisms. Pulse
 does not open MongoDB Change Streams. Every process has one coordinator regardless of
-`workerCount`; use `pollIntervalMs` to balance idle query volume against delivery latency.
+`workerCount`. That coordinator performs one acquisition query across every local topic per poll,
+instead of one query per topic. Candidate topics rotate in bounded batches, so a busy topic cannot
+permanently hide another one. Use `pollIntervalMs` to balance idle query volume against delivery latency.
 
-Discovery leadership uses its own renewable lease, configured with `discoveryLockTimeoutMs` and
-defaulting to 10 seconds. This keeps leader failover prompt without forcing long-running handler
-locks to use the same short timeout. Temporary discovery-query errors do not voluntarily abandon
-the lease; fencing loss or expiry still allows another replica to take over safely.
+Discovery leadership uses one renewable lease per `consumerGroup + topic`, configured with
+`discoveryLockTimeoutMs` and defaulting to 10 seconds. A process acquires and renews all of its topic
+leases in bulk, then discovers its owned topics in one aggregate query. Lease and event polling thus
+scale with processes rather than processes multiplied by topics, while a replica that registers a
+different topic set can still own and recover those topics safely.
+
+Cursor updates are fenced by the same topic lease token. If a query finishes after its lease was
+lost, the stale reader may create idempotent delivery records but cannot advance the cursor. The new
+owner safely repeats discovery. Temporary query errors do not voluntarily abandon a lease; expiry
+still permits failover.
 
 ## Collections and retention
 

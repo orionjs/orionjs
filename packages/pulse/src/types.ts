@@ -171,6 +171,7 @@ export interface DeliveryDocument extends Document {
   consumerGroup: string
   topic: string
   eventCreatedAt: Date
+  eventSequence?: Timestamp
   status: DeliveryStatus
   createdAt: Date
   updatedAt: Date

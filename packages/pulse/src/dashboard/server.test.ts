@@ -45,6 +45,9 @@ beforeAll(async () => {
     createdAt,
     updatedAt: createdAt,
     cursorCreatedAt: createdAt,
+    discoveryLockOwner: uuidv7(),
+    discoveryLockToken: uuidv7(),
+    discoveryLockedUntil: new Date(Date.now() + 60_000),
   })
   await db.collection<any>(`${prefix}.deliveries`).insertOne({
     _id: deliveryId,
@@ -118,6 +121,7 @@ describe('Pulse dashboard server', () => {
     const subscriptionsResponse = await fetch(`${dashboard.url}/api/subscriptions`)
     const subscriptions = await subscriptionsResponse.json()
     expect(subscriptions.data.items[0].consumerGroup).toBe('billing')
+    expect(subscriptions.data.items[0].discoveryLease).toBe('active')
     expect(subscriptions.data.items[0].orderedLease).toBe('idle')
   })
 
