@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.2
+
+### Patch Changes
+
+- Reduce MongoDB load by coordinating discovery and work polling once per process, with fair topic batching, stronger lease fencing, and recovery coverage.
+
 ## 4.5.1
 
 ### Patch Changes
