@@ -194,6 +194,12 @@ does not open MongoDB Change Streams. Every process has one coordinator regardle
 instead of one query per topic. Candidate topics rotate in bounded batches, so a busy topic cannot
 permanently hide another one. Use `pollIntervalMs` to balance idle query volume against delivery latency.
 
+<Note>
+  Since Pulse 4.5.2, handler slots never poll MongoDB independently. `workerCount` only controls how
+  many callbacks may execute concurrently; increasing it does not multiply the process's discovery,
+  acquisition, or recovery polling loops.
+</Note>
+
 Discovery leadership uses one renewable lease per `consumerGroup + topic`, configured with
 `discoveryLockTimeoutMs` and defaulting to 10 seconds. A process acquires and renews all of its topic
 leases in bulk, then discovers its owned topics in one aggregate query. Lease and event polling thus
