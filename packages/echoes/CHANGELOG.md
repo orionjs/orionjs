@@ -1,5 +1,13 @@
 # @orion-js/echoes
 
+## 4.5.3
+
+### Patch Changes
+
+- Bound Pulse to one MongoDB application connection per server by default, expire idle pool connections, and expose the idle timeout through Echoes.
+- Updated dependencies
+  - @orion-js/pulse@4.5.4
+
 ## 4.5.2
 
 ### Patch Changes
