@@ -54,12 +54,12 @@ function toPublicDocument(document: Document) {
   return {id: String(_id), ...rest}
 }
 
-async function statusCounts(collection: Collection, match: Document = {}) {
+async function statusCounts(collection: Collection, queryTimeoutMs: number, match: Document = {}) {
   return await collection
-    .aggregate<{_id: string; count: number}>([
-      {$match: match},
-      {$group: {_id: '$status', count: {$sum: 1}}},
-    ])
+    .aggregate<{_id: string; count: number}>(
+      [{$match: match}, {$group: {_id: '$status', count: {$sum: 1}}}],
+      {maxTimeMS: queryTimeoutMs},
+    )
     .toArray()
 }
 
@@ -75,6 +75,7 @@ export class DashboardRepository {
   constructor(
     private readonly db: Db,
     collectionPrefix: string,
+    private readonly queryTimeoutMs: number,
   ) {
     this.databaseName = db.databaseName
     this.collectionPrefix = collectionPrefix
@@ -88,7 +89,7 @@ export class DashboardRepository {
 
   async ping() {
     const startedAt = performance.now()
-    await this.db.command({ping: 1})
+    await this.db.command({ping: 1, maxTimeMS: this.queryTimeoutMs})
     return {latencyMs: Math.round((performance.now() - startedAt) * 10) / 10}
   }
 
@@ -113,82 +114,113 @@ export class DashboardRepository {
       attemptTimeline,
       ping,
     ] = await Promise.all([
-      events.estimatedDocumentCount(),
-      subscriptions.estimatedDocumentCount(),
-      statusCounts(deliveries),
-      statusCounts(history),
+      events.estimatedDocumentCount({maxTimeMS: this.queryTimeoutMs}),
+      subscriptions.estimatedDocumentCount({maxTimeMS: this.queryTimeoutMs}),
+      statusCounts(deliveries, this.queryTimeoutMs),
+      statusCounts(history, this.queryTimeoutMs),
       Promise.all([
-        history.countDocuments({status: 'pending', lockedUntil: {$gt: now}}),
-        history.countDocuments({status: 'pending', lockedUntil: {$lte: now}}),
-        history.countDocuments({status: 'pending', lockedUntil: {$exists: false}}),
+        history.countDocuments(
+          {status: 'pending', lockedUntil: {$gt: now}},
+          {maxTimeMS: this.queryTimeoutMs},
+        ),
+        history.countDocuments(
+          {status: 'pending', lockedUntil: {$lte: now}},
+          {maxTimeMS: this.queryTimeoutMs},
+        ),
+        history.countDocuments(
+          {status: 'pending', lockedUntil: {$exists: false}},
+          {maxTimeMS: this.queryTimeoutMs},
+        ),
       ]),
-      deliveries.findOne({status: 'pending'}, {sort: {eventCreatedAt: 1, eventId: 1}}),
-      history.find({status: 'error'}).sort({endedAt: -1, createdAt: -1}).limit(8).toArray(),
+      deliveries.findOne(
+        {status: 'pending'},
+        {sort: {eventCreatedAt: 1, eventId: 1}, maxTimeMS: this.queryTimeoutMs},
+      ),
+      history
+        .find({status: 'error'}, {maxTimeMS: this.queryTimeoutMs})
+        .sort({endedAt: -1, createdAt: -1})
+        .limit(8)
+        .toArray(),
       events
-        .aggregate<{_id: string; count: number; lastEventAt: Date}>([
-          {$group: {_id: '$topic', count: {$sum: 1}, lastEventAt: {$max: '$createdAt'}}},
-          {$sort: {count: -1}},
-          {$limit: 100},
-        ])
+        .aggregate<{_id: string; count: number; lastEventAt: Date}>(
+          [
+            {$group: {_id: '$topic', count: {$sum: 1}, lastEventAt: {$max: '$createdAt'}}},
+            {$sort: {count: -1}},
+            {$limit: 100},
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
         .toArray(),
       deliveries
         .aggregate<{
           _id: {topic: string; status: DashboardStatus}
           count: number
           lastActivityAt: Date
-        }>([
-          {
-            $group: {
-              _id: {topic: '$topic', status: '$status'},
-              count: {$sum: 1},
-              lastActivityAt: {$max: '$updatedAt'},
+        }>(
+          [
+            {
+              $group: {
+                _id: {topic: '$topic', status: '$status'},
+                count: {$sum: 1},
+                lastActivityAt: {$max: '$updatedAt'},
+              },
             },
-          },
-        ])
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
         .toArray(),
       deliveries
         .aggregate<{
           _id: {consumerGroup: string; status: DashboardStatus}
           count: number
           lastActivityAt: Date
-        }>([
-          {
-            $group: {
-              _id: {consumerGroup: '$consumerGroup', status: '$status'},
-              count: {$sum: 1},
-              lastActivityAt: {$max: '$updatedAt'},
+        }>(
+          [
+            {
+              $group: {
+                _id: {consumerGroup: '$consumerGroup', status: '$status'},
+                count: {$sum: 1},
+                lastActivityAt: {$max: '$updatedAt'},
+              },
             },
-          },
-        ])
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
         .toArray(),
       events
-        .aggregate<{_id: Date; count: number}>([
-          {$match: {createdAt: {$gte: start}}},
-          {
-            $group: {
-              _id: {$dateTrunc: {date: '$createdAt', unit: bucket.unit, binSize: bucket.binSize}},
-              count: {$sum: 1},
+        .aggregate<{_id: Date; count: number}>(
+          [
+            {$match: {createdAt: {$gte: start}}},
+            {
+              $group: {
+                _id: {$dateTrunc: {date: '$createdAt', unit: bucket.unit, binSize: bucket.binSize}},
+                count: {$sum: 1},
+              },
             },
-          },
-          {$sort: {_id: 1}},
-        ])
+            {$sort: {_id: 1}},
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
         .toArray(),
       history
-        .aggregate<{_id: {bucket: Date; status: DashboardStatus}; count: number}>([
-          {$match: {endedAt: {$gte: start}, status: {$in: ['success', 'error']}}},
-          {
-            $group: {
-              _id: {
-                bucket: {
-                  $dateTrunc: {date: '$endedAt', unit: bucket.unit, binSize: bucket.binSize},
+        .aggregate<{_id: {bucket: Date; status: DashboardStatus}; count: number}>(
+          [
+            {$match: {endedAt: {$gte: start}, status: {$in: ['success', 'error']}}},
+            {
+              $group: {
+                _id: {
+                  bucket: {
+                    $dateTrunc: {date: '$endedAt', unit: bucket.unit, binSize: bucket.binSize},
+                  },
+                  status: '$status',
                 },
-                status: '$status',
+                count: {$sum: 1},
               },
-              count: {$sum: 1},
             },
-          },
-          {$sort: {'_id.bucket': 1}},
-        ])
+            {$sort: {'_id.bucket': 1}},
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
         .toArray(),
       this.ping(),
     ])
@@ -338,16 +370,18 @@ export class DashboardRepository {
     }
 
     const [total, documents] = await Promise.all([
-      this.collections.deliveries.countDocuments(filter),
+      this.collections.deliveries.countDocuments(filter, {maxTimeMS: this.queryTimeoutMs}),
       this.collections.deliveries
-        .find(filter)
+        .find(filter, {maxTimeMS: this.queryTimeoutMs})
         .sort({updatedAt: -1, _id: -1})
         .skip((query.page - 1) * query.limit)
         .limit(query.limit)
         .toArray(),
     ])
     const eventIds = documents.map(document => document.eventId)
-    const events = await this.collections.events.find({_id: {$in: eventIds}}).toArray()
+    const events = await this.collections.events
+      .find({_id: {$in: eventIds}}, {maxTimeMS: this.queryTimeoutMs})
+      .toArray()
     const eventMap = new Map(events.map(event => [String(event._id), toPublicDocument(event)]))
 
     return this.page(
@@ -387,16 +421,18 @@ export class DashboardRepository {
     }
 
     const [total, documents] = await Promise.all([
-      this.collections.history.countDocuments(filter),
+      this.collections.history.countDocuments(filter, {maxTimeMS: this.queryTimeoutMs}),
       this.collections.history
-        .find(filter)
+        .find(filter, {maxTimeMS: this.queryTimeoutMs})
         .sort({createdAt: -1, _id: -1})
         .skip((query.page - 1) * query.limit)
         .limit(query.limit)
         .toArray(),
     ])
     const eventIds = [...new Set(documents.map(document => document.eventId))]
-    const events = await this.collections.events.find({_id: {$in: eventIds}}).toArray()
+    const events = await this.collections.events
+      .find({_id: {$in: eventIds}}, {maxTimeMS: this.queryTimeoutMs})
+      .toArray()
     const eventMap = new Map(events.map(event => [String(event._id), toPublicDocument(event)]))
 
     return this.page(
@@ -426,9 +462,9 @@ export class DashboardRepository {
     }
 
     const [total, documents] = await Promise.all([
-      this.collections.events.countDocuments(filter),
+      this.collections.events.countDocuments(filter, {maxTimeMS: this.queryTimeoutMs}),
       this.collections.events
-        .find(filter)
+        .find(filter, {maxTimeMS: this.queryTimeoutMs})
         .sort({createdAt: -1, _id: -1})
         .skip((query.page - 1) * query.limit)
         .limit(query.limit)
@@ -436,10 +472,13 @@ export class DashboardRepository {
     ])
     const eventIds = documents.map(document => String(document._id))
     const deliveryRows = await this.collections.deliveries
-      .aggregate<{_id: {eventId: string; status: DashboardStatus}; count: number}>([
-        {$match: {eventId: {$in: eventIds}}},
-        {$group: {_id: {eventId: '$eventId', status: '$status'}, count: {$sum: 1}}},
-      ])
+      .aggregate<{_id: {eventId: string; status: DashboardStatus}; count: number}>(
+        [
+          {$match: {eventId: {$in: eventIds}}},
+          {$group: {_id: {eventId: '$eventId', status: '$status'}, count: {$sum: 1}}},
+        ],
+        {maxTimeMS: this.queryTimeoutMs},
+      )
       .toArray()
     const deliveriesByEvent = new Map<string, ReturnType<typeof makeStatusMap>>()
     for (const row of deliveryRows) {
@@ -468,9 +507,9 @@ export class DashboardRepository {
     }
 
     const [total, documents] = await Promise.all([
-      this.collections.subscriptions.countDocuments(filter),
+      this.collections.subscriptions.countDocuments(filter, {maxTimeMS: this.queryTimeoutMs}),
       this.collections.subscriptions
-        .find(filter)
+        .find(filter, {maxTimeMS: this.queryTimeoutMs})
         .sort({updatedAt: -1, _id: -1})
         .skip((query.page - 1) * query.limit)
         .limit(query.limit)

@@ -32,6 +32,7 @@ The command accepts the URI from the first positional argument or, in order, `MO
 | `-p, --port <port>` | `4111` | HTTP port. Use `0` to let the operating system choose an available port. |
 | `--host <host>` | `127.0.0.1` | Interface on which the server listens. |
 | `--prefix <prefix>` | `orionjs.pulse` | Pulse collection prefix. |
+| `--query-timeout-ms <ms>` | `30000` | Maximum execution and network wait time for each MongoDB operation. |
 | `--no-open` | Disabled | Do not open the browser automatically. |
 | `-h, --help` | — | Print command help. |
 
@@ -55,7 +56,7 @@ The explorer views provide paginated inspection of:
 - Attempt history, retry timing, duration, error details, and lock state.
 - Durable subscriptions, offsets, configuration, and active leases.
 
-Use live refresh for a five-second operational view, or turn it off and refresh manually while investigating a changing record. The UI includes light and dark themes and responsive layouts.
+Use live refresh for a five-second operational view, or turn it off and refresh manually while investigating a changing record. Live refresh runs only while the dashboard tab is visible, and only the active view queries MongoDB. Switching tabs pauses all dashboard reads until the page becomes visible again. The UI includes light and dark themes and responsive layouts.
 
 ## Health interpretation
 
@@ -92,6 +93,12 @@ The CLI starts `node assets/dashboard.js`. The server connects to MongoDB, serve
 - `/api/subscriptions`
 
 Mutation methods are rejected. Importing `@orion-js/pulse` from a service does not import the dashboard server, React, or its browser assets into the service process.
+
+All dashboard reads use MongoDB's `secondaryPreferred` read preference, falling back to the primary
+only when no eligible secondary is available. Every query also receives a server-side `maxTimeMS`
+and matching connection, socket, server-selection, and pool wait timeouts. The default is thirty
+seconds and can be changed with `--query-timeout-ms`. Because monitoring reads may come from a
+secondary, the dashboard can briefly lag the primary during replication delay.
 
 React, Vite, Tailwind CSS, and the UI components are build-time development dependencies. They do not increase Pulse's runtime dependency graph.
 

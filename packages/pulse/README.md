@@ -106,7 +106,12 @@ Dashboard options:
 | `-p, --port` | `4111` | Dashboard HTTP port; use `0` for an ephemeral port. |
 | `--host` | `127.0.0.1` | Network interface to bind. |
 | `--prefix` | `orionjs.pulse` | Pulse collection prefix. |
+| `--query-timeout-ms` | `30000` | Maximum time for each MongoDB dashboard operation. |
 | `--no-open` | disabled | Do not open the browser automatically. |
+
+Dashboard reads use `secondaryPreferred` and fall back to the primary only when a secondary is not
+available. Queries and network waits time out after thirty seconds by default. The dashboard server
+does not cache results.
 
 ## Connection options
 

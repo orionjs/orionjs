@@ -73,6 +73,10 @@ const deliveriesIndexes: ExpectedIndex[] = [
     key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
   },
   {
+    name: 'pulse_deliveries_dashboard_pending',
+    key: {status: 1, eventCreatedAt: 1, eventId: 1},
+  },
+  {
     name: 'pulse_deliveries_expires_at_ttl',
     key: {expiresAt: 1},
     expireAfterSeconds: 0,

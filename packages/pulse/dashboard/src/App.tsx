@@ -1,6 +1,7 @@
 import {lazy, Suspense, useCallback, useEffect, useState} from 'react'
 import {Shell} from './components/Shell'
 import {apiGet} from './lib/api'
+import {canPollDashboard, canQueryDashboard} from './lib/polling'
 import type {OverviewData, View} from './types'
 
 const Overview = lazy(async () => ({
@@ -39,6 +40,7 @@ function readTheme(): 'dark' | 'light' {
 
 export function App() {
   const [view, setView] = useState<View>(readView)
+  const [pageVisible, setPageVisible] = useState(() => document.visibilityState === 'visible')
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
   const [live, setLive] = useState(true)
   const [range, setRange] = useState('24h')
@@ -57,6 +59,11 @@ export function App() {
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
+  useEffect(() => {
+    const onVisibilityChange = () => setPageVisible(document.visibilityState === 'visible')
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [])
 
   const navigate = useCallback((nextView: View) => {
     window.location.hash = nextView === 'overview' ? '/' : `/${nextView}`
@@ -64,6 +71,7 @@ export function App() {
   }, [])
 
   const loadOverview = useCallback(async () => {
+    if (!canQueryDashboard(document.visibilityState === 'visible', view === 'overview')) return
     setRefreshing(true)
     try {
       const response = await apiGet<OverviewData>('/api/overview', {range})
@@ -75,16 +83,19 @@ export function App() {
       setOverviewLoading(false)
       setRefreshing(false)
     }
-  }, [range])
+  }, [pageVisible, range, view])
+
+  const overviewActive = canQueryDashboard(pageVisible, view === 'overview')
 
   useEffect(() => {
+    if (!overviewActive) return
     void loadOverview()
-  }, [loadOverview, refreshSignal])
+  }, [loadOverview, overviewActive, refreshSignal])
   useEffect(() => {
-    if (!live) return
+    if (!canPollDashboard(pageVisible, view === 'overview', live)) return
     const interval = window.setInterval(() => void loadOverview(), 5000)
     return () => window.clearInterval(interval)
-  }, [live, loadOverview])
+  }, [live, loadOverview, pageVisible, view])
 
   const refresh = () => setRefreshSignal(value => value + 1)
 
@@ -117,6 +128,7 @@ export function App() {
           <Explorer
             view={view}
             live={live}
+            active={pageVisible}
             refreshSignal={refreshSignal}
             onRefreshing={setRefreshing}
           />

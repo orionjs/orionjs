@@ -3,7 +3,7 @@ import {createReadStream, existsSync} from 'node:fs'
 import {createServer, type IncomingMessage, type ServerResponse} from 'node:http'
 import {dirname, extname, join, normalize, resolve} from 'node:path'
 import {fileURLToPath} from 'node:url'
-import {MongoClient} from 'mongodb'
+import {MongoClient, type MongoClientOptions} from 'mongodb'
 import {
   type DashboardQuery,
   DashboardRepository,
@@ -14,6 +14,7 @@ import {
 const DEFAULT_HOST = '127.0.0.1'
 const DEFAULT_PORT = 4111
 const DEFAULT_PREFIX = 'orionjs.pulse'
+export const DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS = 30_000
 
 const MIME_TYPES: Record<string, string> = {
   '.css': 'text/css; charset=utf-8',
@@ -34,6 +35,7 @@ export interface DashboardServerOptions {
   port?: number
   openBrowser?: boolean
   staticDirectory?: string
+  queryTimeoutMs?: number
 }
 
 export interface DashboardServer {
@@ -49,6 +51,18 @@ function databaseFromConnectionString(connectionString: string) {
   if (slashIndex === -1) return undefined
   const databaseName = authorityAndPath.slice(slashIndex + 1)
   return databaseName ? decodeURIComponent(databaseName) : undefined
+}
+
+export function dashboardMongoClientOptions(queryTimeoutMs: number): MongoClientOptions {
+  return {
+    appName: '@orion-js/pulse-dashboard',
+    readPreference: 'secondaryPreferred',
+    timeoutMS: queryTimeoutMs,
+    serverSelectionTimeoutMS: queryTimeoutMs,
+    connectTimeoutMS: queryTimeoutMs,
+    socketTimeoutMS: queryTimeoutMs,
+    waitQueueTimeoutMS: queryTimeoutMs,
+  }
 }
 
 function json(response: ServerResponse, status: number, value: unknown) {
@@ -183,11 +197,22 @@ export async function startDashboardServer(
   const host = options.host ?? DEFAULT_HOST
   const port = options.port ?? DEFAULT_PORT
   const collectionPrefix = options.collectionPrefix ?? DEFAULT_PREFIX
+  const queryTimeoutMs = options.queryTimeoutMs ?? DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS
+  if (!Number.isInteger(queryTimeoutMs) || queryTimeoutMs <= 0) {
+    throw new Error('Dashboard query timeout must be a positive integer.')
+  }
   const staticDirectory =
     options.staticDirectory ?? join(dirname(fileURLToPath(import.meta.url)), 'dashboard')
-  const client = new MongoClient(options.connectionString, {appName: '@orion-js/pulse-dashboard'})
+  const client = new MongoClient(
+    options.connectionString,
+    dashboardMongoClientOptions(queryTimeoutMs),
+  )
   await client.connect()
-  const repository = new DashboardRepository(client.db(databaseName), collectionPrefix)
+  const repository = new DashboardRepository(
+    client.db(databaseName, {readPreference: 'secondaryPreferred'}),
+    collectionPrefix,
+    queryTimeoutMs,
+  )
   await repository.ping()
 
   const server = createServer(async (request, response) => {
@@ -252,7 +277,9 @@ function parseArguments(args: string[]): ParsedArguments {
     else if (argument === '--database' || argument === '-d') parsed.databaseName = args[++index]
     else if (argument === '--prefix') parsed.collectionPrefix = args[++index]
     else if (argument === '--host') parsed.host = args[++index]
-    else if (argument === '--port' || argument === '-p') {
+    else if (argument === '--query-timeout-ms') {
+      parsed.queryTimeoutMs = Number.parseInt(args[++index] ?? '', 10)
+    } else if (argument === '--port' || argument === '-p') {
       parsed.port = Number.parseInt(args[++index] ?? '', 10)
     } else if (!argument.startsWith('-') && !parsed.connectionString) {
       parsed.connectionString = argument
@@ -276,6 +303,8 @@ Options:
   -p, --port <port>      HTTP port (default: ${DEFAULT_PORT})
       --host <host>      Bind address (default: ${DEFAULT_HOST})
       --prefix <prefix>  Collection prefix (default: ${DEFAULT_PREFIX})
+      --query-timeout-ms <ms>
+                         Maximum time per MongoDB query (default: ${DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS})
       --no-open          Do not open the dashboard in a browser
   -h, --help             Show this help
 
@@ -295,6 +324,12 @@ async function runFromCommandLine() {
   if (parsed.port !== undefined && (!Number.isInteger(parsed.port) || parsed.port < 0)) {
     throw new Error('--port must be zero or a positive integer.')
   }
+  if (
+    parsed.queryTimeoutMs !== undefined &&
+    (!Number.isInteger(parsed.queryTimeoutMs) || parsed.queryTimeoutMs <= 0)
+  ) {
+    throw new Error('--query-timeout-ms must be a positive integer.')
+  }
 
   const dashboard = await startDashboardServer(parsed)
   console.log(`\n  Pulse dashboard  ${dashboard.url}`)
@@ -302,6 +337,10 @@ async function runFromCommandLine() {
     `  Database         ${parsed.databaseName ?? databaseFromConnectionString(parsed.connectionString)}`,
   )
   console.log(`  Collections      ${parsed.collectionPrefix ?? DEFAULT_PREFIX}.*`)
+  console.log(
+    `  Query timeout    ${parsed.queryTimeoutMs ?? DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS} ms`,
+  )
+  console.log('  Read preference  secondaryPreferred')
   console.log('  Access           read-only\n')
 
   let closing = false

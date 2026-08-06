@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {apiGet} from '../lib/api'
+import {canPollDashboard, canQueryDashboard} from '../lib/polling'
 import {formatDate, formatDuration, formatNumber, formatRelative, truncateId} from '../lib/utils'
 import type {PagedData, PulseRecord, View} from '../types'
 import {DetailDrawer} from './DetailDrawer'
@@ -183,11 +184,12 @@ function TableHeader({view}: {view: ExplorerView}) {
 interface ExplorerProps {
   view: ExplorerView
   live: boolean
+  active: boolean
   refreshSignal: number
   onRefreshing(value: boolean): void
 }
 
-export function Explorer({view, live, refreshSignal, onRefreshing}: ExplorerProps) {
+export function Explorer({view, live, active, refreshSignal, onRefreshing}: ExplorerProps) {
   const config = explorerConfig[view]
   const Icon = config.icon
   const [data, setData] = useState<PagedData>()
@@ -212,6 +214,7 @@ export function Explorer({view, live, refreshSignal, onRefreshing}: ExplorerProp
     [page, search, status, lockState],
   )
   const load = useCallback(async () => {
+    if (!canQueryDashboard(active && document.visibilityState === 'visible')) return
     setLoading(true)
     onRefreshing(true)
     try {
@@ -224,17 +227,18 @@ export function Explorer({view, live, refreshSignal, onRefreshing}: ExplorerProp
       setLoading(false)
       onRefreshing(false)
     }
-  }, [config.endpoint, parameters, onRefreshing])
+  }, [active, config.endpoint, parameters, onRefreshing])
 
   useEffect(() => {
+    if (!canQueryDashboard(active)) return
     const timeout = window.setTimeout(() => void load(), 180)
     return () => window.clearTimeout(timeout)
-  }, [load, refreshSignal])
+  }, [active, load, refreshSignal])
   useEffect(() => {
-    if (!live) return
+    if (!canPollDashboard(active, true, live)) return
     const interval = window.setInterval(() => void load(), 5000)
     return () => window.clearInterval(interval)
-  }, [live, load])
+  }, [active, live, load])
 
   const clearFilters = () => {
     setSearch('')

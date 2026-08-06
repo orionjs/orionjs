@@ -3,9 +3,15 @@ import {mkdtempSync, rmSync, writeFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {MongoClient} from 'mongodb'
-import {MongoMemoryServer} from 'mongodb-memory-server'
+import {MongoMemoryReplSet, MongoMemoryServer} from 'mongodb-memory-server'
 import {uuidv7} from 'uuidv7'
-import {type DashboardServer, startDashboardServer} from './server'
+import {DashboardRepository} from './repository'
+import {
+  type DashboardServer,
+  DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS,
+  dashboardMongoClientOptions,
+  startDashboardServer,
+} from './server'
 
 setDefaultTimeout(30_000)
 
@@ -136,5 +142,118 @@ describe('Pulse dashboard server', () => {
     const application = await fetch(dashboard.url)
     expect(application.status).toBe(200)
     expect(await application.text()).toContain('Pulse dashboard fixture')
+  })
+
+  it('prefers secondaries and applies maxTimeMS to every dashboard read command', async () => {
+    const queryTimeoutMs = 1_234
+    const clientOptions = dashboardMongoClientOptions(queryTimeoutMs)
+    expect(clientOptions).toMatchObject({
+      readPreference: 'secondaryPreferred',
+      timeoutMS: queryTimeoutMs,
+      serverSelectionTimeoutMS: queryTimeoutMs,
+      connectTimeoutMS: queryTimeoutMs,
+      socketTimeoutMS: queryTimeoutMs,
+      waitQueueTimeoutMS: queryTimeoutMs,
+    })
+    expect(dashboardMongoClientOptions(DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS).readPreference).toBe(
+      'secondaryPreferred',
+    )
+    expect(DEFAULT_DASHBOARD_QUERY_TIMEOUT_MS).toBe(30_000)
+
+    const monitoredClient = new MongoClient(memoryServer.getUri('pulse_dashboard_test'), {
+      ...clientOptions,
+      monitorCommands: true,
+    })
+    const commands: Array<Record<string, unknown>> = []
+    monitoredClient.on('commandStarted', event => {
+      if (
+        event.commandName === 'aggregate' ||
+        event.commandName === 'count' ||
+        event.commandName === 'find'
+      ) {
+        commands.push(event.command)
+      }
+    })
+    await monitoredClient.connect()
+    try {
+      const repository = new DashboardRepository(
+        monitoredClient.db('pulse_dashboard_test', {readPreference: 'secondaryPreferred'}),
+        'orionjs.pulse',
+        queryTimeoutMs,
+      )
+      const query = {page: 1, limit: 25}
+      await repository.overview('1h')
+      await repository.deliveries(query)
+      await repository.history(query)
+      await repository.events(query)
+      await repository.subscriptions(query)
+
+      expect(commands.length).toBeGreaterThan(0)
+      for (const command of commands) {
+        expect(typeof command.maxTimeMS).toBe('number')
+        expect(command.maxTimeMS as number).toBeGreaterThan(0)
+        expect(command.maxTimeMS as number).toBeLessThanOrEqual(queryTimeoutMs)
+      }
+    } finally {
+      await monitoredClient.close()
+    }
+  })
+
+  it('rejects an invalid dashboard query timeout before connecting', async () => {
+    await expect(
+      startDashboardServer({
+        connectionString: memoryServer.getUri('pulse_dashboard_test'),
+        queryTimeoutMs: 0,
+        openBrowser: false,
+      }),
+    ).rejects.toThrow('Dashboard query timeout must be a positive integer.')
+  })
+
+  it('routes dashboard reads to secondaries when a replica set has one available', async () => {
+    const replicaSet = await MongoMemoryReplSet.create({replSet: {count: 3}})
+    const uri = replicaSet.getUri('pulse_dashboard_secondary_test')
+    const topologyClient = new MongoClient(uri)
+    const readAddresses: string[] = []
+    const readClient = new MongoClient(uri, {
+      ...dashboardMongoClientOptions(5_000),
+      monitorCommands: true,
+    })
+    readClient.on('commandStarted', event => {
+      if (event.commandName === 'aggregate' || event.commandName === 'find') {
+        readAddresses.push(event.address)
+      }
+    })
+
+    try {
+      await topologyClient.connect()
+      const hello = await topologyClient.db('admin').command({hello: 1})
+      await topologyClient
+        .db('pulse_dashboard_secondary_test')
+        .collection<any>('orionjs.pulse.subscriptions')
+        .insertOne(
+          {_id: uuidv7(), topic: 'secondary.test', consumerGroup: 'secondary-test'},
+          {writeConcern: {w: 'majority'}},
+        )
+      await readClient.connect()
+      await readClient
+        .db('pulse_dashboard_secondary_test')
+        .collection('orionjs.pulse.subscriptions')
+        .findOne({}, {readPreference: 'secondary', maxTimeMS: 5_000})
+      readAddresses.length = 0
+      const repository = new DashboardRepository(
+        readClient.db('pulse_dashboard_secondary_test', {
+          readPreference: 'secondaryPreferred',
+        }),
+        'orionjs.pulse',
+        5_000,
+      )
+      await repository.subscriptions({page: 1, limit: 25})
+
+      expect(readAddresses.length).toBeGreaterThan(0)
+      expect(readAddresses.every(address => address !== hello.primary)).toBe(true)
+    } finally {
+      await Promise.allSettled([topologyClient.close(), readClient.close()])
+      await replicaSet.stop()
+    }
   })
 })

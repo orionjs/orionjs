@@ -219,6 +219,10 @@ describe('Pulse persistence', () => {
           key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
         },
         {
+          name: 'pulse_deliveries_dashboard_pending',
+          key: {status: 1, eventCreatedAt: 1, eventId: 1},
+        },
+        {
           name: 'pulse_deliveries_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
@@ -348,6 +352,12 @@ describe('Pulse persistence', () => {
       .sort({eventCreatedAt: 1, eventId: 1})
       .limit(1)
       .explain('executionStats')
+    const dashboardPendingExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({status: 'pending'})
+      .sort({eventCreatedAt: 1, eventId: 1})
+      .limit(1)
+      .explain('executionStats')
     const historyExplain = await db
       .collection('orionjs.pulse.history')
       .find({
@@ -376,6 +386,7 @@ describe('Pulse persistence', () => {
     const assertions: Array<[unknown, string]> = [
       [legacyExplain, 'pulse_events_legacy_topic_created_id'],
       [deliveryExplain, 'pulse_deliveries_acquisition'],
+      [dashboardPendingExplain, 'pulse_deliveries_dashboard_pending'],
       [historyExplain, 'pulse_history_pending_acquisition'],
       [deadLockExplain, 'pulse_history_group_dead_locks'],
     ]
