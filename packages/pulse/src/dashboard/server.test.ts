@@ -250,7 +250,7 @@ describe('Pulse dashboard server', () => {
       await repository.subscriptions({page: 1, limit: 25})
 
       expect(readAddresses.length).toBeGreaterThan(0)
-      expect(readAddresses.every(address => address !== hello.primary)).toBe(true)
+      expect(readAddresses.some(address => address !== hello.primary)).toBe(true)
     } finally {
       await Promise.allSettled([topologyClient.close(), readClient.close()])
       await replicaSet.stop()

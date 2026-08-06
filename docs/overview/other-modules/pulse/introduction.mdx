@@ -61,16 +61,18 @@ await pulse.publish({
 
 `connect()` returns immediately and starts initialization in the background. `awaitConnection()` resolves only after MongoDB is connected and every required collection and index has been created and validated. `publish()`, `subscribe()`, and history reads wait for that same readiness promise automatically.
 
-Each Pulse client limits its MongoDB application pool to five connections by default instead of the
-driver default of 100. Configure `maxPoolSize` only when a service needs a different concurrency
-limit:
+Each Pulse client limits its MongoDB application pool to one connection by default instead of the
+driver default of 100. Callbacks remain concurrent because they do not retain the socket; only
+Pulse's short coordination operations share it. Configure a larger `maxPoolSize` only when a
+service has measured local pool contention:
 
 ```typescript
 const pulse = connect<AppEvents>({
   connectionString,
   databaseName: 'commerce',
   consumerGroup: 'billing',
-  maxPoolSize: 8,
+  maxPoolSize: 4,
+  maxIdleTimeMS: 30_000,
 })
 ```
 

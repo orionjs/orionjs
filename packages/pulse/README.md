@@ -125,17 +125,19 @@ does not cache results.
 | `historyRetentionMs` | 7 days | Completed delivery/history retention, or `null`. |
 | `pollIntervalMs` | 3000 | Polling and reconciliation interval. |
 | `workerCount` | 4 | Maximum concurrent handler executions in this process. |
-| `maxPoolSize` | 5 | Maximum MongoDB application connections per server for this Pulse client. |
+| `maxPoolSize` | 1 | Maximum MongoDB application connections per server for this Pulse client. |
+| `maxIdleTimeMS` | 30000 | Close application connections after this much idle time; `0` disables expiry. |
 | `lockTimeoutMs` | 30000 | Distributed lease duration. Active handlers renew it automatically. |
 | `discoveryLockTimeoutMs` | 10000 | Discovery-leader lease duration. Controls replica failover independently from handler locks. |
 | `onError` | `console.error` | Receives internal coordinator and worker errors. |
 
 Connection initialization creates and validates every collection index automatically, including TTL indexes. `awaitConnection()`, `publish()`, `subscribe()`, and history reads do not resolve until those indexes are ready.
 
-Pulse intentionally lowers the MongoDB driver's `maxPoolSize` default from 100 to 5. The driver
-keeps `minPoolSize` at 0, so it creates application connections on demand instead of opening all
-five eagerly. Increase `maxPoolSize` only when a replica needs more concurrent MongoDB operations;
-requests wait for an available connection when the pool is full.
+Pulse intentionally lowers the MongoDB driver's `maxPoolSize` default from 100 to 1 and sets
+`minPoolSize: 0`. Handlers do not retain the connection while user code runs, so concurrent
+callbacks still execute normally; only their short MongoDB coordination operations share the
+socket. Pulse also sets `maxIdleTimeMS: 30000`, allowing extra sockets from an explicitly larger
+pool to close after bursts. Increase `maxPoolSize` only after observing local pool contention.
 
 Each Pulse process has one MongoDB coordinator regardless of `workerCount`. The coordinator performs
 one work-poll query across all locally subscribed topics, then distributes returned candidates to

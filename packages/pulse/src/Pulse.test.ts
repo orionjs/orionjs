@@ -34,12 +34,14 @@ function uniqueName(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`
 }
 
-function getMaxPoolSize(pulse: Pulse<any>) {
+function getMongoClientOptions(pulse: Pulse<any>) {
   return (
     pulse as unknown as {
-      client: {options: {maxPoolSize: number}}
+      client: {
+        options: {maxPoolSize: number; minPoolSize: number; maxIdleTimeMS: number}
+      }
     }
-  ).client.options.maxPoolSize
+  ).client.options
 }
 
 function getRuntimeState(pulse: Pulse<any>) {
@@ -138,16 +140,33 @@ afterAll(async () => {
 })
 
 describe('Pulse persistence', () => {
-  it('uses a small MongoDB pool by default and supports an explicit override', async () => {
+  it('uses one expiring MongoDB pool connection by default and supports overrides', async () => {
     const defaultPulse = createPulse(uniqueName('default_pool'), 'default-pool-group')
     const configuredPulse = createPulse(uniqueName('configured_pool'), 'configured-pool-group', {
       maxPoolSize: 12,
+      maxIdleTimeMS: 90_000,
+    })
+    const noIdleExpiryPulse = createPulse(uniqueName('no_idle_expiry'), 'no-idle-expiry-group', {
+      maxIdleTimeMS: 0,
     })
 
-    await Promise.all([defaultPulse.awaitConnection(), configuredPulse.awaitConnection()])
+    await Promise.all([
+      defaultPulse.awaitConnection(),
+      configuredPulse.awaitConnection(),
+      noIdleExpiryPulse.awaitConnection(),
+    ])
 
-    expect(getMaxPoolSize(defaultPulse)).toBe(5)
-    expect(getMaxPoolSize(configuredPulse)).toBe(12)
+    expect(getMongoClientOptions(defaultPulse)).toMatchObject({
+      maxPoolSize: 1,
+      minPoolSize: 0,
+      maxIdleTimeMS: 30_000,
+    })
+    expect(getMongoClientOptions(configuredPulse)).toMatchObject({
+      maxPoolSize: 12,
+      minPoolSize: 0,
+      maxIdleTimeMS: 90_000,
+    })
+    expect(getMongoClientOptions(noIdleExpiryPulse).maxIdleTimeMS).toBe(0)
   })
 
   it('rejects invalid MongoDB pool sizes before connecting', () => {
@@ -157,6 +176,15 @@ describe('Pulse persistence', () => {
           connectionString: 'mongodb://localhost/pulse',
           consumerGroup: 'invalid-pool-group',
           maxPoolSize,
+        }),
+      ).toThrow(PulseConfigurationError)
+    }
+    for (const maxIdleTimeMS of [-1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() =>
+        connect({
+          connectionString: 'mongodb://localhost/pulse',
+          consumerGroup: 'invalid-idle-time-group',
+          maxIdleTimeMS,
         }),
       ).toThrow(PulseConfigurationError)
     }
@@ -1028,6 +1056,7 @@ describe('Pulse delivery semantics', () => {
       ),
     )
     await waitFor(() => completed === 4)
+    expect(getMongoClientOptions(pulse).maxPoolSize).toBe(1)
     expect(maximumActive).toBeGreaterThan(1)
   })
 
@@ -1492,6 +1521,8 @@ describe('Pulse disaster recovery and edge cases', () => {
       lockTimeoutMs: 90,
     })
     await Promise.all([replicaA.awaitConnection(), replicaB.awaitConnection()])
+    expect(getMongoClientOptions(replicaA).maxPoolSize).toBe(1)
+    expect(getMongoClientOptions(replicaB).maxPoolSize).toBe(1)
 
     let calls = 0
     const handler = async () => {

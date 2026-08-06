@@ -18,6 +18,7 @@ export interface PulseConnectOptions {
   pollIntervalMs?: number
   workerCount?: number
   maxPoolSize?: number
+  maxIdleTimeMS?: number
   lockTimeoutMs?: number
   discoveryLockTimeoutMs?: number
   onError?: (error: Error) => void
