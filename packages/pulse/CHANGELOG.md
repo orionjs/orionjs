@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.3
+
+### Patch Changes
+
+- Reduce dashboard MongoDB load by pausing hidden views, preferring secondary reads, bounding queries with configurable timeouts, and indexing pending delivery monitoring.
+
 ## 4.5.2
 
 ### Patch Changes

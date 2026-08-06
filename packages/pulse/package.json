@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/pulse",
-  "version": "4.5.2",
+  "version": "4.5.3",
   "description": "Distributed, recoverable pub/sub backed by MongoDB",
   "type": "module",
   "main": "./dist/index.cjs",
