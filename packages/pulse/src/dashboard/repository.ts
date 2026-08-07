@@ -9,6 +9,7 @@ const UNKNOWN_PUBLISHER = 'Unknown publisher'
 export interface DashboardQuery {
   page: number
   limit: number
+  id?: string
   topic?: string
   consumerGroup?: string
   status?: DashboardStatus
@@ -676,6 +677,7 @@ export class DashboardRepository {
 
   async deliveries(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.status) filter.status = query.status
     if (query.topic) filter.topic = query.topic
     if (query.consumerGroup) filter.consumerGroup = query.consumerGroup
@@ -711,6 +713,7 @@ export class DashboardRepository {
 
   async history(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.status) filter.status = query.status
     if (query.topic) filter.topic = query.topic
     if (query.consumerGroup) filter.consumerGroup = query.consumerGroup
@@ -770,6 +773,7 @@ export class DashboardRepository {
 
   async events(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.topic) filter.topic = query.topic
     if (query.search) {
       const regex = new RegExp(escapeRegex(query.search), 'i')
@@ -814,6 +818,7 @@ export class DashboardRepository {
 
   async subscriptions(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.topic) filter.topic = query.topic
     if (query.consumerGroup) filter.consumerGroup = query.consumerGroup
     if (query.search) {

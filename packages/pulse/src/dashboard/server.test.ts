@@ -136,6 +136,12 @@ describe('Pulse dashboard server', () => {
     const events = await eventsResponse.json()
     expect(events.data.items[0].deliveries.error).toBe(1)
 
+    const selectedEventId = events.data.items[0].id
+    const selectedEventResponse = await fetch(`${dashboard.url}/api/events?id=${selectedEventId}`)
+    const selectedEvent = await selectedEventResponse.json()
+    expect(selectedEvent.data.pagination.total).toBe(1)
+    expect(selectedEvent.data.items[0].id).toBe(selectedEventId)
+
     const subscriptionsResponse = await fetch(`${dashboard.url}/api/subscriptions`)
     const subscriptions = await subscriptionsResponse.json()
     expect(subscriptions.data.items[0].consumerGroup).toBe('billing')

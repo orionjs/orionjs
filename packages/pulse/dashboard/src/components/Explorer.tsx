@@ -13,6 +13,7 @@ import {
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {apiGet} from '../lib/api'
 import {canPollDashboard, canQueryDashboard} from '../lib/polling'
+import type {DashboardUrlState, DashboardUrlUpdate} from '../lib/urlState'
 import {formatDate, formatDuration, formatNumber, formatRelative, truncateId} from '../lib/utils'
 import type {PagedData, PulseRecord, View} from '../types'
 import {DetailDrawer} from './DetailDrawer'
@@ -187,31 +188,37 @@ interface ExplorerProps {
   active: boolean
   refreshSignal: number
   onRefreshing(value: boolean): void
+  urlState: DashboardUrlState
+  onUrlStateChange: DashboardUrlUpdate
 }
 
-export function Explorer({view, live, active, refreshSignal, onRefreshing}: ExplorerProps) {
+export function Explorer({
+  view,
+  live,
+  active,
+  refreshSignal,
+  onRefreshing,
+  urlState,
+  onUrlStateChange,
+}: ExplorerProps) {
   const config = explorerConfig[view]
   const Icon = config.icon
   const [data, setData] = useState<PagedData>()
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<PulseRecord>()
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [lockState, setLockState] = useState('')
+  const {page, search, status, lockState, recordId, topic, consumerGroup} = urlState
 
   useEffect(() => {
-    setPage(1)
-    setSearch('')
-    setStatus('')
-    setLockState('')
+    setData(undefined)
+    setError(undefined)
+    setLoading(true)
     setSelected(undefined)
   }, [view])
 
   const parameters = useMemo(
-    () => ({page, limit: 25, search, status, lockState}),
-    [page, search, status, lockState],
+    () => ({page, limit: 25, search, status, lockState, topic, consumerGroup}),
+    [consumerGroup, lockState, page, search, status, topic],
   )
   const load = useCallback(async () => {
     if (!canQueryDashboard(active && document.visibilityState === 'visible')) return
@@ -240,13 +247,46 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
     return () => window.clearInterval(interval)
   }, [active, live, load])
 
+  useEffect(() => {
+    if (!recordId) {
+      setSelected(undefined)
+      return
+    }
+    const visibleRecord = data?.items.find(record => record.id === recordId)
+    if (visibleRecord) {
+      setSelected(visibleRecord)
+      return
+    }
+    if (selected?.id === recordId || !active) return
+
+    let cancelled = false
+    void apiGet<PagedData>(config.endpoint, {id: recordId, page: 1, limit: 1})
+      .then(response => {
+        if (!cancelled) setSelected(response.data.items[0])
+      })
+      .catch(() => {
+        if (!cancelled) setSelected(undefined)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [active, config.endpoint, data?.items, recordId, selected?.id])
+
   const clearFilters = () => {
-    setSearch('')
-    setStatus('')
-    setLockState('')
-    setPage(1)
+    onUrlStateChange(
+      {
+        search: '',
+        status: '',
+        lockState: '',
+        topic: undefined,
+        consumerGroup: undefined,
+        recordId: undefined,
+        page: 1,
+      },
+      'replace',
+    )
   }
-  const hasFilters = Boolean(search || status || lockState)
+  const hasFilters = Boolean(search || status || lockState || topic || consumerGroup)
 
   return (
     <div className="space-y-6">
@@ -271,8 +311,10 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
             name="search"
             value={search}
             onChange={event => {
-              setSearch(event.target.value)
-              setPage(1)
+              onUrlStateChange(
+                {search: event.target.value, page: 1, recordId: undefined},
+                'replace',
+              )
             }}
             placeholder={`Search ${view}…`}
             aria-label={`Search ${view}`}
@@ -282,8 +324,14 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
               name="status"
               value={status}
               onChange={event => {
-                setStatus(event.target.value)
-                setPage(1)
+                onUrlStateChange(
+                  {
+                    status: event.target.value as DashboardUrlState['status'],
+                    page: 1,
+                    recordId: undefined,
+                  },
+                  'replace',
+                )
               }}
               aria-label="Filter by status"
               className="sm:w-36"
@@ -299,8 +347,14 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
               name="lockState"
               value={lockState}
               onChange={event => {
-                setLockState(event.target.value)
-                setPage(1)
+                onUrlStateChange(
+                  {
+                    lockState: event.target.value as DashboardUrlState['lockState'],
+                    page: 1,
+                    recordId: undefined,
+                  },
+                  'replace',
+                )
               }}
               aria-label="Filter by lock state"
               className="sm:w-36"
@@ -336,7 +390,10 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
                     <tr
                       key={record.id}
                       className="group cursor-pointer border-b border-[var(--border)] transition-colors last:border-b-0 hover:bg-[var(--surface-hover)]"
-                      onClick={() => setSelected(record)}
+                      onClick={() => {
+                        setSelected(record)
+                        onUrlStateChange({recordId: record.id}, 'push')
+                      }}
                     >
                       <RecordCells view={view} record={record} />
                       <td className="px-2 py-3 text-right">
@@ -381,7 +438,9 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
               variant="outline"
               className="h-8 px-2.5"
               disabled={page <= 1}
-              onClick={() => setPage(value => Math.max(1, value - 1))}
+              onClick={() =>
+                onUrlStateChange({page: Math.max(1, page - 1), recordId: undefined}, 'push')
+              }
             >
               <ArrowLeft className="size-3.5" /> Previous
             </Button>
@@ -389,7 +448,7 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
               variant="outline"
               className="h-8 px-2.5"
               disabled={page >= (data?.pagination.pages ?? 1)}
-              onClick={() => setPage(value => value + 1)}
+              onClick={() => onUrlStateChange({page: page + 1, recordId: undefined}, 'push')}
             >
               Next <ArrowRight className="size-3.5" />
             </Button>
@@ -397,7 +456,10 @@ export function Explorer({view, live, active, refreshSignal, onRefreshing}: Expl
         </div>
       </Card>
 
-      <DetailDrawer record={selected} onClose={() => setSelected(undefined)} />
+      <DetailDrawer
+        record={selected}
+        onClose={() => onUrlStateChange({recordId: undefined}, 'replace')}
+      />
     </div>
   )
 }

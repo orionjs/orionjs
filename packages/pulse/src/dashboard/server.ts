@@ -88,6 +88,7 @@ function parseQuery(url: URL): DashboardQuery {
   return {
     page,
     limit,
+    id: url.searchParams.get('id') || undefined,
     status: parseStatus(url.searchParams.get('status')),
     topic: url.searchParams.get('topic') || undefined,
     consumerGroup: url.searchParams.get('consumerGroup') || undefined,

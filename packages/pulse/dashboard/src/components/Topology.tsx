@@ -14,6 +14,7 @@ import {Headphones, MessageSquareText, RadioTower, ServerCog} from 'lucide-react
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {apiGet} from '../lib/api'
 import {canPollDashboard, canQueryDashboard} from '../lib/polling'
+import type {DashboardRange, DashboardUrlState, DashboardUrlUpdate} from '../lib/urlState'
 import {cn, formatDate, formatNumber} from '../lib/utils'
 import type {TopologyData, TopologyEdge, TopologyTopic} from '../types'
 import {Badge, Card, SearchInput, Select, Skeleton} from './ui'
@@ -23,8 +24,8 @@ interface TopologyProps {
   active: boolean
   refreshSignal: number
   onRefreshing(value: boolean): void
-  range: string
-  onRangeChange(value: string): void
+  urlState: DashboardUrlState
+  onUrlStateChange: DashboardUrlUpdate
   onMetadata(value: TopologyData): void
 }
 
@@ -288,18 +289,17 @@ export function Topology({
   active,
   refreshSignal,
   onRefreshing,
-  range,
-  onRangeChange,
+  urlState,
+  onUrlStateChange,
   onMetadata,
 }: TopologyProps) {
   const [data, setData] = useState<TopologyData>()
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [selectedTopicId, setSelectedTopicId] = useState<string>()
   const [compactGraph, setCompactGraph] = useState(
     () => window.matchMedia('(max-width: 639px)').matches,
   )
+  const {range, search, topic: selectedTopicName} = urlState
 
   useEffect(() => {
     const query = window.matchMedia('(max-width: 639px)')
@@ -314,10 +314,6 @@ export function Topology({
     try {
       const response = await apiGet<TopologyData>('/api/topology', {range})
       setData(response.data)
-      setSelectedTopicId(current => {
-        if (current && response.data.topics.some(topic => topic.id === current)) return current
-        return orderTopics(response.data.topics)[0]?.id
-      })
       onMetadata(response.data)
       setError(undefined)
     } catch (loadError) {
@@ -343,11 +339,17 @@ export function Topology({
     const query = search.trim().toLocaleLowerCase()
     return query ? topics.filter(topic => topic.name.toLocaleLowerCase().includes(query)) : topics
   }, [search, topics])
-  const selectedTopic = data?.topics.find(topic => topic.id === selectedTopicId)
+  const selectedTopic = data?.topics.find(topic => topic.name === selectedTopicName) ?? topics[0]
   const graph = useMemo(
     () => (data && selectedTopic ? buildTopicGraph(data, selectedTopic) : undefined),
     [data, selectedTopic],
   )
+
+  useEffect(() => {
+    if (selectedTopic && selectedTopic.name !== selectedTopicName) {
+      onUrlStateChange({topic: selectedTopic.name}, 'replace')
+    }
+  }, [onUrlStateChange, selectedTopic, selectedTopicName])
 
   if (loading && !data) return <TopologySkeleton />
   if (error && !data) {
@@ -378,7 +380,9 @@ export function Topology({
           name="topology-range"
           aria-label="Topology time range"
           value={range}
-          onChange={event => onRangeChange(event.target.value)}
+          onChange={event =>
+            onUrlStateChange({range: event.target.value as DashboardRange}, 'replace')
+          }
         >
           <option value="1h">Last hour</option>
           <option value="6h">Last 6 hours</option>
@@ -408,7 +412,7 @@ export function Topology({
                 type="search"
                 name="topology-topic-search"
                 value={search}
-                onChange={event => setSearch(event.target.value)}
+                onChange={event => onUrlStateChange({search: event.target.value}, 'replace')}
                 placeholder="Find a topic…"
                 aria-label="Filter topics"
               />
@@ -420,8 +424,8 @@ export function Topology({
                   <li key={topic.id}>
                     <TopicListItem
                       topic={topic}
-                      selected={topic.id === selectedTopicId}
-                      onSelect={() => setSelectedTopicId(topic.id)}
+                      selected={topic.id === selectedTopic?.id}
+                      onSelect={() => onUrlStateChange({topic: topic.name}, 'push')}
                     />
                   </li>
                 ))
