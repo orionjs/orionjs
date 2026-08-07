@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.5
+
+### Patch Changes
+
+- Index dashboard event, history, and delivery queries to avoid collection scans and in-memory sorts.
+
 ## 4.5.4
 
 ### Patch Changes
