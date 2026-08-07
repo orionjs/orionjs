@@ -200,6 +200,10 @@ describe('Pulse persistence', () => {
     const expected = {
       'orionjs.pulse.events': [
         {
+          name: 'pulse_events_dashboard_created',
+          key: {createdAt: -1, _id: -1},
+        },
+        {
           name: 'pulse_events_topic_created_id',
           key: {topic: 1, createdAt: 1, _id: 1},
         },
@@ -251,12 +255,24 @@ describe('Pulse persistence', () => {
           key: {status: 1, eventCreatedAt: 1, eventId: 1},
         },
         {
+          name: 'pulse_deliveries_dashboard_updated',
+          key: {updatedAt: -1, _id: -1},
+        },
+        {
+          name: 'pulse_deliveries_dashboard_status_updated',
+          key: {status: 1, updatedAt: -1, _id: -1},
+        },
+        {
           name: 'pulse_deliveries_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
         },
       ],
       'orionjs.pulse.history': [
+        {
+          name: 'pulse_history_dashboard_created',
+          key: {createdAt: -1, _id: -1},
+        },
         {
           name: 'pulse_history_delivery_attempt_unique',
           key: {deliveryId: 1, attempt: 1},
@@ -349,9 +365,9 @@ describe('Pulse persistence', () => {
       consumerGroup,
       topic,
       eventCreatedAt: new Date(now.getTime() + index),
-      status: 'pending',
+      status: index % 10 === 0 ? 'error' : 'pending',
       createdAt: now,
-      updatedAt: now,
+      updatedAt: new Date(now.getTime() + index),
     }))
     await db.collection<any>('orionjs.pulse.deliveries').insertMany(deliveries)
     await db.collection<any>('orionjs.pulse.history').insertMany(
@@ -386,6 +402,30 @@ describe('Pulse persistence', () => {
       .sort({eventCreatedAt: 1, eventId: 1})
       .limit(1)
       .explain('executionStats')
+    const dashboardEventsExplain = await db
+      .collection('orionjs.pulse.events')
+      .find({})
+      .sort({createdAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
+    const dashboardDeliveriesExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({})
+      .sort({updatedAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
+    const dashboardDeliveryStatusExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({status: 'error'})
+      .sort({updatedAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
+    const dashboardHistoryExplain = await db
+      .collection('orionjs.pulse.history')
+      .find({})
+      .sort({createdAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
     const historyExplain = await db
       .collection('orionjs.pulse.history')
       .find({
@@ -415,6 +455,10 @@ describe('Pulse persistence', () => {
       [legacyExplain, 'pulse_events_legacy_topic_created_id'],
       [deliveryExplain, 'pulse_deliveries_acquisition'],
       [dashboardPendingExplain, 'pulse_deliveries_dashboard_pending'],
+      [dashboardEventsExplain, 'pulse_events_dashboard_created'],
+      [dashboardDeliveriesExplain, 'pulse_deliveries_dashboard_updated'],
+      [dashboardDeliveryStatusExplain, 'pulse_deliveries_dashboard_status_updated'],
+      [dashboardHistoryExplain, 'pulse_history_dashboard_created'],
       [historyExplain, 'pulse_history_pending_acquisition'],
       [deadLockExplain, 'pulse_history_group_dead_locks'],
     ]
