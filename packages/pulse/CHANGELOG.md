@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.7
+
+### Patch Changes
+
+- Persist Pulse dashboard filters, pagination, topology selection, and open record details in shareable URLs.
+
 ## 4.5.6
 
 ### Patch Changes
