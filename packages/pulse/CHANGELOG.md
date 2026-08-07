@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.6
+
+### Patch Changes
+
+- Add a topic-focused topology dashboard and persist publisher identities automatically.
+
 ## 4.5.5
 
 ### Patch Changes
