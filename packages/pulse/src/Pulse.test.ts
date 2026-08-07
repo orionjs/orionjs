@@ -585,7 +585,7 @@ describe('Pulse persistence', () => {
     }
   })
 
-  it('uses UUIDv7 strings and writes a locked pending history before the callback', async () => {
+  it('persists its consumer group as publisher and writes pending history before the callback', async () => {
     const databaseName = uniqueName('history_first')
     const pulse = createPulse(databaseName, 'history-group')
     await pulse.awaitConnection()
@@ -599,10 +599,12 @@ describe('Pulse persistence', () => {
     const callbackEntered = new Promise<void>(resolve => {
       entered = resolve
     })
+    let receivedPublisher: string | undefined
 
     await pulse.subscribe(
       'history.topic',
-      async () => {
+      async received => {
+        receivedPublisher = received.publisher
         entered()
         await gate
       },
@@ -610,6 +612,11 @@ describe('Pulse persistence', () => {
     )
     const event = await pulse.publish({topic: 'history.topic', data: {value: 1}})
     await callbackEntered
+
+    expect(event.publisher).toBe('history-group')
+    expect(receivedPublisher).toBe('history-group')
+    const storedEvent = await db.collection<any>('orionjs.pulse.events').findOne({_id: event.id})
+    expect(storedEvent?.publisher).toBe('history-group')
 
     const pending = await db.collection<any>('orionjs.pulse.history').findOne({eventId: event.id})
     expect(pending?.status).toBe('pending')

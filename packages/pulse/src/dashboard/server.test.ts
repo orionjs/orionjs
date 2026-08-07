@@ -35,7 +35,8 @@ beforeAll(async () => {
     _id: eventId,
     topic: 'order.created',
     data: {orderId: 'order-42'},
-    headers: {source: 'checkout'},
+    publisher: 'checkout',
+    headers: {source: 'legacy-checkout'},
     createdAt,
   })
   await db.collection<any>(`${prefix}.subscriptions`).insertOne({
@@ -115,6 +116,17 @@ describe('Pulse dashboard server', () => {
     expect(overview.data.recentErrors[0].error.code).toBe('handler_error')
     expect(overview.data.topics[0].topic).toBe('order.created')
 
+    const topologyResponse = await fetch(`${dashboard.url}/api/topology?range=24h`)
+    const topology = await topologyResponse.json()
+    expect(topologyResponse.status).toBe(200)
+    expect(topology.data.publishers[0].name).toBe('checkout')
+    expect(topology.data.publishers[0].sourceField).toBe('publisher')
+    expect(topology.data.topics[0]).toMatchObject({name: 'order.created', consumers: 1})
+    expect(topology.data.consumerGroups[0]).toMatchObject({name: 'billing', topics: 1, error: 1})
+    expect(topology.data.summary).toMatchObject({publishers: 1, topics: 1, consumerGroups: 1})
+    expect(topology.data.summary.sourceCoverage).toBe(1)
+    expect(topology.data.edges).toHaveLength(2)
+
     const deliveriesResponse = await fetch(`${dashboard.url}/api/deliveries?status=error`)
     const deliveries = await deliveriesResponse.json()
     expect(deliveries.data.pagination.total).toBe(1)
@@ -183,6 +195,7 @@ describe('Pulse dashboard server', () => {
       )
       const query = {page: 1, limit: 25}
       await repository.overview('1h')
+      await repository.topology('1h')
       await repository.deliveries(query)
       await repository.history(query)
       await repository.events(query)

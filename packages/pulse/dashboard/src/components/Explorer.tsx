@@ -46,7 +46,7 @@ const explorerConfig = {
   },
 } as const
 
-type ExplorerView = Exclude<View, 'overview'>
+type ExplorerView = Exclude<View, 'overview' | 'topology'>
 
 function RecordCells({view, record}: {view: ExplorerView; record: PulseRecord}) {
   if (view === 'deliveries') {

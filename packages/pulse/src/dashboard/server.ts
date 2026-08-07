@@ -121,6 +121,8 @@ async function handleApi(
     }
   } else if (requestUrl.pathname === '/api/overview') {
     data = await repository.overview(resolveDashboardRange(requestUrl.searchParams.get('range')))
+  } else if (requestUrl.pathname === '/api/topology') {
+    data = await repository.topology(resolveDashboardRange(requestUrl.searchParams.get('range')))
   } else if (requestUrl.pathname === '/api/deliveries') {
     data = await repository.deliveries(parseQuery(requestUrl))
   } else if (requestUrl.pathname === '/api/history') {

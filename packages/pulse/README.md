@@ -50,11 +50,14 @@ await pulse.subscribe(
 const event = await pulse.publish({
   topic: 'order.created',
   data: {orderId: 'order-1'},
-  headers: {source: 'checkout'},
+  headers: {traceId: 'trace-1'},
 })
 
-console.log(event.id)
+console.log(event.id, event.publisher) // billing
 ```
+
+Every published event stores the connection's `consumerGroup` as its `publisher`. Subscribers
+receive the same value, so services can trace who emitted an event without adding a manual header.
 
 Call `await pulse.close()` during graceful shutdown.
 

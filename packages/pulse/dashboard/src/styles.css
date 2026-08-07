@@ -47,6 +47,11 @@
 	--chart-success: #16a34a;
 	--chart-error: #dc2626;
 	--chart-grid: rgba(9, 9, 11, 0.08);
+	--topology-canvas: #fafafa;
+	--topology-grid: rgba(9, 9, 11, 0.16);
+	--topology-minimap-mask: rgba(250, 250, 250, 0.72);
+	--topology-publisher-edge: #0284c7;
+	--topology-consumer-edge: #16a34a;
 	--shadow-card: none;
 }
 
@@ -92,6 +97,11 @@
 	--chart-success: #4ade80;
 	--chart-error: #f87171;
 	--chart-grid: rgba(250, 250, 250, 0.08);
+	--topology-canvas: #111113;
+	--topology-grid: rgba(250, 250, 250, 0.14);
+	--topology-minimap-mask: rgba(9, 9, 11, 0.76);
+	--topology-publisher-edge: #38bdf8;
+	--topology-consumer-edge: #4ade80;
 	--shadow-card: none;
 }
 
@@ -179,6 +189,33 @@ button:disabled {
 .recharts-wrapper:focus,
 .recharts-surface:focus {
 	outline: none;
+}
+
+.react-flow__controls,
+.react-flow__minimap {
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	background: var(--surface);
+	box-shadow: none;
+}
+
+.react-flow__controls-button {
+	border-bottom-color: var(--border);
+	background: var(--surface);
+	fill: var(--text-muted);
+}
+
+.react-flow__controls-button:hover {
+	background: var(--surface-hover);
+}
+
+.react-flow__minimap {
+	background: var(--surface-inset);
+}
+
+.react-flow__edge-path {
+	stroke-linecap: round;
 }
 
 @keyframes live-pulse {

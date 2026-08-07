@@ -2,13 +2,16 @@ import {lazy, Suspense, useCallback, useEffect, useState} from 'react'
 import {Shell} from './components/Shell'
 import {apiGet} from './lib/api'
 import {canPollDashboard, canQueryDashboard} from './lib/polling'
-import type {OverviewData, View} from './types'
+import type {OverviewData, TopologyData, View} from './types'
 
 const Overview = lazy(async () => ({
   default: (await import('./components/Overview')).Overview,
 }))
 const Explorer = lazy(async () => ({
   default: (await import('./components/Explorer')).Explorer,
+}))
+const Topology = lazy(async () => ({
+  default: (await import('./components/Topology')).Topology,
 }))
 
 function ViewFallback() {
@@ -27,7 +30,8 @@ function readView(): View {
   return candidate === 'deliveries' ||
     candidate === 'history' ||
     candidate === 'events' ||
-    candidate === 'subscriptions'
+    candidate === 'subscriptions' ||
+    candidate === 'topology'
     ? candidate
     : 'overview'
 }
@@ -49,6 +53,11 @@ export function App() {
   const [overviewLoading, setOverviewLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshSignal, setRefreshSignal] = useState(0)
+  const [metadata, setMetadata] = useState<{
+    generatedAt?: string
+    database?: string
+    prefix?: string
+  }>({})
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -76,6 +85,11 @@ export function App() {
     try {
       const response = await apiGet<OverviewData>('/api/overview', {range})
       setOverview(response.data)
+      setMetadata({
+        generatedAt: response.data.generatedAt,
+        database: response.data.database,
+        prefix: response.data.collectionPrefix,
+      })
       setOverviewError(undefined)
     } catch (error) {
       setOverviewError(error instanceof Error ? error.message : String(error))
@@ -98,6 +112,13 @@ export function App() {
   }, [live, loadOverview, pageVisible, view])
 
   const refresh = () => setRefreshSignal(value => value + 1)
+  const receiveTopologyMetadata = useCallback((value: TopologyData) => {
+    setMetadata({
+      generatedAt: value.generatedAt,
+      database: value.database,
+      prefix: value.collectionPrefix,
+    })
+  }, [])
 
   return (
     <Shell
@@ -107,9 +128,9 @@ export function App() {
       onLiveChange={setLive}
       onRefresh={refresh}
       refreshing={refreshing}
-      generatedAt={overview?.generatedAt}
-      database={overview?.database}
-      prefix={overview?.collectionPrefix}
+      generatedAt={metadata.generatedAt}
+      database={metadata.database}
+      prefix={metadata.prefix}
       health={overview?.health.status}
       theme={theme}
       onThemeChange={() => setTheme(value => (value === 'dark' ? 'light' : 'dark'))}
@@ -123,6 +144,16 @@ export function App() {
             range={range}
             onRangeChange={setRange}
             onNavigate={navigate}
+          />
+        ) : view === 'topology' ? (
+          <Topology
+            live={live}
+            active={pageVisible}
+            refreshSignal={refreshSignal}
+            onRefreshing={setRefreshing}
+            range={range}
+            onRangeChange={setRange}
+            onMetadata={receiveTopologyMetadata}
           />
         ) : (
           <Explorer
