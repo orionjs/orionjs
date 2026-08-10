@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.8
+
+### Patch Changes
+
+- Use indexed status counts in the dashboard instead of grouping entire collections.
+
 ## 4.5.7
 
 ### Patch Changes
