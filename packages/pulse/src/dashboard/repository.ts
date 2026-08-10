@@ -5,6 +5,7 @@ export type DashboardStatus = 'pending' | 'success' | 'error'
 
 const TOPOLOGY_RELATION_LIMIT = 500
 const UNKNOWN_PUBLISHER = 'Unknown publisher'
+const DASHBOARD_STATUSES: DashboardStatus[] = ['pending', 'success', 'error']
 
 export interface DashboardQuery {
   page: number
@@ -59,12 +60,12 @@ function toPublicDocument(document: Document) {
 }
 
 async function statusCounts(collection: Collection, queryTimeoutMs: number, match: Document = {}) {
-  return await collection
-    .aggregate<{_id: string; count: number}>(
-      [{$match: match}, {$group: {_id: '$status', count: {$sum: 1}}}],
-      {maxTimeMS: queryTimeoutMs},
-    )
-    .toArray()
+  return await Promise.all(
+    DASHBOARD_STATUSES.map(async status => ({
+      _id: status,
+      count: await collection.countDocuments({...match, status}, {maxTimeMS: queryTimeoutMs}),
+    })),
+  )
 }
 
 export function resolveDashboardRange(value: string | null): DashboardRange {

@@ -218,6 +218,45 @@ describe('Pulse dashboard server', () => {
     }
   })
 
+  it('counts statuses with filtered count queries instead of grouping the full collections', async () => {
+    const monitoredClient = new MongoClient(memoryServer.getUri('pulse_dashboard_test'), {
+      monitorCommands: true,
+    })
+    const commands: Array<Record<string, any>> = []
+    monitoredClient.on('commandStarted', event => {
+      if (event.commandName === 'aggregate') commands.push(event.command)
+    })
+    await monitoredClient.connect()
+
+    try {
+      const repository = new DashboardRepository(
+        monitoredClient.db('pulse_dashboard_test'),
+        'orionjs.pulse',
+        30_000,
+      )
+      await repository.overview('1h')
+
+      for (const collection of ['orionjs.pulse.deliveries', 'orionjs.pulse.history']) {
+        const collectionCommands = commands.filter(command => command.aggregate === collection)
+        const statusCountCommands = collectionCommands.filter(command => {
+          const match = command.pipeline?.[0]?.$match
+          return typeof match?.status === 'string' && Object.keys(match).length === 1
+        })
+
+        expect(
+          statusCountCommands.map(command => command.pipeline[0].$match.status).sort(),
+        ).toEqual(['error', 'pending', 'success'])
+        expect(
+          collectionCommands.some(command =>
+            command.pipeline?.some((stage: Record<string, any>) => stage.$group?._id === '$status'),
+          ),
+        ).toBe(false)
+      }
+    } finally {
+      await monitoredClient.close()
+    }
+  })
+
   it('rejects an invalid dashboard query timeout before connecting', async () => {
     await expect(
       startDashboardServer({
