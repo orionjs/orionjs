@@ -25,7 +25,7 @@ it('publishes and consumes Echoes events through Pulse', async () => {
   const options: EchoesOptions = {
     echoes: {
       'order.created': createEchoEvent({
-        ordered: false,
+        ordered: true,
         async resolve(params, context) {
           contexts.push({params, context})
         },
@@ -43,7 +43,6 @@ it('publishes and consumes Echoes events through Pulse', async () => {
         lockTimeoutMs: 1000,
         discoveryLockTimeoutMs: 500,
         subscription: {
-          ordered: true,
           offsetReset: 'latest',
         },
       },
@@ -65,8 +64,8 @@ it('publishes and consumes Echoes events through Pulse', async () => {
     await mongoClient.close()
 
     expect(subscriptions).toEqual([
-      {topic: 'invoice.created', ordered: true},
-      {topic: 'order.created', ordered: false},
+      {topic: 'invoice.created', ordered: false},
+      {topic: 'order.created', ordered: true},
     ])
 
     const published = await publish({

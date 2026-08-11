@@ -165,7 +165,7 @@ delivery row has already expired, at-least-once semantics allow the retained eve
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `ordered` | `true` | Prevent callbacks from overlapping for this consumer group and topic. |
+| `ordered` | `false` | Set to true to prevent callbacks from overlapping for this consumer group and topic. |
 | `offsetReset` | `latest` | First subscription starts at `latest` or the earliest retained event. |
 | `delivery` | `at-least-once` | Can also be `at-most-once`. |
 | `maxRetries` | 3 | Retries after the initial attempt. At-most-once always uses zero. |

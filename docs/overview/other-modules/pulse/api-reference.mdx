@@ -89,7 +89,7 @@ const subscription = await pulse.subscribe(topic, handler, options)
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `ordered` | `boolean` | `true` | Serialize this group and topic across all replicas. |
+| `ordered` | `boolean` | `false` | Set to true to serialize this group and topic across all replicas. |
 | `offsetReset` | `'latest' \| 'earliest'` | `latest` | Starting point when the durable subscription is first created. |
 | `delivery` | `'at-least-once' \| 'at-most-once'` | `at-least-once` | Retry semantics. |
 | `maxRetries` | `number` | `3` | Retries after the initial attempt. Forced to zero for at-most-once. |

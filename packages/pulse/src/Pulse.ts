@@ -225,7 +225,7 @@ function resolveSubscribeOptions(
     throw new PulseConfigurationError('subscribe options must be an object.')
   }
   const resolved: ResolvedSubscribeOptions = {
-    ordered: options.ordered ?? true,
+    ordered: options.ordered ?? false,
     offsetReset: options.offsetReset ?? 'latest',
     delivery: options.delivery ?? 'at-least-once',
     maxRetries: options.maxRetries ?? 3,

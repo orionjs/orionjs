@@ -150,6 +150,23 @@ describe('Pulse persistence', () => {
     expect(getMaxPoolSize(configuredPulse)).toBe(12)
   })
 
+  it('uses unordered delivery by default', async () => {
+    const databaseName = uniqueName('default_unordered')
+    const pulse = createPulse(databaseName, 'default-unordered-group')
+    const subscription = await pulse.subscribe('default-unordered.topic', async () => {})
+
+    expect(subscription.ordered).toBe(false)
+    expect(subscription.maxConcurrency).toBe(4)
+
+    const db = await rawDatabase(databaseName)
+    expect(
+      await db.collection('orionjs.pulse.subscriptions').findOne({
+        consumerGroup: 'default-unordered-group',
+        topic: 'default-unordered.topic',
+      }),
+    ).toMatchObject({ordered: false})
+  })
+
   it('rejects invalid MongoDB pool sizes before connecting', () => {
     for (const maxPoolSize of [0, -1, 1.5, Number.POSITIVE_INFINITY]) {
       expect(() =>
@@ -893,7 +910,7 @@ describe('Pulse delivery semantics', () => {
         callbacks++
         if (callbacks === 1) throw new Error('retry once')
       },
-      {retryDelayMs: 400, maxRetries: 1},
+      {ordered: true, retryDelayMs: 400, maxRetries: 1},
     )
 
     const subscriptions = getRuntimeState(pulse).collections.subscriptions

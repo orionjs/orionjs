@@ -22,6 +22,7 @@ export interface EchoEventConfig<
   returns?: TReturnsSchema
   /**
    * Pulse only. Overrides events.pulse.subscription.ordered for this topic listener.
+   * When neither value is configured, Pulse defaults to false.
    */
   ordered?: boolean
   resolve(

@@ -45,6 +45,7 @@ export interface PulseReceivedEvent<TTopic extends string = string, TData = unkn
 }
 
 export interface PulseSubscribeOptions {
+  /** Defaults to false. */
   ordered?: boolean
   offsetReset?: PulseOffsetReset
   delivery?: PulseDeliveryMode

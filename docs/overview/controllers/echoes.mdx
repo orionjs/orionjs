@@ -131,9 +131,10 @@ processSomething = createEchoEvent({
 })
 ```
 
-When `ordered` is omitted, the listener inherits `events.pulse.subscription.ordered` (or Pulse's
-default). This lets ordered topics and concurrently processed topics share the same Echoes Pulse
-transport. Method listeners can set the same option directly with `@EchoEvent({ ordered: true })`.
+When `ordered` is omitted, the listener inherits `events.pulse.subscription.ordered`. If neither is
+configured, Pulse defaults to unordered delivery. This lets ordered topics and concurrently
+processed topics share the same Echoes Pulse transport. Method listeners can set the same option
+directly with `@EchoEvent({ ordered: true })`.
 
 ## Making Requests
 

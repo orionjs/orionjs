@@ -87,7 +87,7 @@ The cursor is saved after Pulse materializes deliveries. Restarting a service re
 
 ## Ordered delivery
 
-Ordered mode is the default:
+Ordered delivery is opt-in:
 
 ```typescript
 await pulse.subscribe('order.created', handleOrder, {
@@ -106,7 +106,7 @@ This provides processing order, not a transaction that spans the handler and ext
 
 ## Concurrent delivery
 
-Use concurrent mode for independent events:
+Concurrent delivery is the default. Omit `ordered` or set it to `false` for independent events:
 
 ```typescript
 await pulse.subscribe('image.requested', resizeImage, {
