@@ -120,6 +120,8 @@ The `createEchoEvent()` function accepts options similar to `createEchoRequest()
 @EchoEvent()
 processSomething = createEchoEvent({
   attemptsBeforeDeadLetter: 5,
+  // Pulse only: overrides events.pulse.subscription.ordered for this topic
+  ordered: true,
   params: {
     // schema definition
   },
@@ -128,6 +130,10 @@ processSomething = createEchoEvent({
   }
 })
 ```
+
+When `ordered` is omitted, the listener inherits `events.pulse.subscription.ordered` (or Pulse's
+default). This lets ordered topics and concurrently processed topics share the same Echoes Pulse
+transport. Method listeners can set the same option directly with `@EchoEvent({ ordered: true })`.
 
 ## Making Requests
 

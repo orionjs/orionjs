@@ -46,6 +46,7 @@ describe('Echoes EventBus', () => {
       echoes: {
         'order.created': createEchoEvent({
           attemptsBeforeDeadLetter: 4,
+          ordered: false,
           async resolve(params, context) {
             contexts.push({params, transport: context.transport})
           },
@@ -63,7 +64,7 @@ describe('Echoes EventBus', () => {
     expect(pulse.startOptions.consume).toBe(true)
     expect(pulse.startOptions.publish).toBe(false)
     expect(pulse.startOptions.subscriptions).toEqual([
-      {topic: 'order.created', attemptsBeforeDeadLetter: 4},
+      {topic: 'order.created', attemptsBeforeDeadLetter: 4, ordered: false},
     ])
 
     await kafka.emit('order.created', {orderId: 'kafka'})

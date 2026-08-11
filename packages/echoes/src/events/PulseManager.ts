@@ -51,7 +51,7 @@ export default class PulseManager implements EventTransport {
         this.pulse.subscribe(
           definition.topic,
           event => options.onEvent(this.createReceivedEvent(event)),
-          this.getSubscribeOptions(subscription, definition.attemptsBeforeDeadLetter),
+          this.getSubscribeOptions(subscription, definition),
         ),
       ),
     )
@@ -75,11 +75,14 @@ export default class PulseManager implements EventTransport {
 
   private getSubscribeOptions(
     defaults: PulseSubscribeOptions = {},
-    attemptsBeforeDeadLetter?: number,
+    definition: EventTransportStartOptions['subscriptions'][number],
   ): PulseSubscribeOptions {
     return {
       ...defaults,
-      ...(attemptsBeforeDeadLetter === undefined ? {} : {maxRetries: attemptsBeforeDeadLetter}),
+      ...(definition.ordered === undefined ? {} : {ordered: definition.ordered}),
+      ...(definition.attemptsBeforeDeadLetter === undefined
+        ? {}
+        : {maxRetries: definition.attemptsBeforeDeadLetter}),
     }
   }
 

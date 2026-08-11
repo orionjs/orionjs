@@ -55,6 +55,10 @@ const echo = function createNewEcho<
     returns: options.returns,
     attemptsBeforeDeadLetter:
       options.type === 'event' ? options.attemptsBeforeDeadLetter : undefined,
+    ordered:
+      options.type === 'event'
+        ? (options as EchoEventConfig<TParamsSchema, TReturnsSchema>).ordered
+        : undefined,
     resolve,
     onEvent,
     onMessage: async (messageData: EchoesKafkaMessagePayload) => {
