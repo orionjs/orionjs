@@ -114,7 +114,7 @@ the history collection and runs on its own 60-second cadence, outside the coordi
 
 Upgrade services in two phases when changing an existing topic's ordering:
 
-1. Upgrade every replica to `@orion-js/pulse@4.5.4` and `@orion-js/echoes@4.5.3` without changing
+1. Upgrade every replica to `@orion-js/pulse@4.5.9` and `@orion-js/echoes@4.5.4` without changing
    the topic configuration. Existing subscriptions keep their persisted ordering.
 2. After all replicas run the new packages, deploy the intended `ordered` value with a higher
    `configVersion`.
