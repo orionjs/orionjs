@@ -43,6 +43,8 @@ const DISCOVERY_TOPIC_BATCH_SIZE = 50
 const RECONCILIATION_BATCH_SIZE = 25
 const RECONCILIATION_INTERVAL_MS = 30_000
 const MAX_REAPER_IDLE_INTERVAL_MS = 10_000
+const DELIVERY_CLEANUP_BATCH_SIZE = 1_000
+const DELIVERY_CLEANUP_INTERVAL_MS = 60_000
 const MAX_DATE_MS = 8_640_000_000_000_000
 
 interface ResolvedConnectOptions {
@@ -399,6 +401,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private localSubscriptionRevision = 0
   private discoveryTopicOffset = 0
   private workTopicOffset = Math.floor(Math.random() * 1_000_000_000)
+  private deliveryCleanupTopicOffset = 0
   private db?: Db
   private collections?: PulseCollections
   private coordinatorPromise?: Promise<void>
@@ -407,6 +410,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private nextDiscoveryAt = 0
   private nextReapAt = 0
   private nextReconciliationAt = 0
+  private nextDeliveryCleanupAt = Date.now() + DELIVERY_CLEANUP_INTERVAL_MS
   private running = true
   private closePromise?: Promise<void>
 
@@ -595,11 +599,15 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     )
     let reaped = 0
     let reconciled = 0
+    let cleaned = 0
     if (leaderTopics.length > 0) {
       const now = Date.now()
       if (now >= this.nextReapAt) reaped = await this.reapExpiredAttempts(leaderTopics)
       if (now >= this.nextReconciliationAt) {
         reconciled = await this.reconcileDeliveries(leaderTopics)
+      }
+      if (now >= this.nextDeliveryCleanupAt) {
+        cleaned = await this.cleanupSuccessfulDeliveries(leaderTopics)
       }
     }
 
@@ -611,7 +619,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       this.startExecution(execution)
       dispatched = true
     }
-    return discovery.discovered || reaped > 0 || reconciled > 0 || dispatched
+    return discovery.discovered || reaped > 0 || reconciled > 0 || cleaned > 0 || dispatched
   }
 
   private async discoverEvents(scanEvents: boolean): Promise<DiscoveryResult> {
@@ -1644,6 +1652,80 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     this.nextReconciliationAt =
       reconciled === RECONCILIATION_BATCH_SIZE ? 0 : Date.now() + RECONCILIATION_INTERVAL_MS
     return reconciled
+  }
+
+  private async cleanupSuccessfulDeliveries(topics: string[]) {
+    this.nextDeliveryCleanupAt = Date.now() + DELIVERY_CLEANUP_INTERVAL_MS
+    if (topics.length === 0) return 0
+
+    const selectedTopics = circularBatch(
+      topics,
+      this.deliveryCleanupTopicOffset,
+      DISCOVERY_TOPIC_BATCH_SIZE,
+    )
+    this.deliveryCleanupTopicOffset =
+      (this.deliveryCleanupTopicOffset + selectedTopics.length) % topics.length
+
+    const now = new Date()
+    const collections = this.getCollections()
+    const subscriptions = await collections.subscriptions
+      .find({
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: selectedTopics},
+        discoveryLockOwner: this.coordinatorId,
+        discoveryLockedUntil: {$gt: now},
+      })
+      .toArray()
+    const cursorBranches: Document[] = []
+    for (const subscription of subscriptions) {
+      if (subscription.cursorSequence) {
+        cursorBranches.push({
+          topic: subscription.topic,
+          eventSequence: {$lt: subscription.cursorSequence},
+        })
+        if (subscription.cursorSequenceEventId !== undefined) {
+          cursorBranches.push({
+            topic: subscription.topic,
+            eventSequence: subscription.cursorSequence,
+            eventId: {$lte: subscription.cursorSequenceEventId},
+          })
+        }
+      }
+      if (subscription.cursorCreatedAt) {
+        cursorBranches.push({
+          topic: subscription.topic,
+          eventSequence: {$exists: false},
+          eventCreatedAt: {$lt: subscription.cursorCreatedAt},
+        })
+        if (subscription.cursorEventId !== undefined) {
+          cursorBranches.push({
+            topic: subscription.topic,
+            eventSequence: {$exists: false},
+            eventCreatedAt: subscription.cursorCreatedAt,
+            eventId: {$lte: subscription.cursorEventId},
+          })
+        }
+      }
+    }
+    if (cursorBranches.length === 0) return 0
+
+    const eligible = {
+      consumerGroup: this.options.consumerGroup,
+      status: 'success' as const,
+      ...(this.options.historyRetentionMs === null ? {} : {expiresAt: {$exists: true}}),
+      $or: cursorBranches,
+    }
+    const candidates = await collections.deliveries
+      .find(eligible, {projection: {_id: 1}})
+      .limit(DELIVERY_CLEANUP_BATCH_SIZE)
+      .toArray()
+    if (candidates.length === 0) return 0
+
+    const result = await collections.deliveries.deleteMany({
+      ...eligible,
+      _id: {$in: candidates.map(delivery => delivery._id)},
+    })
+    return result.deletedCount
   }
 
   /*

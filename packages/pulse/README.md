@@ -230,6 +230,12 @@ seconds unless a full batch of 25 repairs remains. Cross-collection writes tempo
 `needsReconciliation`; partial indexes keep these recovery queries proportional to incomplete
 writes instead of the total number of deliveries or history records.
 
+The discovery leader also removes completed `success` deliveries in periodic batches after the
+persisted sequenced or legacy cursor has reached them. When retention is enabled, cleanup requires
+the delivery's `expiresAt` marker so history retention is known to have been applied first. With
+`historyRetentionMs: null`, cleanup does not require that marker. This maintenance path never reads
+the history collection.
+
 `changeStreams` is not a supported connection option. Remove it from existing configurations
 before upgrading. Pulse rejects the legacy field at startup, including `changeStreams: 'disabled'`,
 so a stale deployment cannot suggest that a Change Stream mode is still available.

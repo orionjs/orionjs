@@ -50,6 +50,7 @@ function getRuntimeState(pulse: Pulse<any>) {
     discoveryRefreshAt: number
     nextReapAt: number
     nextReconciliationAt: number
+    nextDeliveryCleanupAt: number
     localSubscriptions: Map<string, {running: number}>
     running: boolean
     collections: {
@@ -66,6 +67,7 @@ function getRuntimeState(pulse: Pulse<any>) {
     claimExecutions(capacity: number): Promise<unknown[]>
     reapExpiredAttempts(topics: string[]): Promise<number>
     reconcileDeliveries(topics: string[]): Promise<number>
+    cleanupSuccessfulDeliveries(topics: string[]): Promise<number>
   }
 }
 
@@ -549,6 +551,7 @@ describe('Pulse persistence', () => {
 
     let reapCalls = 0
     let reconciliationCalls = 0
+    let cleanupCalls = 0
     runtime.reapExpiredAttempts = async () => {
       reapCalls++
       runtime.nextReapAt = Date.now() + 60_000
@@ -559,14 +562,216 @@ describe('Pulse persistence', () => {
       runtime.nextReconciliationAt = Date.now() + 60_000
       return 0
     }
+    runtime.cleanupSuccessfulDeliveries = async () => {
+      cleanupCalls++
+      runtime.nextDeliveryCleanupAt = Date.now() + 60_000
+      return 0
+    }
     runtime.nextReapAt = 0
     runtime.nextReconciliationAt = 0
+    runtime.nextDeliveryCleanupAt = 0
 
     await runtime.coordinateOnce()
     await Promise.all(Array.from({length: 10}, () => runtime.coordinateOnce()))
 
     expect(reapCalls).toBe(1)
     expect(reconciliationCalls).toBe(1)
+    expect(cleanupCalls).toBe(1)
+  })
+
+  it('cleans retained successes only after their persisted sequenced or legacy cursor', async () => {
+    const databaseName = uniqueName('delivery_cleanup_cursors')
+    const consumerGroup = 'delivery-cleanup-cursors-group'
+    const topic = 'delivery-cleanup-cursors.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {historyRetentionMs: 60_000})
+    await pulse.awaitConnection()
+    await pulse.subscribe(topic, async () => {}, {offsetReset: 'latest'})
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const db = await rawDatabase(databaseName)
+    const now = new Date()
+    const cursorCreatedAt = new Date(now.getTime() - 1_000)
+    const cursorSequence = new Timestamp({t: 20, i: 2})
+    const [
+      lowerSequenceEventId,
+      lowerLegacyEventId,
+      cursorEventId,
+      higherSequenceEventId,
+      higherLegacyEventId,
+    ] = Array.from({length: 5}, () => uuidv7()).sort()
+    await db.collection('orionjs.pulse.subscriptions').updateOne(
+      {consumerGroup, topic},
+      {
+        $set: {
+          cursorCreatedAt,
+          cursorEventId,
+          cursorSequence,
+          cursorSequenceEventId: cursorEventId,
+          discoveryLockedUntil: new Date(Date.now() + 60_000),
+        },
+      },
+    )
+
+    const retainedUntil = new Date(Date.now() + 60_000)
+    const delivery = (
+      eventId: string,
+      options: {
+        status?: 'pending' | 'success' | 'error'
+        eventCreatedAt?: Date
+        eventSequence?: Timestamp
+        expiresAt?: Date
+      } = {},
+    ) => ({
+      _id: uuidv7(),
+      eventId,
+      consumerGroup,
+      topic,
+      eventCreatedAt: options.eventCreatedAt ?? cursorCreatedAt,
+      ...(options.eventSequence ? {eventSequence: options.eventSequence} : {}),
+      status: options.status ?? ('success' as const),
+      createdAt: now,
+      updatedAt: now,
+      ...(options.expiresAt ? {expiresAt: options.expiresAt} : {}),
+    })
+    const deletedEventIds = [uuidv7(), lowerSequenceEventId, uuidv7(), lowerLegacyEventId]
+    const keptEventIds = [
+      higherSequenceEventId,
+      uuidv7(),
+      higherLegacyEventId,
+      uuidv7(),
+      uuidv7(),
+      uuidv7(),
+      uuidv7(),
+    ]
+    await db.collection<any>('orionjs.pulse.deliveries').insertMany([
+      delivery(deletedEventIds[0], {
+        eventSequence: new Timestamp({t: 20, i: 1}),
+        expiresAt: retainedUntil,
+      }),
+      delivery(deletedEventIds[1], {eventSequence: cursorSequence, expiresAt: retainedUntil}),
+      delivery(keptEventIds[0], {eventSequence: cursorSequence, expiresAt: retainedUntil}),
+      delivery(keptEventIds[1], {
+        eventSequence: new Timestamp({t: 20, i: 3}),
+        expiresAt: retainedUntil,
+      }),
+      delivery(deletedEventIds[2], {
+        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
+        expiresAt: retainedUntil,
+      }),
+      delivery(deletedEventIds[3], {expiresAt: retainedUntil}),
+      delivery(keptEventIds[2], {expiresAt: retainedUntil}),
+      delivery(keptEventIds[3], {
+        eventCreatedAt: new Date(cursorCreatedAt.getTime() + 1),
+        expiresAt: retainedUntil,
+      }),
+      delivery(keptEventIds[4], {
+        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
+      }),
+      delivery(keptEventIds[5], {
+        status: 'pending',
+        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
+        expiresAt: retainedUntil,
+      }),
+      delivery(keptEventIds[6], {
+        status: 'error',
+        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
+        expiresAt: retainedUntil,
+      }),
+    ])
+
+    const originalHistoryFind = runtime.collections.history.find
+    const originalDeliveryFind = runtime.collections.deliveries.find
+    let cleanupFilter: Document | undefined
+    runtime.collections.history.find = () => {
+      throw new Error('Delivery cleanup must not query history.')
+    }
+    runtime.collections.deliveries.find = (...args: any[]) => {
+      cleanupFilter = args[0]
+      return originalDeliveryFind.apply(runtime.collections.deliveries, args)
+    }
+    try {
+      expect(await runtime.cleanupSuccessfulDeliveries([topic])).toBe(4)
+    } finally {
+      runtime.collections.history.find = originalHistoryFind
+      runtime.collections.deliveries.find = originalDeliveryFind
+    }
+    if (!cleanupFilter) throw new Error('Delivery cleanup did not issue its candidate query.')
+    const cleanupExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find(cleanupFilter)
+      .limit(1_000)
+      .explain('executionStats')
+    const cleanupPlan = JSON.stringify(cleanupExplain.queryPlanner.winningPlan)
+    expect(cleanupPlan).toContain('pulse_deliveries_acquisition')
+    expect(cleanupPlan).toContain('pulse_deliveries_sequence_acquisition')
+    expect(cleanupPlan).not.toContain('COLLSCAN')
+
+    const remaining = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({}, {projection: {eventId: 1}})
+      .toArray()
+    expect(remaining.map(item => item.eventId).sort()).toEqual(keptEventIds.sort())
+  })
+
+  it('batches cleanup without expiresAt only on the persisted discovery leader', async () => {
+    const databaseName = uniqueName('delivery_cleanup_leader')
+    const consumerGroup = 'delivery-cleanup-leader-group'
+    const topic = 'delivery-cleanup-leader.topic'
+    const replicas = [
+      createPulse(databaseName, consumerGroup),
+      createPulse(databaseName, consumerGroup),
+    ]
+    await Promise.all(replicas.map(replica => replica.awaitConnection()))
+    await Promise.all(
+      replicas.map(replica => replica.subscribe(topic, async () => {}, {offsetReset: 'latest'})),
+    )
+    const runtimes = replicas.map(getRuntimeState)
+    await waitFor(() => runtimes.filter(runtime => runtime.discoveryLeases.has(topic)).length === 1)
+    const leader = runtimes.find(runtime => runtime.discoveryLeases.has(topic))
+    const follower = runtimes.find(runtime => !runtime.discoveryLeases.has(topic))
+    if (!leader || !follower) throw new Error('Expected one discovery leader and one follower.')
+    for (const runtime of runtimes) {
+      runtime.running = false
+      runtime.wakeCoordinator()
+    }
+    await Promise.all(runtimes.map(runtime => runtime.coordinatorPromise))
+
+    const db = await rawDatabase(databaseName)
+    const cursorCreatedAt = new Date()
+    await db.collection('orionjs.pulse.subscriptions').updateOne(
+      {consumerGroup, topic},
+      {
+        $set: {
+          cursorCreatedAt,
+          cursorEventId: '',
+          discoveryLockedUntil: new Date(Date.now() + 60_000),
+        },
+      },
+    )
+    const createdAt = new Date(cursorCreatedAt.getTime() - 1)
+    await db.collection<any>('orionjs.pulse.deliveries').insertMany(
+      Array.from({length: 1_005}, () => ({
+        _id: uuidv7(),
+        eventId: uuidv7(),
+        consumerGroup,
+        topic,
+        eventCreatedAt: createdAt,
+        status: 'success',
+        createdAt,
+        updatedAt: createdAt,
+      })),
+    )
+
+    expect(await follower.cleanupSuccessfulDeliveries([topic])).toBe(0)
+    expect(await db.collection('orionjs.pulse.deliveries').countDocuments()).toBe(1_005)
+    expect(await leader.cleanupSuccessfulDeliveries([topic])).toBe(1_000)
+    expect(await db.collection('orionjs.pulse.deliveries').countDocuments()).toBe(5)
+    expect(await leader.cleanupSuccessfulDeliveries([topic])).toBe(5)
+    expect(await db.collection('orionjs.pulse.deliveries').countDocuments()).toBe(0)
   })
 
   it('keeps the real aggregate pipelines bounded at late cursors', async () => {
