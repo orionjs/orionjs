@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.10
+
+### Patch Changes
+
+- Optimize completed-delivery cleanup by selecting candidates per topic and deleting the selected IDs directly, avoiding large cross-topic cursor queries during backlog cleanup.
+
 ## 4.5.9
 
 ### Patch Changes
