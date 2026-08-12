@@ -156,6 +156,7 @@ describe('Pulse persistence', () => {
     const subscription = await pulse.subscribe('default-unordered.topic', async () => {})
 
     expect(subscription.ordered).toBe(false)
+    expect(subscription.configVersion).toBe(0)
     expect(subscription.maxConcurrency).toBe(4)
 
     const db = await rawDatabase(databaseName)
@@ -164,7 +165,73 @@ describe('Pulse persistence', () => {
         consumerGroup: 'default-unordered-group',
         topic: 'default-unordered.topic',
       }),
-    ).toMatchObject({ordered: false})
+    ).toMatchObject({ordered: false, configVersion: 0})
+  })
+
+  it('preserves legacy ordering when ordered is omitted', async () => {
+    const databaseName = uniqueName('legacy_ordering')
+    const consumerGroup = 'legacy-ordering-group'
+    const topic = 'legacy-ordering.topic'
+    const first = createPulse(databaseName, consumerGroup)
+    await first.subscribe(topic, async () => {}, {ordered: true})
+    await first.close()
+
+    const db = await rawDatabase(databaseName)
+    await db
+      .collection('orionjs.pulse.subscriptions')
+      .updateOne({consumerGroup, topic}, {$unset: {configVersion: ''}})
+
+    const replacement = createPulse(databaseName, consumerGroup)
+    const subscription = await replacement.subscribe(topic, async () => {})
+
+    expect(subscription.ordered).toBe(true)
+    expect(subscription.configVersion).toBe(0)
+  })
+
+  it('adopts the highest subscription configVersion without downgrading', async () => {
+    const databaseName = uniqueName('config_version')
+    const consumerGroup = 'config-version-group'
+    const topic = 'config-version.topic'
+    const first = createPulse(databaseName, consumerGroup)
+    const winner = createPulse(databaseName, consumerGroup)
+    const stale = createPulse(databaseName, consumerGroup)
+
+    await first.subscribe(topic, async () => {}, {ordered: true, configVersion: 1})
+    const updated = await winner.subscribe(topic, async () => {}, {
+      ordered: false,
+      configVersion: 2,
+    })
+    const staleResult = await stale.subscribe(topic, async () => {}, {
+      ordered: true,
+      configVersion: 1,
+    })
+
+    expect(updated).toMatchObject({ordered: false, configVersion: 2})
+    expect(staleResult).toMatchObject({ordered: false, configVersion: 2})
+
+    const runtime = getRuntimeState(first)
+    runtime.discoveryRefreshAt = 0
+    await runtime.refreshDiscoveryLeases()
+    expect(first.getSubscriptions()[0]).toMatchObject({ordered: false, configVersion: 2})
+
+    const db = await rawDatabase(databaseName)
+    expect(
+      await db.collection('orionjs.pulse.subscriptions').findOne({consumerGroup, topic}),
+    ).toMatchObject({ordered: false, configVersion: 2})
+  })
+
+  it('rejects different settings at the same configVersion', async () => {
+    const databaseName = uniqueName('config_version_conflict')
+    const consumerGroup = 'config-version-conflict-group'
+    const topic = 'config-version-conflict.topic'
+    const first = createPulse(databaseName, consumerGroup)
+    const conflicting = createPulse(databaseName, consumerGroup)
+
+    await first.subscribe(topic, async () => {}, {ordered: false, configVersion: 2})
+
+    await expect(
+      conflicting.subscribe(topic, async () => {}, {ordered: true, configVersion: 2}),
+    ).rejects.toThrow('Increase configVersion to change it')
   })
 
   it('rejects invalid MongoDB pool sizes before connecting', () => {
@@ -1417,6 +1484,8 @@ describe('Pulse disaster recovery and edge cases', () => {
       {maxConcurrency: 1.5},
       {maxConcurrency: 0},
       {ordered: 'yes' as any},
+      {configVersion: -1},
+      {configVersion: 1.5},
       {offsetReset: 'middle' as any},
       {delivery: 'maybe' as any},
       {retryDelayMs: Number.MAX_VALUE},

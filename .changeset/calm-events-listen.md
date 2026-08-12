@@ -3,4 +3,4 @@
 '@orion-js/pulse': patch
 ---
 
-Allow Pulse ordering to be configured per Echoes event listener with `ordered`, overriding the global subscription default for that topic. Pulse subscriptions now default to unordered delivery.
+Allow Pulse ordering to be configured per Echoes event listener with `ordered`, overriding the global subscription default for that topic. Pulse subscriptions now default to unordered delivery and support integer `configVersion` values so higher-version persisted settings win safely across deployments.

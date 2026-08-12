@@ -80,6 +80,7 @@ export default class PulseManager implements EventTransport {
     return {
       ...defaults,
       ...(definition.ordered === undefined ? {} : {ordered: definition.ordered}),
+      ...(definition.configVersion === undefined ? {} : {configVersion: definition.configVersion}),
       ...(definition.attemptsBeforeDeadLetter === undefined
         ? {}
         : {maxRetries: definition.attemptsBeforeDeadLetter}),

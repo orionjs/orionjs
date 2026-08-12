@@ -25,6 +25,10 @@ export interface EchoEventConfig<
    * When neither value is configured, Pulse defaults to false.
    */
   ordered?: boolean
+  /**
+   * Pulse only. Integer version for persisted subscription settings. Higher versions win.
+   */
+  configVersion?: number
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
@@ -51,6 +55,7 @@ export type EchoType<
   returns?: TReturnsSchema
   attemptsBeforeDeadLetter?: number
   ordered?: boolean
+  configVersion?: number
   type: TEchoType
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
@@ -223,6 +228,7 @@ export interface EchoesPulseEventsConfig {
    */
   subscription?: {
     ordered?: boolean
+    configVersion?: number
     offsetReset?: 'latest' | 'earliest'
     delivery?: 'at-least-once' | 'at-most-once'
     maxRetries?: number

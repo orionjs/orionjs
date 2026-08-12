@@ -26,6 +26,7 @@ it('publishes and consumes Echoes events through Pulse', async () => {
     echoes: {
       'order.created': createEchoEvent({
         ordered: true,
+        configVersion: 2,
         async resolve(params, context) {
           contexts.push({params, context})
         },
@@ -58,14 +59,14 @@ it('publishes and consumes Echoes events through Pulse', async () => {
     const subscriptions = await mongoClient
       .db('echoes')
       .collection('orionjs.pulse.subscriptions')
-      .find({}, {projection: {_id: 0, topic: 1, ordered: 1}})
+      .find({}, {projection: {_id: 0, topic: 1, ordered: 1, configVersion: 1}})
       .sort({topic: 1})
       .toArray()
     await mongoClient.close()
 
     expect(subscriptions).toEqual([
-      {topic: 'invoice.created', ordered: false},
-      {topic: 'order.created', ordered: true},
+      {topic: 'invoice.created', ordered: false, configVersion: 0},
+      {topic: 'order.created', ordered: true, configVersion: 2},
     ])
 
     const published = await publish({

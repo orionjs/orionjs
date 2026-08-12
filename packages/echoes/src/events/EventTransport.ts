@@ -4,6 +4,7 @@ export interface EventSubscriptionDefinition {
   topic: string
   attemptsBeforeDeadLetter?: number
   ordered?: boolean
+  configVersion?: number
 }
 
 export interface EventTransportStartOptions {

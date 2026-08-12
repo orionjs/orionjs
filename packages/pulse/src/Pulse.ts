@@ -225,6 +225,7 @@ function resolveSubscribeOptions(
     throw new PulseConfigurationError('subscribe options must be an object.')
   }
   const resolved: ResolvedSubscribeOptions = {
+    configVersion: options.configVersion ?? 0,
     ordered: options.ordered ?? false,
     offsetReset: options.offsetReset ?? 'latest',
     delivery: options.delivery ?? 'at-least-once',
@@ -235,6 +236,7 @@ function resolveSubscribeOptions(
   }
 
   assertBoolean(resolved.ordered, 'ordered')
+  assertNonNegativeInteger(resolved.configVersion, 'configVersion')
   assertOneOf(resolved.offsetReset, ['latest', 'earliest'], 'offsetReset')
   assertOneOf(resolved.delivery, ['at-least-once', 'at-most-once'], 'delivery')
   assertNonNegativeInteger(resolved.maxRetries, 'maxRetries')
@@ -313,6 +315,7 @@ function serializeError(error: unknown, code = 'handler_error'): PulseHistoryErr
 
 function subscriptionConfig(document: SubscriptionDocument) {
   return {
+    configVersion: document.configVersion ?? 0,
     ordered: document.ordered,
     offsetReset: document.offsetReset,
     delivery: document.delivery,
@@ -324,6 +327,7 @@ function subscriptionConfig(document: SubscriptionDocument) {
 
 function configsMatch(document: SubscriptionDocument, options: ResolvedSubscribeOptions) {
   const expected = {
+    configVersion: options.configVersion,
     ordered: options.ordered,
     offsetReset: options.offsetReset,
     delivery: options.delivery,
@@ -332,6 +336,33 @@ function configsMatch(document: SubscriptionDocument, options: ResolvedSubscribe
     retryBackoffMultiplier: options.retryBackoffMultiplier,
   }
   return JSON.stringify(subscriptionConfig(document)) === JSON.stringify(expected)
+}
+
+function persistedConfig(options: ResolvedSubscribeOptions) {
+  return {
+    configVersion: options.configVersion,
+    ordered: options.ordered,
+    offsetReset: options.offsetReset,
+    delivery: options.delivery,
+    maxRetries: options.maxRetries,
+    retryDelayMs: options.retryDelayMs,
+    retryBackoffMultiplier: options.retryBackoffMultiplier,
+  }
+}
+
+function optionsFromDocument(
+  document: SubscriptionDocument,
+  configuredMaxConcurrency: number,
+): ResolvedSubscribeOptions {
+  return {
+    ...subscriptionConfig(document),
+    maxConcurrency: document.ordered ? 1 : configuredMaxConcurrency,
+  }
+}
+
+function configVersionFilter(configVersion: number) {
+  if (configVersion !== 0) return {configVersion}
+  return {$or: [{configVersion: 0}, {configVersion: {$exists: false}}]}
 }
 
 function circularBatch<T>(items: T[], offset: number, limit: number) {
@@ -456,13 +487,15 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       )
     }
 
-    const options = resolveSubscribeOptions(userOptions, this.options.workerCount)
+    const configuredMaxConcurrency = userOptions.maxConcurrency ?? this.options.workerCount
+    const requestedOptions = resolveSubscribeOptions(userOptions, this.options.workerCount)
     this.subscribingTopics.add(topic)
     try {
-      const document = await this.getOrCreateSubscription(topic, options)
+      const document = await this.getOrCreateSubscription(topic, requestedOptions, userOptions)
       const local: LocalSubscription = {
         document,
-        options,
+        options: optionsFromDocument(document, configuredMaxConcurrency),
+        configuredMaxConcurrency,
         handler: handler as PulseEventHandler<string, unknown>,
         running: 0,
         unsubscribed: false,
@@ -683,13 +716,16 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       const local = this.localSubscriptions.get(topic)
       const expectedToken = batchLeaseTokens.get(topic)
       if (!local || local.unsubscribed || !expectedToken || invalidTopics.has(topic)) continue
-      local.document = await this.advanceDiscoveryCursor(
-        local.document,
-        {
-          cursorCreatedAt: event.createdAt,
-          cursorEventId: event._id,
-        },
-        expectedToken,
+      this.updateLocalSubscription(
+        local,
+        await this.advanceDiscoveryCursor(
+          local.document,
+          {
+            cursorCreatedAt: event.createdAt,
+            cursorEventId: event._id,
+          },
+          expectedToken,
+        ),
       )
     }
     for (const [topic, event] of latestSequenced) {
@@ -697,13 +733,16 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       const local = this.localSubscriptions.get(topic)
       const expectedToken = batchLeaseTokens.get(topic)
       if (!local || local.unsubscribed || !expectedToken || invalidTopics.has(topic)) continue
-      local.document = await this.advanceDiscoveryCursor(
-        local.document,
-        {
-          cursorSequence: event.sequence,
-          cursorSequenceEventId: event._id,
-        },
-        expectedToken,
+      this.updateLocalSubscription(
+        local,
+        await this.advanceDiscoveryCursor(
+          local.document,
+          {
+            cursorSequence: event.sequence,
+            cursorSequenceEventId: event._id,
+          },
+          expectedToken,
+        ),
       )
     }
 
@@ -1599,7 +1638,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         this.discoveryLeases.delete(local.document.topic)
         continue
       }
-      local.document = document
+      this.updateLocalSubscription(local, document)
 
       let lease = this.discoveryLeases.get(document.topic)
       const observedToken = document.discoveryLockToken
@@ -1692,7 +1731,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     for (const document of documents) {
       const local = this.localSubscriptions.get(document.topic)
       if (!local || local.unsubscribed) continue
-      local.document = document
+      this.updateLocalSubscription(local, document)
       if (
         document.discoveryLockOwner === this.coordinatorId &&
         typeof document.discoveryLockToken === 'string' &&
@@ -1851,23 +1890,22 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   private async getOrCreateSubscription(
     topic: string,
-    options: ResolvedSubscribeOptions,
+    requestedOptions: ResolvedSubscribeOptions,
+    userOptions: PulseSubscribeOptions,
   ): Promise<SubscriptionDocument> {
-    let document = await this.getCollections().subscriptions.findOne({
-      consumerGroup: this.options.consumerGroup,
-      topic,
-    })
+    const subscriptions = this.getCollections().subscriptions
+    let document = await subscriptions.findOne({consumerGroup: this.options.consumerGroup, topic})
     if (!document) {
       const now = new Date()
       const latest =
-        options.offsetReset === 'latest'
+        requestedOptions.offsetReset === 'latest'
           ? await this.getCollections().events.findOne(
               {topic, sequence: {$exists: false}},
               {sort: {createdAt: -1, _id: -1}},
             )
           : undefined
       const latestSequenced =
-        options.offsetReset === 'latest'
+        requestedOptions.offsetReset === 'latest'
           ? await this.getCollections().events.findOne(
               {topic, sequence: {$exists: true}},
               {sort: {sequence: -1, _id: -1}},
@@ -1877,15 +1915,10 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         _id: uuidv7(),
         consumerGroup: this.options.consumerGroup,
         topic,
-        ordered: options.ordered,
-        offsetReset: options.offsetReset,
-        delivery: options.delivery,
-        maxRetries: options.maxRetries,
-        retryDelayMs: options.retryDelayMs,
-        retryBackoffMultiplier: options.retryBackoffMultiplier,
+        ...persistedConfig(requestedOptions),
         createdAt: now,
         updatedAt: now,
-        ...(options.offsetReset === 'latest'
+        ...(requestedOptions.offsetReset === 'latest'
           ? {
               cursorCreatedAt: latest?.createdAt ?? now,
               cursorEventId: latest?._id ?? '',
@@ -1899,11 +1932,11 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           : {}),
       }
       try {
-        await this.getCollections().subscriptions.insertOne(candidate)
+        await subscriptions.insertOne(candidate)
         document = candidate
       } catch (error) {
         if (!isDuplicateKeyError(error)) throw error
-        document = await this.getCollections().subscriptions.findOne({
+        document = await subscriptions.findOne({
           consumerGroup: this.options.consumerGroup,
           topic,
         })
@@ -1914,13 +1947,44 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         `Failed to create Pulse subscription for ${this.options.consumerGroup}/${topic}.`,
       )
     }
-    if (!configsMatch(document, options)) {
-      throw new PulseConfigurationError(
-        `Subscription configuration for ${this.options.consumerGroup}/${topic} does not match ` +
-          `the persisted configuration. Existing=${JSON.stringify(subscriptionConfig(document))}.`,
+
+    while (true) {
+      const existingVersion = document.configVersion ?? 0
+      if (requestedOptions.configVersion < existingVersion) return document
+
+      const desiredOptions = {
+        ...requestedOptions,
+        ordered: userOptions.ordered ?? document.ordered,
+      }
+      if (requestedOptions.configVersion === existingVersion) {
+        if (configsMatch(document, desiredOptions)) return document
+        throw new PulseConfigurationError(
+          `Subscription configuration for ${this.options.consumerGroup}/${topic} does not match ` +
+            `the persisted configuration at configVersion ${existingVersion}. Increase ` +
+            `configVersion to change it. Existing=${JSON.stringify(subscriptionConfig(document))}, ` +
+            `requested=${JSON.stringify(persistedConfig(desiredOptions))}.`,
+        )
+      }
+
+      const updated = await subscriptions.findOneAndUpdate(
+        {_id: document._id, ...configVersionFilter(existingVersion)},
+        {$set: {...persistedConfig(desiredOptions), updatedAt: new Date()}},
+        {returnDocument: 'after'},
       )
+      if (updated) return updated
+
+      document = await subscriptions.findOne({_id: document._id})
+      if (!document) {
+        throw new Error(
+          `Pulse subscription disappeared for ${this.options.consumerGroup}/${topic}.`,
+        )
+      }
     }
-    return document
+  }
+
+  private updateLocalSubscription(local: LocalSubscription, document: SubscriptionDocument) {
+    local.document = document
+    local.options = optionsFromDocument(document, local.configuredMaxConcurrency)
   }
 
   private toSubscriptionInfo(local: LocalSubscription): PulseSubscriptionInfo {
@@ -1928,6 +1992,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       id: local.document._id,
       topic: local.document.topic,
       consumerGroup: local.document.consumerGroup,
+      configVersion: local.options.configVersion,
       ordered: local.options.ordered,
       offsetReset: local.options.offsetReset,
       delivery: local.options.delivery,

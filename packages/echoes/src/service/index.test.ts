@@ -11,7 +11,7 @@ describe('Echoes with service injections', () => {
         return 1
       }
 
-      @EchoEvent({ordered: false})
+      @EchoEvent({ordered: false, configVersion: 2})
       async echoEvent() {
         return 2
       }
@@ -23,6 +23,7 @@ describe('Echoes with service injections', () => {
     expect(typeof echoes.echo.onRequest).toBe('function')
     expect(echoes.echoEvent.type).toBe('event')
     expect(echoes.echoEvent.ordered).toBe(false)
+    expect(echoes.echoEvent.configVersion).toBe(2)
     expect(typeof echoes.echoEvent.resolve).toBe('function')
   })
 
