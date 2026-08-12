@@ -48,6 +48,8 @@ function getRuntimeState(pulse: Pulse<any>) {
     activeExecutions: Set<Promise<void>>
     discoveryLeases: Map<string, unknown>
     discoveryRefreshAt: number
+    nextReapAt: number
+    nextReconciliationAt: number
     localSubscriptions: Map<string, {running: number}>
     running: boolean
     collections: {
@@ -57,6 +59,7 @@ function getRuntimeState(pulse: Pulse<any>) {
       history: any
     }
     wakeCoordinator(): void
+    coordinateOnce(): Promise<boolean>
     discoverEvents(scanEvents: boolean): Promise<{discovered: boolean; scanned: boolean}>
     refreshDiscoveryLeases(): Promise<void>
     findExecutionCandidates(capacity: number): Promise<unknown[]>
@@ -307,6 +310,11 @@ describe('Pulse persistence', () => {
           key: {status: 1, eventCreatedAt: 1, eventId: 1},
         },
         {
+          name: 'pulse_deliveries_reconciliation',
+          key: {consumerGroup: 1, topic: 1},
+          partialFilterExpression: {needsReconciliation: true},
+        },
+        {
           name: 'pulse_deliveries_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
@@ -333,6 +341,11 @@ describe('Pulse persistence', () => {
           key: {consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1},
         },
         {
+          name: 'pulse_history_reconciliation',
+          key: {consumerGroup: 1, topic: 1},
+          partialFilterExpression: {needsReconciliation: true},
+        },
+        {
           name: 'pulse_history_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
@@ -350,6 +363,11 @@ describe('Pulse persistence', () => {
         )
         expect(index?.expireAfterSeconds).toBe(
           'expireAfterSeconds' in expectedIndex ? expectedIndex.expireAfterSeconds : undefined,
+        )
+        expect(index?.partialFilterExpression).toEqual(
+          'partialFilterExpression' in expectedIndex
+            ? expectedIndex.partialFilterExpression
+            : undefined,
         )
       }
     }
@@ -423,6 +441,29 @@ describe('Pulse persistence', () => {
         nextAttemptAt: now,
       })),
     )
+    await db.collection<any>('orionjs.pulse.deliveries').insertOne({
+      _id: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic,
+      eventCreatedAt: now,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+      needsReconciliation: true,
+    })
+    await db.collection<any>('orionjs.pulse.history').insertOne({
+      _id: uuidv7(),
+      deliveryId: uuidv7(),
+      eventId: uuidv7(),
+      consumerGroup,
+      topic,
+      attempt: 1,
+      status: 'success',
+      createdAt: now,
+      nextAttemptAt: now,
+      needsReconciliation: true,
+    })
 
     const legacyExplain = await db
       .collection('orionjs.pulse.events')
@@ -466,6 +507,16 @@ describe('Pulse persistence', () => {
       .sort({lockedUntil: 1})
       .limit(25)
       .explain('executionStats')
+    const deliveryReconciliationExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({consumerGroup, topic: {$in: [topic]}, needsReconciliation: true})
+      .limit(25)
+      .explain('executionStats')
+    const historyReconciliationExplain = await db
+      .collection('orionjs.pulse.history')
+      .find({consumerGroup, topic: {$in: [topic]}, needsReconciliation: true})
+      .limit(25)
+      .explain('executionStats')
 
     const assertions: Array<[unknown, string]> = [
       [legacyExplain, 'pulse_events_legacy_topic_created_id'],
@@ -473,6 +524,8 @@ describe('Pulse persistence', () => {
       [dashboardPendingExplain, 'pulse_deliveries_dashboard_pending'],
       [historyExplain, 'pulse_history_pending_acquisition'],
       [deadLockExplain, 'pulse_history_group_dead_locks'],
+      [deliveryReconciliationExplain, 'pulse_deliveries_reconciliation'],
+      [historyReconciliationExplain, 'pulse_history_reconciliation'],
     ]
     for (const [explain, expectedIndex] of assertions) {
       const winningPlan = JSON.stringify((explain as any).queryPlanner.winningPlan)
@@ -480,6 +533,40 @@ describe('Pulse persistence', () => {
       expect(winningPlan).not.toContain('COLLSCAN')
       expect(winningPlan).not.toContain('"stage":"SORT"')
     }
+  })
+
+  it('keeps maintenance queries out of repeated coordinator work iterations', async () => {
+    const databaseName = uniqueName('maintenance_schedule')
+    const topic = 'maintenance-schedule.topic'
+    const pulse = createPulse(databaseName, 'maintenance-schedule-group')
+    await pulse.awaitConnection()
+    await pulse.subscribe(topic, async () => {}, {offsetReset: 'latest'})
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    let reapCalls = 0
+    let reconciliationCalls = 0
+    runtime.reapExpiredAttempts = async () => {
+      reapCalls++
+      runtime.nextReapAt = Date.now() + 60_000
+      return 0
+    }
+    runtime.reconcileDeliveries = async () => {
+      reconciliationCalls++
+      runtime.nextReconciliationAt = Date.now() + 60_000
+      return 0
+    }
+    runtime.nextReapAt = 0
+    runtime.nextReconciliationAt = 0
+
+    await runtime.coordinateOnce()
+    await Promise.all(Array.from({length: 10}, () => runtime.coordinateOnce()))
+
+    expect(reapCalls).toBe(1)
+    expect(reconciliationCalls).toBe(1)
   })
 
   it('keeps the real aggregate pipelines bounded at late cursors', async () => {
@@ -1354,6 +1441,7 @@ describe('Pulse delivery semantics', () => {
       startedAt: createdAt,
       endedAt: createdAt,
       durationMs: 0,
+      needsReconciliation: true,
     })
 
     let callbackCount = 0
@@ -1412,6 +1500,7 @@ describe('Pulse disaster recovery and edge cases', () => {
       status: 'pending',
       createdAt: now,
       updatedAt: now,
+      needsReconciliation: true,
     }))
     await db
       .collection('orionjs.pulse.deliveries')
@@ -1922,6 +2011,7 @@ describe('Pulse disaster recovery and edge cases', () => {
       createdAt: endedAt,
       updatedAt: endedAt,
       endedAt,
+      needsReconciliation: true,
     })
     await db.collection('orionjs.pulse.history').insertOne({
       _id: uuidv7(),
@@ -1976,6 +2066,7 @@ describe('Pulse disaster recovery and edge cases', () => {
       status: 'pending',
       createdAt,
       updatedAt: createdAt,
+      needsReconciliation: true,
     })
 
     let calls = 0
@@ -1997,9 +2088,9 @@ describe('Pulse disaster recovery and edge cases', () => {
     expect(await db.collection('orionjs.pulse.history').countDocuments({deliveryId})).toBe(1)
   })
 
-  it('rotates reconciliation past healthy heads in at least twenty-five topics', async () => {
-    const databaseName = uniqueName('reconciliation_head_rotation')
-    const consumerGroup = 'reconciliation-head-rotation-group'
+  it('drains marked reconciliation work in bounded batches', async () => {
+    const databaseName = uniqueName('reconciliation_batches')
+    const consumerGroup = 'reconciliation-batches-group'
     const pulse = createPulse(databaseName, consumerGroup)
     await pulse.awaitConnection()
     const runtime = getRuntimeState(pulse)
@@ -2007,51 +2098,32 @@ describe('Pulse disaster recovery and edge cases', () => {
     runtime.wakeCoordinator()
     await runtime.coordinatorPromise
     const db = await rawDatabase(databaseName)
-    const topics = Array.from({length: 25}, (_, index) => `reconciliation-head.${index}`)
+    const topics = Array.from({length: 25}, (_, index) => `reconciliation-batch.${index}`)
     const now = new Date()
-    const deliveries = topics.map((topic, index) => ({
+    const deliveries = Array.from({length: 26}, (_, index) => ({
       _id: uuidv7(),
       eventId: uuidv7(),
       consumerGroup,
-      topic,
+      topic: topics[index % topics.length],
       eventCreatedAt: new Date(now.getTime() + index),
       status: 'pending',
       createdAt: now,
       updatedAt: now,
+      needsReconciliation: true,
     }))
-    const torn = {
-      _id: uuidv7(),
-      eventId: uuidv7(),
-      consumerGroup,
-      topic: topics[0],
-      eventCreatedAt: new Date(now.getTime() + 10_000),
-      status: 'pending',
-      createdAt: now,
-      updatedAt: now,
-    }
-    await db.collection<any>('orionjs.pulse.deliveries').insertMany([...deliveries, torn])
-    await db.collection<any>('orionjs.pulse.history').insertMany(
-      deliveries.map(delivery => ({
-        _id: uuidv7(),
-        deliveryId: delivery._id,
-        eventId: delivery.eventId,
-        consumerGroup,
-        topic: delivery.topic,
-        attempt: 1,
-        status: 'pending',
-        createdAt: now,
-        nextAttemptAt: new Date(now.getTime() + 60_000),
-      })),
-    )
+    await db.collection<any>('orionjs.pulse.deliveries').insertMany(deliveries)
 
-    expect(await runtime.reconcileDeliveries(topics)).toBe(0)
-    expect(
-      await db.collection('orionjs.pulse.history').countDocuments({deliveryId: torn._id}),
-    ).toBe(0)
+    expect(await runtime.reconcileDeliveries(topics)).toBe(25)
+    expect(runtime.nextReconciliationAt).toBe(0)
+    expect(await db.collection('orionjs.pulse.history').countDocuments({attempt: 1})).toBe(25)
     expect(await runtime.reconcileDeliveries(topics)).toBe(1)
+    expect(runtime.nextReconciliationAt).toBeGreaterThan(Date.now())
+    expect(await db.collection('orionjs.pulse.history').countDocuments({attempt: 1})).toBe(26)
     expect(
-      await db.collection('orionjs.pulse.history').countDocuments({deliveryId: torn._id}),
-    ).toBe(1)
+      await db.collection('orionjs.pulse.deliveries').countDocuments({
+        needsReconciliation: true,
+      }),
+    ).toBe(0)
   })
 
   it('creates exactly one retry when replicas reconcile the same partial error', async () => {
@@ -2100,6 +2172,7 @@ describe('Pulse disaster recovery and edge cases', () => {
         name: 'Error',
         message: 'crashed before retry creation',
       },
+      needsReconciliation: true,
     })
 
     const attempts: number[] = []
@@ -2432,6 +2505,7 @@ describe('Pulse disaster recovery and edge cases', () => {
           status: 'pending',
           createdAt,
           updatedAt: createdAt,
+          needsReconciliation: true,
         })
 
         if (category === 'success-before-delivery') {

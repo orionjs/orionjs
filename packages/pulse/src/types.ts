@@ -187,6 +187,8 @@ export interface DeliveryDocument extends Document {
   expiresAt?: Date
   finalAttempt?: number
   error?: PulseHistoryError
+  /** Internal crash-recovery marker. Present only while a cross-collection write is incomplete. */
+  needsReconciliation?: true
 }
 
 export interface HistoryDocument extends Document {
@@ -209,6 +211,8 @@ export interface HistoryDocument extends Document {
   durationMs?: number
   expiresAt?: Date
   error?: PulseHistoryError
+  /** Internal crash-recovery marker. Present only while its delivery still needs an update. */
+  needsReconciliation?: true
 }
 
 export interface ResolvedSubscribeOptions {

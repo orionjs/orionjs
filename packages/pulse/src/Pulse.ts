@@ -41,6 +41,8 @@ const DEFAULT_DISCOVERY_LOCK_TIMEOUT_MS = 10_000
 const DISCOVERY_BATCH_SIZE = 100
 const DISCOVERY_TOPIC_BATCH_SIZE = 50
 const RECONCILIATION_BATCH_SIZE = 25
+const RECONCILIATION_INTERVAL_MS = 30_000
+const MAX_REAPER_IDLE_INTERVAL_MS = 10_000
 const MAX_DATE_MS = 8_640_000_000_000_000
 
 interface ResolvedConnectOptions {
@@ -397,14 +399,14 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private localSubscriptionRevision = 0
   private discoveryTopicOffset = 0
   private workTopicOffset = Math.floor(Math.random() * 1_000_000_000)
-  private recoveryTopicOffset = Math.floor(Math.random() * 1_000_000_000)
-  private readonly recoveryCursors = new Map<string, {eventCreatedAt: Date; eventId: string}>()
   private db?: Db
   private collections?: PulseCollections
   private coordinatorPromise?: Promise<void>
   private discoveryRequestRevision = 0
   private handledDiscoveryRequestRevision = 0
   private nextDiscoveryAt = 0
+  private nextReapAt = 0
+  private nextReconciliationAt = 0
   private running = true
   private closePromise?: Promise<void>
 
@@ -594,8 +596,11 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     let reaped = 0
     let reconciled = 0
     if (leaderTopics.length > 0) {
-      reaped = await this.reapExpiredAttempts(leaderTopics)
-      reconciled = await this.reconcileDeliveries(leaderTopics)
+      const now = Date.now()
+      if (now >= this.nextReapAt) reaped = await this.reapExpiredAttempts(leaderTopics)
+      if (now >= this.nextReconciliationAt) {
+        reconciled = await this.reconcileDeliveries(leaderTopics)
+      }
     }
 
     let dispatched = false
@@ -764,6 +769,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         status: 'pending' as const,
         createdAt,
         updatedAt: createdAt,
+        needsReconciliation: true,
       } satisfies DeliveryDocument
     })
     try {
@@ -792,33 +798,55 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       })
       .toArray()
     if (deliveries.length === 0) return
+    const deliveryIdsWithHistory = new Set(
+      await collections.history.distinct('deliveryId', {
+        deliveryId: {$in: deliveries.map(delivery => delivery._id)},
+      }),
+    )
+    const uninitializedDeliveries = deliveries.filter(
+      delivery => !deliveryIdsWithHistory.has(delivery._id),
+    )
+    if (uninitializedDeliveries.length === 0) return
+    const historyOperations = uninitializedDeliveries.map<AnyBulkWriteOperation<HistoryDocument>>(
+      delivery => {
+        const attempt: HistoryDocument = {
+          _id: uuidv7(),
+          deliveryId: delivery._id,
+          eventId: delivery.eventId,
+          consumerGroup: delivery.consumerGroup,
+          topic: delivery.topic,
+          attempt: 1,
+          status: 'pending',
+          createdAt: new Date(),
+          nextAttemptAt: delivery.createdAt,
+        }
+        return {
+          updateOne: {
+            filter: {deliveryId: delivery._id, attempt: 1},
+            update: {$setOnInsert: attempt},
+            upsert: true,
+          },
+        }
+      },
+    )
+    let initializedDeliveryIds: string[] = []
     try {
-      await collections.history.bulkWrite(
-        deliveries.map<AnyBulkWriteOperation<HistoryDocument>>(delivery => {
-          const attempt: HistoryDocument = {
-            _id: uuidv7(),
-            deliveryId: delivery._id,
-            eventId: delivery.eventId,
-            consumerGroup: delivery.consumerGroup,
-            topic: delivery.topic,
-            attempt: 1,
-            status: 'pending',
-            createdAt: new Date(),
-            nextAttemptAt: delivery.createdAt,
-          }
-          return {
-            updateOne: {
-              filter: {deliveryId: delivery._id, attempt: 1},
-              update: {$setOnInsert: attempt},
-              upsert: true,
-            },
-          }
-        }),
-        {ordered: false},
+      const result = await collections.history.bulkWrite(historyOperations, {ordered: false})
+      initializedDeliveryIds = Object.keys(result.upsertedIds).map(
+        index => uninitializedDeliveries[Number(index)]._id,
       )
     } catch (error) {
       if (!isOnlyDuplicateKeyErrors(error)) throw error
     }
+    if (initializedDeliveryIds.length === 0) return
+    await collections.deliveries.updateMany(
+      {
+        _id: {$in: initializedDeliveryIds},
+        status: 'pending',
+        needsReconciliation: true,
+      },
+      {$unset: {needsReconciliation: ''}},
+    )
   }
 
   private async claimExecutions(capacity: number): Promise<ClaimedExecution[]> {
@@ -1261,6 +1289,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           status: 'success',
           endedAt,
           durationMs: attempt.startedAt ? endedAt.getTime() - attempt.startedAt.getTime() : 0,
+          needsReconciliation: true,
         },
         $unset: {expiresAt: ''},
       },
@@ -1279,6 +1308,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           error,
           endedAt,
           durationMs: attempt.startedAt ? endedAt.getTime() - attempt.startedAt.getTime() : 0,
+          needsReconciliation: true,
         },
         $unset: {expiresAt: ''},
       },
@@ -1319,6 +1349,10 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       {_id: delivery._id, status: 'pending'},
       {$set: {updatedAt: new Date()}},
     )
+    await this.getCollections().history.updateOne(
+      {_id: history._id, status: 'error', needsReconciliation: true},
+      {$unset: {needsReconciliation: ''}},
+    )
     this.wakeCoordinator()
   }
 
@@ -1332,6 +1366,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           finalAttempt: history.attempt,
           updatedAt: endedAt,
           endedAt,
+          needsReconciliation: true,
         },
         $unset: {error: '', expiresAt: ''},
       },
@@ -1352,6 +1387,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           error: history.error,
           updatedAt: endedAt,
           endedAt,
+          needsReconciliation: true,
         },
         $unset: {expiresAt: ''},
       },
@@ -1366,17 +1402,29 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       delivery.endedAt ?? delivery.updatedAt,
       this.options.historyRetentionMs,
     )
-    if (!expiresAt) return
+    if (!expiresAt) {
+      await Promise.all([
+        this.getCollections().history.updateMany(
+          {deliveryId: delivery._id, needsReconciliation: true},
+          {$unset: {needsReconciliation: ''}},
+        ),
+        this.getCollections().deliveries.updateOne(
+          {_id: delivery._id, status: delivery.status, needsReconciliation: true},
+          {$unset: {needsReconciliation: ''}},
+        ),
+      ])
+      return
+    }
 
     // Histories become expirable before their terminal delivery. If the process dies
     // between these writes, the delivery remains as a durable repair marker.
     await this.getCollections().history.updateMany(
       {deliveryId: delivery._id, status: {$in: ['success', 'error']}},
-      {$set: {expiresAt}},
+      {$set: {expiresAt}, $unset: {needsReconciliation: ''}},
     )
     await this.getCollections().deliveries.updateOne(
-      {_id: delivery._id, status: delivery.status, expiresAt: {$exists: false}},
-      {$set: {expiresAt}},
+      {_id: delivery._id, status: delivery.status},
+      {$set: {expiresAt}, $unset: {needsReconciliation: ''}},
     )
   }
 
@@ -1410,162 +1458,199 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   private async reapExpiredAttempts(topics: string[]) {
     if (topics.length === 0) return 0
-    let reaped = 0
-
-    for (let inspected = 0; inspected < RECONCILIATION_BATCH_SIZE; inspected++) {
-      const now = new Date()
-      const candidate = await this.getCollections().history.findOne(
-        {
-          consumerGroup: this.options.consumerGroup,
-          topic: {$in: topics},
-          status: 'pending',
-          lockedUntil: {$lte: now},
-          lockToken: {$exists: true},
-        },
-        {sort: {lockedUntil: 1}},
+    const historyCollection = this.getCollections().history
+    const now = new Date()
+    const candidates = await historyCollection
+      .find({
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        status: 'pending',
+        lockedUntil: {$lte: now},
+        lockToken: {$exists: true},
+      })
+      .sort({lockedUntil: 1})
+      .limit(RECONCILIATION_BATCH_SIZE)
+      .toArray()
+    const reapedHistories = (
+      await Promise.all(
+        candidates.map(async candidate => {
+          const endedAt = new Date()
+          return await historyCollection.findOneAndUpdate(
+            {
+              _id: candidate._id,
+              status: 'pending',
+              lockToken: candidate.lockToken,
+              lockedUntil: {$lte: endedAt},
+            },
+            {
+              $set: {
+                status: 'error',
+                error: serializeError(
+                  new Error('The worker lock expired before the attempt completed.'),
+                  'worker_lost',
+                ),
+                endedAt,
+                durationMs: candidate.startedAt
+                  ? endedAt.getTime() - candidate.startedAt.getTime()
+                  : 0,
+                needsReconciliation: true,
+              },
+              $unset: {expiresAt: ''},
+            },
+            {returnDocument: 'after'},
+          )
+        }),
       )
-      if (!candidate) break
+    ).filter((history): history is HistoryDocument => Boolean(history))
 
-      const endedAt = new Date()
-      const history = await this.getCollections().history.findOneAndUpdate(
-        {
-          _id: candidate._id,
-          status: 'pending',
-          lockToken: candidate.lockToken,
-          lockedUntil: {$lte: endedAt},
-        },
-        {
-          $set: {
-            status: 'error',
-            error: serializeError(
-              new Error('The worker lock expired before the attempt completed.'),
-              'worker_lost',
-            ),
-            endedAt,
-            durationMs: candidate.startedAt ? endedAt.getTime() - candidate.startedAt.getTime() : 0,
-          },
-          $unset: {expiresAt: ''},
-        },
-        {returnDocument: 'after'},
-      )
-      if (!history) continue
-
-      const delivery = await this.getCollections().deliveries.findOne({_id: history.deliveryId})
+    const deliveryIds = reapedHistories.map(history => history.deliveryId)
+    const deliveries =
+      deliveryIds.length === 0
+        ? []
+        : await this.getCollections()
+            .deliveries.find({_id: {$in: deliveryIds}})
+            .toArray()
+    const deliveryById = new Map(deliveries.map(delivery => [delivery._id, delivery]))
+    for (const history of reapedHistories) {
+      const delivery = deliveryById.get(history.deliveryId)
       if (delivery?.status === 'pending') await this.afterAttemptError(delivery, history)
-      reaped++
+      else if (delivery) await this.applyTerminalRetention(delivery)
     }
-    return reaped
+
+    if (candidates.length === RECONCILIATION_BATCH_SIZE) this.nextReapAt = 0
+    else await this.scheduleNextReap(topics)
+    return reapedHistories.length
+  }
+
+  private async scheduleNextReap(topics: string[]) {
+    const next = await this.getCollections().history.findOne(
+      {
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        status: 'pending',
+        lockedUntil: {$exists: true},
+        lockToken: {$exists: true},
+      },
+      {sort: {lockedUntil: 1}, projection: {lockedUntil: 1}},
+    )
+    if (next?.lockedUntil) {
+      this.nextReapAt = Math.max(Date.now() + 1, next.lockedUntil.getTime())
+      return
+    }
+    const idleInterval = Math.max(
+      this.options.pollIntervalMs,
+      Math.min(MAX_REAPER_IDLE_INTERVAL_MS, Math.max(10, this.options.lockTimeoutMs / 3)),
+    )
+    this.nextReapAt = Date.now() + idleInterval
+  }
+
+  private async reconcileHistoryOutcomes(topics: string[], limit: number) {
+    if (limit <= 0) return 0
+    const collections = this.getCollections()
+    const histories = await collections.history
+      .find({
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        needsReconciliation: true,
+      })
+      .limit(limit)
+      .toArray()
+    if (histories.length === 0) return 0
+
+    const deliveries = await collections.deliveries
+      .find({_id: {$in: histories.map(history => history.deliveryId)}})
+      .toArray()
+    const deliveryById = new Map(deliveries.map(delivery => [delivery._id, delivery]))
+    for (const history of histories) {
+      const delivery = deliveryById.get(history.deliveryId)
+      if (!delivery) {
+        const expiresAt = getExpiresAt(
+          history.endedAt ?? history.createdAt,
+          this.options.historyRetentionMs,
+        )
+        await collections.history.updateOne(
+          {_id: history._id, needsReconciliation: true},
+          expiresAt
+            ? {$set: {expiresAt}, $unset: {needsReconciliation: ''}}
+            : {$unset: {needsReconciliation: ''}},
+        )
+        continue
+      }
+      if (delivery.status !== 'pending') await this.applyTerminalRetention(delivery)
+      else if (history.status === 'success') await this.finishDeliveryWithSuccess(delivery, history)
+      else if (history.status === 'error') await this.afterAttemptError(delivery, history)
+      await collections.history.updateOne(
+        {_id: history._id, needsReconciliation: true},
+        {$unset: {needsReconciliation: ''}},
+      )
+    }
+    return histories.length
+  }
+
+  private async reconcileDeliveryMarkers(topics: string[], limit: number) {
+    if (limit <= 0) return 0
+    const collections = this.getCollections()
+    const deliveries = await collections.deliveries
+      .find({
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        needsReconciliation: true,
+      })
+      .limit(limit)
+      .toArray()
+    if (deliveries.length === 0) return 0
+
+    const histories = await collections.history
+      .find({deliveryId: {$in: deliveries.map(delivery => delivery._id)}})
+      .sort({deliveryId: 1, attempt: -1})
+      .toArray()
+    const latestByDelivery = new Map<string, HistoryDocument>()
+    const successByDelivery = new Map<string, HistoryDocument>()
+    for (const history of histories) {
+      if (!latestByDelivery.has(history.deliveryId)) {
+        latestByDelivery.set(history.deliveryId, history)
+      }
+      if (history.status === 'success' && !successByDelivery.has(history.deliveryId)) {
+        successByDelivery.set(history.deliveryId, history)
+      }
+    }
+
+    for (const delivery of deliveries) {
+      if (delivery.status !== 'pending') {
+        await this.applyTerminalRetention(delivery)
+        continue
+      }
+      const successful = successByDelivery.get(delivery._id)
+      const latest = latestByDelivery.get(delivery._id)
+      if (successful) await this.finishDeliveryWithSuccess(delivery, successful)
+      else if (!latest) await this.ensureAttempt(delivery, 1, delivery.createdAt)
+      else if (latest.status === 'error') await this.afterAttemptError(delivery, latest)
+      await collections.deliveries.updateOne(
+        {_id: delivery._id, status: 'pending', needsReconciliation: true},
+        {$unset: {needsReconciliation: ''}},
+      )
+    }
+    return deliveries.length
   }
 
   private async reconcileDeliveries(topics: string[]) {
     if (topics.length === 0) return 0
-    const statuses: Array<DeliveryDocument['status']> =
-      this.options.historyRetentionMs === null ? ['pending'] : ['pending', 'success', 'error']
-    const selectedTopics = circularBatch(
+    const historyCount = await this.reconcileHistoryOutcomes(topics, RECONCILIATION_BATCH_SIZE)
+    const deliveryCount = await this.reconcileDeliveryMarkers(
       topics,
-      this.recoveryTopicOffset,
-      Math.max(1, Math.floor(RECONCILIATION_BATCH_SIZE / statuses.length)),
+      RECONCILIATION_BATCH_SIZE - historyCount,
     )
-    this.recoveryTopicOffset = (this.recoveryTopicOffset + selectedTopics.length) % topics.length
-    const perBranchLimit = Math.max(
-      1,
-      Math.floor(RECONCILIATION_BATCH_SIZE / (selectedTopics.length * statuses.length)),
-    )
-    const branches = selectedTopics.flatMap(topic =>
-      statuses.map(status => {
-        const key = `${topic}\0${status}`
-        const cursor = this.recoveryCursors.get(key)
-        const common = {
-          consumerGroup: this.options.consumerGroup,
-          topic,
-          status,
-          ...(status === 'pending' ? {} : {expiresAt: {$exists: false}}),
-        }
-        const match = cursor
-          ? {
-              $or: [
-                {...common, eventCreatedAt: {$gt: cursor.eventCreatedAt}},
-                {
-                  ...common,
-                  eventCreatedAt: cursor.eventCreatedAt,
-                  eventId: {$gt: cursor.eventId},
-                },
-              ],
-            }
-          : common
-        return {
-          key,
-          pipeline: [
-            {$match: match},
-            {$sort: {eventCreatedAt: 1, eventId: 1}},
-            {$limit: perBranchLimit},
-          ] satisfies Document[],
-        }
-      }),
-    )
-    const [first, ...remaining] = branches
-    const pipeline: Document[] = [...first.pipeline]
-    for (const branch of remaining) {
-      pipeline.push({
-        $unionWith: {
-          coll: this.getCollections().deliveries.collectionName,
-          pipeline: branch.pipeline,
-        },
-      })
-    }
-    const deliveries = (await this.getCollections()
-      .deliveries.aggregate(pipeline)
-      .toArray()) as DeliveryDocument[]
-    const latestByBranch = new Map<string, DeliveryDocument>()
-    for (const delivery of deliveries) {
-      latestByBranch.set(`${delivery.topic}\0${delivery.status}`, delivery)
-    }
-    for (const branch of branches) {
-      const latest = latestByBranch.get(branch.key)
-      if (latest) {
-        this.recoveryCursors.set(branch.key, {
-          eventCreatedAt: latest.eventCreatedAt,
-          eventId: latest.eventId,
-        })
-      } else if (this.recoveryCursors.has(branch.key)) {
-        this.recoveryCursors.delete(branch.key)
-      }
-    }
-
-    let reconciled = 0
-    for (const delivery of deliveries) {
-      if (delivery.status !== 'pending') {
-        await this.applyTerminalRetention(delivery)
-        reconciled++
-        continue
-      }
-
-      const successful = await this.getCollections().history.findOne(
-        {deliveryId: delivery._id, status: 'success'},
-        {sort: {attempt: 1}},
-      )
-      if (successful) {
-        await this.finishDeliveryWithSuccess(delivery, successful)
-        reconciled++
-        continue
-      }
-
-      const latest = await this.getCollections().history.findOne(
-        {deliveryId: delivery._id},
-        {sort: {attempt: -1}},
-      )
-      if (!latest) {
-        await this.ensureAttempt(delivery, 1, delivery.createdAt)
-        reconciled++
-        continue
-      }
-      if (latest.status === 'error') {
-        await this.afterAttemptError(delivery, latest)
-        reconciled++
-      }
-    }
+    const reconciled = historyCount + deliveryCount
+    this.nextReconciliationAt =
+      reconciled === RECONCILIATION_BATCH_SIZE ? 0 : Date.now() + RECONCILIATION_INTERVAL_MS
     return reconciled
   }
+
+  /*
+   * Cross-collection writes set needsReconciliation on their durable first write and clear it
+   * only after the dependent write succeeds. Recovery therefore reads only the tiny partial
+   * indexes instead of walking every healthy delivery while a backlog is draining.
+   */
 
   private async acquireOrderedLease(
     local: LocalSubscription,

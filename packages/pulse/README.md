@@ -124,7 +124,7 @@ does not cache results.
 | `collectionPrefix` | `orionjs.pulse` | Prefix for the four Pulse collections. |
 | `eventRetentionMs` | 7 days | Event retention, or `null` to disable expiration. |
 | `historyRetentionMs` | 7 days | Completed delivery/history retention, or `null`. |
-| `pollIntervalMs` | 3000 | Polling and reconciliation interval. |
+| `pollIntervalMs` | 3000 | Idle coordinator polling interval. |
 | `workerCount` | 4 | Maximum concurrent handler executions in this process. |
 | `maxPoolSize` | 5 | Maximum MongoDB application connections per server for this Pulse client. |
 | `lockTimeoutMs` | 30000 | Distributed lease duration. Active handlers renew it automatically. |
@@ -220,9 +220,15 @@ for (const attempt of result.records) {
 
 ## Polling
 
-Polling and reconciliation are the only discovery and recovery mechanisms. Pulse works with
-standalone MongoDB, replica sets, and sharded clusters without opening Change Streams. Tune
-`pollIntervalMs` to balance idle query volume and delivery latency.
+Polling is the discovery mechanism, and indexed reconciliation markers provide crash recovery.
+Pulse works with standalone MongoDB, replica sets, and sharded clusters without opening Change
+Streams. Tune `pollIntervalMs` to balance idle query volume and delivery latency.
+
+Maintenance does not run on every coordinator iteration while a backlog is draining. Expired
+attempts are checked near the next known lock deadline, and reconciliation runs at most every 30
+seconds unless a full batch of 25 repairs remains. Cross-collection writes temporarily set
+`needsReconciliation`; partial indexes keep these recovery queries proportional to incomplete
+writes instead of the total number of deliveries or history records.
 
 `changeStreams` is not a supported connection option. Remove it from existing configurations
 before upgrading. Pulse rejects the legacy field at startup, including `changeStreams: 'disabled'`,
