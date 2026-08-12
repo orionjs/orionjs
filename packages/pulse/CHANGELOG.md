@@ -1,10 +1,40 @@
 # @orion-js/pulse
 
+## 4.5.9
+
+### Patch Changes
+
+- Allow ordering to be configured per event listener, default new subscriptions to unordered delivery, and safely evolve persisted settings with `configVersion`. Move recovery maintenance out of the backlog hot loop, reconcile through partial-indexed markers, and clean successful deliveries only after their persisted cursor and retention state make deletion safe.
+
+## 4.5.8
+
+### Patch Changes
+
+- Use indexed status counts in the dashboard instead of grouping entire collections.
+
+## 4.5.7
+
+### Patch Changes
+
+- Persist Pulse dashboard filters, pagination, topology selection, and open record details in shareable URLs.
+
+## 4.5.6
+
+### Patch Changes
+
+- Add a topic-focused topology dashboard and persist publisher identities automatically.
+
+## 4.5.5
+
+### Patch Changes
+
+- Index dashboard event, history, and delivery queries to avoid collection scans and in-memory sorts.
+
 ## 4.5.4
 
 ### Patch Changes
 
-- dcfb3be: Allow Pulse ordering to be configured per Echoes event listener with `ordered`, overriding the global subscription default for that topic. Pulse subscriptions now default to unordered delivery and support integer `configVersion` values so higher-version persisted settings win safely across deployments. Runtime recovery is also scheduled independently from backlog processing and uses partial-indexed repair markers instead of repeatedly scanning healthy deliveries. The discovery leader periodically removes successful deliveries after their persisted sequenced or legacy cursor has passed them and retention has been applied.
+- Bound Pulse to one MongoDB application connection per server by default, expire idle pool connections, and expose the idle timeout through Echoes.
 
 ## 4.5.3
 

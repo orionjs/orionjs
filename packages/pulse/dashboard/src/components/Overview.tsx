@@ -1,5 +1,6 @@
 import {ArrowRight, CheckCircle2, ServerCog} from 'lucide-react'
 import {Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts'
+import type {DashboardRange} from '../lib/urlState'
 import {formatDate, formatDuration, formatNumber, formatPercent, truncateId} from '../lib/utils'
 import type {OverviewData, PulseRecord} from '../types'
 import {MetricCard} from './MetricCard'
@@ -10,8 +11,8 @@ interface OverviewProps {
   data?: OverviewData
   loading: boolean
   error?: string
-  range: string
-  onRangeChange(value: string): void
+  range: DashboardRange
+  onRangeChange(value: DashboardRange): void
   onNavigate(view: 'deliveries' | 'history'): void
 }
 
@@ -134,7 +135,7 @@ export function Overview({data, loading, error, range, onRangeChange, onNavigate
           name="range"
           aria-label="Overview time range"
           value={range}
-          onChange={event => onRangeChange(event.target.value)}
+          onChange={event => onRangeChange(event.target.value as DashboardRange)}
         >
           <option value="1h">Last hour</option>
           <option value="6h">Last 6 hours</option>

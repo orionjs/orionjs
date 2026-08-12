@@ -34,8 +34,9 @@ import type {
 const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000
 const DEFAULT_POLL_INTERVAL_MS = 3000
 const DEFAULT_WORKER_COUNT = 4
-// Handler slots and coordinator work share a deliberately small pool.
-const DEFAULT_MAX_POOL_SIZE = 5
+// Handler slots and coordinator work share one socket by default. Handlers do not retain it.
+const DEFAULT_MAX_POOL_SIZE = 1
+const DEFAULT_MAX_IDLE_TIME_MS = 30_000
 const DEFAULT_LOCK_TIMEOUT_MS = 30_000
 const DEFAULT_DISCOVERY_LOCK_TIMEOUT_MS = 10_000
 const DISCOVERY_BATCH_SIZE = 100
@@ -57,6 +58,7 @@ interface ResolvedConnectOptions {
   pollIntervalMs: number
   workerCount: number
   maxPoolSize: number
+  maxIdleTimeMS: number
   lockTimeoutMs: number
   discoveryLockTimeoutMs: number
   onError: (error: Error) => void
@@ -195,6 +197,7 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
     pollIntervalMs: options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS,
     workerCount: options.workerCount ?? DEFAULT_WORKER_COUNT,
     maxPoolSize: options.maxPoolSize ?? DEFAULT_MAX_POOL_SIZE,
+    maxIdleTimeMS: options.maxIdleTimeMS ?? DEFAULT_MAX_IDLE_TIME_MS,
     lockTimeoutMs: options.lockTimeoutMs ?? DEFAULT_LOCK_TIMEOUT_MS,
     discoveryLockTimeoutMs: options.discoveryLockTimeoutMs ?? DEFAULT_DISCOVERY_LOCK_TIMEOUT_MS,
     onError:
@@ -208,6 +211,7 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
   assertPositiveNumber(resolved.pollIntervalMs, 'pollIntervalMs')
   assertPositiveInteger(resolved.workerCount, 'workerCount')
   assertPositiveInteger(resolved.maxPoolSize, 'maxPoolSize')
+  assertPositiveNumber(resolved.maxIdleTimeMS, 'maxIdleTimeMS', true)
   assertPositiveNumber(resolved.lockTimeoutMs, 'lockTimeoutMs')
   assertPositiveNumber(resolved.discoveryLockTimeoutMs, 'discoveryLockTimeoutMs')
   assertFunction(resolved.onError, 'onError')
@@ -419,6 +423,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     this.client = new MongoClient(this.options.connectionString, {
       appName: '@orion-js/pulse',
       maxPoolSize: this.options.maxPoolSize,
+      minPoolSize: 0,
+      maxIdleTimeMS: this.options.maxIdleTimeMS,
     } satisfies MongoClientOptions)
     this.history = new HistoryApi(
       () => this.awaitConnection(),
@@ -444,6 +450,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       _id: uuidv7(),
       topic: options.topic,
       data: options.data,
+      publisher: this.options.consumerGroup,
       createdAt,
       ...(options.headers ? {headers: options.headers} : {}),
       ...(expiresAt ? {expiresAt} : {}),
@@ -468,6 +475,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       id: document._id,
       topic: options.topic,
       data: options.data,
+      publisher: document.publisher,
       headers: document.headers,
       createdAt: document.createdAt,
       expiresAt: document.expiresAt,
@@ -1252,6 +1260,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         id: event._id,
         topic: event.topic,
         data: event.data,
+        publisher: event.publisher,
         headers: event.headers,
         createdAt: event.createdAt,
         expiresAt: event.expiresAt,

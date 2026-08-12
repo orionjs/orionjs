@@ -163,14 +163,16 @@ const pulse = connect<AppEvents>({
 
 ## MongoDB connection capacity
 
-Pulse configures `maxPoolSize: 5` by default. With 500 service replicas, that bounds the application
-pool for the active MongoDB server to 2,500 connections instead of the driver's default ceiling of
-50,000. Pools start empty because `minPoolSize` remains 0 and grow only when concurrent operations
-need them.
+Pulse configures `maxPoolSize: 1`, `minPoolSize: 0`, and `maxIdleTimeMS: 30000` by default. With 500
+service replicas, that bounds the application pool for the active MongoDB server to 500 connections
+instead of the driver's default ceiling of 50,000. Pool sockets open on demand, and an explicitly
+larger pool can contract after traffic bursts.
 
-The limit is per `MongoClient` and per server in the MongoDB topology. The driver also keeps
-monitoring connections outside the application pool. If all five connections are busy, operations
-wait for one to return rather than opening beyond the configured maximum.
+The limit is per `MongoClient` and per server in the MongoDB topology. The driver also keeps up to
+two monitoring connections per topology node outside the application pool. With a three-node
+replica set, every process can therefore have up to six monitoring sockets in addition to its
+application pool. If the single application connection is busy, coordination operations wait for
+it rather than opening beyond the configured maximum.
 
 Tune the limit per service when needed:
 
@@ -179,12 +181,14 @@ const pulse = connect({
   connectionString,
   databaseName: 'commerce',
   consumerGroup: 'high-throughput-worker',
-  maxPoolSize: 10,
+  maxPoolSize: 4,
+  maxIdleTimeMS: 30_000,
 })
 ```
 
-Keep the default for typical consumers. Increase it only after observing pool contention or
-when using higher worker and handler concurrency.
+Keep the default for typical consumers. `workerCount` and handler concurrency do not require the
+same number of MongoDB sockets because callbacks run outside the pool. Increase it only after
+observing pool wait time under sustained high-throughput coordination.
 
 ## Polling
 

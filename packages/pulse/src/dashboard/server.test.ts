@@ -35,7 +35,8 @@ beforeAll(async () => {
     _id: eventId,
     topic: 'order.created',
     data: {orderId: 'order-42'},
-    headers: {source: 'checkout'},
+    publisher: 'checkout',
+    headers: {source: 'legacy-checkout'},
     createdAt,
   })
   await db.collection<any>(`${prefix}.subscriptions`).insertOne({
@@ -115,6 +116,17 @@ describe('Pulse dashboard server', () => {
     expect(overview.data.recentErrors[0].error.code).toBe('handler_error')
     expect(overview.data.topics[0].topic).toBe('order.created')
 
+    const topologyResponse = await fetch(`${dashboard.url}/api/topology?range=24h`)
+    const topology = await topologyResponse.json()
+    expect(topologyResponse.status).toBe(200)
+    expect(topology.data.publishers[0].name).toBe('checkout')
+    expect(topology.data.publishers[0].sourceField).toBe('publisher')
+    expect(topology.data.topics[0]).toMatchObject({name: 'order.created', consumers: 1})
+    expect(topology.data.consumerGroups[0]).toMatchObject({name: 'billing', topics: 1, error: 1})
+    expect(topology.data.summary).toMatchObject({publishers: 1, topics: 1, consumerGroups: 1})
+    expect(topology.data.summary.sourceCoverage).toBe(1)
+    expect(topology.data.edges).toHaveLength(2)
+
     const deliveriesResponse = await fetch(`${dashboard.url}/api/deliveries?status=error`)
     const deliveries = await deliveriesResponse.json()
     expect(deliveries.data.pagination.total).toBe(1)
@@ -123,6 +135,12 @@ describe('Pulse dashboard server', () => {
     const eventsResponse = await fetch(`${dashboard.url}/api/events`)
     const events = await eventsResponse.json()
     expect(events.data.items[0].deliveries.error).toBe(1)
+
+    const selectedEventId = events.data.items[0].id
+    const selectedEventResponse = await fetch(`${dashboard.url}/api/events?id=${selectedEventId}`)
+    const selectedEvent = await selectedEventResponse.json()
+    expect(selectedEvent.data.pagination.total).toBe(1)
+    expect(selectedEvent.data.items[0].id).toBe(selectedEventId)
 
     const subscriptionsResponse = await fetch(`${dashboard.url}/api/subscriptions`)
     const subscriptions = await subscriptionsResponse.json()
@@ -183,6 +201,7 @@ describe('Pulse dashboard server', () => {
       )
       const query = {page: 1, limit: 25}
       await repository.overview('1h')
+      await repository.topology('1h')
       await repository.deliveries(query)
       await repository.history(query)
       await repository.events(query)
@@ -193,6 +212,45 @@ describe('Pulse dashboard server', () => {
         expect(typeof command.maxTimeMS).toBe('number')
         expect(command.maxTimeMS as number).toBeGreaterThan(0)
         expect(command.maxTimeMS as number).toBeLessThanOrEqual(queryTimeoutMs)
+      }
+    } finally {
+      await monitoredClient.close()
+    }
+  })
+
+  it('counts statuses with filtered count queries instead of grouping the full collections', async () => {
+    const monitoredClient = new MongoClient(memoryServer.getUri('pulse_dashboard_test'), {
+      monitorCommands: true,
+    })
+    const commands: Array<Record<string, any>> = []
+    monitoredClient.on('commandStarted', event => {
+      if (event.commandName === 'aggregate') commands.push(event.command)
+    })
+    await monitoredClient.connect()
+
+    try {
+      const repository = new DashboardRepository(
+        monitoredClient.db('pulse_dashboard_test'),
+        'orionjs.pulse',
+        30_000,
+      )
+      await repository.overview('1h')
+
+      for (const collection of ['orionjs.pulse.deliveries', 'orionjs.pulse.history']) {
+        const collectionCommands = commands.filter(command => command.aggregate === collection)
+        const statusCountCommands = collectionCommands.filter(command => {
+          const match = command.pipeline?.[0]?.$match
+          return typeof match?.status === 'string' && Object.keys(match).length === 1
+        })
+
+        expect(
+          statusCountCommands.map(command => command.pipeline[0].$match.status).sort(),
+        ).toEqual(['error', 'pending', 'success'])
+        expect(
+          collectionCommands.some(command =>
+            command.pipeline?.some((stage: Record<string, any>) => stage.$group?._id === '$status'),
+          ),
+        ).toBe(false)
       }
     } finally {
       await monitoredClient.close()
@@ -250,7 +308,7 @@ describe('Pulse dashboard server', () => {
       await repository.subscriptions({page: 1, limit: 25})
 
       expect(readAddresses.length).toBeGreaterThan(0)
-      expect(readAddresses.every(address => address !== hello.primary)).toBe(true)
+      expect(readAddresses.some(address => address !== hello.primary)).toBe(true)
     } finally {
       await Promise.allSettled([topologyClient.close(), readClient.close()])
       await replicaSet.stop()

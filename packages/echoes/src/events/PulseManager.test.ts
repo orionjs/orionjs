@@ -41,6 +41,7 @@ it('publishes and consumes Echoes events through Pulse', async () => {
         consumerGroup: 'billing',
         pollIntervalMs: 10,
         maxPoolSize: 2,
+        maxIdleTimeMS: 250,
         lockTimeoutMs: 1000,
         discoveryLockTimeoutMs: 500,
         subscription: {

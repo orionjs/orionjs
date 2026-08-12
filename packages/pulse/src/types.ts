@@ -18,6 +18,7 @@ export interface PulseConnectOptions {
   pollIntervalMs?: number
   workerCount?: number
   maxPoolSize?: number
+  maxIdleTimeMS?: number
   lockTimeoutMs?: number
   discoveryLockTimeoutMs?: number
   onError?: (error: Error) => void
@@ -33,6 +34,8 @@ export interface PulsePublishedEvent<TTopic extends string = string, TData = unk
   id: string
   topic: TTopic
   data: TData
+  /** Consumer group of the Pulse instance that published this event. */
+  publisher?: string
   headers?: PulseHeaders
   createdAt: Date
   expiresAt?: Date
@@ -137,6 +140,8 @@ export interface EventDocument<TData = unknown> extends Document {
   _id: string
   topic: string
   data: TData
+  /** Missing only on events written before publisher identity was persisted. */
+  publisher?: string
   headers?: PulseHeaders
   createdAt: Date
   /**

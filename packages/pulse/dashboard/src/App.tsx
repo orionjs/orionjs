@@ -1,14 +1,26 @@
-import {lazy, Suspense, useCallback, useEffect, useState} from 'react'
+import {lazy, Suspense, useCallback, useEffect, useRef, useState} from 'react'
 import {Shell} from './components/Shell'
 import {apiGet} from './lib/api'
 import {canPollDashboard, canQueryDashboard} from './lib/polling'
-import type {OverviewData, View} from './types'
+import {
+  type DashboardUrlState,
+  type DashboardUrlUpdate,
+  normalizeDashboardUrlState,
+  readDashboardUrlState,
+  serializeDashboardUrlState,
+  stateForView,
+  type UrlHistoryMode,
+} from './lib/urlState'
+import type {OverviewData, TopologyData, View} from './types'
 
 const Overview = lazy(async () => ({
   default: (await import('./components/Overview')).Overview,
 }))
 const Explorer = lazy(async () => ({
   default: (await import('./components/Explorer')).Explorer,
+}))
+const Topology = lazy(async () => ({
+  default: (await import('./components/Topology')).Topology,
 }))
 
 function ViewFallback() {
@@ -22,16 +34,6 @@ function ViewFallback() {
   )
 }
 
-function readView(): View {
-  const candidate = window.location.hash.replace(/^#\/?/, '')
-  return candidate === 'deliveries' ||
-    candidate === 'history' ||
-    candidate === 'events' ||
-    candidate === 'subscriptions'
-    ? candidate
-    : 'overview'
-}
-
 function readTheme(): 'dark' | 'light' {
   const stored = window.localStorage.getItem('pulse-dashboard-theme')
   if (stored === 'light' || stored === 'dark') return stored
@@ -39,25 +41,37 @@ function readTheme(): 'dark' | 'light' {
 }
 
 export function App() {
-  const [view, setView] = useState<View>(readView)
+  const [urlState, setUrlState] = useState(() => readDashboardUrlState(window.location.hash))
+  const urlStateRef = useRef(urlState)
   const [pageVisible, setPageVisible] = useState(() => document.visibilityState === 'visible')
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
-  const [live, setLive] = useState(true)
-  const [range, setRange] = useState('24h')
   const [overview, setOverview] = useState<OverviewData>()
   const [overviewError, setOverviewError] = useState<string>()
   const [overviewLoading, setOverviewLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshSignal, setRefreshSignal] = useState(0)
+  const [metadata, setMetadata] = useState<{
+    generatedAt?: string
+    database?: string
+    prefix?: string
+  }>({})
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     window.localStorage.setItem('pulse-dashboard-theme', theme)
   }, [theme])
   useEffect(() => {
-    const onHashChange = () => setView(readView())
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+    const syncLocation = () => {
+      const next = readDashboardUrlState(window.location.hash)
+      urlStateRef.current = next
+      setUrlState(next)
+    }
+    window.addEventListener('hashchange', syncLocation)
+    window.addEventListener('popstate', syncLocation)
+    return () => {
+      window.removeEventListener('hashchange', syncLocation)
+      window.removeEventListener('popstate', syncLocation)
+    }
   }, [])
   useEffect(() => {
     const onVisibilityChange = () => setPageVisible(document.visibilityState === 'visible')
@@ -65,10 +79,28 @@ export function App() {
     return () => document.removeEventListener('visibilitychange', onVisibilityChange)
   }, [])
 
-  const navigate = useCallback((nextView: View) => {
-    window.location.hash = nextView === 'overview' ? '/' : `/${nextView}`
-    setView(nextView)
+  const commitUrlState = useCallback((next: DashboardUrlState, mode: UrlHistoryMode) => {
+    const normalized = normalizeDashboardUrlState(next)
+    const hash = serializeDashboardUrlState(normalized)
+    const url = `${window.location.pathname}${window.location.search}${hash}`
+    window.history[mode === 'push' ? 'pushState' : 'replaceState'](null, '', url)
+    urlStateRef.current = normalized
+    setUrlState(normalized)
   }, [])
+  const updateUrlState = useCallback<DashboardUrlUpdate>(
+    (patch, mode = 'replace') => {
+      commitUrlState({...urlStateRef.current, ...patch}, mode)
+    },
+    [commitUrlState],
+  )
+  const navigate = useCallback(
+    (nextView: View) => {
+      commitUrlState(stateForView(urlStateRef.current, nextView), 'push')
+    },
+    [commitUrlState],
+  )
+
+  const {view, live, range} = urlState
 
   const loadOverview = useCallback(async () => {
     if (!canQueryDashboard(document.visibilityState === 'visible', view === 'overview')) return
@@ -76,6 +108,11 @@ export function App() {
     try {
       const response = await apiGet<OverviewData>('/api/overview', {range})
       setOverview(response.data)
+      setMetadata({
+        generatedAt: response.data.generatedAt,
+        database: response.data.database,
+        prefix: response.data.collectionPrefix,
+      })
       setOverviewError(undefined)
     } catch (error) {
       setOverviewError(error instanceof Error ? error.message : String(error))
@@ -98,18 +135,25 @@ export function App() {
   }, [live, loadOverview, pageVisible, view])
 
   const refresh = () => setRefreshSignal(value => value + 1)
+  const receiveTopologyMetadata = useCallback((value: TopologyData) => {
+    setMetadata({
+      generatedAt: value.generatedAt,
+      database: value.database,
+      prefix: value.collectionPrefix,
+    })
+  }, [])
 
   return (
     <Shell
       view={view}
       onViewChange={navigate}
       live={live}
-      onLiveChange={setLive}
+      onLiveChange={nextLive => updateUrlState({live: nextLive})}
       onRefresh={refresh}
       refreshing={refreshing}
-      generatedAt={overview?.generatedAt}
-      database={overview?.database}
-      prefix={overview?.collectionPrefix}
+      generatedAt={metadata.generatedAt}
+      database={metadata.database}
+      prefix={metadata.prefix}
       health={overview?.health.status}
       theme={theme}
       onThemeChange={() => setTheme(value => (value === 'dark' ? 'light' : 'dark'))}
@@ -121,8 +165,18 @@ export function App() {
             loading={overviewLoading}
             error={overviewError}
             range={range}
-            onRangeChange={setRange}
+            onRangeChange={nextRange => updateUrlState({range: nextRange})}
             onNavigate={navigate}
+          />
+        ) : view === 'topology' ? (
+          <Topology
+            live={live}
+            active={pageVisible}
+            refreshSignal={refreshSignal}
+            onRefreshing={setRefreshing}
+            urlState={urlState}
+            onUrlStateChange={updateUrlState}
+            onMetadata={receiveTopologyMetadata}
           />
         ) : (
           <Explorer
@@ -131,6 +185,8 @@ export function App() {
             active={pageVisible}
             refreshSignal={refreshSignal}
             onRefreshing={setRefreshing}
+            urlState={urlState}
+            onUrlStateChange={updateUrlState}
           />
         )}
       </Suspense>

@@ -22,6 +22,12 @@ export default defineConfig({
             return 'charts'
           }
           if (
+            moduleId.includes('/node_modules/@xyflow/') ||
+            moduleId.includes('/node_modules/zustand/')
+          ) {
+            return 'flow'
+          }
+          if (
             moduleId.includes('/node_modules/react/') ||
             moduleId.includes('/node_modules/react-dom/')
           ) {

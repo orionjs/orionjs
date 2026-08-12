@@ -25,17 +25,19 @@ function connect<TEvents extends Record<string, unknown>>(
 | `historyRetentionMs` | `number \| null` | 7 days | Retention applied to a delivery and all its completed attempts once the delivery is terminal. |
 | `pollIntervalMs` | `number` | `3000` | Event discovery, work acquisition, and reconciliation interval. |
 | `workerCount` | `number` | `4` | Maximum concurrent handler executions in this process. |
-| `maxPoolSize` | `number` | `5` | Maximum MongoDB application connections per server for this Pulse client. |
+| `maxPoolSize` | `number` | `1` | Maximum MongoDB application connections per server for this Pulse client. |
+| `maxIdleTimeMS` | `number` | `30000` | Close idle application connections after this duration; `0` disables expiry. |
 | `lockTimeoutMs` | `number` | `30000` | Attempt and ordered lease duration. Heartbeats renew active leases. |
 | `discoveryLockTimeoutMs` | `number` | `10000` | Discovery-leader lease duration; controls replica failover independently from handler locks. |
 | `onError` | `(error: Error) => void` | `console.error` | Internal coordinator and worker error reporter. |
 
-Strings must be non-empty. `maxPoolSize` must be a positive integer. Durations and worker counts must be finite positive numbers, except retention, retry counts, and retry delays may be zero where their types allow it. Retry settings are rejected when their largest computed delay falls outside MongoDB's supported date range.
+Strings must be non-empty. `maxPoolSize` must be a positive integer. Durations and worker counts must be finite positive numbers, except retention, retry counts, retry delays, and `maxIdleTimeMS` may be zero where their types allow it. Retry settings are rejected when their largest computed delay falls outside MongoDB's supported date range.
 
-Pulse sets the MongoDB driver's `maxPoolSize` to 5 instead of its default of 100. `minPoolSize`
-remains at the driver default of 0, so the pool grows on demand. The limit applies to application
-connections in each server pool; the driver also opens monitoring connections for the MongoDB
-topology.
+Pulse sets the MongoDB driver's `maxPoolSize` to 1 instead of its default of 100, explicitly keeps
+`minPoolSize` at 0, and closes application connections after 30 idle seconds. The pool socket is
+used only for short coordination operations; callbacks do not retain it and can still run
+concurrently. The limit applies to application connections in each server pool. The driver also
+opens topology-monitoring connections that are not counted by `maxPoolSize`.
 
 <Warning>
   `changeStreams` has been removed and cannot be enabled or disabled. Pulse always uses polling and
@@ -197,6 +199,7 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 
 | Name | Keys | Options |
 | --- | --- | --- |
+| `pulse_events_dashboard_created` | `{createdAt: -1, _id: -1}` | — |
 | `pulse_events_topic_created_id` | `{topic: 1, createdAt: 1, _id: 1}` | — |
 | `pulse_events_topic_sequence_id` | `{topic: 1, sequence: 1, _id: 1}` | — |
 | `pulse_events_legacy_topic_created_id` | `{topic: 1, sequence: 1, createdAt: 1, _id: 1}` | — |
@@ -218,12 +221,15 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | `pulse_deliveries_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1}` | — |
 | `pulse_deliveries_sequence_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1}` | — |
 | `pulse_deliveries_dashboard_pending` | `{status: 1, eventCreatedAt: 1, eventId: 1}` | — |
+| `pulse_deliveries_dashboard_updated` | `{updatedAt: -1, _id: -1}` | — |
+| `pulse_deliveries_dashboard_status_updated` | `{status: 1, updatedAt: -1, _id: -1}` | — |
 | `pulse_deliveries_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
 
 ### History
 
 | Name | Keys | Options |
 | --- | --- | --- |
+| `pulse_history_dashboard_created` | `{createdAt: -1, _id: -1}` | — |
 | `pulse_history_delivery_attempt_unique` | `{deliveryId: 1, attempt: 1}` | Unique |
 | `pulse_history_group_topic_created` | `{consumerGroup: 1, topic: 1, createdAt: -1, _id: -1}` | — |
 | `pulse_history_event` | `{eventId: 1, createdAt: -1}` | — |

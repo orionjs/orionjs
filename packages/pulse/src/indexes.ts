@@ -25,6 +25,10 @@ interface ExpectedIndex {
 
 const eventsIndexes: ExpectedIndex[] = [
   {
+    name: 'pulse_events_dashboard_created',
+    key: {createdAt: -1, _id: -1},
+  },
+  {
     name: 'pulse_events_topic_created_id',
     key: {topic: 1, createdAt: 1, _id: 1},
   },
@@ -83,6 +87,14 @@ const deliveriesIndexes: ExpectedIndex[] = [
     partialFilterExpression: {needsReconciliation: true},
   },
   {
+    name: 'pulse_deliveries_dashboard_updated',
+    key: {updatedAt: -1, _id: -1},
+  },
+  {
+    name: 'pulse_deliveries_dashboard_status_updated',
+    key: {status: 1, updatedAt: -1, _id: -1},
+  },
+  {
     name: 'pulse_deliveries_expires_at_ttl',
     key: {expiresAt: 1},
     expireAfterSeconds: 0,
@@ -90,6 +102,10 @@ const deliveriesIndexes: ExpectedIndex[] = [
 ]
 
 const historyIndexes: ExpectedIndex[] = [
+  {
+    name: 'pulse_history_dashboard_created',
+    key: {createdAt: -1, _id: -1},
+  },
   {
     name: 'pulse_history_delivery_attempt_unique',
     key: {deliveryId: 1, attempt: 1},

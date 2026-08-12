@@ -9,6 +9,7 @@ import {
   Moon,
   RefreshCw,
   Sun,
+  Waypoints,
   X,
 } from 'lucide-react'
 import {type ReactNode, useState} from 'react'
@@ -19,6 +20,7 @@ import {Button} from './ui'
 
 const navigation: Array<{id: View; label: string; description: string; icon: typeof Activity}> = [
   {id: 'overview', label: 'Overview', description: 'System pulse', icon: LayoutDashboard},
+  {id: 'topology', label: 'Topology', description: 'Publishers & consumers', icon: Waypoints},
   {id: 'deliveries', label: 'Deliveries', description: 'Group state', icon: ListChecks},
   {id: 'history', label: 'Attempts', description: 'Execution history', icon: History},
   {id: 'events', label: 'Events', description: 'Published payloads', icon: Boxes},

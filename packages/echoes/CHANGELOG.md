@@ -1,11 +1,19 @@
 # @orion-js/echoes
 
-## 4.5.3
+## 4.5.4
 
 ### Patch Changes
 
 - dcfb3be: Allow Pulse ordering to be configured per Echoes event listener with `ordered`, overriding the global subscription default for that topic. Pulse subscriptions now default to unordered delivery and support integer `configVersion` values so higher-version persisted settings win safely across deployments. Runtime recovery is also scheduled independently from backlog processing and uses partial-indexed repair markers instead of repeatedly scanning healthy deliveries. The discovery leader periodically removes successful deliveries after their persisted sequenced or legacy cursor has passed them and retention has been applied.
 - Updated dependencies [dcfb3be]
+  - @orion-js/pulse@4.5.9
+
+## 4.5.3
+
+### Patch Changes
+
+- Bound Pulse to one MongoDB application connection per server by default, expire idle pool connections, and expose the idle timeout through Echoes.
+- Updated dependencies
   - @orion-js/pulse@4.5.4
 
 ## 4.5.2

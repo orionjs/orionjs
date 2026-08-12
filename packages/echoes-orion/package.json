@@ -16,7 +16,7 @@
     "dev": "tsup --watch"
   },
   "peerDependencies": {
-    "@orion-js/echoes": "^4.5.3",
+    "@orion-js/echoes": "^4.5.4",
     "@orion-js/helpers": "4.5.0",
     "@orion-js/http": "4.5.0",
     "@orion-js/logger": "4.5.0",
@@ -24,7 +24,7 @@
     "@orion-js/services": "4.5.0"
   },
   "devDependencies": {
-    "@orion-js/echoes": "4.5.3",
+    "@orion-js/echoes": "4.5.4",
     "@orion-js/helpers": "4.5.0",
     "@orion-js/http": "4.5.0",
     "@orion-js/logger": "4.5.0",

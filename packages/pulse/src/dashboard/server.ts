@@ -88,6 +88,7 @@ function parseQuery(url: URL): DashboardQuery {
   return {
     page,
     limit,
+    id: url.searchParams.get('id') || undefined,
     status: parseStatus(url.searchParams.get('status')),
     topic: url.searchParams.get('topic') || undefined,
     consumerGroup: url.searchParams.get('consumerGroup') || undefined,
@@ -121,6 +122,8 @@ async function handleApi(
     }
   } else if (requestUrl.pathname === '/api/overview') {
     data = await repository.overview(resolveDashboardRange(requestUrl.searchParams.get('range')))
+  } else if (requestUrl.pathname === '/api/topology') {
+    data = await repository.topology(resolveDashboardRange(requestUrl.searchParams.get('range')))
   } else if (requestUrl.pathname === '/api/deliveries') {
     data = await repository.deliveries(parseQuery(requestUrl))
   } else if (requestUrl.pathname === '/api/history') {

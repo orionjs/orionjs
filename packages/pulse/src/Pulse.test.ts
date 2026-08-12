@@ -34,12 +34,14 @@ function uniqueName(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`
 }
 
-function getMaxPoolSize(pulse: Pulse<any>) {
+function getMongoClientOptions(pulse: Pulse<any>) {
   return (
     pulse as unknown as {
-      client: {options: {maxPoolSize: number}}
+      client: {
+        options: {maxPoolSize: number; minPoolSize: number; maxIdleTimeMS: number}
+      }
     }
-  ).client.options.maxPoolSize
+  ).client.options
 }
 
 function getRuntimeState(pulse: Pulse<any>) {
@@ -143,16 +145,33 @@ afterAll(async () => {
 })
 
 describe('Pulse persistence', () => {
-  it('uses a small MongoDB pool by default and supports an explicit override', async () => {
+  it('uses one expiring MongoDB pool connection by default and supports overrides', async () => {
     const defaultPulse = createPulse(uniqueName('default_pool'), 'default-pool-group')
     const configuredPulse = createPulse(uniqueName('configured_pool'), 'configured-pool-group', {
       maxPoolSize: 12,
+      maxIdleTimeMS: 90_000,
+    })
+    const noIdleExpiryPulse = createPulse(uniqueName('no_idle_expiry'), 'no-idle-expiry-group', {
+      maxIdleTimeMS: 0,
     })
 
-    await Promise.all([defaultPulse.awaitConnection(), configuredPulse.awaitConnection()])
+    await Promise.all([
+      defaultPulse.awaitConnection(),
+      configuredPulse.awaitConnection(),
+      noIdleExpiryPulse.awaitConnection(),
+    ])
 
-    expect(getMaxPoolSize(defaultPulse)).toBe(5)
-    expect(getMaxPoolSize(configuredPulse)).toBe(12)
+    expect(getMongoClientOptions(defaultPulse)).toMatchObject({
+      maxPoolSize: 1,
+      minPoolSize: 0,
+      maxIdleTimeMS: 30_000,
+    })
+    expect(getMongoClientOptions(configuredPulse)).toMatchObject({
+      maxPoolSize: 12,
+      minPoolSize: 0,
+      maxIdleTimeMS: 90_000,
+    })
+    expect(getMongoClientOptions(noIdleExpiryPulse).maxIdleTimeMS).toBe(0)
   })
 
   it('uses unordered delivery by default', async () => {
@@ -249,6 +268,15 @@ describe('Pulse persistence', () => {
         }),
       ).toThrow(PulseConfigurationError)
     }
+    for (const maxIdleTimeMS of [-1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() =>
+        connect({
+          connectionString: 'mongodb://localhost/pulse',
+          consumerGroup: 'invalid-idle-time-group',
+          maxIdleTimeMS,
+        }),
+      ).toThrow(PulseConfigurationError)
+    }
   })
 
   it('creates, validates, and recreates all indexes during connection', async () => {
@@ -260,6 +288,10 @@ describe('Pulse persistence', () => {
     const db = await rawDatabase(databaseName)
     const expected = {
       'orionjs.pulse.events': [
+        {
+          name: 'pulse_events_dashboard_created',
+          key: {createdAt: -1, _id: -1},
+        },
         {
           name: 'pulse_events_topic_created_id',
           key: {topic: 1, createdAt: 1, _id: 1},
@@ -317,12 +349,24 @@ describe('Pulse persistence', () => {
           partialFilterExpression: {needsReconciliation: true},
         },
         {
+          name: 'pulse_deliveries_dashboard_updated',
+          key: {updatedAt: -1, _id: -1},
+        },
+        {
+          name: 'pulse_deliveries_dashboard_status_updated',
+          key: {status: 1, updatedAt: -1, _id: -1},
+        },
+        {
           name: 'pulse_deliveries_expires_at_ttl',
           key: {expiresAt: 1},
           expireAfterSeconds: 0,
         },
       ],
       'orionjs.pulse.history': [
+        {
+          name: 'pulse_history_dashboard_created',
+          key: {createdAt: -1, _id: -1},
+        },
         {
           name: 'pulse_history_delivery_attempt_unique',
           key: {deliveryId: 1, attempt: 1},
@@ -425,9 +469,9 @@ describe('Pulse persistence', () => {
       consumerGroup,
       topic,
       eventCreatedAt: new Date(now.getTime() + index),
-      status: 'pending',
+      status: index % 10 === 0 ? 'error' : 'pending',
       createdAt: now,
-      updatedAt: now,
+      updatedAt: new Date(now.getTime() + index),
     }))
     await db.collection<any>('orionjs.pulse.deliveries').insertMany(deliveries)
     await db.collection<any>('orionjs.pulse.history').insertMany(
@@ -485,6 +529,30 @@ describe('Pulse persistence', () => {
       .sort({eventCreatedAt: 1, eventId: 1})
       .limit(1)
       .explain('executionStats')
+    const dashboardEventsExplain = await db
+      .collection('orionjs.pulse.events')
+      .find({})
+      .sort({createdAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
+    const dashboardDeliveriesExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({})
+      .sort({updatedAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
+    const dashboardDeliveryStatusExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({status: 'error'})
+      .sort({updatedAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
+    const dashboardHistoryExplain = await db
+      .collection('orionjs.pulse.history')
+      .find({})
+      .sort({createdAt: -1, _id: -1})
+      .limit(25)
+      .explain('executionStats')
     const historyExplain = await db
       .collection('orionjs.pulse.history')
       .find({
@@ -524,6 +592,10 @@ describe('Pulse persistence', () => {
       [legacyExplain, 'pulse_events_legacy_topic_created_id'],
       [deliveryExplain, 'pulse_deliveries_acquisition'],
       [dashboardPendingExplain, 'pulse_deliveries_dashboard_pending'],
+      [dashboardEventsExplain, 'pulse_events_dashboard_created'],
+      [dashboardDeliveriesExplain, 'pulse_deliveries_dashboard_updated'],
+      [dashboardDeliveryStatusExplain, 'pulse_deliveries_dashboard_status_updated'],
+      [dashboardHistoryExplain, 'pulse_history_dashboard_created'],
       [historyExplain, 'pulse_history_pending_acquisition'],
       [deadLockExplain, 'pulse_history_group_dead_locks'],
       [deliveryReconciliationExplain, 'pulse_deliveries_reconciliation'],
@@ -889,7 +961,7 @@ describe('Pulse persistence', () => {
     }
   })
 
-  it('uses UUIDv7 strings and writes a locked pending history before the callback', async () => {
+  it('persists its consumer group as publisher and writes pending history before the callback', async () => {
     const databaseName = uniqueName('history_first')
     const pulse = createPulse(databaseName, 'history-group')
     await pulse.awaitConnection()
@@ -903,10 +975,12 @@ describe('Pulse persistence', () => {
     const callbackEntered = new Promise<void>(resolve => {
       entered = resolve
     })
+    let receivedPublisher: string | undefined
 
     await pulse.subscribe(
       'history.topic',
-      async () => {
+      async received => {
+        receivedPublisher = received.publisher
         entered()
         await gate
       },
@@ -914,6 +988,11 @@ describe('Pulse persistence', () => {
     )
     const event = await pulse.publish({topic: 'history.topic', data: {value: 1}})
     await callbackEntered
+
+    expect(event.publisher).toBe('history-group')
+    expect(receivedPublisher).toBe('history-group')
+    const storedEvent = await db.collection<any>('orionjs.pulse.events').findOne({_id: event.id})
+    expect(storedEvent?.publisher).toBe('history-group')
 
     const pending = await db.collection<any>('orionjs.pulse.history').findOne({eventId: event.id})
     expect(pending?.status).toBe('pending')
@@ -1404,6 +1483,7 @@ describe('Pulse delivery semantics', () => {
       ),
     )
     await waitFor(() => completed === 4)
+    expect(getMongoClientOptions(pulse).maxPoolSize).toBe(1)
     expect(maximumActive).toBeGreaterThan(1)
   })
 
@@ -1872,6 +1952,8 @@ describe('Pulse disaster recovery and edge cases', () => {
       lockTimeoutMs: 90,
     })
     await Promise.all([replicaA.awaitConnection(), replicaB.awaitConnection()])
+    expect(getMongoClientOptions(replicaA).maxPoolSize).toBe(1)
+    expect(getMongoClientOptions(replicaB).maxPoolSize).toBe(1)
 
     let calls = 0
     const handler = async () => {

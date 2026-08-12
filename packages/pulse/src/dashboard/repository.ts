@@ -3,9 +3,14 @@ import type {Collection, Db, Document, Filter} from 'mongodb'
 export type DashboardRange = '1h' | '6h' | '24h' | '7d' | '30d'
 export type DashboardStatus = 'pending' | 'success' | 'error'
 
+const TOPOLOGY_RELATION_LIMIT = 500
+const UNKNOWN_PUBLISHER = 'Unknown publisher'
+const DASHBOARD_STATUSES: DashboardStatus[] = ['pending', 'success', 'error']
+
 export interface DashboardQuery {
   page: number
   limit: number
+  id?: string
   topic?: string
   consumerGroup?: string
   status?: DashboardStatus
@@ -55,12 +60,12 @@ function toPublicDocument(document: Document) {
 }
 
 async function statusCounts(collection: Collection, queryTimeoutMs: number, match: Document = {}) {
-  return await collection
-    .aggregate<{_id: string; count: number}>(
-      [{$match: match}, {$group: {_id: '$status', count: {$sum: 1}}}],
-      {maxTimeMS: queryTimeoutMs},
-    )
-    .toArray()
+  return await Promise.all(
+    DASHBOARD_STATUSES.map(async status => ({
+      _id: status,
+      count: await collection.countDocuments({...match, status}, {maxTimeMS: queryTimeoutMs}),
+    })),
+  )
 }
 
 export function resolveDashboardRange(value: string | null): DashboardRange {
@@ -91,6 +96,318 @@ export class DashboardRepository {
     const startedAt = performance.now()
     await this.db.command({ping: 1, maxTimeMS: this.queryTimeoutMs})
     return {latencyMs: Math.round((performance.now() - startedAt) * 10) / 10}
+  }
+
+  async topology(range: DashboardRange) {
+    const now = new Date()
+    const start = new Date(now.getTime() - RANGE_MS[range])
+    const {events, subscriptions, deliveries} = this.collections
+    const publisherFields = ['source', 'producer', 'publisher', 'service', 'app', 'origin']
+
+    const [publisherRows, subscriptionRows, deliveryRows] = await Promise.all([
+      events
+        .aggregate<{
+          _id: {publisher: string; topic: string}
+          sourceField: string | null
+          events: number
+          lastPublishedAt: Date
+        }>(
+          [
+            {$match: {createdAt: {$gte: start}}},
+            {
+              $project: {
+                topic: 1,
+                createdAt: 1,
+                publisher: {
+                  $cond: [
+                    {
+                      $and: [{$eq: [{$type: '$publisher'}, 'string']}, {$ne: ['$publisher', '']}],
+                    },
+                    {name: '$publisher', field: 'publisher'},
+                    {
+                      $switch: {
+                        branches: publisherFields.map(field => ({
+                          case: {
+                            $and: [
+                              {$eq: [{$type: `$headers.${field}`}, 'string']},
+                              {$ne: [`$headers.${field}`, '']},
+                            ],
+                          },
+                          // biome-ignore lint/suspicious/noThenProperty: MongoDB $switch branches require a then field.
+                          then: {name: `$headers.${field}`, field: `headers.${field}`},
+                        })),
+                        default: {name: UNKNOWN_PUBLISHER, field: null},
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  publisher: '$publisher.name',
+                  topic: '$topic',
+                },
+                sourceField: {$first: '$publisher.field'},
+                events: {$sum: 1},
+                lastPublishedAt: {$max: '$createdAt'},
+              },
+            },
+            {$sort: {events: -1}},
+            {$limit: TOPOLOGY_RELATION_LIMIT},
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
+        .toArray(),
+      subscriptions
+        .aggregate<{
+          _id: {topic: string; consumerGroup: string}
+          ordered: boolean
+          delivery: string
+          offsetReset: string
+          maxRetries: number
+          updatedAt: Date
+          active: boolean
+        }>(
+          [
+            {$sort: {updatedAt: -1}},
+            {
+              $group: {
+                _id: {topic: '$topic', consumerGroup: '$consumerGroup'},
+                ordered: {$first: '$ordered'},
+                delivery: {$first: '$delivery'},
+                offsetReset: {$first: '$offsetReset'},
+                maxRetries: {$first: '$maxRetries'},
+                updatedAt: {$first: '$updatedAt'},
+                active: {$max: {$gt: ['$discoveryLockedUntil', now]}},
+              },
+            },
+            {$sort: {updatedAt: -1}},
+            {$limit: TOPOLOGY_RELATION_LIMIT},
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
+        .toArray(),
+      deliveries
+        .aggregate<{
+          _id: {topic: string; consumerGroup: string; status: DashboardStatus}
+          count: number
+          lastActivityAt: Date
+        }>(
+          [
+            {$match: {eventCreatedAt: {$gte: start}}},
+            {
+              $group: {
+                _id: {
+                  topic: '$topic',
+                  consumerGroup: '$consumerGroup',
+                  status: '$status',
+                },
+                count: {$sum: 1},
+                lastActivityAt: {$max: '$updatedAt'},
+              },
+            },
+            {$limit: TOPOLOGY_RELATION_LIMIT * 3},
+          ],
+          {maxTimeMS: this.queryTimeoutMs},
+        )
+        .toArray(),
+    ])
+
+    const deliveryByRelation = new Map<
+      string,
+      ReturnType<typeof makeStatusMap> & {lastActivityAt?: Date}
+    >()
+    for (const row of deliveryRows) {
+      const key = `${row._id.topic}\u0000${row._id.consumerGroup}`
+      const current = deliveryByRelation.get(key) ?? {...makeStatusMap([])}
+      current[row._id.status] = row.count
+      if (!current.lastActivityAt || row.lastActivityAt > current.lastActivityAt) {
+        current.lastActivityAt = row.lastActivityAt
+      }
+      deliveryByRelation.set(key, current)
+    }
+
+    const publishers = new Map<
+      string,
+      {
+        id: string
+        name: string
+        sourceField: string | null
+        events: number
+        topics: number
+        lastPublishedAt?: Date
+      }
+    >()
+    const topics = new Map<
+      string,
+      {
+        id: string
+        name: string
+        events: number
+        publishers: number
+        consumers: number
+        pending: number
+        success: number
+        error: number
+        lastActivityAt?: Date
+      }
+    >()
+    const consumerGroups = new Map<
+      string,
+      {
+        id: string
+        name: string
+        topics: number
+        subscriptions: number
+        activeSubscriptions: number
+        pending: number
+        success: number
+        error: number
+        lastActivityAt?: Date
+      }
+    >()
+    const edges: Array<Record<string, unknown>> = []
+    let knownPublisherEvents = 0
+    let totalPublisherEvents = 0
+
+    for (const row of publisherRows) {
+      const publisherId = `publisher:${row._id.publisher}`
+      const topicId = `topic:${row._id.topic}`
+      const publisher = publishers.get(publisherId) ?? {
+        id: publisherId,
+        name: row._id.publisher,
+        sourceField: row.sourceField,
+        events: 0,
+        topics: 0,
+      }
+      publisher.events += row.events
+      publisher.topics += 1
+      if (!publisher.lastPublishedAt || row.lastPublishedAt > publisher.lastPublishedAt) {
+        publisher.lastPublishedAt = row.lastPublishedAt
+      }
+      publishers.set(publisherId, publisher)
+
+      const topic = topics.get(topicId) ?? {
+        id: topicId,
+        name: row._id.topic,
+        events: 0,
+        publishers: 0,
+        consumers: 0,
+        pending: 0,
+        success: 0,
+        error: 0,
+      }
+      topic.events += row.events
+      topic.publishers += 1
+      if (!topic.lastActivityAt || row.lastPublishedAt > topic.lastActivityAt) {
+        topic.lastActivityAt = row.lastPublishedAt
+      }
+      topics.set(topicId, topic)
+
+      totalPublisherEvents += row.events
+      if (row._id.publisher !== UNKNOWN_PUBLISHER) knownPublisherEvents += row.events
+      edges.push({
+        id: `${publisherId}->${topicId}`,
+        source: publisherId,
+        target: topicId,
+        kind: 'publishes',
+        events: row.events,
+        lastActivityAt: row.lastPublishedAt,
+      })
+    }
+
+    for (const row of subscriptionRows) {
+      const topicId = `topic:${row._id.topic}`
+      const consumerId = `consumer:${row._id.consumerGroup}`
+      const relationKey = `${row._id.topic}\u0000${row._id.consumerGroup}`
+      const status: ReturnType<typeof makeStatusMap> & {lastActivityAt?: Date} =
+        deliveryByRelation.get(relationKey) ?? makeStatusMap([])
+      const topic = topics.get(topicId) ?? {
+        id: topicId,
+        name: row._id.topic,
+        events: 0,
+        publishers: 0,
+        consumers: 0,
+        pending: 0,
+        success: 0,
+        error: 0,
+      }
+      topic.consumers += 1
+      topic.pending += status.pending
+      topic.success += status.success
+      topic.error += status.error
+      if (
+        status.lastActivityAt &&
+        (!topic.lastActivityAt || status.lastActivityAt > topic.lastActivityAt)
+      ) {
+        topic.lastActivityAt = status.lastActivityAt
+      }
+      topics.set(topicId, topic)
+
+      const consumer = consumerGroups.get(consumerId) ?? {
+        id: consumerId,
+        name: row._id.consumerGroup,
+        topics: 0,
+        subscriptions: 0,
+        activeSubscriptions: 0,
+        pending: 0,
+        success: 0,
+        error: 0,
+      }
+      consumer.topics += 1
+      consumer.subscriptions += 1
+      if (row.active) consumer.activeSubscriptions += 1
+      consumer.pending += status.pending
+      consumer.success += status.success
+      consumer.error += status.error
+      if (
+        status.lastActivityAt &&
+        (!consumer.lastActivityAt || status.lastActivityAt > consumer.lastActivityAt)
+      ) {
+        consumer.lastActivityAt = status.lastActivityAt
+      }
+      consumerGroups.set(consumerId, consumer)
+
+      edges.push({
+        id: `${topicId}->${consumerId}`,
+        source: topicId,
+        target: consumerId,
+        kind: 'subscribes',
+        ...status,
+        active: row.active,
+        ordered: row.ordered,
+        delivery: row.delivery,
+        offsetReset: row.offsetReset,
+        maxRetries: row.maxRetries,
+        updatedAt: row.updatedAt,
+      })
+    }
+
+    return {
+      generatedAt: now,
+      database: this.databaseName,
+      collectionPrefix: this.collectionPrefix,
+      range,
+      summary: {
+        publishers: publishers.size,
+        topics: topics.size,
+        consumerGroups: consumerGroups.size,
+        relationships: edges.length,
+        sourceCoverage:
+          totalPublisherEvents === 0 ? 0 : knownPublisherEvents / totalPublisherEvents,
+      },
+      publishers: [...publishers.values()].sort((a, b) => b.events - a.events),
+      topics: [...topics.values()].sort((a, b) => b.events - a.events),
+      consumerGroups: [...consumerGroups.values()].sort(
+        (a, b) => b.pending + b.error - (a.pending + a.error),
+      ),
+      edges,
+      truncated:
+        publisherRows.length === TOPOLOGY_RELATION_LIMIT ||
+        subscriptionRows.length === TOPOLOGY_RELATION_LIMIT,
+    }
   }
 
   async overview(range: DashboardRange) {
@@ -361,6 +678,7 @@ export class DashboardRepository {
 
   async deliveries(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.status) filter.status = query.status
     if (query.topic) filter.topic = query.topic
     if (query.consumerGroup) filter.consumerGroup = query.consumerGroup
@@ -396,6 +714,7 @@ export class DashboardRepository {
 
   async history(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.status) filter.status = query.status
     if (query.topic) filter.topic = query.topic
     if (query.consumerGroup) filter.consumerGroup = query.consumerGroup
@@ -455,6 +774,7 @@ export class DashboardRepository {
 
   async events(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.topic) filter.topic = query.topic
     if (query.search) {
       const regex = new RegExp(escapeRegex(query.search), 'i')
@@ -499,6 +819,7 @@ export class DashboardRepository {
 
   async subscriptions(query: DashboardQuery) {
     const filter: Filter<Document> = {}
+    if (query.id) Object.assign(filter, {_id: query.id})
     if (query.topic) filter.topic = query.topic
     if (query.consumerGroup) filter.consumerGroup = query.consumerGroup
     if (query.search) {

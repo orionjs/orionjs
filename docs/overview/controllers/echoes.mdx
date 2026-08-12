@@ -335,9 +335,11 @@ await startService({
 At this point, handlers accept events from both systems, but `publish()` still sends only to Kafka.
 The event handler API does not change.
 
-The Pulse transport uses a MongoDB application pool of at most five connections per service
-instance by default. Set `events.pulse.maxPoolSize` when a specific service needs a different
-limit. `events.pulse.discoveryLockTimeoutMs` can independently tune discovery-leader failover;
+The Pulse transport uses a MongoDB application pool of at most one connection per service instance
+by default. Callbacks remain concurrent because they do not retain the pool socket. Set
+`events.pulse.maxPoolSize` only when a specific high-throughput service has measured pool
+contention. `events.pulse.maxIdleTimeMS` defaults to 30 seconds and lets larger pools contract after
+bursts. `events.pulse.discoveryLockTimeoutMs` independently tunes discovery-leader failover;
 handler and ordered-delivery locks continue using `events.pulse.lockTimeoutMs`.
 
 <Warning>
