@@ -1,6 +1,6 @@
 ---
-title: 'Pulse is unordered by default'
-description: 'Configure ordering per Echoes listener and safely evolve persisted subscriptions with configVersion'
+title: 'Pulse concurrency and efficient recovery'
+description: 'Configure ordering per Echoes listener, evolve subscriptions safely, and reduce MongoDB recovery load'
 ---
 
 Pulse subscriptions now favor concurrency by default. New topics use unordered delivery unless a
@@ -82,6 +82,62 @@ the highest persisted version as replicas refresh their subscription documents.
 That short transition is appropriate when intentionally switching between ordered and concurrent
 processing. If an application requires a hard boundary with no overlap at all, drain or stop its
 consumer replicas before deploying the higher version.
+
+## Recovery no longer runs in the backlog hot loop
+
+Pulse now schedules runtime maintenance independently from event discovery and execution:
+
+- Reconciliation normally runs every 30 seconds and reads only documents marked with
+  `needsReconciliation` through small partial indexes.
+- Expired attempts are checked near the next known lock deadline instead of on every coordinator
+  iteration.
+- Recovery fetches related deliveries and histories in bounded batches instead of issuing one
+  lookup for every delivery.
+
+The marker is written before a cross-collection transition and removed only after its dependent
+write succeeds. A process crash therefore leaves an indexed repair record without requiring Pulse
+to scan healthy `pending`, `success`, and `error` deliveries while a backlog is draining.
+
+## Completed delivery cleanup
+
+The discovery leader periodically removes up to 1,000 successful deliveries from a rotating set
+of topics. A delivery is eligible only when its persisted subscription cursor has reached that
+event. Pulse handles the MongoDB sequence cursor and the legacy `createdAt + eventId` cursor
+independently.
+
+When `historyRetentionMs` is enabled, cleanup also requires `delivery.expiresAt`. This field proves
+that retention was already applied to the delivery and its completed history before the delivery
+is removed. With `historyRetentionMs: null`, no `expiresAt` marker is required. Cleanup never reads
+the history collection and runs on its own 60-second cadence, outside the coordinator hot loop.
+
+## Production upgrade
+
+Upgrade services in two phases when changing an existing topic's ordering:
+
+1. Upgrade every replica to `@orion-js/pulse@4.5.4` and `@orion-js/echoes@4.5.3` without changing
+   the topic configuration. Existing subscriptions keep their persisted ordering.
+2. After all replicas run the new packages, deploy the intended `ordered` value with a higher
+   `configVersion`.
+
+For example, a legacy version-zero subscription can be changed after phase one with:
+
+```typescript
+@EchoEvent()
+orderCreated = createEchoEvent({
+  ordered: false,
+  configVersion: 1,
+  resolve: handleOrderCreated,
+})
+```
+
+Use the next integer if the topic already has a version. Deploying the package upgrade separately
+keeps old replicas that do not understand `configVersion` out of the configuration transition.
+
+Pulse creates and validates the new partial reconciliation indexes during startup. On a large
+MongoDB deployment, start with one canary replica, wait for `awaitConnection()` to complete, and
+check database CPU, disk queue, and index-build progress before rolling the remaining replicas.
+After rollout, the old repeated delivery-reconciliation aggregate shapes should disappear from
+Query Insights; marker lookups should examine only a small number of documents.
 
 ## Versioning rules
 
