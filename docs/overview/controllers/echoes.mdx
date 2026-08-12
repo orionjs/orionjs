@@ -120,6 +120,10 @@ The `createEchoEvent()` function accepts options similar to `createEchoRequest()
 @EchoEvent()
 processSomething = createEchoEvent({
   attemptsBeforeDeadLetter: 5,
+  // Pulse only: overrides events.pulse.subscription.ordered for this topic
+  ordered: true,
+  // Increase when changing persisted Pulse subscription settings
+  configVersion: 1,
   params: {
     // schema definition
   },
@@ -128,6 +132,29 @@ processSomething = createEchoEvent({
   }
 })
 ```
+
+When `ordered` is omitted, the listener inherits `events.pulse.subscription.ordered`. If neither is
+configured, Pulse defaults to unordered delivery. This lets ordered topics and concurrently
+processed topics share the same Echoes Pulse transport. Method listeners can set the same option
+directly with `@EchoEvent({ ordered: true })`.
+
+Pulse persists each `consumerGroup + topic` configuration. When changing `ordered`, increase the
+listener's integer `configVersion`:
+
+```typescript
+@EchoEvent()
+processSomething = createEchoEvent({
+  ordered: false,
+  configVersion: 2,
+  resolve: async params => {
+    // Events can now run concurrently.
+  },
+})
+```
+
+The highest version wins during a deploy, so an older replica cannot restore an earlier setting.
+Using the same version with different settings fails fast. Existing callbacks finish normally and
+new work converges on the winning configuration.
 
 ## Making Requests
 

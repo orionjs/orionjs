@@ -45,7 +45,13 @@ export interface PulseReceivedEvent<TTopic extends string = string, TData = unkn
 }
 
 export interface PulseSubscribeOptions {
+  /** Defaults to false. */
   ordered?: boolean
+  /**
+   * Integer version for persisted subscription settings. Higher versions win.
+   * Legacy and omitted versions are treated as zero.
+   */
+  configVersion?: number
   offsetReset?: PulseOffsetReset
   delivery?: PulseDeliveryMode
   maxRetries?: number
@@ -62,6 +68,7 @@ export interface PulseSubscriptionInfo {
   id: string
   topic: string
   consumerGroup: string
+  configVersion: number
   ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
@@ -143,6 +150,7 @@ export interface SubscriptionDocument extends Document {
   _id: string
   consumerGroup: string
   topic: string
+  configVersion?: number
   ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
@@ -179,6 +187,8 @@ export interface DeliveryDocument extends Document {
   expiresAt?: Date
   finalAttempt?: number
   error?: PulseHistoryError
+  /** Internal crash-recovery marker. Present only while a cross-collection write is incomplete. */
+  needsReconciliation?: true
 }
 
 export interface HistoryDocument extends Document {
@@ -201,9 +211,12 @@ export interface HistoryDocument extends Document {
   durationMs?: number
   expiresAt?: Date
   error?: PulseHistoryError
+  /** Internal crash-recovery marker. Present only while its delivery still needs an update. */
+  needsReconciliation?: true
 }
 
 export interface ResolvedSubscribeOptions {
+  configVersion: number
   ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
@@ -216,6 +229,7 @@ export interface ResolvedSubscribeOptions {
 export interface LocalSubscription {
   document: SubscriptionDocument
   options: ResolvedSubscribeOptions
+  configuredMaxConcurrency: number
   handler: PulseEventHandler<string, unknown>
   running: number
   unsubscribed: boolean

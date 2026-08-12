@@ -47,6 +47,8 @@ export default class EventBus {
       .map(([topic, echo]) => ({
         topic,
         attemptsBeforeDeadLetter: echo.attemptsBeforeDeadLetter,
+        ordered: echo.ordered,
+        configVersion: echo.configVersion,
       }))
 
     try {

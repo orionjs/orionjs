@@ -20,6 +20,7 @@ interface ExpectedIndex {
   key: Record<string, 1 | -1>
   unique?: boolean
   expireAfterSeconds?: number
+  partialFilterExpression?: Record<string, unknown>
 }
 
 const eventsIndexes: ExpectedIndex[] = [
@@ -77,6 +78,11 @@ const deliveriesIndexes: ExpectedIndex[] = [
     key: {status: 1, eventCreatedAt: 1, eventId: 1},
   },
   {
+    name: 'pulse_deliveries_reconciliation',
+    key: {consumerGroup: 1, topic: 1},
+    partialFilterExpression: {needsReconciliation: true},
+  },
+  {
     name: 'pulse_deliveries_expires_at_ttl',
     key: {expiresAt: 1},
     expireAfterSeconds: 0,
@@ -108,6 +114,11 @@ const historyIndexes: ExpectedIndex[] = [
   {
     name: 'pulse_history_pending_acquisition',
     key: {consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1},
+  },
+  {
+    name: 'pulse_history_reconciliation',
+    key: {consumerGroup: 1, topic: 1},
+    partialFilterExpression: {needsReconciliation: true},
   },
   {
     name: 'pulse_history_expires_at_ttl',
@@ -158,13 +169,14 @@ function validateIndex(
   const keysMatch = JSON.stringify(actualKey) === JSON.stringify(expectedKey)
   const uniqueMatches = Boolean(actual.unique) === Boolean(expected.unique)
   const ttlMatches = actual.expireAfterSeconds === expected.expireAfterSeconds
-  const hasDefaultSemantics =
-    !actual.sparse &&
-    !actual.hidden &&
-    actual.partialFilterExpression === undefined &&
-    actual.collation === undefined
+  const partialFilterMatches =
+    JSON.stringify(actual.partialFilterExpression) ===
+    JSON.stringify(expected.partialFilterExpression)
+  const hasDefaultSemantics = !actual.sparse && !actual.hidden && actual.collation === undefined
 
-  if (keysMatch && uniqueMatches && ttlMatches && hasDefaultSemantics) return
+  if (keysMatch && uniqueMatches && ttlMatches && partialFilterMatches && hasDefaultSemantics) {
+    return
+  }
 
   throw new PulseIndexError(
     `Pulse index "${expected.name}" on "${collectionName}" is incompatible. ` +
@@ -178,6 +190,9 @@ function toIndexDescription(index: ExpectedIndex): IndexDescription {
     ...(index.unique ? {unique: true} : {}),
     ...(index.expireAfterSeconds !== undefined
       ? {expireAfterSeconds: index.expireAfterSeconds}
+      : {}),
+    ...(index.partialFilterExpression
+      ? {partialFilterExpression: index.partialFilterExpression}
       : {}),
   }
 

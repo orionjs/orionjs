@@ -41,6 +41,7 @@ await pulse.subscribe(
   },
   {
     ordered: true,
+    configVersion: 1,
     offsetReset: 'latest',
     delivery: 'at-least-once',
     maxRetries: 3,
@@ -123,7 +124,7 @@ does not cache results.
 | `collectionPrefix` | `orionjs.pulse` | Prefix for the four Pulse collections. |
 | `eventRetentionMs` | 7 days | Event retention, or `null` to disable expiration. |
 | `historyRetentionMs` | 7 days | Completed delivery/history retention, or `null`. |
-| `pollIntervalMs` | 3000 | Polling and reconciliation interval. |
+| `pollIntervalMs` | 3000 | Idle coordinator polling interval. |
 | `workerCount` | 4 | Maximum concurrent handler executions in this process. |
 | `maxPoolSize` | 5 | Maximum MongoDB application connections per server for this Pulse client. |
 | `lockTimeoutMs` | 30000 | Distributed lease duration. Active handlers renew it automatically. |
@@ -165,7 +166,8 @@ delivery row has already expired, at-least-once semantics allow the retained eve
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `ordered` | `true` | Prevent callbacks from overlapping for this consumer group and topic. |
+| `ordered` | `false` | Set to true to prevent callbacks from overlapping for this consumer group and topic. |
+| `configVersion` | `0` | Integer version for persisted settings. A higher version atomically replaces a lower one. |
 | `offsetReset` | `latest` | First subscription starts at `latest` or the earliest retained event. |
 | `delivery` | `at-least-once` | Can also be `at-most-once`. |
 | `maxRetries` | 3 | Retries after the initial attempt. At-most-once always uses zero. |
@@ -173,7 +175,12 @@ delivery row has already expired, at-least-once semantics allow the retained eve
 | `retryBackoffMultiplier` | 2 | Produces default delays of 1, 2, and 4 seconds. |
 | `maxConcurrency` | worker count | Per-process topic concurrency when `ordered` is false. |
 
-Subscription behavior is persisted by `consumerGroup + topic`. Replicas must declare matching ordering, offset, delivery, and retry options. Calling `unsubscribe()` stops local processing but preserves the durable offset; subscribing again resumes from it.
+Subscription behavior is persisted by `consumerGroup + topic`. Replicas at the same
+`configVersion` must declare matching ordering, offset, delivery, and retry options. A higher
+version atomically replaces a lower one; a lower version adopts the persisted winner and cannot
+downgrade it. Legacy documents and omitted versions are treated as version zero. Calling
+`unsubscribe()` stops local processing but preserves the durable offset; subscribing again resumes
+from it.
 
 ## Delivery and recovery
 
@@ -213,9 +220,21 @@ for (const attempt of result.records) {
 
 ## Polling
 
-Polling and reconciliation are the only discovery and recovery mechanisms. Pulse works with
-standalone MongoDB, replica sets, and sharded clusters without opening Change Streams. Tune
-`pollIntervalMs` to balance idle query volume and delivery latency.
+Polling is the discovery mechanism, and indexed reconciliation markers provide crash recovery.
+Pulse works with standalone MongoDB, replica sets, and sharded clusters without opening Change
+Streams. Tune `pollIntervalMs` to balance idle query volume and delivery latency.
+
+Maintenance does not run on every coordinator iteration while a backlog is draining. Expired
+attempts are checked near the next known lock deadline, and reconciliation runs at most every 30
+seconds unless a full batch of 25 repairs remains. Cross-collection writes temporarily set
+`needsReconciliation`; partial indexes keep these recovery queries proportional to incomplete
+writes instead of the total number of deliveries or history records.
+
+The discovery leader also removes completed `success` deliveries in periodic batches after the
+persisted sequenced or legacy cursor has reached them. When retention is enabled, cleanup requires
+the delivery's `expiresAt` marker so history retention is known to have been applied first. With
+`historyRetentionMs: null`, cleanup does not require that marker. This maintenance path never reads
+the history collection.
 
 `changeStreams` is not a supported connection option. Remove it from existing configurations
 before upgrading. Pulse rejects the legacy field at startup, including `changeStreams: 'disabled'`,

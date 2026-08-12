@@ -1,4 +1,5 @@
 import {expect, it} from 'bun:test'
+import {MongoClient} from 'mongodb'
 import {MongoMemoryServer} from 'mongodb-memory-server'
 import {createEchoEvent} from '../echo'
 import publish from '../publish'
@@ -24,9 +25,14 @@ it('publishes and consumes Echoes events through Pulse', async () => {
   const options: EchoesOptions = {
     echoes: {
       'order.created': createEchoEvent({
+        ordered: true,
+        configVersion: 2,
         async resolve(params, context) {
           contexts.push({params, context})
         },
+      }),
+      'invoice.created': createEchoEvent({
+        async resolve() {},
       }),
     },
     events: {
@@ -48,6 +54,21 @@ it('publishes and consumes Echoes events through Pulse', async () => {
 
   try {
     await startService(options)
+    const mongoClient = new MongoClient(mongo.getUri('echoes'))
+    await mongoClient.connect()
+    const subscriptions = await mongoClient
+      .db('echoes')
+      .collection('orionjs.pulse.subscriptions')
+      .find({}, {projection: {_id: 0, topic: 1, ordered: 1, configVersion: 1}})
+      .sort({topic: 1})
+      .toArray()
+    await mongoClient.close()
+
+    expect(subscriptions).toEqual([
+      {topic: 'invoice.created', ordered: false, configVersion: 0},
+      {topic: 'order.created', ordered: true, configVersion: 2},
+    ])
+
     const published = await publish({
       topic: 'order.created',
       params: {orderId: '123'},

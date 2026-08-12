@@ -54,6 +54,7 @@ const pulse = connect<CommerceEvents>({
 
 await pulse.subscribe('order.created', handleOrder, {
   ordered: true,
+  configVersion: 1,
   delivery: 'at-least-once',
 })
 ```
@@ -87,7 +88,7 @@ The cursor is saved after Pulse materializes deliveries. Restarting a service re
 
 ## Ordered delivery
 
-Ordered mode is the default:
+Ordered delivery is opt-in:
 
 ```typescript
 await pulse.subscribe('order.created', handleOrder, {
@@ -106,7 +107,7 @@ This provides processing order, not a transaction that spans the handler and ext
 
 ## Concurrent delivery
 
-Use concurrent mode for independent events:
+Concurrent delivery is the default. Omit `ordered` or set it to `false` for independent events:
 
 ```typescript
 await pulse.subscribe('image.requested', resizeImage, {
@@ -116,6 +117,34 @@ await pulse.subscribe('image.requested', resizeImage, {
 ```
 
 `maxConcurrency` limits running handlers for that topic in the current process. Total concurrency also depends on `workerCount` and the number of replicas. It is a local execution limit and is not part of the durable subscription configuration.
+
+## Changing persisted configuration
+
+Pulse stores subscription settings by `consumerGroup + topic`. Use a non-negative integer
+`configVersion` whenever those settings change:
+
+```typescript
+// Previous deployment
+await pulse.subscribe('order.created', handleOrder, {
+  ordered: true,
+  configVersion: 1,
+})
+
+// New deployment
+await pulse.subscribe('order.created', handleOrder, {
+  ordered: false,
+  configVersion: 2,
+})
+```
+
+The highest version wins atomically. A replica with a lower version adopts the persisted winner
+instead of reverting it. Reusing one version with different settings throws
+`PulseConfigurationError`.
+
+Legacy subscriptions and omitted versions are version zero. When `ordered` is omitted for an
+existing subscription, Pulse preserves its persisted value; a new subscription defaults to
+unordered delivery. Already-running callbacks finish normally during a version change, while new
+work converges on the winning configuration.
 
 ## Retries
 
@@ -164,6 +193,7 @@ This means one handler attempt per delivery. It does not make external side effe
 
 Pulse persists these options for each `consumerGroup + topic`:
 
+- `configVersion`
 - `ordered`
 - `offsetReset`
 - `delivery`
@@ -171,7 +201,9 @@ Pulse persists these options for each `consumerGroup + topic`:
 - `retryDelayMs`
 - `retryBackoffMultiplier`
 
-Every replica must provide matching values. A mismatch throws `PulseConfigurationError` instead of silently changing delivery semantics. `maxConcurrency` remains local to each process.
+Every replica using the same version must provide matching values. A mismatch throws
+`PulseConfigurationError`. Higher versions replace lower ones; lower versions use the persisted
+winner. `maxConcurrency` remains local to each process.
 
 ## Inspect and stop subscriptions
 

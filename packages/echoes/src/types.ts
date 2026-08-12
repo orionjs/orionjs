@@ -20,6 +20,15 @@ export interface EchoEventConfig<
 > {
   params?: TParamsSchema
   returns?: TReturnsSchema
+  /**
+   * Pulse only. Overrides events.pulse.subscription.ordered for this topic listener.
+   * When neither value is configured, Pulse defaults to false.
+   */
+  ordered?: boolean
+  /**
+   * Pulse only. Integer version for persisted subscription settings. Higher versions win.
+   */
+  configVersion?: number
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
@@ -45,6 +54,8 @@ export type EchoType<
   params?: TParamsSchema
   returns?: TReturnsSchema
   attemptsBeforeDeadLetter?: number
+  ordered?: boolean
+  configVersion?: number
   type: TEchoType
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
@@ -212,10 +223,12 @@ export interface EchoesPulseEventsConfig {
   onError?: (error: Error) => void
   /**
    * Subscription defaults used by every Echoes event handled through Pulse.
-   * attemptsBeforeDeadLetter overrides maxRetries per event when configured.
+   * Event-level ordered and attemptsBeforeDeadLetter override ordered and maxRetries
+   * respectively when configured.
    */
   subscription?: {
     ordered?: boolean
+    configVersion?: number
     offsetReset?: 'latest' | 'earliest'
     delivery?: 'at-least-once' | 'at-most-once'
     maxRetries?: number

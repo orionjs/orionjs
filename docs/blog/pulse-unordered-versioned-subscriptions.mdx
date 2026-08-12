@@ -1,0 +1,152 @@
+---
+title: 'Pulse concurrency and efficient recovery'
+description: 'Configure ordering per Echoes listener, evolve subscriptions safely, and reduce MongoDB recovery load'
+---
+
+Pulse subscriptions now favor concurrency by default. New topics use unordered delivery unless a
+listener explicitly sets `ordered: true`, and Echoes can choose that behavior independently for
+each event listener.
+
+```typescript
+@Echoes()
+export class OrderEvents {
+  @EchoEvent()
+  orderCreated = createEchoEvent({
+    ordered: true,
+    configVersion: 1,
+    resolve: async params => {
+      await applyOrderTransition(params)
+    },
+  })
+
+  @EchoEvent()
+  analyticsRecorded = createEchoEvent({
+    resolve: async params => {
+      await recordAnalytics(params)
+    },
+  })
+}
+```
+
+`orderCreated` is serialized across every replica in its consumer group. `analyticsRecorded`
+inherits Pulse's unordered default and can use the available worker concurrency.
+
+## Why subscription configuration is persisted
+
+Pulse stores one subscription document for each `consumerGroup + topic`. That document contains
+the durable cursor as well as ordering, delivery, and retry settings. Persisting the settings keeps
+replicas consistent, but previously made intentional changes awkward: a new deployment with a
+different value failed because it did not match MongoDB.
+
+`configVersion` makes the desired change explicit. It is a non-negative integer, and the highest
+version wins:
+
+```typescript
+// Current production configuration
+await pulse.subscribe('order.created', handleOrder, {
+  ordered: true,
+  configVersion: 1,
+})
+
+// Later deployment: allow concurrent processing
+await pulse.subscribe('order.created', handleOrder, {
+  ordered: false,
+  configVersion: 2,
+})
+```
+
+The update uses an atomic comparison in MongoDB. Replicas still running version 1 cannot downgrade
+the subscription after version 2 wins. A second configuration that reuses version 2 with different
+settings fails fast, making accidental version reuse visible during startup.
+
+## Existing subscriptions
+
+Legacy subscription documents have no version and are treated as version zero. If code omits
+`ordered` for an existing topic, Pulse keeps the persisted value. This means upgrading does not
+silently turn an existing ordered topic into an unordered one.
+
+For a brand-new topic, omitting both fields creates an unordered version-zero subscription:
+
+```typescript
+await pulse.subscribe('image.requested', resizeImage)
+```
+
+To intentionally modify an existing topic, declare the new setting and increase its version.
+
+## What happens during deployment
+
+The change is deliberately lightweight: Pulse does not pause the topic or run a separate migration
+job. Callbacks that were already claimed finish with the previous behavior. New work converges on
+the highest persisted version as replicas refresh their subscription documents.
+
+That short transition is appropriate when intentionally switching between ordered and concurrent
+processing. If an application requires a hard boundary with no overlap at all, drain or stop its
+consumer replicas before deploying the higher version.
+
+## Recovery no longer runs in the backlog hot loop
+
+Pulse now schedules runtime maintenance independently from event discovery and execution:
+
+- Reconciliation normally runs every 30 seconds and reads only documents marked with
+  `needsReconciliation` through small partial indexes.
+- Expired attempts are checked near the next known lock deadline instead of on every coordinator
+  iteration.
+- Recovery fetches related deliveries and histories in bounded batches instead of issuing one
+  lookup for every delivery.
+
+The marker is written before a cross-collection transition and removed only after its dependent
+write succeeds. A process crash therefore leaves an indexed repair record without requiring Pulse
+to scan healthy `pending`, `success`, and `error` deliveries while a backlog is draining.
+
+## Completed delivery cleanup
+
+The discovery leader periodically removes up to 1,000 successful deliveries from a rotating set
+of topics. A delivery is eligible only when its persisted subscription cursor has reached that
+event. Pulse handles the MongoDB sequence cursor and the legacy `createdAt + eventId` cursor
+independently.
+
+When `historyRetentionMs` is enabled, cleanup also requires `delivery.expiresAt`. This field proves
+that retention was already applied to the delivery and its completed history before the delivery
+is removed. With `historyRetentionMs: null`, no `expiresAt` marker is required. Cleanup never reads
+the history collection and runs on its own 60-second cadence, outside the coordinator hot loop.
+
+## Production upgrade
+
+Upgrade services in two phases when changing an existing topic's ordering:
+
+1. Upgrade every replica to `@orion-js/pulse@4.5.4` and `@orion-js/echoes@4.5.3` without changing
+   the topic configuration. Existing subscriptions keep their persisted ordering.
+2. After all replicas run the new packages, deploy the intended `ordered` value with a higher
+   `configVersion`.
+
+For example, a legacy version-zero subscription can be changed after phase one with:
+
+```typescript
+@EchoEvent()
+orderCreated = createEchoEvent({
+  ordered: false,
+  configVersion: 1,
+  resolve: handleOrderCreated,
+})
+```
+
+Use the next integer if the topic already has a version. Deploying the package upgrade separately
+keeps old replicas that do not understand `configVersion` out of the configuration transition.
+
+Pulse creates and validates the new partial reconciliation indexes during startup. On a large
+MongoDB deployment, start with one canary replica, wait for `awaitConnection()` to complete, and
+check database CPU, disk queue, and index-build progress before rolling the remaining replicas.
+After rollout, the old repeated delivery-reconciliation aggregate shapes should disappear from
+Query Insights; marker lookups should examine only a small number of documents.
+
+## Versioning rules
+
+- Use non-negative integers and increase the number only when durable subscription settings change.
+- A higher version replaces a lower version atomically.
+- A lower version adopts the persisted winner and never downgrades it.
+- Different settings at the same version throw `PulseConfigurationError`.
+- Omitting the version means version zero.
+- `maxConcurrency` remains local to each process and is not part of the persisted configuration.
+
+See [Consuming events](/overview/other-modules/pulse/consuming) for the complete subscription API
+and [Echoes](/overview/controllers/echoes) for per-listener configuration.
