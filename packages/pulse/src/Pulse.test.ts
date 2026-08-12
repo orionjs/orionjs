@@ -757,7 +757,9 @@ describe('Pulse persistence', () => {
 
     const originalHistoryFind = runtime.collections.history.find
     const originalDeliveryFind = runtime.collections.deliveries.find
+    const originalDeliveryDeleteMany = runtime.collections.deliveries.deleteMany
     let cleanupFilter: Document | undefined
+    let cleanupDeleteFilter: Document | undefined
     runtime.collections.history.find = () => {
       throw new Error('Delivery cleanup must not query history.')
     }
@@ -765,13 +767,22 @@ describe('Pulse persistence', () => {
       cleanupFilter = args[0]
       return originalDeliveryFind.apply(runtime.collections.deliveries, args)
     }
+    runtime.collections.deliveries.deleteMany = (...args: any[]) => {
+      cleanupDeleteFilter = args[0]
+      return originalDeliveryDeleteMany.apply(runtime.collections.deliveries, args)
+    }
     try {
       expect(await runtime.cleanupSuccessfulDeliveries([topic])).toBe(4)
     } finally {
       runtime.collections.history.find = originalHistoryFind
       runtime.collections.deliveries.find = originalDeliveryFind
+      runtime.collections.deliveries.deleteMany = originalDeliveryDeleteMany
     }
     if (!cleanupFilter) throw new Error('Delivery cleanup did not issue its candidate query.')
+    expect(cleanupFilter.topic).toBe(topic)
+    expect(cleanupFilter.$or.every((branch: Document) => branch.topic === undefined)).toBe(true)
+    expect(Object.keys(cleanupDeleteFilter ?? {})).toEqual(['_id'])
+    expect(cleanupDeleteFilter?._id.$in).toHaveLength(4)
     const cleanupExplain = await db
       .collection('orionjs.pulse.deliveries')
       .find(cleanupFilter)

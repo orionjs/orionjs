@@ -1672,8 +1672,9 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       this.deliveryCleanupTopicOffset,
       DISCOVERY_TOPIC_BATCH_SIZE,
     )
+    const topicAdvance = selectedTopics.length === topics.length ? 1 : selectedTopics.length
     this.deliveryCleanupTopicOffset =
-      (this.deliveryCleanupTopicOffset + selectedTopics.length) % topics.length
+      (this.deliveryCleanupTopicOffset + topicAdvance) % topics.length
 
     const now = new Date()
     const collections = this.getCollections()
@@ -1685,16 +1686,21 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         discoveryLockedUntil: {$gt: now},
       })
       .toArray()
-    const cursorBranches: Document[] = []
-    for (const subscription of subscriptions) {
+    const subscriptionsByTopic = new Map(
+      subscriptions.map(subscription => [subscription.topic, subscription]),
+    )
+    const candidateIds: string[] = []
+    for (const topic of selectedTopics) {
+      const subscription = subscriptionsByTopic.get(topic)
+      if (!subscription) continue
+
+      const cursorBranches: Document[] = []
       if (subscription.cursorSequence) {
         cursorBranches.push({
-          topic: subscription.topic,
           eventSequence: {$lt: subscription.cursorSequence},
         })
         if (subscription.cursorSequenceEventId !== undefined) {
           cursorBranches.push({
-            topic: subscription.topic,
             eventSequence: subscription.cursorSequence,
             eventId: {$lte: subscription.cursorSequenceEventId},
           })
@@ -1702,38 +1708,39 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       }
       if (subscription.cursorCreatedAt) {
         cursorBranches.push({
-          topic: subscription.topic,
           eventSequence: {$exists: false},
           eventCreatedAt: {$lt: subscription.cursorCreatedAt},
         })
         if (subscription.cursorEventId !== undefined) {
           cursorBranches.push({
-            topic: subscription.topic,
             eventSequence: {$exists: false},
             eventCreatedAt: subscription.cursorCreatedAt,
             eventId: {$lte: subscription.cursorEventId},
           })
         }
       }
-    }
-    if (cursorBranches.length === 0) return 0
+      if (cursorBranches.length === 0) continue
 
-    const eligible = {
-      consumerGroup: this.options.consumerGroup,
-      status: 'success' as const,
-      ...(this.options.historyRetentionMs === null ? {} : {expiresAt: {$exists: true}}),
-      $or: cursorBranches,
+      const remaining = DELIVERY_CLEANUP_BATCH_SIZE - candidateIds.length
+      const candidates = await collections.deliveries
+        .find(
+          {
+            consumerGroup: this.options.consumerGroup,
+            topic,
+            status: 'success',
+            ...(this.options.historyRetentionMs === null ? {} : {expiresAt: {$exists: true}}),
+            $or: cursorBranches,
+          },
+          {projection: {_id: 1}},
+        )
+        .limit(remaining)
+        .toArray()
+      candidateIds.push(...candidates.map(delivery => delivery._id))
+      if (candidateIds.length === DELIVERY_CLEANUP_BATCH_SIZE) break
     }
-    const candidates = await collections.deliveries
-      .find(eligible, {projection: {_id: 1}})
-      .limit(DELIVERY_CLEANUP_BATCH_SIZE)
-      .toArray()
-    if (candidates.length === 0) return 0
+    if (candidateIds.length === 0) return 0
 
-    const result = await collections.deliveries.deleteMany({
-      ...eligible,
-      _id: {$in: candidates.map(delivery => delivery._id)},
-    })
+    const result = await collections.deliveries.deleteMany({_id: {$in: candidateIds}})
     return result.deletedCount
   }
 
