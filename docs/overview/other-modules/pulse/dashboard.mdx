@@ -5,6 +5,12 @@ description: 'Run the standalone read-only dashboard and inspect Pulse directly 
 
 Pulse includes a compiled React dashboard for inspecting events, consumers, deliveries, attempts, errors, and leases. It reads the Pulse collections directly from MongoDB and does not load your service or application code.
 
+<Note>
+  The current dashboard's direct delivery counters and attempt explorer describe execution version
+  1. During an execution version 2 rollout, monitor `v2-*` delivery states through MongoDB Atlas or
+  direct queries. The runtime `pulse.history.find()` API already projects recent version 2 attempts.
+</Note>
+
 ## Start the dashboard
 
 From a project that has `@orion-js/pulse` installed:

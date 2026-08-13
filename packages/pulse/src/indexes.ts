@@ -78,6 +78,16 @@ const deliveriesIndexes: ExpectedIndex[] = [
     key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
   },
   {
+    name: 'pulse_deliveries_v2_pending',
+    key: {consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1},
+    partialFilterExpression: {status: 'v2-pending'},
+  },
+  {
+    name: 'pulse_deliveries_v2_processing',
+    key: {consumerGroup: 1, lockedUntil: 1, topic: 1},
+    partialFilterExpression: {status: 'v2-processing'},
+  },
+  {
     name: 'pulse_deliveries_dashboard_pending',
     key: {status: 1, eventCreatedAt: 1, eventId: 1},
   },

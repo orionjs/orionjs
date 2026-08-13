@@ -67,6 +67,8 @@ function getRuntimeState(pulse: Pulse<any>) {
     refreshDiscoveryLeases(): Promise<void>
     findExecutionCandidates(capacity: number): Promise<unknown[]>
     claimExecutions(capacity: number): Promise<unknown[]>
+    materializeDeliveries(events: Document[]): Promise<void>
+    runExecution(execution: unknown): Promise<void>
     reapExpiredAttempts(topics: string[]): Promise<number>
     reconcileDeliveries(topics: string[]): Promise<number>
     cleanupSuccessfulDeliveries(topics: string[]): Promise<number>
@@ -258,6 +260,395 @@ describe('Pulse persistence', () => {
     ).rejects.toThrow('Increase configVersion to change it')
   })
 
+  it('preserves a persisted execution version when an older bridge omits it', async () => {
+    const databaseName = uniqueName('execution_version_omitted')
+    const consumerGroup = 'execution-version-omitted-group'
+    const topic = 'execution-version-omitted.topic'
+    const activating = createPulse(databaseName, consumerGroup)
+    await activating.subscribe(topic, async () => {}, {
+      executionVersion: 2,
+      configVersion: 1,
+    })
+
+    const omitted = createPulse(databaseName, consumerGroup)
+    const adopted = await omitted.subscribe(topic, async () => {}, {configVersion: 1})
+    expect(adopted.executionVersion).toBe(2)
+  })
+
+  it('requires unordered subscriptions for embedded execution', async () => {
+    const pulse = createPulse(uniqueName('embedded_ordered'), 'embedded-ordered-group')
+
+    await expect(
+      pulse.subscribe('embedded-ordered.topic', async () => {}, {
+        executionVersion: 2,
+        ordered: true,
+      }),
+    ).rejects.toThrow('executionVersion 2 currently supports unordered subscriptions only')
+  })
+
+  it('does not query embedded deliveries before execution version 2 has been enabled', async () => {
+    const pulse = createPulse(uniqueName('embedded_history_gate'), 'embedded-history-gate-group')
+    await pulse.awaitConnection()
+    await pulse.subscribe('embedded-history-gate.topic', async () => {}, {offsetReset: 'latest'})
+    const runtime = getRuntimeState(pulse)
+    const originalAggregate = runtime.collections.deliveries.aggregate
+    runtime.collections.deliveries.aggregate = () => {
+      throw new Error('Version 1 history must not scan deliveries.')
+    }
+    try {
+      expect((await pulse.history.find()).records).toEqual([])
+    } finally {
+      runtime.collections.deliveries.aggregate = originalAggregate
+    }
+  })
+
+  it('keeps the physical history collection out of the embedded execution hot path', async () => {
+    const databaseName = uniqueName('embedded_no_history_io')
+    const consumerGroup = 'embedded-no-history-io-group'
+    const topic = 'embedded-no-history-io.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    let calls = 0
+    await pulse.subscribe(
+      topic,
+      async () => {
+        calls++
+      },
+      {executionVersion: 2, configVersion: 1, offsetReset: 'latest'},
+    )
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const history = runtime.collections.history
+    const originals = {
+      distinct: history.distinct,
+      bulkWrite: history.bulkWrite,
+      findOne: history.findOne,
+      insertOne: history.insertOne,
+      findOneAndUpdate: history.findOneAndUpdate,
+      updateOne: history.updateOne,
+      updateMany: history.updateMany,
+    }
+    for (const method of Object.keys(originals)) {
+      history[method] = () => {
+        throw new Error(`Embedded execution must not call history.${method}.`)
+      }
+    }
+    try {
+      const db = await rawDatabase(databaseName)
+      const event = await pulse.publish({topic, data: null})
+      const eventDocument = await db.collection('orionjs.pulse.events').findOne({_id: event.id})
+      if (!eventDocument) throw new Error('Expected the event document.')
+      await runtime.materializeDeliveries([eventDocument])
+      runtime.running = true
+      const [execution] = await runtime.claimExecutions(1)
+      if (!execution) throw new Error('Expected the embedded delivery to be claimable.')
+      await runtime.runExecution(execution)
+      runtime.running = false
+      expect(calls).toBe(1)
+    } finally {
+      Object.assign(history, originals)
+    }
+  })
+
+  it('drains legacy and embedded deliveries together during a hot migration', async () => {
+    const databaseName = uniqueName('embedded_bridge')
+    const consumerGroup = 'embedded-bridge-group'
+    const topic = 'embedded-bridge.topic'
+    const received: string[] = []
+    const pulse = createPulse(databaseName, consumerGroup, {historyRetentionMs: 60_000})
+    await pulse.awaitConnection()
+    await pulse.subscribe(
+      topic,
+      async event => {
+        received.push(event.id)
+      },
+      {offsetReset: 'latest', configVersion: 0},
+    )
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const db = await rawDatabase(databaseName)
+    const legacyEvent = await pulse.publish({topic, data: {version: 1}})
+    const legacyDocument = await db
+      .collection('orionjs.pulse.events')
+      .findOne({_id: legacyEvent.id})
+    if (!legacyDocument) throw new Error('Expected the legacy event document.')
+    await runtime.materializeDeliveries([legacyDocument])
+
+    await db.collection('orionjs.pulse.subscriptions').updateOne(
+      {consumerGroup, topic},
+      {
+        $set: {
+          executionVersion: 2,
+          embeddedExecutionSeen: true,
+          configVersion: 1,
+          updatedAt: new Date(),
+        },
+      },
+    )
+    runtime.discoveryRefreshAt = 0
+    await runtime.refreshDiscoveryLeases()
+    expect(pulse.getSubscriptions()[0]).toMatchObject({executionVersion: 2, configVersion: 1})
+
+    const embeddedEvent = await pulse.publish({topic, data: {version: 2}})
+    const embeddedDocument = await db
+      .collection('orionjs.pulse.events')
+      .findOne({_id: embeddedEvent.id})
+    if (!embeddedDocument) throw new Error('Expected the embedded event document.')
+    await runtime.materializeDeliveries([embeddedDocument])
+
+    const before = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({consumerGroup, topic})
+      .sort({eventCreatedAt: 1})
+      .toArray()
+    expect(before.map(delivery => delivery.status).sort()).toEqual(['pending', 'v2-pending'])
+    expect(
+      await db.collection('orionjs.pulse.history').countDocuments({consumerGroup, topic}),
+    ).toBe(1)
+
+    runtime.running = true
+    const claimed = await runtime.claimExecutions(2)
+    expect(claimed).toHaveLength(2)
+    await Promise.all(claimed.map(execution => runtime.runExecution(execution)))
+    runtime.running = false
+
+    const after = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({consumerGroup, topic})
+      .toArray()
+    expect(after.map(delivery => delivery.status).sort()).toEqual(['success', 'v2-success'])
+    expect(received.sort()).toEqual([legacyEvent.id, embeddedEvent.id].sort())
+    const history = await pulse.history.find({consumerGroup, topic})
+    expect(history.records.map(record => record.status).sort()).toEqual(['success', 'success'])
+  })
+
+  it('retries embedded deliveries without writing the history collection', async () => {
+    const databaseName = uniqueName('embedded_retry')
+    const consumerGroup = 'embedded-retry-group'
+    const topic = 'embedded-retry.topic'
+    const pulse = createPulse(databaseName, consumerGroup, {historyRetentionMs: 60_000})
+    await pulse.awaitConnection()
+    const attempts: number[] = []
+    await pulse.subscribe(
+      topic,
+      async event => {
+        attempts.push(event.attempt)
+        if (event.attempt === 1) throw new Error('retry once')
+      },
+      {
+        executionVersion: 2,
+        configVersion: 1,
+        offsetReset: 'latest',
+        retryDelayMs: 0,
+        maxRetries: 1,
+      },
+    )
+    const event = await pulse.publish({topic, data: null})
+    const db = await rawDatabase(databaseName)
+
+    await waitFor(async () => {
+      const delivery = await db
+        .collection('orionjs.pulse.deliveries')
+        .findOne({consumerGroup, eventId: event.id})
+      return delivery?.status === 'v2-success'
+    })
+
+    expect(attempts).toEqual([1, 2])
+    expect(await db.collection('orionjs.pulse.history').countDocuments({eventId: event.id})).toBe(0)
+    const delivery = await db
+      .collection('orionjs.pulse.deliveries')
+      .findOne({consumerGroup, eventId: event.id})
+    expect(delivery?.expiresAt).toBeInstanceOf(Date)
+    expect(delivery?.attempts.map((attempt: Document) => attempt.status)).toEqual([
+      'error',
+      'success',
+    ])
+    const history = await pulse.history.find({eventId: event.id})
+    expect(history.records.map(record => record.status).sort()).toEqual(['error', 'success'])
+  })
+
+  it('bounds embedded attempt history independently from the retry count', async () => {
+    const databaseName = uniqueName('embedded_attempt_window')
+    const consumerGroup = 'embedded-attempt-window-group'
+    const topic = 'embedded-attempt-window.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    await pulse.subscribe(
+      topic,
+      async event => {
+        if (event.attempt <= 30) throw new Error('x'.repeat(20_000))
+      },
+      {
+        executionVersion: 2,
+        configVersion: 1,
+        offsetReset: 'latest',
+        retryDelayMs: 0,
+        maxRetries: 30,
+      },
+    )
+    const event = await pulse.publish({topic, data: null})
+    const db = await rawDatabase(databaseName)
+
+    await waitFor(
+      async () =>
+        (
+          await db
+            .collection('orionjs.pulse.deliveries')
+            .findOne({consumerGroup, eventId: event.id})
+        )?.status === 'v2-success',
+    )
+    const delivery = await db
+      .collection('orionjs.pulse.deliveries')
+      .findOne({consumerGroup, eventId: event.id})
+    expect(delivery).toMatchObject({attempt: 31, finalAttempt: 31})
+    expect(delivery?.attempts).toHaveLength(10)
+    expect(delivery?.attempts[0].attempt).toBe(22)
+    expect(delivery?.attempts.at(-1).attempt).toBe(31)
+    expect(delivery?.attempts[0].error.message.length).toBeLessThanOrEqual(2_048)
+  })
+
+  it('drains embedded backlog after a bridge restarts on rolled-back configuration', async () => {
+    const databaseName = uniqueName('embedded_rollback')
+    const consumerGroup = 'embedded-rollback-group'
+    const topic = 'embedded-rollback.topic'
+    const activating = createPulse(databaseName, consumerGroup)
+    await activating.awaitConnection()
+    await activating.subscribe(topic, async () => {}, {
+      executionVersion: 2,
+      configVersion: 1,
+      offsetReset: 'latest',
+    })
+    await activating.close()
+
+    const received: string[] = []
+    const rollback = createPulse(databaseName, consumerGroup)
+    await rollback.awaitConnection()
+    const subscription = await rollback.subscribe(
+      topic,
+      async event => {
+        received.push(event.id)
+      },
+      {executionVersion: 1, configVersion: 2, ordered: true, offsetReset: 'latest'},
+    )
+    expect(subscription.executionVersion).toBe(1)
+    expect(subscription.ordered).toBe(true)
+    const runtime = getRuntimeState(rollback)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const db = await rawDatabase(databaseName)
+    const now = new Date()
+    const eventId = uuidv7()
+    await db.collection('orionjs.pulse.events').insertOne({
+      _id: eventId,
+      topic,
+      data: null,
+      createdAt: now,
+    })
+    await db.collection('orionjs.pulse.deliveries').insertOne({
+      _id: uuidv7(),
+      eventId,
+      consumerGroup,
+      topic,
+      eventCreatedAt: now,
+      executionVersion: 2,
+      status: 'v2-pending',
+      attempt: 0,
+      attemptId: uuidv7(),
+      attemptCreatedAt: now,
+      nextAttemptAt: now,
+      attempts: [],
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 25))
+    runtime.running = true
+    const [claimed] = await runtime.claimExecutions(1)
+    if (!claimed) throw new Error('Expected the restarted bridge to claim version 2 backlog.')
+    await runtime.runExecution(claimed)
+    runtime.running = false
+
+    expect(received).toEqual([eventId])
+    expect(
+      await db.collection('orionjs.pulse.subscriptions').findOne({consumerGroup, topic}),
+    ).toMatchObject({executionVersion: 1, embeddedExecutionSeen: true})
+  })
+
+  it('recovers an expired embedded lock with the delivery fencing token', async () => {
+    const databaseName = uniqueName('embedded_recovery')
+    const consumerGroup = 'embedded-recovery-group'
+    const topic = 'embedded-recovery.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const receivedAttempts: number[] = []
+    await pulse.subscribe(
+      topic,
+      async event => {
+        receivedAttempts.push(event.attempt)
+      },
+      {
+        executionVersion: 2,
+        configVersion: 1,
+        offsetReset: 'latest',
+        retryDelayMs: 0,
+        maxRetries: 1,
+      },
+    )
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const db = await rawDatabase(databaseName)
+    const event = await pulse.publish({topic, data: null})
+    const eventDocument = await db.collection('orionjs.pulse.events').findOne({_id: event.id})
+    if (!eventDocument) throw new Error('Expected the event document.')
+    await runtime.materializeDeliveries([eventDocument])
+    runtime.running = true
+    const [abandoned] = await runtime.claimExecutions(1)
+    expect(abandoned).toBeDefined()
+    runtime.running = false
+
+    await db
+      .collection('orionjs.pulse.deliveries')
+      .updateOne(
+        {consumerGroup, eventId: event.id, status: 'v2-processing'},
+        {$set: {lockedUntil: new Date(Date.now() - 1)}},
+      )
+    runtime.nextReapAt = 0
+    expect(await runtime.reapExpiredAttempts([topic])).toBe(1)
+
+    const recovered = await db
+      .collection('orionjs.pulse.deliveries')
+      .findOne({consumerGroup, eventId: event.id})
+    expect(recovered).toMatchObject({status: 'v2-pending', attempt: 1})
+    expect(recovered?.attempts).toHaveLength(1)
+    expect(recovered?.attempts[0].error.code).toBe('worker_lost')
+
+    runtime.running = true
+    const [retry] = await runtime.claimExecutions(1)
+    if (!retry) throw new Error('Expected the recovered delivery to be claimable.')
+    await runtime.runExecution(retry)
+    runtime.running = false
+
+    expect(receivedAttempts).toEqual([2])
+    expect(
+      await db.collection('orionjs.pulse.deliveries').findOne({consumerGroup, eventId: event.id}),
+    ).toMatchObject({status: 'v2-success', finalAttempt: 2})
+  })
+
   it('rejects invalid MongoDB pool sizes before connecting', () => {
     for (const maxPoolSize of [0, -1, 1.5, Number.POSITIVE_INFINITY]) {
       expect(() =>
@@ -338,6 +729,16 @@ describe('Pulse persistence', () => {
         {
           name: 'pulse_deliveries_sequence_acquisition',
           key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
+        },
+        {
+          name: 'pulse_deliveries_v2_pending',
+          key: {consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1},
+          partialFilterExpression: {status: 'v2-pending'},
+        },
+        {
+          name: 'pulse_deliveries_v2_processing',
+          key: {consumerGroup: 1, lockedUntil: 1, topic: 1},
+          partialFilterExpression: {status: 'v2-processing'},
         },
         {
           name: 'pulse_deliveries_dashboard_pending',
@@ -498,6 +899,41 @@ describe('Pulse persistence', () => {
       updatedAt: now,
       needsReconciliation: true,
     })
+    await db.collection<any>('orionjs.pulse.deliveries').insertMany([
+      {
+        _id: uuidv7(),
+        eventId: uuidv7(),
+        consumerGroup,
+        topic,
+        eventCreatedAt: now,
+        executionVersion: 2,
+        status: 'v2-pending',
+        attempt: 0,
+        attemptId: uuidv7(),
+        attemptCreatedAt: now,
+        nextAttemptAt: now,
+        attempts: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        _id: uuidv7(),
+        eventId: uuidv7(),
+        consumerGroup,
+        topic,
+        eventCreatedAt: now,
+        executionVersion: 2,
+        status: 'v2-processing',
+        attempt: 1,
+        attemptId: uuidv7(),
+        attemptCreatedAt: now,
+        nextAttemptAt: now,
+        lockedUntil: now,
+        attempts: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
     await db.collection<any>('orionjs.pulse.history').insertOne({
       _id: uuidv7(),
       deliveryId: uuidv7(),
@@ -577,6 +1013,30 @@ describe('Pulse persistence', () => {
       .sort({lockedUntil: 1})
       .limit(25)
       .explain('executionStats')
+    const embeddedPendingExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({
+        consumerGroup,
+        topic: {$in: [topic]},
+        executionVersion: 2,
+        status: 'v2-pending',
+        nextAttemptAt: {$lte: now},
+      })
+      .sort({nextAttemptAt: 1, createdAt: 1})
+      .limit(4)
+      .explain('executionStats')
+    const embeddedProcessingExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({
+        consumerGroup,
+        topic: {$in: [topic]},
+        executionVersion: 2,
+        status: 'v2-processing',
+        lockedUntil: {$lte: now},
+      })
+      .sort({lockedUntil: 1})
+      .limit(25)
+      .explain('executionStats')
     const deliveryReconciliationExplain = await db
       .collection('orionjs.pulse.deliveries')
       .find({consumerGroup, topic: {$in: [topic]}, needsReconciliation: true})
@@ -598,6 +1058,8 @@ describe('Pulse persistence', () => {
       [dashboardHistoryExplain, 'pulse_history_dashboard_created'],
       [historyExplain, 'pulse_history_pending_acquisition'],
       [deadLockExplain, 'pulse_history_group_dead_locks'],
+      [embeddedPendingExplain, 'pulse_deliveries_v2_pending'],
+      [embeddedProcessingExplain, 'pulse_deliveries_v2_processing'],
       [deliveryReconciliationExplain, 'pulse_deliveries_reconciliation'],
       [historyReconciliationExplain, 'pulse_history_reconciliation'],
     ]
@@ -692,7 +1154,8 @@ describe('Pulse persistence', () => {
     const delivery = (
       eventId: string,
       options: {
-        status?: 'pending' | 'success' | 'error'
+        status?: 'pending' | 'success' | 'error' | 'v2-success'
+        executionVersion?: 1 | 2
         eventCreatedAt?: Date
         eventSequence?: Timestamp
         expiresAt?: Date
@@ -704,6 +1167,7 @@ describe('Pulse persistence', () => {
       topic,
       eventCreatedAt: options.eventCreatedAt ?? cursorCreatedAt,
       ...(options.eventSequence ? {eventSequence: options.eventSequence} : {}),
+      ...(options.executionVersion ? {executionVersion: options.executionVersion} : {}),
       status: options.status ?? ('success' as const),
       createdAt: now,
       updatedAt: now,
@@ -714,6 +1178,7 @@ describe('Pulse persistence', () => {
       higherSequenceEventId,
       uuidv7(),
       higherLegacyEventId,
+      uuidv7(),
       uuidv7(),
       uuidv7(),
       uuidv7(),
@@ -750,6 +1215,12 @@ describe('Pulse persistence', () => {
       }),
       delivery(keptEventIds[6], {
         status: 'error',
+        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
+        expiresAt: retainedUntil,
+      }),
+      delivery(keptEventIds[7], {
+        status: 'v2-success',
+        executionVersion: 2,
         eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
         expiresAt: retainedUntil,
       }),

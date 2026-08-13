@@ -94,10 +94,13 @@ Pulse persists four kinds of records:
 | --- | --- |
 | Event | Immutable topic, payload, headers, creation time, and retention time. |
 | Subscription | Durable cursor and delivery configuration for one `consumerGroup + topic`. |
-| Delivery | Logical outcome of one event for one consumer group. |
-| History | One execution attempt, including pending state, lease, result, duration, and error. |
+| Delivery | Logical outcome of one event for one consumer group; execution v2 also embeds its attempt state. |
+| History | Physical execution v1 attempts, including pending state, lease, result, duration, and error. |
 
-Publishing stores one event. Each subscribed consumer group materializes its own delivery and attempt history. Replicas with the same consumer group compete for that delivery; services with different consumer groups each receive it.
+Publishing stores one event. Each subscribed consumer group materializes its own delivery and
+execution state. Version 1 stores attempts in history; opt-in version 2 stores a bounded attempt
+window on the delivery. Replicas with the same consumer group compete for that delivery; services
+with different consumer groups each receive it.
 
 ```text
 order.created
@@ -107,7 +110,9 @@ order.created
      └── analytics     → one independent delivery
 ```
 
-Pulse writes the attempt as `pending` before it calls your handler. A renewable lease and UUIDv7 fencing token protect the attempt while it is running. Polling and reconciliation discover events and recover partial writes or dead workers; Pulse never opens MongoDB Change Streams.
+Pulse writes the attempt state as pending before it calls your handler. A renewable lease and UUIDv7
+fencing token protect the attempt while it is running. Polling and recovery discover events and
+recover partial writes or dead workers; Pulse never opens MongoDB Change Streams.
 
 ## Choose a consumer group
 

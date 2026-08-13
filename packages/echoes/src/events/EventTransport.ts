@@ -5,6 +5,7 @@ export interface EventSubscriptionDefinition {
   attemptsBeforeDeadLetter?: number
   ordered?: boolean
   configVersion?: number
+  executionVersion?: 1 | 2
 }
 
 export interface EventTransportStartOptions {

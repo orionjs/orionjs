@@ -3,11 +3,14 @@ title: 'Reliability and recovery'
 description: 'Delivery guarantees, leases, fencing, reconciliation, retention, and idempotency'
 ---
 
-Pulse uses MongoDB documents, unique indexes, renewable leases, and reconciliation to provide recoverable delivery without requiring multi-document transactions.
+Pulse uses MongoDB documents, unique indexes, renewable leases, and fencing tokens to provide
+recoverable delivery. The original execution path remains available for ordered delivery and
+rolling compatibility; an opt-in embedded path removes multi-collection writes from unordered
+handler execution.
 
 ## Delivery lifecycle
 
-For every event and consumer group, Pulse follows this lifecycle:
+Execution version 1 follows this lifecycle:
 
 ```text
 event
@@ -20,6 +23,22 @@ event
 ```
 
 The history attempt exists before the handler starts. Operators can therefore distinguish work that is queued, currently running, or abandoned by a dead worker.
+
+Execution version 2 stores the same logical state on one delivery document:
+
+```text
+event
+  → delivery (v2-pending)
+  → delivery (v2-processing, leased)
+  → handler
+  → delivery (v2-success, v2-error, or next v2-pending retry)
+```
+
+The completion update appends the attempt outcome and changes the queue state atomically. This path
+does not write the physical history collection, although `pulse.history.find()` projects its
+most recent 10 embedded attempts through the same public API. The delivery's attempt counter remains
+exact, while bounded error strings and the fixed history window keep document size independent from
+`maxRetries`. Version 2 is opt-in and currently supports unordered subscriptions only.
 
 | History state | Meaning |
 | --- | --- |
@@ -54,15 +73,16 @@ handler can call `close()` again to await the shared close promise.
 
 ## Recovery after a crash
 
-The process coordinator runs three recovery steps before looking for new events:
+The process coordinator schedules recovery independently from backlog execution:
 
-1. Reap a bounded batch of expired attempts.
-2. Reconcile a bounded batch of incomplete delivery state.
-3. Acquire existing work or discover new events.
+1. Reap bounded batches of expired version 1 history locks and version 2 delivery locks.
+2. Reconcile bounded batches of marked, incomplete version 1 cross-collection state.
+3. Acquire existing work and discover new events continuously without running maintenance on every
+   hot-loop iteration.
 
 An expired attempt is atomically changed from `pending` to `error` with code `worker_lost`. At-least-once mode then creates the next numbered attempt; at-most-once mode makes the delivery terminal.
 
-Reconciliation repairs safe partial states idempotently:
+Version 1 reconciliation repairs safe partial states idempotently:
 
 - Delivery exists but its first history attempt does not.
 - History is successful but delivery is still pending.
@@ -71,6 +91,10 @@ Reconciliation repairs safe partial states idempotently:
 - A terminal delivery was written but its history and delivery TTL dates were not.
 
 Unique indexes on `consumerGroup + eventId` and `deliveryId + attempt` ensure replicas converge on one logical record.
+
+Version 2 does not need attempt/delivery reconciliation. Its lock recovery uses a compare-and-set
+filter containing the delivery ID, `v2-processing` state, lock token, and expired deadline. The same
+atomic update records `worker_lost` and either schedules a retry or makes the delivery terminal.
 
 ## Concurrent publication ordering
 
@@ -99,8 +123,9 @@ can be delivered again, consistent with Pulse's at-least-once guarantee.
 | Before the handler starts | Expired lease becomes `worker_lost`; retry is created. | Yes, but the previous handler did not start. |
 | During the handler | Expired lease becomes `worker_lost`; retry is created. | Yes. |
 | After a side effect but before history success | Another attempt is created. | **Yes.** |
-| After history success but before delivery success | Reconciliation finishes the delivery from successful history. | No. |
-| After history error but before retry creation | Reconciliation creates exactly the next numbered attempt. | Yes. |
+| After version 1 history success but before delivery success | Reconciliation finishes the delivery from successful history. | No. |
+| After version 1 history error but before retry creation | Reconciliation creates exactly the next numbered attempt. | Yes. |
+| During a version 2 acknowledgement | One atomic delivery update either commits completely or does not match the fencing token. | According to the committed state. |
 
 At-least-once delivery cannot prove whether an external side effect happened before a machine disappeared. Exactly-once side effects require idempotency in the system receiving the side effect.
 
@@ -226,6 +251,9 @@ With the default prefix, Pulse owns:
 | `orionjs.pulse.deliveries` | `historyRetentionMs` after terminal completion. |
 | `orionjs.pulse.history` | `historyRetentionMs` after its delivery becomes terminal. |
 
+Execution version 2 keeps completed attempts inside `deliveries`; the history collection contains
+only version 1 attempt documents.
+
 Retention uses absolute `expiresAt` dates and TTL indexes with `expireAfterSeconds: 0`. When retention is `null`, Pulse omits `expiresAt`; MongoDB keeps those documents even though the TTL index remains.
 
 Errored attempts that still have a retry do not receive an expiry date. This preserves the retry
@@ -233,6 +261,9 @@ number and recovery evidence even when the retry delay or a complete service out
 than `historyRetentionMs`. Once the delivery becomes terminal, Pulse assigns the same terminal
 retention deadline to all its completed attempts, then makes the delivery expirable. If a machine
 stops between those writes, the non-expiring terminal delivery remains as a reconciliation marker.
+
+For version 2, the terminal state, final attempt, and delivery `expiresAt` are committed together.
+MongoDB TTL removal therefore deletes the complete embedded execution record in one collection.
 
 ## Startup safety
 

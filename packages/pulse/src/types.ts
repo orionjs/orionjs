@@ -5,6 +5,7 @@ export type PulseTopic<TEvents extends PulseEventMap> = Extract<keyof TEvents, s
 export type PulseHeaders = Record<string, string>
 export type PulseDeliveryMode = 'at-least-once' | 'at-most-once'
 export type PulseOffsetReset = 'latest' | 'earliest'
+export type PulseExecutionVersion = 1 | 2
 export type PulseHistoryStatus = 'pending' | 'success' | 'error'
 export type PulseLockState = 'queued' | 'active' | 'expired'
 
@@ -55,6 +56,11 @@ export interface PulseSubscribeOptions {
    * Legacy and omitted versions are treated as zero.
    */
   configVersion?: number
+  /**
+   * Internal queue architecture. Version 2 stores attempts atomically on the delivery document.
+   * Deploy a bridge-capable Pulse version everywhere before enabling it with a configVersion bump.
+   */
+  executionVersion?: PulseExecutionVersion
   offsetReset?: PulseOffsetReset
   delivery?: PulseDeliveryMode
   maxRetries?: number
@@ -72,6 +78,7 @@ export interface PulseSubscriptionInfo {
   topic: string
   consumerGroup: string
   configVersion: number
+  executionVersion: PulseExecutionVersion
   ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
@@ -156,6 +163,9 @@ export interface SubscriptionDocument extends Document {
   consumerGroup: string
   topic: string
   configVersion?: number
+  executionVersion?: PulseExecutionVersion
+  /** Sticky bridge marker so version 2 backlog remains recoverable after configuration rollback. */
+  embeddedExecutionSeen?: true
   ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
@@ -178,6 +188,25 @@ export interface SubscriptionDocument extends Document {
 
 export type DeliveryStatus = 'pending' | 'success' | 'error'
 
+export type EmbeddedDeliveryStatus = 'v2-pending' | 'v2-processing' | 'v2-success' | 'v2-error'
+
+export interface EmbeddedAttemptDocument {
+  _id: string
+  attempt: number
+  status: 'success' | 'error'
+  createdAt: Date
+  nextAttemptAt: Date
+  startedAt: Date
+  lockedAt: Date
+  lockedUntil: Date
+  heartbeatAt: Date
+  lockOwner: string
+  lockToken: string
+  endedAt: Date
+  durationMs: number
+  error?: PulseHistoryError
+}
+
 export interface DeliveryDocument extends Document {
   _id: string
   eventId: string
@@ -185,13 +214,27 @@ export interface DeliveryDocument extends Document {
   topic: string
   eventCreatedAt: Date
   eventSequence?: Timestamp
-  status: DeliveryStatus
+  status: DeliveryStatus | EmbeddedDeliveryStatus
+  executionVersion?: PulseExecutionVersion
   createdAt: Date
   updatedAt: Date
   endedAt?: Date
   expiresAt?: Date
   finalAttempt?: number
   error?: PulseHistoryError
+  /** Version 2 queue state. The total number of attempts claimed so far. */
+  attempt?: number
+  attemptId?: string
+  attemptCreatedAt?: Date
+  nextAttemptAt?: Date
+  startedAt?: Date
+  lockOwner?: string
+  lockToken?: string
+  lockedAt?: Date
+  lockedUntil?: Date
+  heartbeatAt?: Date
+  /** Most recent version 2 attempt outcomes, retained in a bounded window. */
+  attempts?: EmbeddedAttemptDocument[]
   /** Internal crash-recovery marker. Present only while a cross-collection write is incomplete. */
   needsReconciliation?: true
 }
@@ -222,6 +265,7 @@ export interface HistoryDocument extends Document {
 
 export interface ResolvedSubscribeOptions {
   configVersion: number
+  executionVersion: PulseExecutionVersion
   ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode

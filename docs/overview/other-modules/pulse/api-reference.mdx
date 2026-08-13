@@ -93,6 +93,7 @@ const subscription = await pulse.subscribe(topic, handler, options)
 | --- | --- | --- | --- |
 | `ordered` | `boolean` | `false` | Set to true to serialize this group and topic across all replicas. |
 | `configVersion` | `number` | `0` | Non-negative integer for persisted settings. Higher versions win. |
+| `executionVersion` | `1 \| 2` | `1` | Opt into embedded delivery execution. Version 2 currently requires `ordered: false`. |
 | `offsetReset` | `'latest' \| 'earliest'` | `latest` | Starting point when the durable subscription is first created. |
 | `delivery` | `'at-least-once' \| 'at-most-once'` | `at-least-once` | Retry semantics. |
 | `maxRetries` | `number` | `3` | Retries after the initial attempt. Forced to zero for at-most-once. |
@@ -110,8 +111,8 @@ type PulseEventHandler<TTopic extends string, TData> = (
 
 `PulseReceivedEvent` contains every published event field plus `consumerGroup` and the one-based `attempt` number.
 
-The returned subscription contains the resolved options, including the winning `configVersion`,
-and an idempotent asynchronous `unsubscribe()` method.
+The returned subscription contains the resolved options, including the winning `configVersion` and
+`executionVersion`, and an idempotent asynchronous `unsubscribe()` method.
 
 ## `pulse.getSubscriptions()`
 
@@ -157,6 +158,11 @@ interface PulseHistoryFindResult {
 
 Each record exposes delivery and event IDs, topic, group, attempt number, status, lock state and timestamps, duration, expiration, and serialized error.
 
+Execution version 1 returns its physical history documents. Execution version 2 projects the
+current attempt and up to the 10 most recent completed outcomes from the delivery document. Its
+delivery attempt counter remains exact even when older attempt details have left that bounded
+window.
+
 ## `pulse.close()`
 
 ```typescript
@@ -186,8 +192,8 @@ The names use `collectionPrefix`, which defaults to `orionjs.pulse`:
 | --- | --- | --- |
 | `.events` | `orionjs.pulse.events` | Immutable published events. |
 | `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and discovery/ordered leases. |
-| `.deliveries` | `orionjs.pulse.deliveries` | Logical group outcome for an event. |
-| `.history` | `orionjs.pulse.history` | Individual execution attempts and their locks. |
+| `.deliveries` | `orionjs.pulse.deliveries` | Logical group outcome; execution v2 also stores its queue state and attempts here. |
+| `.history` | `orionjs.pulse.history` | Execution v1 attempts and their locks. |
 
 Every Pulse-created `_id`, lock owner, and fencing token is a UUIDv7 string.
 
@@ -220,6 +226,8 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | `pulse_deliveries_group_event_unique` | `{consumerGroup: 1, eventId: 1}` | Unique |
 | `pulse_deliveries_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1}` | — |
 | `pulse_deliveries_sequence_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1}` | — |
+| `pulse_deliveries_v2_pending` | `{consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1}` | Partial: `{status: 'v2-pending'}` |
+| `pulse_deliveries_v2_processing` | `{consumerGroup: 1, lockedUntil: 1, topic: 1}` | Partial: `{status: 'v2-processing'}` |
 | `pulse_deliveries_dashboard_pending` | `{status: 1, eventCreatedAt: 1, eventId: 1}` | — |
 | `pulse_deliveries_dashboard_updated` | `{updatedAt: -1, _id: -1}` | — |
 | `pulse_deliveries_dashboard_status_updated` | `{status: 1, updatedAt: -1, _id: -1}` | — |

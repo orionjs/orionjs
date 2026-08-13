@@ -29,6 +29,8 @@ export interface EchoEventConfig<
    * Pulse only. Integer version for persisted subscription settings. Higher versions win.
    */
   configVersion?: number
+  /** Pulse only. Enables the embedded delivery engine for this topic during migration. */
+  executionVersion?: 1 | 2
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
@@ -56,6 +58,7 @@ export type EchoType<
   attemptsBeforeDeadLetter?: number
   ordered?: boolean
   configVersion?: number
+  executionVersion?: 1 | 2
   type: TEchoType
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
@@ -230,6 +233,7 @@ export interface EchoesPulseEventsConfig {
   subscription?: {
     ordered?: boolean
     configVersion?: number
+    executionVersion?: 1 | 2
     offsetReset?: 'latest' | 'earliest'
     delivery?: 'at-least-once' | 'at-most-once'
     maxRetries?: number

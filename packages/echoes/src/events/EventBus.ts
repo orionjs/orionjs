@@ -49,6 +49,7 @@ export default class EventBus {
         attemptsBeforeDeadLetter: echo.attemptsBeforeDeadLetter,
         ordered: echo.ordered,
         configVersion: echo.configVersion,
+        executionVersion: echo.executionVersion,
       }))
 
     try {

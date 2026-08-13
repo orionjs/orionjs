@@ -89,8 +89,8 @@ Pulse now schedules runtime maintenance independently from event discovery and e
 
 - Reconciliation normally runs every 30 seconds and reads only documents marked with
   `needsReconciliation` through small partial indexes.
-- Expired attempts are checked near the next known lock deadline instead of on every coordinator
-  iteration.
+- Expired attempts are checked on a bounded, jittered cadence derived from `lockTimeoutMs`, without
+  running a separate query to find the next lock deadline.
 - Recovery fetches related deliveries and histories in bounded batches instead of issuing one
   lookup for every delivery.
 

@@ -1,0 +1,142 @@
+---
+title: 'Pulse execution v2: fewer MongoDB writes'
+description: 'Move attempts into deliveries and roll the new execution path out without stopping consumers'
+---
+
+Pulse now has an opt-in execution architecture for high-throughput unordered consumers. Execution
+version 2 stores the queue state, current lease, completed attempts, and terminal result in one
+delivery document. A normal successful attempt therefore needs one atomic claim and one atomic
+completion instead of coordinating writes between `deliveries` and `history`.
+
+```typescript
+await pulse.subscribe('image.requested', resizeImage, {
+  ordered: false,
+  executionVersion: 2,
+  configVersion: 3,
+  maxConcurrency: 8,
+})
+```
+
+Echoes exposes the same switch per event listener:
+
+```typescript
+@EchoEvent()
+imageRequested = createEchoEvent({
+  ordered: false,
+  executionVersion: 2,
+  configVersion: 3,
+  maxConcurrency: 8,
+  resolve: resizeImage,
+})
+```
+
+Version 2 currently supports unordered subscriptions only. The default remains execution version 1,
+so installing the package does not change existing topics.
+
+## What changes in MongoDB
+
+Version 1 keeps attempts in `orionjs.pulse.history` and the logical outcome in
+`orionjs.pulse.deliveries`. That model remains available for ordered consumers and for compatibility.
+
+Version 2 keeps the attempt state on the delivery:
+
+- `v2-pending` is ready now or waiting for `nextAttemptAt`.
+- `v2-processing` owns a renewable lease and fencing token.
+- `v2-success` and `v2-error` are terminal.
+- The most recent 10 completed outcomes are kept in `delivery.attempts`; `delivery.attempt` remains
+  the exact total attempt number. Errors are size-bounded so the document cannot grow with an
+  unbounded retry configuration.
+- The outcome is appended in the same atomic write that schedules a retry or makes the delivery
+  terminal.
+
+The distinct `v2-*` states are part of the rolling-deploy protocol. Older Pulse binaries only query
+the original `pending`, `success`, and `error` states, so they cannot claim, reconcile, or delete a
+version 2 delivery.
+
+The unique `{consumerGroup, eventId}` index still creates exactly one logical delivery. If old and
+new discovery leaders see the same event during a rollout, whichever upsert wins chooses that
+event's format. Bridge-capable workers drain both formats; an in-flight delivery is never converted.
+
+`pulse.history.find()` merges original history documents with attempts projected from version 2
+deliveries, so application code keeps the same public history API. For version 2 it exposes the
+bounded recent-attempt window rather than an unlimited retry history. Version 2 does not add
+documents to the physical history collection.
+
+## Safe production rollout
+
+Use two deployments. Do not enable version 2 in the first one.
+
+1. Upgrade every consumer replica to the bridge-capable Pulse package. Leave `executionVersion`
+   omitted, which continues to mean version 1.
+2. After the bridge is everywhere, set `executionVersion: 2` on selected unordered listeners and
+   increase their `configVersion`.
+
+Bridge clients identify their MongoDB connections with the application name
+`@orion-js/pulse-bridge-v2`. Where the production database role permits `currentOp`, use that
+metadata together with deployment telemetry to confirm the first phase; do not infer completion
+from the subscription document alone.
+
+The second deployment may be gradual. Replicas with the lower configuration adopt the higher
+persisted `configVersion`; bridge workers continue to execute the remaining version 1 backlog while
+newly materialized events converge on version 2.
+
+If a later configuration also changes ordering, deliveries already born as version 2 retain their
+unordered semantics while the bridge drains them. Ordering changes apply to newly materialized
+version 1 deliveries; Pulse never rewrites an in-flight delivery's execution format.
+
+Activate a few consumer groups first and compare handler throughput, MongoDB writes, query latency,
+and lock recovery before expanding the change. The two new partial indexes keep only the active
+version 2 queue states:
+
+```javascript
+pulse_deliveries_v2_pending
+{consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1}
+// partial: {status: 'v2-pending'}
+
+pulse_deliveries_v2_processing
+{consumerGroup: 1, lockedUntil: 1, topic: 1}
+// partial: {status: 'v2-processing'}
+```
+
+The standalone dashboard has not been changed as part of this runtime migration. Its direct
+collection counters and physical-history explorer remain version 1 views. Use MongoDB Atlas and
+direct `v2-*` delivery queries for rollout monitoring; application code using
+`pulse.history.find()` does see the recent version 2 attempts.
+
+## Rollback
+
+Rollback the configuration before rolling back the bridge package:
+
+1. Set `executionVersion: 1` with a new, higher `configVersion`.
+2. Keep the bridge fleet running until the affected consumer groups have no `v2-pending` or
+   `v2-processing` deliveries.
+3. Only then deploy a package version that predates the bridge, if that is still necessary.
+
+For example, check the remaining active work directly before step 3:
+
+```javascript
+db.getCollection('orionjs.pulse.deliveries').countDocuments({
+  consumerGroup: 'billing',
+  status: {$in: ['v2-pending', 'v2-processing']},
+})
+```
+
+A subscription retains a small internal marker after version 2 has ever been activated. That lets a
+restarted bridge continue polling old version 2 backlog after the public configuration returns to
+version 1. A pre-bridge binary still deliberately ignores version 2 states; deploying only those
+binaries while version 2 work remains would leave that work waiting until a bridge returns.
+
+## Retention and recovery
+
+The active lease is renewed on the delivery and every acknowledgement is fenced by its `lockToken`.
+If a worker disappears, a compare-and-set update appends a `worker_lost` attempt and either schedules
+the next retry or makes the delivery terminal. A stale worker cannot acknowledge after recovery has
+changed the state or token.
+
+Terminal version 2 deliveries receive `expiresAt` in the same write as their final attempt. The
+existing TTL index removes the whole execution record after `historyRetentionMs`. With
+`historyRetentionMs: null`, Pulse omits `expiresAt` and retains it indefinitely.
+
+See [Consuming events](/overview/other-modules/pulse/consuming) for subscription configuration and
+[Reliability and recovery](/overview/other-modules/pulse/reliability) for the complete execution
+model.

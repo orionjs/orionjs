@@ -63,6 +63,10 @@ const echo = function createNewEcho<
       options.type === 'event'
         ? (options as EchoEventConfig<TParamsSchema, TReturnsSchema>).configVersion
         : undefined,
+    executionVersion:
+      options.type === 'event'
+        ? (options as EchoEventConfig<TParamsSchema, TReturnsSchema>).executionVersion
+        : undefined,
     resolve,
     onEvent,
     onMessage: async (messageData: EchoesKafkaMessagePayload) => {

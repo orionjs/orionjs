@@ -96,6 +96,10 @@ Every value is queried directly from the four Pulse MongoDB collections. The das
 load an OrionJS application, import service code, or call Pulse runtime APIs. Its HTTP API accepts
 only reads and rejects mutation methods.
 
+The current dashboard's counters and attempt explorer describe execution version 1. Monitor
+`v2-*` delivery states directly in MongoDB during a version 2 rollout; `pulse.history.find()` already
+projects recent version 2 attempts.
+
 React, Vite, Tailwind CSS, and dashboard components are used only at package build time. The
 compiled frontend lives under `assets/dashboard`, while the CLI launches `node assets/dashboard.js`.
 Importing `@orion-js/pulse` in an application does not load the dashboard server or browser assets
@@ -173,6 +177,7 @@ delivery row has already expired, at-least-once semantics allow the retained eve
 | --- | --- | --- |
 | `ordered` | `false` | Set to true to prevent callbacks from overlapping for this consumer group and topic. |
 | `configVersion` | `0` | Integer version for persisted settings. A higher version atomically replaces a lower one. |
+| `executionVersion` | `1` | Set to `2` for embedded delivery attempts on unordered high-throughput listeners. |
 | `offsetReset` | `latest` | First subscription starts at `latest` or the earliest retained event. |
 | `delivery` | `at-least-once` | Can also be `at-most-once`. |
 | `maxRetries` | 3 | Retries after the initial attempt. At-most-once always uses zero. |
@@ -187,9 +192,22 @@ downgrade it. Legacy documents and omitted versions are treated as version zero.
 `unsubscribe()` stops local processing but preserves the durable offset; subscribing again resumes
 from it.
 
+Execution version 2 is an opt-in architecture for unordered consumers. It claims, retries, recovers,
+and completes attempts atomically on the delivery document instead of writing the physical history
+collection. Deploy the bridge-capable package everywhere while leaving the default version 1, then
+set `executionVersion: 2` with a higher `configVersion` on selected topics. Bridge workers drain both
+formats during the rollout. Read the
+[hot rollout guide](https://orionjs.com/blog/pulse-embedded-execution) before enabling it in
+production.
+
+Version 2 retains the most recent 10 attempt outcomes on each delivery and keeps the exact total in
+the delivery's attempt counter. This bounds MongoDB document size even when `maxRetries` is large.
+
 ## Delivery and recovery
 
-Pulse stores an execution history record with `status: 'pending'` before invoking a handler. Acquiring it adds a UUIDv7 fencing token and renewable lock. A pending record can therefore be classified as queued, active, or expired.
+Execution version 1 stores a history record with `status: 'pending'` before invoking a handler.
+Version 2 stores the equivalent pending state on its delivery. Acquiring either form adds a UUIDv7
+fencing token and renewable lock, so pending work can be classified as queued, active, or expired.
 
 If a process or machine disappears, another replica marks the expired attempt as `error` with code `worker_lost`. At-least-once delivery creates the next attempt; at-most-once delivery finishes with an error. A stale worker cannot acknowledge after losing its fencing token.
 
@@ -230,8 +248,9 @@ Pulse works with standalone MongoDB, replica sets, and sharded clusters without 
 Streams. Tune `pollIntervalMs` to balance idle query volume and delivery latency.
 
 Maintenance does not run on every coordinator iteration while a backlog is draining. Expired
-attempts are checked near the next known lock deadline, and reconciliation runs at most every 30
-seconds unless a full batch of 25 repairs remains. Cross-collection writes temporarily set
+attempts are checked on a bounded cadence derived from `lockTimeoutMs`, without searching the
+collection for the next deadline, and reconciliation runs at most every 30 seconds unless a full
+batch of 25 repairs remains. Cross-collection writes temporarily set
 `needsReconciliation`; partial indexes keep these recovery queries proportional to incomplete
 writes instead of the total number of deliveries or history records.
 

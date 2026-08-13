@@ -146,6 +146,29 @@ existing subscription, Pulse preserves its persisted value; a new subscription d
 unordered delivery. Already-running callbacks finish normally during a version change, while new
 work converges on the winning configuration.
 
+## Embedded execution for high-throughput consumers
+
+Unordered subscriptions can opt into execution version 2, which keeps the lease, retries, and
+completed attempts atomically on the delivery document:
+
+```typescript
+await pulse.subscribe('image.requested', resizeImage, {
+  ordered: false,
+  executionVersion: 2,
+  configVersion: 3,
+  maxConcurrency: 8,
+})
+```
+
+The default is `executionVersion: 1`. Version 2 rejects `ordered: true`; ordered consumers continue
+using version 1.
+
+Treat the switch as a persisted configuration change. First deploy a bridge-capable Pulse version
+to every replica without changing `executionVersion`. In a later deployment, enable version 2 and
+increase `configVersion`. Bridge workers execute both old and new delivery formats, so the existing
+backlog drains while new work moves to the embedded path. Read the
+[execution v2 rollout guide](/blog/pulse-embedded-execution) before enabling it in production.
+
 ## Retries
 
 The default mode is at-least-once with an initial attempt and three retries:
@@ -194,6 +217,7 @@ This means one handler attempt per delivery. It does not make external side effe
 Pulse persists these options for each `consumerGroup + topic`:
 
 - `configVersion`
+- `executionVersion`
 - `ordered`
 - `offsetReset`
 - `delivery`

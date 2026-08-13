@@ -108,6 +108,7 @@
       {
         "tab": "Blog",
         "pages": [
+          "blog/pulse-embedded-execution",
           "blog/pulse-unordered-versioned-subscriptions",
           "blog/orionjs-4-5-migration",
           "blog/typescript-7",

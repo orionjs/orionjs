@@ -47,13 +47,22 @@ export default class PulseManager implements EventTransport {
     if (!options.consume) return
 
     this.subscriptions = await Promise.all(
-      options.subscriptions.map(definition =>
-        this.pulse.subscribe(
+      options.subscriptions.map(async definition => {
+        const subscribeOptions = this.getSubscribeOptions(subscription, definition)
+        const active = await this.pulse.subscribe(
           definition.topic,
           event => options.onEvent(this.createReceivedEvent(event)),
-          this.getSubscribeOptions(subscription, definition),
-        ),
-      ),
+          subscribeOptions,
+        )
+        if (subscribeOptions.executionVersion === 2 && active.executionVersion !== 2) {
+          await active.unsubscribe()
+          throw new Error(
+            'Echoes executionVersion 2 requires a bridge-capable @orion-js/pulse version and ' +
+              'a winning configVersion for this listener.',
+          )
+        }
+        return active
+      }),
     )
   }
 
@@ -81,6 +90,9 @@ export default class PulseManager implements EventTransport {
       ...defaults,
       ...(definition.ordered === undefined ? {} : {ordered: definition.ordered}),
       ...(definition.configVersion === undefined ? {} : {configVersion: definition.configVersion}),
+      ...(definition.executionVersion === undefined
+        ? {}
+        : {executionVersion: definition.executionVersion}),
       ...(definition.attemptsBeforeDeadLetter === undefined
         ? {}
         : {maxRetries: definition.attemptsBeforeDeadLetter}),

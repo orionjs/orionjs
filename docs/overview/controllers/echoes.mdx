@@ -124,6 +124,8 @@ processSomething = createEchoEvent({
   ordered: true,
   // Increase when changing persisted Pulse subscription settings
   configVersion: 1,
+  // Pulse only: opt into embedded execution after every replica has bridge support
+  executionVersion: 2,
   params: {
     // schema definition
   },
@@ -155,6 +157,12 @@ processSomething = createEchoEvent({
 The highest version wins during a deploy, so an older replica cannot restore an earlier setting.
 Using the same version with different settings fails fast. Existing callbacks finish normally and
 new work converges on the winning configuration.
+
+High-throughput unordered listeners can also set `executionVersion: 2`. It removes the physical
+history collection from the handler hot path by keeping attempts on the delivery document. Deploy
+the supporting packages everywhere first, then enable it per listener with a higher
+`configVersion`. See the [execution v2 rollout guide](/blog/pulse-embedded-execution) for the safe
+two-phase deployment and rollback procedure. Version 2 does not support `ordered: true`.
 
 ## Making Requests
 
