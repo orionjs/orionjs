@@ -3,9 +3,7 @@ import type {EchoesEventTransportName, EchoesReceivedEvent, PublishOptions} from
 export interface EventSubscriptionDefinition {
   topic: string
   attemptsBeforeDeadLetter?: number
-  ordered?: boolean
   configVersion?: number
-  executionVersion?: 1 | 2
 }
 
 export interface EventTransportStartOptions {

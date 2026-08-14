@@ -29,7 +29,6 @@ await pulse.subscribe(
     await new Promise(() => {})
   },
   {
-    ordered: true,
     offsetReset: 'earliest',
     delivery: 'at-least-once',
     maxRetries: 3,

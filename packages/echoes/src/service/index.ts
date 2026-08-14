@@ -1,6 +1,6 @@
 import {createEchoEvent, createEchoRequest} from '../echo'
 import {getEchoesRuntime, runWithEchoesContext} from '../runtime'
-import {EchoConfig, EchoesMap} from '../types'
+import {EchoConfig, type EchoEventConfig, EchoesMap} from '../types'
 
 export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: EchoConfig<any, any>['resolve']
@@ -29,7 +29,7 @@ export function EchoEvent(): (
   context: ClassFieldDecoratorContext | ClassMethodDecoratorContext,
 ) => any
 export function EchoEvent(
-  options?: Omit<EchoConfig<any, any>, 'resolve' | 'type'>,
+  options?: Omit<EchoEventConfig<any, any>, 'resolve'>,
 ): (method: any, context: ClassMethodDecoratorContext) => any
 export function EchoEvent(options = {}) {
   return (method: any, context: ClassMethodDecoratorContext | ClassFieldDecoratorContext) => {

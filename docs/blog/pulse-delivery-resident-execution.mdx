@@ -1,0 +1,94 @@
+---
+title: 'Pulse now has one execution model'
+description: 'A smaller delivery-resident runtime with concurrent handlers, atomic retries, and safer MongoDB load'
+---
+
+Pulse now uses one execution model for every subscription. Queue state, retry state, the active
+lease, terminal outcome, and a bounded window of completed attempts all live on the delivery
+document.
+
+There is no subscription ordering selector and no execution-version selector. Echoes removes the
+same options from event decorators and Pulse transport defaults.
+
+```typescript
+await pulse.subscribe('order.created', handleOrder, {
+  configVersion: 3,
+  offsetReset: 'latest',
+  maxConcurrency: 8,
+  maxRetries: 5,
+  retryDelayMs: 1_000,
+})
+```
+
+```typescript
+@EchoEvent({configVersion: 3})
+orderCreated = createEchoEvent({
+  attemptsBeforeDeadLetter: 5,
+  resolve: handleOrderCreated,
+})
+```
+
+## Why this is simpler
+
+Every attempt transition is one atomic MongoDB update:
+
+```text
+queued delivery
+  → claimed delivery with lease and fencing token
+  → handler
+  → success, retry, or terminal error
+```
+
+Pulse no longer creates attempt documents in a second collection, acquires a topic-wide execution
+lease, or reconciles partial writes between deliveries and attempts. Crash recovery only needs an
+indexed bounded scan for expired delivery locks.
+
+The public `pulse.history.find()` API remains available. It projects the current attempt and the
+latest ten completed outcomes stored on each delivery.
+
+## Concurrency
+
+Deliveries are independent and may run concurrently. `maxConcurrency` controls the number of
+callbacks for one topic in one process, while `workerCount` limits the entire Pulse instance.
+
+Atomic claim filters and fencing tokens still ensure that only one replica owns a specific attempt.
+Handlers remain at-least-once by default and should use `event.id` as an idempotency key.
+
+## Lower database load
+
+The runtime hot path now touches only events, subscriptions, and deliveries. It no longer polls or
+writes a physical attempt collection and has no cross-collection reconciliation pass.
+
+Maintenance stays outside the hot loop:
+
+- Expired delivery locks are reaped in bounded indexed batches.
+- The discovery leader periodically deletes successful deliveries only after its persisted cursor
+  has passed the event.
+- When retention is enabled, cleanup requires `delivery.expiresAt`; MongoDB TTL remains the fallback.
+
+## Production upgrade
+
+The update is compatible with the previous delivery-resident runtime and can be deployed gradually:
+
+1. Update `@orion-js/pulse` and `@orion-js/echoes` in one service.
+2. Deploy its replicas normally and verify callbacks, retry age, and delivery backlog.
+3. Continue service by service until every runtime has the new packages.
+4. After the rollout, obsolete subscription fields may be removed from MongoDB with `$unset`.
+
+No delivery migration or new index is required. Pulse continues using the existing partial queue and
+processing indexes, including their previous production names.
+
+Existing physical attempt records are not read by the new runtime. Their existing TTL index can
+remove them naturally, avoiding a large manual deletion while production is busy.
+
+## Persisted configuration
+
+`configVersion` continues to protect durable settings during rolling deploys:
+
+- Higher versions replace lower versions atomically.
+- Lower-version replicas adopt the persisted winner.
+- Different settings at the same version fail fast.
+- `maxConcurrency` remains local and is not persisted.
+
+See [Consuming events](/overview/other-modules/pulse/consuming) and
+[Reliability and recovery](/overview/other-modules/pulse/reliability) for the complete behavior.

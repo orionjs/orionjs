@@ -55,17 +55,9 @@ const echo = function createNewEcho<
     returns: options.returns,
     attemptsBeforeDeadLetter:
       options.type === 'event' ? options.attemptsBeforeDeadLetter : undefined,
-    ordered:
-      options.type === 'event'
-        ? (options as EchoEventConfig<TParamsSchema, TReturnsSchema>).ordered
-        : undefined,
     configVersion:
       options.type === 'event'
         ? (options as EchoEventConfig<TParamsSchema, TReturnsSchema>).configVersion
-        : undefined,
-    executionVersion:
-      options.type === 'event'
-        ? (options as EchoEventConfig<TParamsSchema, TReturnsSchema>).executionVersion
         : undefined,
     resolve,
     onEvent,

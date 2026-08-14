@@ -107,8 +107,7 @@
       {
         "tab": "Blog",
         "pages": [
-          "blog/pulse-embedded-execution",
-          "blog/pulse-unordered-versioned-subscriptions",
+          "blog/pulse-delivery-resident-execution",
           "blog/orionjs-4-5-migration",
           "blog/typescript-7",
           "blog/repl-command"

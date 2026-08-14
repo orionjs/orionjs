@@ -46,9 +46,7 @@ describe('Echoes EventBus', () => {
       echoes: {
         'order.created': createEchoEvent({
           attemptsBeforeDeadLetter: 4,
-          ordered: false,
           configVersion: 2,
-          executionVersion: 2,
           async resolve(params, context) {
             contexts.push({params, transport: context.transport})
           },
@@ -69,9 +67,7 @@ describe('Echoes EventBus', () => {
       {
         topic: 'order.created',
         attemptsBeforeDeadLetter: 4,
-        ordered: false,
         configVersion: 2,
-        executionVersion: 2,
       },
     ])
 

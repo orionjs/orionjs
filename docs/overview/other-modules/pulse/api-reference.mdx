@@ -20,14 +20,14 @@ function connect<TEvents extends Record<string, unknown>>(
 | `connectionString` | `string` | Required | MongoDB connection string. |
 | `consumerGroup` | `string` | Required | Stable identity shared by replicas performing the same work. |
 | `databaseName` | `string` | Database in URI | MongoDB database. Startup fails if neither source provides it. |
-| `collectionPrefix` | `string` | `orionjs.pulse` | Prefix for all four collections. |
+| `collectionPrefix` | `string` | `orionjs.pulse` | Prefix for Pulse collections. |
 | `eventRetentionMs` | `number \| null` | 7 days | Retention written on new events; `null` keeps them indefinitely. |
 | `historyRetentionMs` | `number \| null` | 7 days | Retention applied to a delivery and all its completed attempts once the delivery is terminal. |
-| `pollIntervalMs` | `number` | `3000` | Event discovery, work acquisition, and reconciliation interval. |
+| `pollIntervalMs` | `number` | `3000` | Idle interval for event discovery and work acquisition. |
 | `workerCount` | `number` | `4` | Maximum concurrent handler executions in this process. |
 | `maxPoolSize` | `number` | `1` | Maximum MongoDB application connections per server for this Pulse client. |
 | `maxIdleTimeMS` | `number` | `30000` | Close idle application connections after this duration; `0` disables expiry. |
-| `lockTimeoutMs` | `number` | `30000` | Attempt and ordered lease duration. Heartbeats renew active leases. |
+| `lockTimeoutMs` | `number` | `30000` | Attempt lease duration. Heartbeats renew active leases. |
 | `discoveryLockTimeoutMs` | `number` | `10000` | Discovery-leader lease duration; controls replica failover independently from handler locks. |
 | `onError` | `(error: Error) => void` | `console.error` | Internal coordinator and worker error reporter. |
 
@@ -40,8 +40,8 @@ concurrently. The limit applies to application connections in each server pool. 
 opens topology-monitoring connections that are not counted by `maxPoolSize`.
 
 <Warning>
-  `changeStreams` has been removed and cannot be enabled or disabled. Pulse always uses polling and
-  reconciliation. Remove the field from existing JavaScript and TypeScript configurations;
+  `changeStreams` has been removed and cannot be enabled or disabled. Pulse always uses polling.
+  Remove the field from existing JavaScript and TypeScript configurations;
   providing it, even as `changeStreams: 'disabled'`, makes `connect()` fail immediately with a
   `PulseConfigurationError`.
 </Warning>
@@ -91,15 +91,13 @@ const subscription = await pulse.subscribe(topic, handler, options)
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `ordered` | `boolean` | `false` | Set to true to serialize this group and topic across all replicas. |
 | `configVersion` | `number` | `0` | Non-negative integer for persisted settings. Higher versions win. |
-| `executionVersion` | `1 \| 2` | `1` | Opt into embedded delivery execution. Version 2 currently requires `ordered: false`. |
 | `offsetReset` | `'latest' \| 'earliest'` | `latest` | Starting point when the durable subscription is first created. |
 | `delivery` | `'at-least-once' \| 'at-most-once'` | `at-least-once` | Retry semantics. |
 | `maxRetries` | `number` | `3` | Retries after the initial attempt. Forced to zero for at-most-once. |
 | `retryDelayMs` | `number` | `1000` | Delay before the first retry. |
 | `retryBackoffMultiplier` | `number` | `2` | Multiplier applied after each failed attempt. |
-| `maxConcurrency` | `number` | `workerCount` | Local concurrent handlers when `ordered` is false. Forced to one when ordered. |
+| `maxConcurrency` | `number` | `workerCount` | Local concurrent handlers for this topic. |
 
 The handler can return `void` or `Promise<void>`:
 
@@ -111,8 +109,8 @@ type PulseEventHandler<TTopic extends string, TData> = (
 
 `PulseReceivedEvent` contains every published event field plus `consumerGroup` and the one-based `attempt` number.
 
-The returned subscription contains the resolved options, including the winning `configVersion` and
-`executionVersion`, and an idempotent asynchronous `unsubscribe()` method.
+The returned subscription contains the resolved options, including the winning `configVersion`,
+and an idempotent asynchronous `unsubscribe()` method.
 
 ## `pulse.getSubscriptions()`
 
@@ -158,10 +156,9 @@ interface PulseHistoryFindResult {
 
 Each record exposes delivery and event IDs, topic, group, attempt number, status, lock state and timestamps, duration, expiration, and serialized error.
 
-Execution version 1 returns its physical history documents. Execution version 2 projects the
-current attempt and up to the 10 most recent completed outcomes from the delivery document. Its
-delivery attempt counter remains exact even when older attempt details have left that bounded
-window.
+Pulse projects the current attempt and up to the 10 most recent completed outcomes from the
+delivery document. The delivery attempt counter remains exact even when older attempt details have
+left that bounded window.
 
 ## `pulse.close()`
 
@@ -191,9 +188,8 @@ The names use `collectionPrefix`, which defaults to `orionjs.pulse`:
 | Suffix | Default collection | Purpose |
 | --- | --- | --- |
 | `.events` | `orionjs.pulse.events` | Immutable published events. |
-| `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and discovery/ordered leases. |
-| `.deliveries` | `orionjs.pulse.deliveries` | Logical group outcome; execution v2 also stores its queue state and attempts here. |
-| `.history` | `orionjs.pulse.history` | Execution v1 attempts and their locks. |
+| `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and discovery lease. |
+| `.deliveries` | `orionjs.pulse.deliveries` | Queue state, attempt lease, retry history, and outcome for one group and event. |
 
 Every Pulse-created `_id`, lock owner, and fencing token is a UUIDv7 string.
 
@@ -215,7 +211,6 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | Name | Keys | Options |
 | --- | --- | --- |
 | `pulse_subscriptions_group_topic_unique` | `{consumerGroup: 1, topic: 1}` | Unique |
-| `pulse_subscriptions_ordered_lease` | `{consumerGroup: 1, orderedLockedUntil: 1}` | — |
 | `pulse_subscriptions_discovery_lease` | `{consumerGroup: 1, discoveryLockedUntil: 1}` | — |
 
 ### Deliveries
@@ -225,21 +220,9 @@ Pulse creates missing indexes and validates named indexes on every connection. I
 | `pulse_deliveries_group_event_unique` | `{consumerGroup: 1, eventId: 1}` | Unique |
 | `pulse_deliveries_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1}` | — |
 | `pulse_deliveries_sequence_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1}` | — |
-| `pulse_deliveries_v2_pending` | `{consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1}` | Partial: `{status: 'v2-pending'}` |
-| `pulse_deliveries_v2_processing` | `{consumerGroup: 1, lockedUntil: 1, topic: 1}` | Partial: `{status: 'v2-processing'}` |
+| `pulse_deliveries_concurrent_pending` | `{consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1}` | Partial concurrent-pending queue |
+| `pulse_deliveries_concurrent_processing` | `{consumerGroup: 1, lockedUntil: 1, topic: 1}` | Partial concurrent-processing queue |
 | `pulse_deliveries_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
-
-### History
-
-| Name | Keys | Options |
-| --- | --- | --- |
-| `pulse_history_delivery_attempt_unique` | `{deliveryId: 1, attempt: 1}` | Unique |
-| `pulse_history_group_topic_created` | `{consumerGroup: 1, topic: 1, createdAt: -1, _id: -1}` | — |
-| `pulse_history_event` | `{eventId: 1, createdAt: -1}` | — |
-| `pulse_history_dead_locks` | `{status: 1, lockedUntil: 1}` | — |
-| `pulse_history_group_dead_locks` | `{consumerGroup: 1, status: 1, lockedUntil: 1}` | — |
-| `pulse_history_pending_acquisition` | `{consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1}` | — |
-| `pulse_history_expires_at_ttl` | `{expiresAt: 1}` | `expireAfterSeconds: 0` |
 
 ## Full typed example
 
@@ -265,7 +248,6 @@ await pulse.subscribe(
     await handleOrder(event.data.orderId, event.id)
   },
   {
-    ordered: true,
     offsetReset: 'latest',
     delivery: 'at-least-once',
     maxRetries: 3,

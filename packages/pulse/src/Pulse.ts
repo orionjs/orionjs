@@ -12,10 +12,9 @@ import {PulseConfigurationError, PulseLockLostError} from './errors'
 import {HistoryApi} from './HistoryApi'
 import {createCollectionsAndIndexes, type PulseCollections} from './indexes'
 import type {
+  DeliveryAttemptDocument,
   DeliveryDocument,
-  EmbeddedAttemptDocument,
   EventDocument,
-  HistoryDocument,
   LocalSubscription,
   PulseConnectOptions,
   PulseEventHandler,
@@ -44,10 +43,8 @@ const DEFAULT_DISCOVERY_LOCK_TIMEOUT_MS = 10_000
 const DISCOVERY_BATCH_SIZE = 100
 const DISCOVERY_TOPIC_BATCH_SIZE = 50
 const RECONCILIATION_BATCH_SIZE = 25
-const RECONCILIATION_INTERVAL_MS = 30_000
-const LEGACY_EXECUTION_DRAINED_AUDIT_INTERVAL_MS = 5 * 60_000
 const MAX_REAPER_IDLE_INTERVAL_MS = 10_000
-const EMBEDDED_ATTEMPT_HISTORY_LIMIT = 10
+const ATTEMPT_HISTORY_LIMIT = 10
 const ERROR_NAME_LIMIT = 256
 const ERROR_MESSAGE_LIMIT = 2_048
 const ERROR_STACK_LIMIT = 4_096
@@ -71,32 +68,13 @@ interface ResolvedConnectOptions {
   onError: (error: Error) => void
 }
 
-interface OrderedLease {
-  subscription: SubscriptionDocument
-  lockToken: string
-}
-
 interface DiscoveryLease {
   subscription: SubscriptionDocument
   lockToken: string
   lockedUntil: Date
 }
 
-interface ExecutionCandidate {
-  delivery: DeliveryDocument
-  attempt: HistoryDocument
-  ordered: boolean
-}
-
-interface LegacyClaimedExecution {
-  kind: 'legacy'
-  local: LocalSubscription
-  delivery: DeliveryDocument
-  attempt: HistoryDocument
-  orderedLease?: OrderedLease
-}
-
-interface EmbeddedAttemptContext {
+interface DeliveryAttemptContext {
   _id: string
   attempt: number
   createdAt: Date
@@ -109,14 +87,13 @@ interface EmbeddedAttemptContext {
   lockToken: string
 }
 
-interface EmbeddedClaimedExecution {
-  kind: 'embedded'
+interface ConcurrentClaimedExecution {
   local: LocalSubscription
   delivery: DeliveryDocument
-  attempt: EmbeddedAttemptContext
+  attempt: DeliveryAttemptContext
 }
 
-type ClaimedExecution = LegacyClaimedExecution | EmbeddedClaimedExecution
+type ClaimedExecution = ConcurrentClaimedExecution
 
 interface DiscoveryResult {
   discovered: boolean
@@ -163,12 +140,6 @@ function assertNonNegativeInteger(value: number, name: string) {
   }
 }
 
-function assertBoolean(value: boolean, name: string) {
-  if (typeof value !== 'boolean') {
-    throw new PulseConfigurationError(`${name} must be a boolean.`)
-  }
-}
-
 function assertFunction(value: unknown, name: string) {
   if (typeof value !== 'function') {
     throw new PulseConfigurationError(`${name} must be a function.`)
@@ -211,7 +182,7 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
   }
   if ('changeStreams' in options) {
     throw new PulseConfigurationError(
-      'changeStreams is no longer supported. Pulse always uses polling and reconciliation.',
+      'changeStreams is no longer supported. Pulse always uses polling.',
     )
   }
 
@@ -264,8 +235,6 @@ function resolveSubscribeOptions(
   }
   const resolved: ResolvedSubscribeOptions = {
     configVersion: options.configVersion ?? 0,
-    executionVersion: options.executionVersion ?? 1,
-    ordered: options.ordered ?? false,
     offsetReset: options.offsetReset ?? 'latest',
     delivery: options.delivery ?? 'at-least-once',
     maxRetries: options.maxRetries ?? 3,
@@ -274,11 +243,7 @@ function resolveSubscribeOptions(
     maxConcurrency: options.maxConcurrency ?? workerCount,
   }
 
-  assertBoolean(resolved.ordered, 'ordered')
   assertNonNegativeInteger(resolved.configVersion, 'configVersion')
-  if (resolved.executionVersion !== 1 && resolved.executionVersion !== 2) {
-    throw new PulseConfigurationError('executionVersion must be either 1 or 2.')
-  }
   assertOneOf(resolved.offsetReset, ['latest', 'earliest'], 'offsetReset')
   assertOneOf(resolved.delivery, ['at-least-once', 'at-most-once'], 'delivery')
   assertNonNegativeInteger(resolved.maxRetries, 'maxRetries')
@@ -291,12 +256,6 @@ function resolveSubscribeOptions(
     )
   }
   if (resolved.delivery === 'at-most-once') resolved.maxRetries = 0
-  if (resolved.ordered) resolved.maxConcurrency = 1
-  if (resolved.executionVersion === 2 && resolved.ordered) {
-    throw new PulseConfigurationError(
-      'executionVersion 2 currently supports unordered subscriptions only.',
-    )
-  }
   assertRetrySchedule(resolved)
 
   return resolved
@@ -364,7 +323,7 @@ function serializeError(error: unknown, code = 'handler_error'): PulseHistoryErr
   }
 }
 
-function serializeEmbeddedError(error: unknown, code = 'handler_error'): PulseHistoryError {
+function serializeExecutionError(error: unknown, code = 'handler_error'): PulseHistoryError {
   const serialized = serializeError(error, code)
   return {
     code: serialized.code,
@@ -377,8 +336,6 @@ function serializeEmbeddedError(error: unknown, code = 'handler_error'): PulseHi
 function subscriptionConfig(document: SubscriptionDocument) {
   return {
     configVersion: document.configVersion ?? 0,
-    executionVersion: document.executionVersion ?? 1,
-    ordered: document.ordered,
     offsetReset: document.offsetReset,
     delivery: document.delivery,
     maxRetries: document.maxRetries,
@@ -390,8 +347,6 @@ function subscriptionConfig(document: SubscriptionDocument) {
 function configsMatch(document: SubscriptionDocument, options: ResolvedSubscribeOptions) {
   const expected = {
     configVersion: options.configVersion,
-    executionVersion: options.executionVersion,
-    ordered: options.ordered,
     offsetReset: options.offsetReset,
     delivery: options.delivery,
     maxRetries: options.maxRetries,
@@ -404,8 +359,6 @@ function configsMatch(document: SubscriptionDocument, options: ResolvedSubscribe
 function persistedConfig(options: ResolvedSubscribeOptions) {
   return {
     configVersion: options.configVersion,
-    executionVersion: options.executionVersion,
-    ordered: options.ordered,
     offsetReset: options.offsetReset,
     delivery: options.delivery,
     maxRetries: options.maxRetries,
@@ -420,7 +373,7 @@ function optionsFromDocument(
 ): ResolvedSubscribeOptions {
   return {
     ...subscriptionConfig(document),
-    maxConcurrency: document.ordered ? 1 : configuredMaxConcurrency,
+    maxConcurrency: configuredMaxConcurrency,
   }
 }
 
@@ -434,14 +387,6 @@ function circularBatch<T>(items: T[], offset: number, limit: number) {
   const start = offset % items.length
   const count = Math.min(items.length, limit)
   return Array.from({length: count}, (_, index) => items[(start + index) % items.length])
-}
-
-function shuffle<T>(items: T[]) {
-  for (let index = items.length - 1; index > 0; index--) {
-    const other = Math.floor(Math.random() * (index + 1))
-    ;[items[index], items[other]] = [items[other], items[index]]
-  }
-  return items
 }
 
 export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
@@ -460,14 +405,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private discoveryRefreshAt = 0
   private localSubscriptionRevision = 0
   private discoveryTopicOffset = 0
-  private workTopicOffset = Math.floor(Math.random() * 1_000_000_000)
   private deliveryCleanupTopicOffset = 0
-  private embeddedClaimFirst = true
-  private embeddedWorkEnabled = false
-  private legacyExecutionState: 'unknown' | 'required' | 'drained' = 'unknown'
-  private nextLegacyExecutionAuditAt = 0
-  private nextLegacyClaimAt = 0
-  private nextEmbeddedClaimAt = 0
+  private nextConcurrentClaimAt = 0
   private db?: Db
   private collections?: PulseCollections
   private coordinatorPromise?: Promise<void>
@@ -475,7 +414,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private handledDiscoveryRequestRevision = 0
   private nextDiscoveryAt = 0
   private nextReapAt = 0
-  private nextReconciliationAt = 0
   private nextDeliveryCleanupAt = Date.now() + DELIVERY_CLEANUP_INTERVAL_MS
   private running = true
   private closePromise?: Promise<void>
@@ -483,8 +421,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   constructor(options: PulseConnectOptions) {
     this.options = resolveOptions(options)
     this.client = new MongoClient(this.options.connectionString, {
-      // Distinct metadata lets operators verify bridge-capable clients before activating v2.
-      appName: '@orion-js/pulse-bridge-v2',
+      appName: '@orion-js/pulse',
       maxPoolSize: this.options.maxPoolSize,
       minPoolSize: 0,
       maxIdleTimeMS: this.options.maxIdleTimeMS,
@@ -568,7 +505,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     const requestedOptions = resolveSubscribeOptions(userOptions, this.options.workerCount)
     this.subscribingTopics.add(topic)
     try {
-      const document = await this.getOrCreateSubscription(topic, requestedOptions, userOptions)
+      const document = await this.getOrCreateSubscription(topic, requestedOptions)
       const local: LocalSubscription = {
         document,
         options: optionsFromDocument(document, configuredMaxConcurrency),
@@ -579,7 +516,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       }
       this.localSubscriptions.set(topic, local)
       this.localSubscriptionRevision++
-      this.invalidateLegacyExecutionState()
       this.discoveryRefreshAt = 0
       this.requestDiscovery()
 
@@ -593,7 +529,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           if (this.localSubscriptions.get(topic) === local) {
             this.localSubscriptions.delete(topic)
             this.localSubscriptionRevision++
-            this.invalidateLegacyExecutionState()
           }
           await this.releaseDiscoveryLeaseForTopic(topic)
           this.discoveryRefreshAt = 0
@@ -667,21 +602,15 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       this.nextDiscoveryAt = discovery.discovered ? 0 : Date.now() + this.options.pollIntervalMs
     }
 
-    const needsLegacyExecution = await this.needsLegacyExecution()
-
     const leaderTopics = [...this.discoveryLeases.keys()].filter(topic =>
       this.localSubscriptions.has(topic),
     )
     let reaped = 0
-    let reconciled = 0
     let cleaned = 0
     if (leaderTopics.length > 0) {
       const now = Date.now()
       if (now >= this.nextReapAt) {
-        reaped = await this.reapExpiredAttempts(leaderTopics, needsLegacyExecution)
-      }
-      if (needsLegacyExecution && now >= this.nextReconciliationAt) {
-        reconciled = await this.reconcileDeliveries(leaderTopics)
+        reaped = await this.reapExpiredAttempts(leaderTopics)
       }
       if (now >= this.nextDeliveryCleanupAt) {
         cleaned = await this.cleanupSuccessfulDeliveries(leaderTopics)
@@ -690,100 +619,13 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
     let dispatched = false
     const capacity = this.options.workerCount - this.activeExecutions.size
-    const executions =
-      capacity > 0 ? await this.claimExecutions(capacity, needsLegacyExecution) : []
+    const executions = capacity > 0 ? await this.claimExecutions(capacity) : []
     for (const execution of executions) {
       if (!this.running) break
       this.startExecution(execution)
       dispatched = true
     }
-    return discovery.discovered || reaped > 0 || reconciled > 0 || cleaned > 0 || dispatched
-  }
-
-  private invalidateLegacyExecutionState() {
-    this.legacyExecutionState = 'unknown'
-    this.nextLegacyExecutionAuditAt = 0
-    this.nextLegacyClaimAt = 0
-    this.nextReconciliationAt = 0
-    this.nextReapAt = 0
-  }
-
-  private async needsLegacyExecution() {
-    const locals = [...this.localSubscriptions.values()].filter(local => !local.unsubscribed)
-    if (locals.some(local => local.options.executionVersion === 1)) {
-      this.legacyExecutionState = 'required'
-      this.nextLegacyExecutionAuditAt = Number.POSITIVE_INFINITY
-      return true
-    }
-    if (locals.length === 0) return false
-
-    const now = Date.now()
-    if (this.legacyExecutionState === 'drained' && now < this.nextLegacyExecutionAuditAt) {
-      return false
-    }
-    if (this.legacyExecutionState === 'required' && now < this.nextLegacyExecutionAuditAt) {
-      return true
-    }
-
-    const subscriptionRevision = this.localSubscriptionRevision
-    const topics = locals.map(local => local.document.topic)
-    const collections = this.getCollections()
-    const projection = {_id: 1}
-    const pendingHistory = await collections.history.findOne(
-      {
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        status: 'pending',
-      },
-      {projection, hint: 'pulse_history_pending_acquisition'},
-    )
-    if (pendingHistory) {
-      this.legacyExecutionState = 'required'
-      this.nextLegacyExecutionAuditAt = now + RECONCILIATION_INTERVAL_MS
-      return true
-    }
-
-    const historyMarker = await collections.history.findOne(
-      {
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        needsReconciliation: true,
-      },
-      {projection, hint: 'pulse_history_reconciliation'},
-    )
-    if (historyMarker) {
-      this.legacyExecutionState = 'required'
-      this.nextLegacyExecutionAuditAt = now + RECONCILIATION_INTERVAL_MS
-      return true
-    }
-
-    const deliveryMarker = await collections.deliveries.findOne(
-      {
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        needsReconciliation: true,
-      },
-      {projection, hint: 'pulse_deliveries_reconciliation'},
-    )
-    if (deliveryMarker) {
-      this.legacyExecutionState = 'required'
-      this.nextLegacyExecutionAuditAt = now + RECONCILIATION_INTERVAL_MS
-      return true
-    }
-
-    // A subscription may be added while the indexed reads are in flight. Keep the
-    // bridge enabled for this pass and audit the new snapshot on the next pass.
-    if (subscriptionRevision !== this.localSubscriptionRevision) {
-      this.legacyExecutionState = 'unknown'
-      this.nextLegacyExecutionAuditAt = 0
-      return true
-    }
-
-    this.legacyExecutionState = 'drained'
-    // A slow re-audit covers a pre-patch replica that materializes v1 work after
-    // this process observed a clean bridge during a rolling deployment.
-    this.nextLegacyExecutionAuditAt = now + LEGACY_EXECUTION_DRAINED_AUDIT_INTERVAL_MS
-    return false
+    return discovery.discovered || reaped > 0 || cleaned > 0 || dispatched
   }
 
   private async discoverEvents(scanEvents: boolean): Promise<DiscoveryResult> {
@@ -931,28 +773,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     const collections = this.getCollections()
     const candidates = events.map(event => {
       const createdAt = new Date()
-      const executionVersion =
-        this.localSubscriptions.get(event.topic)?.options.executionVersion ?? 1
-      if (executionVersion === 2) {
-        this.embeddedWorkEnabled = true
-        return {
-          _id: uuidv7(),
-          eventId: event._id,
-          consumerGroup: this.options.consumerGroup,
-          topic: event.topic,
-          eventCreatedAt: event.createdAt,
-          ...(event.sequence ? {eventSequence: event.sequence} : {}),
-          executionVersion: 2 as const,
-          status: 'v2-pending' as const,
-          attempt: 0,
-          attemptId: uuidv7(),
-          attemptCreatedAt: createdAt,
-          nextAttemptAt: createdAt,
-          attempts: [],
-          createdAt,
-          updatedAt: createdAt,
-        } satisfies DeliveryDocument
-      }
       return {
         _id: uuidv7(),
         eventId: event._id,
@@ -960,16 +780,17 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         topic: event.topic,
         eventCreatedAt: event.createdAt,
         ...(event.sequence ? {eventSequence: event.sequence} : {}),
-        status: 'pending' as const,
+        status: 'v2-pending' as const,
+        attempt: 0,
+        attemptId: uuidv7(),
+        attemptCreatedAt: createdAt,
+        nextAttemptAt: createdAt,
+        attempts: [],
         createdAt,
         updatedAt: createdAt,
-        needsReconciliation: true,
       } satisfies DeliveryDocument
     })
-    if (candidates.some(candidate => candidate.status === 'pending')) this.nextLegacyClaimAt = 0
-    if (candidates.some(candidate => candidate.status === 'v2-pending')) {
-      this.nextEmbeddedClaimAt = 0
-    }
+    this.nextConcurrentClaimAt = 0
     try {
       await collections.deliveries.bulkWrite(
         candidates.map<AnyBulkWriteOperation<DeliveryDocument>>(candidate => ({
@@ -987,220 +808,21 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     } catch (error) {
       if (!isOnlyDuplicateKeyErrors(error)) throw error
     }
-
-    const legacyCandidates = candidates.filter(candidate => candidate.status === 'pending')
-    if (legacyCandidates.length === 0) return
-    const deliveries = await collections.deliveries
-      .find({
-        consumerGroup: this.options.consumerGroup,
-        eventId: {$in: legacyCandidates.map(candidate => candidate.eventId)},
-        status: 'pending',
-      })
-      .toArray()
-    if (deliveries.length === 0) return
-    const deliveryIdsWithHistory = new Set(
-      await collections.history.distinct('deliveryId', {
-        deliveryId: {$in: deliveries.map(delivery => delivery._id)},
-      }),
-    )
-    const uninitializedDeliveries = deliveries.filter(
-      delivery => !deliveryIdsWithHistory.has(delivery._id),
-    )
-    if (uninitializedDeliveries.length === 0) return
-    const historyOperations = uninitializedDeliveries.map<AnyBulkWriteOperation<HistoryDocument>>(
-      delivery => {
-        const attempt: HistoryDocument = {
-          _id: uuidv7(),
-          deliveryId: delivery._id,
-          eventId: delivery.eventId,
-          consumerGroup: delivery.consumerGroup,
-          topic: delivery.topic,
-          attempt: 1,
-          status: 'pending',
-          createdAt: new Date(),
-          nextAttemptAt: delivery.createdAt,
-        }
-        return {
-          updateOne: {
-            filter: {deliveryId: delivery._id, attempt: 1},
-            update: {$setOnInsert: attempt},
-            upsert: true,
-          },
-        }
-      },
-    )
-    let initializedDeliveryIds: string[] = []
-    try {
-      const result = await collections.history.bulkWrite(historyOperations, {ordered: false})
-      initializedDeliveryIds = Object.keys(result.upsertedIds).map(
-        index => uninitializedDeliveries[Number(index)]._id,
-      )
-    } catch (error) {
-      if (!isOnlyDuplicateKeyErrors(error)) throw error
-    }
-    if (initializedDeliveryIds.length === 0) return
-    await collections.deliveries.updateMany(
-      {
-        _id: {$in: initializedDeliveryIds},
-        status: 'pending',
-        needsReconciliation: true,
-      },
-      {$unset: {needsReconciliation: ''}},
-    )
   }
 
-  private async claimExecutions(
-    capacity: number,
-    needsLegacyExecution = true,
-  ): Promise<ClaimedExecution[]> {
+  private async claimExecutions(capacity: number): Promise<ClaimedExecution[]> {
     if (capacity <= 0) return []
-
-    if (!needsLegacyExecution) {
-      if (Date.now() < this.nextEmbeddedClaimAt) return []
-      const executions = await this.claimEmbeddedExecutions(capacity)
-      this.nextEmbeddedClaimAt =
-        executions.length === 0 ? Date.now() + this.options.pollIntervalMs : 0
-      return executions
-    }
-
-    const claimEmbeddedFirst = this.embeddedClaimFirst
-    this.embeddedClaimFirst = !this.embeddedClaimFirst
-    const claimed: ClaimedExecution[] = []
-    const claimNext = async (kind: 'legacy' | 'embedded') => {
-      const remaining = capacity - claimed.length
-      if (remaining <= 0) return
-      const nextClaimAt = kind === 'embedded' ? this.nextEmbeddedClaimAt : this.nextLegacyClaimAt
-      if (Date.now() < nextClaimAt) return
-      const executions =
-        kind === 'embedded'
-          ? await this.claimEmbeddedExecutions(remaining)
-          : await this.claimLegacyExecutions(remaining)
-      if (kind === 'embedded') {
-        this.nextEmbeddedClaimAt =
-          executions.length === 0 ? Date.now() + this.options.pollIntervalMs : 0
-      } else {
-        this.nextLegacyClaimAt =
-          executions.length === 0 ? Date.now() + this.options.pollIntervalMs : 0
-      }
-      claimed.push(...executions)
-    }
-
-    await claimNext(claimEmbeddedFirst ? 'embedded' : 'legacy')
-    await claimNext(claimEmbeddedFirst ? 'legacy' : 'embedded')
-    return claimed
+    if (Date.now() < this.nextConcurrentClaimAt) return []
+    const executions = await this.claimConcurrentExecutions(capacity)
+    this.nextConcurrentClaimAt =
+      executions.length === 0 ? Date.now() + this.options.pollIntervalMs : 0
+    return executions
   }
 
-  private async claimLegacyExecutions(capacity: number): Promise<LegacyClaimedExecution[]> {
+  private async claimConcurrentExecutions(capacity: number): Promise<ConcurrentClaimedExecution[]> {
     if (capacity <= 0) return []
-    const candidates = await this.findExecutionCandidates(capacity)
-    const executions: LegacyClaimedExecution[] = []
-    const unsettled = new Set<LegacyClaimedExecution>()
-
-    try {
-      for (const candidate of candidates) {
-        if (!this.running || executions.length >= capacity) break
-        const local = this.localSubscriptions.get(candidate.delivery.topic)
-        if (!local || local.unsubscribed) continue
-        if (candidate.ordered !== local.options.ordered) continue
-        if (
-          local.options.ordered ? local.running > 0 : local.running >= local.options.maxConcurrency
-        ) {
-          continue
-        }
-
-        const workerId = uuidv7()
-        let orderedLease: OrderedLease | undefined
-        if (local.options.ordered) {
-          orderedLease = await this.acquireOrderedLease(local, workerId)
-          if (!orderedLease) continue
-          if (this.localSubscriptions.get(local.document.topic) !== local || local.unsubscribed) {
-            await this.releaseOrderedLease(orderedLease)
-            continue
-          }
-        }
-
-        let attempt: HistoryDocument | undefined
-        try {
-          attempt = await this.claimAttempt(candidate.attempt, workerId)
-        } catch (error) {
-          if (orderedLease) {
-            await this.releaseOrderedLease(orderedLease).catch(releaseError =>
-              this.reportError(releaseError),
-            )
-          }
-          throw error
-        }
-        if (!attempt) {
-          if (orderedLease) await this.releaseOrderedLease(orderedLease)
-          continue
-        }
-
-        local.running++
-        const execution: LegacyClaimedExecution = {
-          kind: 'legacy',
-          local,
-          delivery: candidate.delivery,
-          attempt,
-          orderedLease,
-        }
-        executions.push(execution)
-        unsettled.add(execution)
-      }
-
-      if (executions.length === 0) return []
-      const currentDeliveries = await this.getCollections()
-        .deliveries.find({_id: {$in: executions.map(execution => execution.delivery._id)}})
-        .toArray()
-      const currentById = new Map(currentDeliveries.map(delivery => [delivery._id, delivery]))
-      const validated: LegacyClaimedExecution[] = []
-      for (const execution of executions) {
-        const registered = this.localSubscriptions.get(execution.delivery.topic)
-        if (registered !== execution.local || execution.local.unsubscribed) {
-          await this.abandonClaimedExecution(execution)
-          unsettled.delete(execution)
-          continue
-        }
-
-        const current = currentById.get(execution.delivery._id)
-        if (current?.status === 'pending') {
-          execution.delivery = current
-          validated.push(execution)
-          continue
-        }
-
-        const history = await this.finishAttemptWithError(
-          execution.attempt,
-          serializeEmbeddedError(
-            new Error(
-              current
-                ? 'The delivery became terminal before this attempt could start.'
-                : 'The delivery disappeared before this attempt could start.',
-            ),
-            current ? 'delivery_already_terminal' : 'delivery_missing',
-          ),
-        )
-        if (history && current) await this.applyTerminalRetention(current)
-        if (execution.orderedLease) await this.releaseOrderedLease(execution.orderedLease)
-        execution.local.running--
-        unsettled.delete(execution)
-      }
-      return validated
-    } catch (error) {
-      await Promise.all([...unsettled].map(execution => this.abandonClaimedExecution(execution)))
-      throw error
-    }
-  }
-
-  private async claimEmbeddedExecutions(capacity: number): Promise<EmbeddedClaimedExecution[]> {
-    if (capacity <= 0) return []
-    if (!this.embeddedWorkEnabled) {
-      this.embeddedWorkEnabled = [...this.localSubscriptions.values()].some(
-        local => local.options.executionVersion === 2 || local.document.embeddedExecutionSeen,
-      )
-      if (!this.embeddedWorkEnabled) return []
-    }
     const deliveries = this.getCollections().deliveries
-    const executions: EmbeddedClaimedExecution[] = []
+    const executions: ConcurrentClaimedExecution[] = []
 
     try {
       while (this.running && executions.length < capacity) {
@@ -1216,7 +838,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           {
             consumerGroup: this.options.consumerGroup,
             topic: {$in: eligibleTopics},
-            executionVersion: 2,
             status: 'v2-pending',
             nextAttemptAt: {$lte: now},
           },
@@ -1255,13 +876,12 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           !claimed.lockOwner ||
           !claimed.lockToken
         ) {
-          await this.releaseUnstartedEmbeddedAttempt(claimed)
+          await this.releaseUnstartedConcurrentAttempt(claimed)
           continue
         }
 
         local.running++
         executions.push({
-          kind: 'embedded',
           local,
           delivery: claimed,
           attempt: {
@@ -1286,27 +906,15 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   }
 
   private async abandonClaimedExecution(execution: ClaimedExecution) {
-    if (execution.kind === 'embedded') {
-      await this.releaseUnstartedEmbeddedAttempt(execution.delivery)
-      execution.local.running--
-      return
-    }
-    const results = await Promise.allSettled([
-      this.releaseUnstartedAttempt(execution.attempt),
-      ...(execution.orderedLease ? [this.releaseOrderedLease(execution.orderedLease)] : []),
-    ])
+    await this.releaseUnstartedConcurrentAttempt(execution.delivery)
     execution.local.running--
-    for (const result of results) {
-      if (result.status === 'rejected') this.reportError(result.reason)
-    }
   }
 
-  private async releaseUnstartedEmbeddedAttempt(delivery: DeliveryDocument) {
+  private async releaseUnstartedConcurrentAttempt(delivery: DeliveryDocument) {
     if (!delivery.lockToken) return
     await this.getCollections().deliveries.updateOne(
       {
         _id: delivery._id,
-        executionVersion: 2,
         status: 'v2-processing',
         lockToken: delivery.lockToken,
       },
@@ -1325,156 +933,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     )
   }
 
-  private async findExecutionCandidates(capacity: number): Promise<ExecutionCandidate[]> {
-    const collections = this.getCollections()
-    const now = new Date()
-    const candidateLimit = Math.max(16, Math.min(100, capacity * 8))
-    const eligible = [...this.localSubscriptions.values()].filter(
-      local =>
-        !local.unsubscribed &&
-        (local.options.ordered
-          ? local.running === 0 && this.discoveryLeases.has(local.document.topic)
-          : local.running < local.options.maxConcurrency),
-    )
-    if (eligible.length === 0) return []
-
-    const selected = circularBatch(
-      eligible,
-      this.workTopicOffset,
-      Math.min(DISCOVERY_TOPIC_BATCH_SIZE, candidateLimit),
-    )
-    this.workTopicOffset = (this.workTopicOffset + selected.length) % eligible.length
-    const concurrentPerTopicLimit = Math.max(1, Math.ceil(candidateLimit / selected.length))
-    const branches: Array<{collectionName: string; pipeline: Document[]}> = []
-
-    for (const local of selected) {
-      const topic = local.document.topic
-      if (local.options.ordered) {
-        branches.push({
-          collectionName: collections.deliveries.collectionName,
-          pipeline: [
-            {
-              $match: {
-                consumerGroup: this.options.consumerGroup,
-                topic,
-                status: 'pending',
-                eventSequence: {$exists: false},
-              },
-            },
-            {$sort: {eventCreatedAt: 1, eventId: 1}},
-            {$limit: 1},
-            {$set: {__pulseOrderKind: 0}},
-            {
-              $unionWith: {
-                coll: collections.deliveries.collectionName,
-                pipeline: [
-                  {
-                    $match: {
-                      consumerGroup: this.options.consumerGroup,
-                      topic,
-                      status: 'pending',
-                      eventSequence: {$exists: true},
-                    },
-                  },
-                  {$sort: {eventSequence: 1, eventId: 1}},
-                  {$limit: 1},
-                  {$set: {__pulseOrderKind: 1}},
-                ],
-              },
-            },
-            {
-              $sort: {
-                __pulseOrderKind: 1,
-                eventSequence: 1,
-                eventCreatedAt: 1,
-                eventId: 1,
-              },
-            },
-            {$limit: 1},
-            {$set: {__pulseDelivery: '$$ROOT'}},
-            {
-              $lookup: {
-                from: collections.history.collectionName,
-                let: {deliveryId: '$_id'},
-                pipeline: [
-                  {
-                    $match: {
-                      $expr: {$eq: ['$deliveryId', '$$deliveryId']},
-                      status: 'pending',
-                      nextAttemptAt: {$lte: now},
-                      lockToken: {$exists: false},
-                    },
-                  },
-                  {$sort: {attempt: -1}},
-                  {$limit: 1},
-                ],
-                as: '__pulseAttempts',
-              },
-            },
-            {$match: {'__pulseAttempts.0': {$exists: true}}},
-            {
-              $project: {
-                _id: 0,
-                delivery: '$__pulseDelivery',
-                attempt: {$arrayElemAt: ['$__pulseAttempts', 0]},
-                ordered: {$literal: true},
-              },
-            },
-          ],
-        })
-      } else {
-        branches.push({
-          collectionName: collections.history.collectionName,
-          pipeline: [
-            {
-              $match: {
-                consumerGroup: this.options.consumerGroup,
-                topic,
-                status: 'pending',
-                nextAttemptAt: {$lte: now},
-                lockToken: {$exists: false},
-              },
-            },
-            {$sort: {nextAttemptAt: 1, createdAt: 1}},
-            {$limit: concurrentPerTopicLimit},
-            {$set: {__pulseAttempt: '$$ROOT'}},
-            {
-              $lookup: {
-                from: collections.deliveries.collectionName,
-                localField: 'deliveryId',
-                foreignField: '_id',
-                as: '__pulseDeliveries',
-              },
-            },
-            {$match: {'__pulseDeliveries.0.status': 'pending'}},
-            {
-              $project: {
-                _id: 0,
-                attempt: '$__pulseAttempt',
-                delivery: {$arrayElemAt: ['$__pulseDeliveries', 0]},
-                ordered: {$literal: false},
-              },
-            },
-          ],
-        })
-      }
-    }
-
-    const [first, ...remaining] = branches
-    const pipeline: Document[] = [...first.pipeline]
-    for (const branch of remaining) {
-      pipeline.push({$unionWith: {coll: branch.collectionName, pipeline: branch.pipeline}})
-    }
-    const rootCollection =
-      first.collectionName === collections.deliveries.collectionName
-        ? collections.deliveries
-        : collections.history
-    const candidates = (await rootCollection
-      .aggregate(pipeline)
-      .toArray()) as unknown as ExecutionCandidate[]
-    return shuffle(candidates)
-  }
-
   private startExecution(execution: ClaimedExecution) {
     const promise = this.runExecution(execution)
     this.activeExecutions.add(promise)
@@ -1486,179 +944,18 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   private async runExecution(execution: ClaimedExecution) {
     try {
-      if (execution.kind === 'embedded') {
-        await this.executeEmbeddedAttempt(execution.local, execution.delivery, execution.attempt)
-      } else {
-        await this.executeAttempt(
-          execution.local,
-          execution.delivery,
-          execution.attempt,
-          execution.orderedLease,
-        )
-      }
+      await this.executeConcurrentAttempt(execution.local, execution.delivery, execution.attempt)
     } catch (error) {
       this.reportError(error)
     } finally {
       execution.local.running--
-      if (execution.kind === 'legacy' && execution.orderedLease) {
-        await this.releaseOrderedLease(execution.orderedLease).catch(error =>
-          this.reportError(error),
-        )
-      }
     }
   }
 
-  private async claimAttempt(candidate: HistoryDocument, workerId: string) {
-    const now = new Date()
-    const lockToken = uuidv7()
-    return (
-      (await this.getCollections().history.findOneAndUpdate(
-        {
-          _id: candidate._id,
-          status: 'pending',
-          nextAttemptAt: {$lte: now},
-          lockToken: {$exists: false},
-        },
-        {
-          $set: {
-            startedAt: now,
-            lockOwner: workerId,
-            lockToken,
-            lockedAt: now,
-            lockedUntil: new Date(now.getTime() + this.options.lockTimeoutMs),
-            heartbeatAt: now,
-          },
-        },
-        {returnDocument: 'after'},
-      )) ?? undefined
-    )
-  }
-
-  private async releaseUnstartedAttempt(attempt: HistoryDocument) {
-    await this.getCollections().history.updateOne(
-      {_id: attempt._id, status: 'pending', lockToken: attempt.lockToken},
-      {
-        $unset: {
-          startedAt: '',
-          lockOwner: '',
-          lockToken: '',
-          lockedAt: '',
-          lockedUntil: '',
-          heartbeatAt: '',
-        },
-      },
-    )
-  }
-
-  private async executeAttempt(
+  private async executeConcurrentAttempt(
     local: LocalSubscription,
     delivery: DeliveryDocument,
-    attempt: HistoryDocument,
-    orderedLease?: OrderedLease,
-  ) {
-    let lockLost = false
-    let heartbeatRunning = false
-    const heartbeat = async () => {
-      // close() stops new work but waits for active callbacks. Their leases must keep
-      // renewing until executeAttempt finishes or another replica can duplicate the work.
-      if (heartbeatRunning || lockLost) return
-      heartbeatRunning = true
-      try {
-        const now = new Date()
-        const historyResult = await this.getCollections().history.updateOne(
-          {_id: attempt._id, status: 'pending', lockToken: attempt.lockToken},
-          {
-            $set: {
-              heartbeatAt: now,
-              lockedUntil: new Date(now.getTime() + this.options.lockTimeoutMs),
-            },
-          },
-        )
-        if (historyResult.modifiedCount === 0) lockLost = true
-
-        if (orderedLease && !lockLost) {
-          const leaseResult = await this.getCollections().subscriptions.updateOne(
-            {_id: orderedLease.subscription._id, orderedLockToken: orderedLease.lockToken},
-            {
-              $set: {
-                orderedLockedUntil: new Date(now.getTime() + this.options.lockTimeoutMs),
-              },
-            },
-          )
-          if (leaseResult.modifiedCount === 0) lockLost = true
-        }
-      } catch (error) {
-        this.reportError(error)
-      } finally {
-        heartbeatRunning = false
-      }
-    }
-
-    const interval = setInterval(
-      () => void heartbeat(),
-      Math.max(10, Math.floor(this.options.lockTimeoutMs / 3)),
-    )
-    interval.unref?.()
-
-    try {
-      const event = await this.getCollections().events.findOne({_id: delivery.eventId})
-      if (!event) {
-        const history = await this.finishAttemptWithError(
-          attempt,
-          serializeError(
-            new Error('The event expired before it could be processed.'),
-            'event_expired',
-          ),
-        )
-        if (history) await this.finishDeliveryWithError(delivery, history)
-        return
-      }
-
-      const received: PulseReceivedEvent = {
-        id: event._id,
-        topic: event.topic,
-        data: event.data,
-        publisher: event.publisher,
-        headers: event.headers,
-        createdAt: event.createdAt,
-        expiresAt: event.expiresAt,
-        consumerGroup: this.options.consumerGroup,
-        attempt: attempt.attempt,
-      }
-      await this.handlerContext.run(true, () => local.handler(received))
-      if (lockLost) {
-        throw new PulseLockLostError(`Pulse lock was lost while processing event ${event._id}.`)
-      }
-
-      const history = await this.finishAttemptWithSuccess(attempt)
-      if (!history) {
-        throw new PulseLockLostError(`Pulse lock was lost while acknowledging event ${event._id}.`)
-      }
-      await this.finishDeliveryWithSuccess(delivery, history)
-    } catch (error) {
-      if (error instanceof PulseLockLostError || lockLost) {
-        this.reportError(error)
-        return
-      }
-      const history = await this.finishAttemptWithError(attempt, serializeError(error))
-      if (!history) {
-        this.reportError(
-          new PulseLockLostError(
-            `Pulse lock was lost while recording an error for event ${delivery.eventId}.`,
-          ),
-        )
-        return
-      }
-      await this.afterAttemptError(delivery, history)
-    } finally {
-      clearInterval(interval)
-    }
-  }
-
-  private async executeEmbeddedAttempt(
-    local: LocalSubscription,
-    delivery: DeliveryDocument,
-    attempt: EmbeddedAttemptContext,
+    attempt: DeliveryAttemptContext,
   ) {
     let lockLost = false
     let heartbeatRunning = false
@@ -1671,7 +968,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         const result = await this.getCollections().deliveries.updateOne(
           {
             _id: delivery._id,
-            executionVersion: 2,
             status: 'v2-processing',
             lockToken: attempt.lockToken,
           },
@@ -1698,7 +994,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     try {
       const event = await this.getCollections().events.findOne({_id: delivery.eventId})
       if (!event) {
-        const finalized = await this.finishEmbeddedAttemptWithError(
+        const finalized = await this.finishConcurrentAttemptWithError(
           delivery,
           attempt,
           local.options,
@@ -1731,7 +1027,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         throw new PulseLockLostError(`Pulse lock was lost while processing event ${event._id}.`)
       }
 
-      const finalized = await this.finishEmbeddedAttemptWithSuccess(delivery, attempt)
+      const finalized = await this.finishConcurrentAttemptWithSuccess(delivery, attempt)
       if (!finalized) {
         throw new PulseLockLostError(`Pulse lock was lost while acknowledging event ${event._id}.`)
       }
@@ -1740,11 +1036,11 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         this.reportError(error)
         return
       }
-      const finalized = await this.finishEmbeddedAttemptWithError(
+      const finalized = await this.finishConcurrentAttemptWithError(
         delivery,
         attempt,
         local.options,
-        serializeEmbeddedError(error),
+        serializeExecutionError(error),
       )
       if (!finalized) {
         this.reportError(
@@ -1758,12 +1054,12 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private embeddedAttemptOutcome(
-    attempt: EmbeddedAttemptContext,
+  private attemptOutcome(
+    attempt: DeliveryAttemptContext,
     status: 'success' | 'error',
     endedAt: Date,
     error?: PulseHistoryError,
-  ): EmbeddedAttemptDocument {
+  ): DeliveryAttemptDocument {
     return {
       _id: attempt._id,
       attempt: attempt.attempt,
@@ -1782,7 +1078,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private embeddedAttemptUnset(): Document {
+  private attemptUnset(): Document {
     return {
       attemptId: '',
       attemptCreatedAt: '',
@@ -1796,16 +1092,15 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private async finishEmbeddedAttemptWithSuccess(
+  private async finishConcurrentAttemptWithSuccess(
     delivery: DeliveryDocument,
-    attempt: EmbeddedAttemptContext,
+    attempt: DeliveryAttemptContext,
   ) {
     const endedAt = new Date()
     const expiresAt = getExpiresAt(endedAt, this.options.historyRetentionMs)
     const result = await this.getCollections().deliveries.findOneAndUpdate(
       {
         _id: delivery._id,
-        executionVersion: 2,
         status: 'v2-processing',
         lockToken: attempt.lockToken,
       },
@@ -1819,24 +1114,24 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         },
         $push: {
           attempts: {
-            $each: [this.embeddedAttemptOutcome(attempt, 'success', endedAt)],
-            $slice: -EMBEDDED_ATTEMPT_HISTORY_LIMIT,
+            $each: [this.attemptOutcome(attempt, 'success', endedAt)],
+            $slice: -ATTEMPT_HISTORY_LIMIT,
           },
         },
-        $unset: {...this.embeddedAttemptUnset(), error: '', ...(expiresAt ? {} : {expiresAt: ''})},
+        $unset: {...this.attemptUnset(), error: '', ...(expiresAt ? {} : {expiresAt: ''})},
       } as Document,
       {returnDocument: 'after'},
     )
     if (result) {
-      this.nextEmbeddedClaimAt = 0
+      this.nextConcurrentClaimAt = 0
       this.wakeCoordinator()
     }
     return result ?? undefined
   }
 
-  private async finishEmbeddedAttemptWithError(
+  private async finishConcurrentAttemptWithError(
     delivery: DeliveryDocument,
-    attempt: EmbeddedAttemptContext,
+    attempt: DeliveryAttemptContext,
     options: ResolvedSubscribeOptions,
     error: PulseHistoryError,
     expiredBefore?: Date,
@@ -1851,7 +1146,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       options.retryDelayMs * options.retryBackoffMultiplier ** Math.max(0, attempt.attempt - 1)
     const filter: Filter<DeliveryDocument> = {
       _id: delivery._id,
-      executionVersion: 2,
       status: 'v2-processing',
       lockToken: attempt.lockToken,
       ...(expiredBefore ? {lockedUntil: {$lte: expiredBefore}} : {}),
@@ -1872,7 +1166,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           nextAttemptAt: new Date(Date.now() + delay),
           updatedAt: endedAt,
         }
-    const unset = this.embeddedAttemptUnset()
+    const unset = this.attemptUnset()
     if (!terminal) {
       delete unset.attemptId
       delete unset.attemptCreatedAt
@@ -1886,8 +1180,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         $set: set,
         $push: {
           attempts: {
-            $each: [this.embeddedAttemptOutcome(attempt, 'error', endedAt, error)],
-            $slice: -EMBEDDED_ATTEMPT_HISTORY_LIMIT,
+            $each: [this.attemptOutcome(attempt, 'error', endedAt, error)],
+            $slice: -ATTEMPT_HISTORY_LIMIT,
           },
         },
         $unset: unset,
@@ -1895,273 +1189,22 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       {returnDocument: 'after'},
     )
     if (result) {
-      this.nextEmbeddedClaimAt = 0
+      this.nextConcurrentClaimAt = 0
       this.wakeCoordinator()
     }
     return result ?? undefined
   }
 
-  private async finishAttemptWithSuccess(attempt: HistoryDocument) {
-    const endedAt = new Date()
-    const result = await this.getCollections().history.findOneAndUpdate(
-      {_id: attempt._id, status: 'pending', lockToken: attempt.lockToken},
-      {
-        $set: {
-          status: 'success',
-          endedAt,
-          durationMs: attempt.startedAt ? endedAt.getTime() - attempt.startedAt.getTime() : 0,
-          needsReconciliation: true,
-        },
-        $unset: {expiresAt: ''},
-      },
-      {returnDocument: 'after'},
-    )
-    return result ?? undefined
-  }
-
-  private async finishAttemptWithError(attempt: HistoryDocument, error: PulseHistoryError) {
-    const endedAt = new Date()
-    const result = await this.getCollections().history.findOneAndUpdate(
-      {_id: attempt._id, status: 'pending', lockToken: attempt.lockToken},
-      {
-        $set: {
-          status: 'error',
-          error,
-          endedAt,
-          durationMs: attempt.startedAt ? endedAt.getTime() - attempt.startedAt.getTime() : 0,
-          needsReconciliation: true,
-        },
-        $unset: {expiresAt: ''},
-      },
-      {returnDocument: 'after'},
-    )
-    return result ?? undefined
-  }
-
-  private async afterAttemptError(delivery: DeliveryDocument, history: HistoryDocument) {
-    const local = this.localSubscriptions.get(delivery.topic)
-    const subscription =
-      local?.document ??
-      (await this.getCollections().subscriptions.findOne({
-        consumerGroup: delivery.consumerGroup,
-        topic: delivery.topic,
-      }))
-    if (!subscription) return
-
-    const terminal =
-      history.error?.code === 'event_expired' ||
-      subscription.delivery === 'at-most-once' ||
-      history.attempt > subscription.maxRetries
-    if (terminal) {
-      await this.finishDeliveryWithError(delivery, history)
-      return
-    }
-
-    // Non-terminal evidence must outlive the retry delay and any service downtime.
-    await this.getCollections().history.updateOne(
-      {_id: history._id, status: 'error'},
-      {$unset: {expiresAt: ''}},
-    )
-    const delay =
-      subscription.retryDelayMs *
-      subscription.retryBackoffMultiplier ** Math.max(0, history.attempt - 1)
-    await this.ensureAttempt(delivery, history.attempt + 1, new Date(Date.now() + delay))
-    await this.getCollections().deliveries.updateOne(
-      {_id: delivery._id, status: 'pending'},
-      {$set: {updatedAt: new Date()}},
-    )
-    await this.getCollections().history.updateOne(
-      {_id: history._id, status: 'error', needsReconciliation: true},
-      {$unset: {needsReconciliation: ''}},
-    )
-    this.wakeCoordinator()
-  }
-
-  private async finishDeliveryWithSuccess(delivery: DeliveryDocument, history: HistoryDocument) {
-    const endedAt = history.endedAt ?? new Date()
-    const finalized = await this.getCollections().deliveries.findOneAndUpdate(
-      {_id: delivery._id, status: 'pending'},
-      {
-        $set: {
-          status: 'success',
-          finalAttempt: history.attempt,
-          updatedAt: endedAt,
-          endedAt,
-          needsReconciliation: true,
-        },
-        $unset: {error: '', expiresAt: ''},
-      },
-      {returnDocument: 'after'},
-    )
-    if (finalized) await this.applyTerminalRetention(finalized)
-    this.wakeCoordinator()
-  }
-
-  private async finishDeliveryWithError(delivery: DeliveryDocument, history: HistoryDocument) {
-    const endedAt = history.endedAt ?? new Date()
-    const finalized = await this.getCollections().deliveries.findOneAndUpdate(
-      {_id: delivery._id, status: 'pending'},
-      {
-        $set: {
-          status: 'error',
-          finalAttempt: history.attempt,
-          error: history.error,
-          updatedAt: endedAt,
-          endedAt,
-          needsReconciliation: true,
-        },
-        $unset: {expiresAt: ''},
-      },
-      {returnDocument: 'after'},
-    )
-    if (finalized) await this.applyTerminalRetention(finalized)
-    this.wakeCoordinator()
-  }
-
-  private async applyTerminalRetention(delivery: DeliveryDocument) {
-    const expiresAt = getExpiresAt(
-      delivery.endedAt ?? delivery.updatedAt,
-      this.options.historyRetentionMs,
-    )
-    if (!expiresAt) {
-      await Promise.all([
-        this.getCollections().history.updateMany(
-          {deliveryId: delivery._id, needsReconciliation: true},
-          {$unset: {needsReconciliation: ''}},
-        ),
-        this.getCollections().deliveries.updateOne(
-          {_id: delivery._id, status: delivery.status, needsReconciliation: true},
-          {$unset: {needsReconciliation: ''}},
-        ),
-      ])
-      return
-    }
-
-    // Histories become expirable before their terminal delivery. If the process dies
-    // between these writes, the delivery remains as a durable repair marker.
-    await this.getCollections().history.updateMany(
-      {deliveryId: delivery._id, status: {$in: ['success', 'error']}},
-      {$set: {expiresAt}, $unset: {needsReconciliation: ''}},
-    )
-    await this.getCollections().deliveries.updateOne(
-      {_id: delivery._id, status: delivery.status},
-      {$set: {expiresAt}, $unset: {needsReconciliation: ''}},
-    )
-  }
-
-  private async ensureAttempt(delivery: DeliveryDocument, attempt: number, nextAttemptAt: Date) {
-    const existing = await this.getCollections().history.findOne({
-      deliveryId: delivery._id,
-      attempt,
-    })
-    if (existing) return existing
-
-    const document: HistoryDocument = {
-      _id: uuidv7(),
-      deliveryId: delivery._id,
-      eventId: delivery.eventId,
-      consumerGroup: delivery.consumerGroup,
-      topic: delivery.topic,
-      attempt,
-      status: 'pending',
-      createdAt: new Date(),
-      nextAttemptAt,
-    }
-    try {
-      await this.getCollections().history.insertOne(document)
-      this.nextLegacyClaimAt = 0
-      this.wakeCoordinator()
-      return document
-    } catch (error) {
-      if (!isDuplicateKeyError(error)) throw error
-      return await this.getCollections().history.findOne({deliveryId: delivery._id, attempt})
-    }
-  }
-
-  private async reapExpiredAttempts(topics: string[], needsLegacyExecution = true) {
+  private async reapExpiredAttempts(topics: string[]) {
     if (topics.length === 0) return 0
-    if (!needsLegacyExecution) {
-      const reaped = await this.reapExpiredEmbeddedAttempts(topics, RECONCILIATION_BATCH_SIZE)
-      if (reaped === RECONCILIATION_BATCH_SIZE) {
-        this.nextReapAt = 0
-        return reaped
-      }
-      this.scheduleNextReap()
-      return reaped
-    }
-
-    const historyCollection = this.getCollections().history
-    const now = new Date()
-    const candidates = await historyCollection
-      .find({
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        status: 'pending',
-        lockedUntil: {$lte: now},
-        lockToken: {$exists: true},
-      })
-      .sort({lockedUntil: 1})
-      .limit(RECONCILIATION_BATCH_SIZE)
-      .toArray()
-    const reapedHistories = (
-      await Promise.all(
-        candidates.map(async candidate => {
-          const endedAt = new Date()
-          return await historyCollection.findOneAndUpdate(
-            {
-              _id: candidate._id,
-              status: 'pending',
-              lockToken: candidate.lockToken,
-              lockedUntil: {$lte: endedAt},
-            },
-            {
-              $set: {
-                status: 'error',
-                error: serializeError(
-                  new Error('The worker lock expired before the attempt completed.'),
-                  'worker_lost',
-                ),
-                endedAt,
-                durationMs: candidate.startedAt
-                  ? endedAt.getTime() - candidate.startedAt.getTime()
-                  : 0,
-                needsReconciliation: true,
-              },
-              $unset: {expiresAt: ''},
-            },
-            {returnDocument: 'after'},
-          )
-        }),
-      )
-    ).filter((history): history is HistoryDocument => Boolean(history))
-
-    const deliveryIds = reapedHistories.map(history => history.deliveryId)
-    const deliveries =
-      deliveryIds.length === 0
-        ? []
-        : await this.getCollections()
-            .deliveries.find({_id: {$in: deliveryIds}})
-            .toArray()
-    const deliveryById = new Map(deliveries.map(delivery => [delivery._id, delivery]))
-    for (const history of reapedHistories) {
-      const delivery = deliveryById.get(history.deliveryId)
-      if (delivery?.status === 'pending') await this.afterAttemptError(delivery, history)
-      else if (delivery) await this.applyTerminalRetention(delivery)
-    }
-
-    const remaining = RECONCILIATION_BATCH_SIZE - candidates.length
-    const embeddedReaped =
-      remaining > 0 ? await this.reapExpiredEmbeddedAttempts(topics, remaining) : 0
-    const reaped = reapedHistories.length + embeddedReaped
-    if (candidates.length === RECONCILIATION_BATCH_SIZE || embeddedReaped === remaining) {
+    const reaped = await this.reapExpiredConcurrentAttempts(topics, RECONCILIATION_BATCH_SIZE)
+    if (reaped === RECONCILIATION_BATCH_SIZE) {
       this.nextReapAt = 0
       return reaped
     }
-
     this.scheduleNextReap()
     return reaped
   }
-
   private scheduleNextReap() {
     const idleInterval = Math.max(
       this.options.pollIntervalMs,
@@ -2170,7 +1213,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     this.nextReapAt = Date.now() + idleInterval + Math.floor(Math.random() * idleInterval * 0.2)
   }
 
-  private embeddedAttemptContext(delivery: DeliveryDocument): EmbeddedAttemptContext | undefined {
+  private attemptContext(delivery: DeliveryDocument): DeliveryAttemptContext | undefined {
     if (
       typeof delivery.attempt !== 'number' ||
       !delivery.attemptId ||
@@ -2199,20 +1242,13 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private async reapExpiredEmbeddedAttempts(topics: string[], limit: number) {
+  private async reapExpiredConcurrentAttempts(topics: string[], limit: number) {
     if (limit <= 0) return 0
-    if (!this.embeddedWorkEnabled) {
-      this.embeddedWorkEnabled = [...this.localSubscriptions.values()].some(
-        local => local.options.executionVersion === 2 || local.document.embeddedExecutionSeen,
-      )
-      if (!this.embeddedWorkEnabled) return 0
-    }
     const now = new Date()
     const candidates = await this.getCollections()
       .deliveries.find({
         consumerGroup: this.options.consumerGroup,
         topic: {$in: topics},
-        executionVersion: 2,
         status: 'v2-processing',
         lockedUntil: {$lte: now},
       })
@@ -2221,7 +1257,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       .toArray()
     let reaped = 0
     for (const delivery of candidates) {
-      const attempt = this.embeddedAttemptContext(delivery)
+      const attempt = this.attemptContext(delivery)
       if (!attempt) continue
       const local = this.localSubscriptions.get(delivery.topic)
       const subscription =
@@ -2232,11 +1268,11 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         }))
       if (!subscription) continue
       const options = local?.options ?? optionsFromDocument(subscription, this.options.workerCount)
-      const result = await this.finishEmbeddedAttemptWithError(
+      const result = await this.finishConcurrentAttemptWithError(
         delivery,
         attempt,
         options,
-        serializeEmbeddedError(
+        serializeExecutionError(
           new Error('The worker lock expired before the attempt completed.'),
           'worker_lost',
         ),
@@ -2245,108 +1281,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       if (result) reaped++
     }
     return reaped
-  }
-
-  private async reconcileHistoryOutcomes(topics: string[], limit: number) {
-    if (limit <= 0) return 0
-    const collections = this.getCollections()
-    const histories = await collections.history
-      .find({
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        needsReconciliation: true,
-      })
-      .limit(limit)
-      .toArray()
-    if (histories.length === 0) return 0
-
-    const deliveries = await collections.deliveries
-      .find({_id: {$in: histories.map(history => history.deliveryId)}})
-      .toArray()
-    const deliveryById = new Map(deliveries.map(delivery => [delivery._id, delivery]))
-    for (const history of histories) {
-      const delivery = deliveryById.get(history.deliveryId)
-      if (!delivery) {
-        const expiresAt = getExpiresAt(
-          history.endedAt ?? history.createdAt,
-          this.options.historyRetentionMs,
-        )
-        await collections.history.updateOne(
-          {_id: history._id, needsReconciliation: true},
-          expiresAt
-            ? {$set: {expiresAt}, $unset: {needsReconciliation: ''}}
-            : {$unset: {needsReconciliation: ''}},
-        )
-        continue
-      }
-      if (delivery.status !== 'pending') await this.applyTerminalRetention(delivery)
-      else if (history.status === 'success') await this.finishDeliveryWithSuccess(delivery, history)
-      else if (history.status === 'error') await this.afterAttemptError(delivery, history)
-      await collections.history.updateOne(
-        {_id: history._id, needsReconciliation: true},
-        {$unset: {needsReconciliation: ''}},
-      )
-    }
-    return histories.length
-  }
-
-  private async reconcileDeliveryMarkers(topics: string[], limit: number) {
-    if (limit <= 0) return 0
-    const collections = this.getCollections()
-    const deliveries = await collections.deliveries
-      .find({
-        consumerGroup: this.options.consumerGroup,
-        topic: {$in: topics},
-        needsReconciliation: true,
-      })
-      .limit(limit)
-      .toArray()
-    if (deliveries.length === 0) return 0
-
-    const histories = await collections.history
-      .find({deliveryId: {$in: deliveries.map(delivery => delivery._id)}})
-      .sort({deliveryId: 1, attempt: -1})
-      .toArray()
-    const latestByDelivery = new Map<string, HistoryDocument>()
-    const successByDelivery = new Map<string, HistoryDocument>()
-    for (const history of histories) {
-      if (!latestByDelivery.has(history.deliveryId)) {
-        latestByDelivery.set(history.deliveryId, history)
-      }
-      if (history.status === 'success' && !successByDelivery.has(history.deliveryId)) {
-        successByDelivery.set(history.deliveryId, history)
-      }
-    }
-
-    for (const delivery of deliveries) {
-      if (delivery.status !== 'pending') {
-        await this.applyTerminalRetention(delivery)
-        continue
-      }
-      const successful = successByDelivery.get(delivery._id)
-      const latest = latestByDelivery.get(delivery._id)
-      if (successful) await this.finishDeliveryWithSuccess(delivery, successful)
-      else if (!latest) await this.ensureAttempt(delivery, 1, delivery.createdAt)
-      else if (latest.status === 'error') await this.afterAttemptError(delivery, latest)
-      await collections.deliveries.updateOne(
-        {_id: delivery._id, status: 'pending', needsReconciliation: true},
-        {$unset: {needsReconciliation: ''}},
-      )
-    }
-    return deliveries.length
-  }
-
-  private async reconcileDeliveries(topics: string[]) {
-    if (topics.length === 0) return 0
-    const historyCount = await this.reconcileHistoryOutcomes(topics, RECONCILIATION_BATCH_SIZE)
-    const deliveryCount = await this.reconcileDeliveryMarkers(
-      topics,
-      RECONCILIATION_BATCH_SIZE - historyCount,
-    )
-    const reconciled = historyCount + deliveryCount
-    this.nextReconciliationAt =
-      reconciled === RECONCILIATION_BATCH_SIZE ? 0 : Date.now() + RECONCILIATION_INTERVAL_MS
-    return reconciled
   }
 
   private async cleanupSuccessfulDeliveries(topics: string[]) {
@@ -2413,7 +1347,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           {
             consumerGroup: this.options.consumerGroup,
             topic,
-            status: 'success',
+            status: 'v2-success',
             ...(this.options.historyRetentionMs === null ? {} : {expiresAt: {$exists: true}}),
             $or: cursorBranches,
           },
@@ -2428,48 +1362,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
     const result = await collections.deliveries.deleteMany({_id: {$in: candidateIds}})
     return result.deletedCount
-  }
-
-  /*
-   * Cross-collection writes set needsReconciliation on their durable first write and clear it
-   * only after the dependent write succeeds. Recovery therefore reads only the tiny partial
-   * indexes instead of walking every healthy delivery while a backlog is draining.
-   */
-
-  private async acquireOrderedLease(
-    local: LocalSubscription,
-    workerId: string,
-  ): Promise<OrderedLease | undefined> {
-    const now = new Date()
-    const lockToken = uuidv7()
-    const subscription = await this.getCollections().subscriptions.findOneAndUpdate(
-      {
-        _id: local.document._id,
-        $or: [{orderedLockedUntil: {$exists: false}}, {orderedLockedUntil: {$lte: now}}],
-      },
-      {
-        $set: {
-          orderedLockOwner: workerId,
-          orderedLockToken: lockToken,
-          orderedLockedUntil: new Date(now.getTime() + this.options.lockTimeoutMs),
-        },
-      },
-      {returnDocument: 'after'},
-    )
-    return subscription ? {subscription, lockToken} : undefined
-  }
-
-  private async releaseOrderedLease(lease: OrderedLease) {
-    await this.getCollections().subscriptions.updateOne(
-      {_id: lease.subscription._id, orderedLockToken: lease.lockToken},
-      {
-        $unset: {
-          orderedLockOwner: '',
-          orderedLockToken: '',
-          orderedLockedUntil: '',
-        },
-      },
-    )
   }
 
   private async refreshDiscoveryLeases() {
@@ -2760,7 +1652,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private async getOrCreateSubscription(
     topic: string,
     requestedOptions: ResolvedSubscribeOptions,
-    userOptions: PulseSubscribeOptions,
   ): Promise<SubscriptionDocument> {
     const subscriptions = this.getCollections().subscriptions
     let document = await subscriptions.findOne({consumerGroup: this.options.consumerGroup, topic})
@@ -2785,7 +1676,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         consumerGroup: this.options.consumerGroup,
         topic,
         ...persistedConfig(requestedOptions),
-        ...(requestedOptions.executionVersion === 2 ? {embeddedExecutionSeen: true as const} : {}),
         createdAt: now,
         updatedAt: now,
         ...(requestedOptions.offsetReset === 'latest'
@@ -2822,14 +1712,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       const existingVersion = document.configVersion ?? 0
       if (requestedOptions.configVersion < existingVersion) return document
 
-      const desiredOptions = {
-        ...requestedOptions,
-        ordered: userOptions.ordered ?? document.ordered,
-        executionVersion:
-          userOptions.executionVersion ??
-          document.executionVersion ??
-          requestedOptions.executionVersion,
-      }
+      const desiredOptions = requestedOptions
       if (requestedOptions.configVersion === existingVersion) {
         if (configsMatch(document, desiredOptions)) return document
         throw new PulseConfigurationError(
@@ -2845,9 +1728,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         {
           $set: {
             ...persistedConfig(desiredOptions),
-            ...(desiredOptions.executionVersion === 2
-              ? {embeddedExecutionSeen: true as const}
-              : {}),
             updatedAt: new Date(),
           },
         },
@@ -2865,10 +1745,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   }
 
   private updateLocalSubscription(local: LocalSubscription, document: SubscriptionDocument) {
-    const executionVersion = local.options.executionVersion
     local.document = document
     local.options = optionsFromDocument(document, local.configuredMaxConcurrency)
-    if (local.options.executionVersion !== executionVersion) this.invalidateLegacyExecutionState()
   }
 
   private toSubscriptionInfo(local: LocalSubscription): PulseSubscriptionInfo {
@@ -2877,8 +1755,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       topic: local.document.topic,
       consumerGroup: local.document.consumerGroup,
       configVersion: local.options.configVersion,
-      executionVersion: local.options.executionVersion,
-      ordered: local.options.ordered,
       offsetReset: local.options.offsetReset,
       delivery: local.options.delivery,
       maxRetries: local.options.maxRetries,

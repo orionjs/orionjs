@@ -1,6 +1,6 @@
 ---
 title: 'Consuming events'
-description: 'Consumer groups, offsets, ordering, concurrency, retries, and lifecycle'
+description: 'Consumer groups, offsets, concurrency, retries, and lifecycle'
 ---
 
 ## Subscribe to a topic
@@ -15,12 +15,12 @@ const subscription = await pulse.subscribe(
     })
   },
   {
-    ordered: true,
     offsetReset: 'latest',
     delivery: 'at-least-once',
     maxRetries: 3,
     retryDelayMs: 1000,
     retryBackoffMultiplier: 2,
+    maxConcurrency: 8,
   },
 )
 ```
@@ -38,14 +38,14 @@ The handler receives:
 | `consumerGroup` | `string` | Group handling this delivery. |
 | `attempt` | `number` | One-based execution attempt. |
 
-A Pulse instance can have one local handler per topic. Create separate Pulse instances if one process intentionally needs two independent consumer groups.
+A Pulse instance can have one local handler per topic. Create separate Pulse instances if one
+process intentionally needs two independent consumer groups.
 
 ## Consumer groups and replicas
 
-All replicas of one service must use the same `consumerGroup` and declare the same persisted subscription options:
+All replicas of one service use the same `consumerGroup` and persisted subscription settings:
 
 ```typescript
-// Run this same configuration in every billing replica.
 const pulse = connect<CommerceEvents>({
   connectionString,
   databaseName: 'commerce',
@@ -53,15 +53,16 @@ const pulse = connect<CommerceEvents>({
 })
 
 await pulse.subscribe('order.created', handleOrder, {
-  ordered: true,
   configVersion: 1,
   delivery: 'at-least-once',
+  maxConcurrency: 8,
 })
 ```
 
-The unique delivery key is `consumerGroup + eventId`. Multiple replicas compete through leases, so only one replica owns an attempt at a time.
+The unique delivery key is `consumerGroup + eventId`. Multiple replicas compete through atomic
+delivery leases, so only one replica owns an attempt at a time.
 
-To run a second independent responsibility, use another group:
+Use another consumer group for an independent responsibility:
 
 ```typescript
 const analyticsPulse = connect<CommerceEvents>({
@@ -80,94 +81,55 @@ const analyticsPulse = connect<CommerceEvents>({
 | `latest` | Events published after the subscription is created. This is the default. |
 | `earliest` | The oldest retained event for the topic. |
 
-The cursor is saved after Pulse materializes deliveries. Restarting a service resumes that cursor. `unsubscribe()` removes only the local handler; it does not delete the subscription or reset its offset.
+The cursor is saved after Pulse materializes deliveries. Restarting a service resumes that cursor.
+`unsubscribe()` removes only the local handler; it does not delete the subscription or reset its
+offset.
 
 <Note>
-  Pulse v1 intentionally has no administrative offset reset or replay API. Use a new consumer group when a new independent pass over retained events is appropriate.
+  Pulse intentionally has no administrative offset reset or replay API. Use a new consumer group
+  when a new independent pass over retained events is appropriate.
 </Note>
 
-## Ordered delivery
+## Concurrency
 
-Ordered delivery is opt-in:
-
-```typescript
-await pulse.subscribe('order.created', handleOrder, {
-  ordered: true,
-})
-```
-
-For one consumer group and topic:
-
-- Only one handler runs at a time across all replicas.
-- The next event waits while the current event is running.
-- The next event also waits while a failed event is waiting for its retry.
-- A terminal error is recorded and then ordering continues with the next event.
-
-This provides processing order, not a transaction that spans the handler and external systems.
-
-## Concurrent delivery
-
-Concurrent delivery is the default. Omit `ordered` or set it to `false` for independent events:
+Deliveries are independent and may run concurrently:
 
 ```typescript
 await pulse.subscribe('image.requested', resizeImage, {
-  ordered: false,
   maxConcurrency: 8,
 })
 ```
 
-`maxConcurrency` limits running handlers for that topic in the current process. Total concurrency also depends on `workerCount` and the number of replicas. It is a local execution limit and is not part of the durable subscription configuration.
+`maxConcurrency` limits running handlers for that topic in the current process. Total concurrency
+also depends on `workerCount` and the number of replicas. It is a local execution limit and is not
+part of the durable subscription configuration.
+
+Queue state, retries, the active lease, terminal outcome, and the latest ten completed attempts are
+stored atomically on the delivery document. No separate attempt collection participates in the
+execution hot path.
 
 ## Changing persisted configuration
 
-Pulse stores subscription settings by `consumerGroup + topic`. Use a non-negative integer
-`configVersion` whenever those settings change:
+Pulse stores subscription settings by `consumerGroup + topic`. Increase the non-negative integer
+`configVersion` when those settings change:
 
 ```typescript
 // Previous deployment
 await pulse.subscribe('order.created', handleOrder, {
-  ordered: true,
   configVersion: 1,
+  maxRetries: 3,
 })
 
 // New deployment
 await pulse.subscribe('order.created', handleOrder, {
-  ordered: false,
   configVersion: 2,
+  maxRetries: 5,
 })
 ```
 
 The highest version wins atomically. A replica with a lower version adopts the persisted winner
 instead of reverting it. Reusing one version with different settings throws
-`PulseConfigurationError`.
-
-Legacy subscriptions and omitted versions are version zero. When `ordered` is omitted for an
-existing subscription, Pulse preserves its persisted value; a new subscription defaults to
-unordered delivery. Already-running callbacks finish normally during a version change, while new
-work converges on the winning configuration.
-
-## Embedded execution for high-throughput consumers
-
-Unordered subscriptions can opt into execution version 2, which keeps the lease, retries, and
-completed attempts atomically on the delivery document:
-
-```typescript
-await pulse.subscribe('image.requested', resizeImage, {
-  ordered: false,
-  executionVersion: 2,
-  configVersion: 3,
-  maxConcurrency: 8,
-})
-```
-
-The default is `executionVersion: 1`. Version 2 rejects `ordered: true`; ordered consumers continue
-using version 1.
-
-Treat the switch as a persisted configuration change. First deploy a bridge-capable Pulse version
-to every replica without changing `executionVersion`. In a later deployment, enable version 2 and
-increase `configVersion`. Bridge workers execute both old and new delivery formats, so the existing
-backlog drains while new work moves to the embedded path. Read the
-[execution v2 rollout guide](/blog/pulse-embedded-execution) before enabling it in production.
+`PulseConfigurationError`. Existing subscriptions and omitted versions are version zero.
 
 ## Retries
 
@@ -186,8 +148,6 @@ The delay after attempt `n` is:
 retryDelayMs × retryBackoffMultiplier ^ (n - 1)
 ```
 
-Configure it per subscription:
-
 ```typescript
 await pulse.subscribe('payment.captured', updateLedger, {
   maxRetries: 5,
@@ -196,7 +156,8 @@ await pulse.subscribe('payment.captured', updateLedger, {
 })
 ```
 
-After the final error, Pulse marks the delivery terminal and continues. Errors are persisted with a code, name, message, and stack when available.
+After the final error, Pulse marks the delivery terminal. Errors retain a code, name, message, and
+stack when available.
 
 ## At-most-once attempts
 
@@ -208,42 +169,37 @@ await pulse.subscribe('metric.recorded', recordMetric, {
 })
 ```
 
-At-most-once always resolves `maxRetries` to zero. Passing a positive `maxRetries` with this mode is a configuration error.
-
-This means one handler attempt per delivery. It does not make external side effects exactly-once: a process can still disappear at any point, and remote systems can accept a request without returning its response.
+At-most-once resolves `maxRetries` to zero. Passing a positive `maxRetries` with this mode is a
+configuration error. It means one handler attempt per delivery; it cannot make side effects in
+external systems exactly-once.
 
 ## Persisted configuration
 
 Pulse persists these options for each `consumerGroup + topic`:
 
 - `configVersion`
-- `executionVersion`
-- `ordered`
 - `offsetReset`
 - `delivery`
 - `maxRetries`
 - `retryDelayMs`
 - `retryBackoffMultiplier`
 
-Every replica using the same version must provide matching values. A mismatch throws
-`PulseConfigurationError`. Higher versions replace lower ones; lower versions use the persisted
-winner. `maxConcurrency` remains local to each process.
+`maxConcurrency` remains local to each process.
 
 ## Inspect and stop subscriptions
 
 ```typescript
 for (const active of pulse.getSubscriptions()) {
-  console.log(active.topic, active.consumerGroup, active.ordered)
+  console.log(active.topic, active.consumerGroup, active.maxConcurrency)
 }
 
 await subscription.unsubscribe()
 await pulse.close()
 ```
 
-`getSubscriptions()` is synchronous and reports local subscriptions. `unsubscribe()` is idempotent and preserves the durable MongoDB subscription. `close()` stops coordinator and worker execution, waits for background work to settle, and closes the MongoDB client.
+`getSubscriptions()` reports local subscriptions. `unsubscribe()` is idempotent and preserves the
+durable MongoDB subscription. `close()` stops new work, waits for active handlers, releases
+discovery leases, and closes the MongoDB client.
 
-If a handler itself calls and awaits `close()`, Pulse initiates shutdown but lets that call return
-so the current attempt can finish and be acknowledged. Call `close()` again from the process
-lifecycle owner when it needs to await complete shutdown.
-
-Read [Reliability and recovery](/overview/other-modules/pulse/reliability) before writing handlers that perform external side effects.
+Read [Reliability and recovery](/overview/other-modules/pulse/reliability) before writing handlers
+that perform external side effects.

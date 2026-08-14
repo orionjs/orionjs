@@ -120,12 +120,8 @@ The `createEchoEvent()` function accepts options similar to `createEchoRequest()
 @EchoEvent()
 processSomething = createEchoEvent({
   attemptsBeforeDeadLetter: 5,
-  // Pulse only: overrides events.pulse.subscription.ordered for this topic
-  ordered: true,
   // Increase when changing persisted Pulse subscription settings
   configVersion: 1,
-  // Pulse only: opt into embedded execution after every replica has bridge support
-  executionVersion: 2,
   params: {
     // schema definition
   },
@@ -135,21 +131,15 @@ processSomething = createEchoEvent({
 })
 ```
 
-When `ordered` is omitted, the listener inherits `events.pulse.subscription.ordered`. If neither is
-configured, Pulse defaults to unordered delivery. This lets ordered topics and concurrently
-processed topics share the same Echoes Pulse transport. Method listeners can set the same option
-directly with `@EchoEvent({ ordered: true })`.
-
-Pulse persists each `consumerGroup + topic` configuration. When changing `ordered`, increase the
-listener's integer `configVersion`:
+Pulse persists each `consumerGroup + topic` configuration. Increase the listener's integer
+`configVersion` whenever persisted retry or offset settings change:
 
 ```typescript
 @EchoEvent()
 processSomething = createEchoEvent({
-  ordered: false,
   configVersion: 2,
   resolve: async params => {
-    // Events can now run concurrently.
+    // implementation
   },
 })
 ```
@@ -158,11 +148,8 @@ The highest version wins during a deploy, so an older replica cannot restore an 
 Using the same version with different settings fails fast. Existing callbacks finish normally and
 new work converges on the winning configuration.
 
-High-throughput unordered listeners can also set `executionVersion: 2`. It removes the physical
-history collection from the handler hot path by keeping attempts on the delivery document. Deploy
-the supporting packages everywhere first, then enable it per listener with a higher
-`configVersion`. See the [execution v2 rollout guide](/blog/pulse-embedded-execution) for the safe
-two-phase deployment and rollback procedure. Version 2 does not support `ordered: true`.
+Pulse listeners keep queue state, leases, retries, and completed attempts atomically on their
+delivery documents. `events.pulse.subscription.maxConcurrency` controls local per-topic concurrency.
 
 ## Making Requests
 
@@ -348,11 +335,11 @@ by default. Callbacks remain concurrent because they do not retain the pool sock
 `events.pulse.maxPoolSize` only when a specific high-throughput service has measured pool
 contention. `events.pulse.maxIdleTimeMS` defaults to 30 seconds and lets larger pools contract after
 bursts. `events.pulse.discoveryLockTimeoutMs` independently tunes discovery-leader failover;
-handler and ordered-delivery locks continue using `events.pulse.lockTimeoutMs`.
+handler locks continue using `events.pulse.lockTimeoutMs`.
 
 <Warning>
-  Pulse no longer supports `events.pulse.changeStreams`. Event discovery always uses polling and
-  reconciliation. Remove the legacy field before deploying this configuration; Echoes fails during
+  Pulse no longer supports `events.pulse.changeStreams`. Event discovery always uses polling.
+  Remove the legacy field before deploying this configuration; Echoes fails during
   startup if the field is still present, including when its value is `"disabled"`.
 </Warning>
 
@@ -403,9 +390,9 @@ If only Pulse is configured, Echoes defaults both consumption and publishing to 
 
 <Warning>
   Echoes never publishes the same call to both transports. During a rolling publisher deployment,
-  Kafka and Pulse form two independent ordered streams, so they do not provide a shared total
-  order. Topics that require strict ordering should use a coordinated publisher cutover after
-  draining Kafka.
+  Kafka and Pulse form two independent delivery streams, so they do not provide a shared global
+  sequence. Use a coordinated publisher cutover after draining Kafka when cross-transport ordering
+  matters.
 </Warning>
 
 Pulse is an optional peer dependency and is loaded only when configured. Applications that stay on

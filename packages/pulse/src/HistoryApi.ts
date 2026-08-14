@@ -1,21 +1,47 @@
-import type {Document, Filter} from 'mongodb'
+import type {Document} from 'mongodb'
 import type {PulseCollections} from './indexes'
 import type {
-  HistoryDocument,
   PulseHistoryApi,
+  PulseHistoryError,
   PulseHistoryFindOptions,
   PulseHistoryFindResult,
   PulseHistoryRecord,
+  PulseHistoryStatus,
   PulseLockState,
 } from './types'
 
-function getLockState(record: HistoryDocument, now = new Date()): PulseLockState | undefined {
+interface ProjectedHistoryDocument extends Document {
+  _id: string
+  deliveryId: string
+  eventId: string
+  consumerGroup: string
+  topic: string
+  attempt: number
+  status: PulseHistoryStatus
+  createdAt: Date
+  nextAttemptAt: Date
+  startedAt?: Date
+  lockedAt?: Date
+  lockedUntil?: Date
+  heartbeatAt?: Date
+  lockOwner?: string
+  lockToken?: string
+  endedAt?: Date
+  durationMs?: number
+  expiresAt?: Date
+  error?: PulseHistoryError
+}
+
+function getLockState(
+  record: ProjectedHistoryDocument,
+  now = new Date(),
+): PulseLockState | undefined {
   if (record.status !== 'pending') return undefined
   if (!record.lockedUntil) return 'queued'
   return record.lockedUntil.getTime() <= now.getTime() ? 'expired' : 'active'
 }
 
-function toPublicRecord(record: HistoryDocument): PulseHistoryRecord {
+function toPublicRecord(record: ProjectedHistoryDocument): PulseHistoryRecord {
   return {
     id: record._id,
     deliveryId: record.deliveryId,
@@ -50,67 +76,7 @@ export class HistoryApi implements PulseHistoryApi {
     await this.awaitReady()
 
     const now = new Date()
-    const filter: Filter<HistoryDocument> = {}
-    if (options.topic) filter.topic = options.topic
-    if (options.eventId) filter.eventId = options.eventId
-    if (options.consumerGroup) filter.consumerGroup = options.consumerGroup
-    if (options.status) filter.status = options.status
-    if (options.cursor) filter._id = {$lt: options.cursor}
-    if (options.from || options.to) {
-      filter.createdAt = {
-        ...(options.from ? {$gte: options.from} : {}),
-        ...(options.to ? {$lte: options.to} : {}),
-      }
-    }
-
-    if (options.lockState) {
-      filter.status = 'pending'
-      if (options.lockState === 'queued') {
-        filter.lockedUntil = {$exists: false}
-      } else if (options.lockState === 'active') {
-        filter.lockedUntil = {$gt: now}
-      } else {
-        filter.lockedUntil = {$lte: now}
-      }
-    }
-
-    const limit = Math.max(1, Math.min(options.limit ?? 100, 500))
-    const [legacyDocuments, embeddedDocuments] = await Promise.all([
-      this.getCollections()
-        .history.find(filter)
-        .sort({_id: -1})
-        .limit(limit + 1)
-        .toArray(),
-      this.findEmbedded(options, limit + 1, now),
-    ])
-    const documents = [...legacyDocuments, ...embeddedDocuments]
-      .sort((first, second) => second._id.localeCompare(first._id))
-      .slice(0, limit + 1)
-    const hasMore = documents.length > limit
-    const records = documents.slice(0, limit).map(toPublicRecord)
-
-    return {
-      records,
-      nextCursor: hasMore ? records.at(-1)?.id : undefined,
-    }
-  }
-
-  private async findEmbedded(
-    options: PulseHistoryFindOptions,
-    limit: number,
-    now: Date,
-  ): Promise<HistoryDocument[]> {
-    const subscriptionFilter: Document = {embeddedExecutionSeen: true}
-    if (options.topic) subscriptionFilter.topic = options.topic
-    if (options.consumerGroup) subscriptionFilter.consumerGroup = options.consumerGroup
-    const embeddedExecutionWasEnabled = await this.getCollections().subscriptions.findOne(
-      subscriptionFilter,
-      {projection: {_id: 1}},
-    )
-    if (!embeddedExecutionWasEnabled) return []
-
     const deliveryMatch: Document = {
-      executionVersion: 2,
       status: {$in: ['v2-pending', 'v2-processing', 'v2-success', 'v2-error']},
     }
     if (options.topic) deliveryMatch.topic = options.topic
@@ -157,8 +123,9 @@ export class HistoryApi implements PulseHistoryApi {
       lockToken: '$lockToken',
     }
 
-    return await this.getCollections()
-      .deliveries.aggregate<HistoryDocument>([
+    const limit = Math.max(1, Math.min(options.limit ?? 100, 500))
+    const documents = await this.getCollections()
+      .deliveries.aggregate<ProjectedHistoryDocument>([
         {$match: deliveryMatch},
         {
           $project: {
@@ -182,8 +149,15 @@ export class HistoryApi implements PulseHistoryApi {
         {$replaceWith: '$records'},
         {$match: recordMatch},
         {$sort: {_id: -1}},
-        {$limit: limit},
+        {$limit: limit + 1},
       ])
       .toArray()
+    const hasMore = documents.length > limit
+    const records = documents.slice(0, limit).map(toPublicRecord)
+
+    return {
+      records,
+      nextCursor: hasMore ? records.at(-1)?.id : undefined,
+    }
   }
 }

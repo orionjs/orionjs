@@ -3,7 +3,7 @@ title: 'Pulse'
 description: 'Distributed, recoverable event delivery backed only by MongoDB'
 ---
 
-Pulse is a typed pub/sub system for services that already operate MongoDB and do not want to run a separate event broker. It provides durable consumer groups, ordered or concurrent handlers, retries, execution history, and crash recovery.
+Pulse is a typed pub/sub system for services that already operate MongoDB and do not want to run a separate event broker. It provides durable consumer groups, concurrent handlers, retries, execution history, and crash recovery.
 
 Pulse is published as `@orion-js/pulse`, but it does not depend on Orionjs. You can use it from an Orionjs service, an older Orionjs application, or a standalone Node.js or Bun process.
 
@@ -88,19 +88,17 @@ process.once('SIGTERM', async () => {
 
 ## Mental model
 
-Pulse persists four kinds of records:
+Pulse persists three kinds of records:
 
 | Record | Purpose |
 | --- | --- |
 | Event | Immutable topic, payload, headers, creation time, and retention time. |
 | Subscription | Durable cursor and delivery configuration for one `consumerGroup + topic`. |
-| Delivery | Logical outcome of one event for one consumer group; execution v2 also embeds its attempt state. |
-| History | Physical execution v1 attempts, including pending state, lease, result, duration, and error. |
+| Delivery | Queue state, lease, retries, attempts, and outcome for one event and consumer group. |
 
 Publishing stores one event. Each subscribed consumer group materializes its own delivery and
-execution state. Version 1 stores attempts in history; opt-in version 2 stores a bounded attempt
-window on the delivery. Replicas with the same consumer group compete for that delivery; services
-with different consumer groups each receive it.
+execution state. Replicas with the same consumer group compete for that delivery; services with
+different consumer groups each receive it.
 
 ```text
 order.created
@@ -110,9 +108,9 @@ order.created
      └── analytics     → one independent delivery
 ```
 
-Pulse writes the attempt state as pending before it calls your handler. A renewable lease and UUIDv7
-fencing token protect the attempt while it is running. Polling and recovery discover events and
-recover partial writes or dead workers; Pulse never opens MongoDB Change Streams.
+Pulse writes the attempt state before it calls your handler. A renewable lease and UUIDv7 fencing
+token protect the attempt while it is running. Polling discovers events and recovers dead workers;
+Pulse never opens MongoDB Change Streams.
 
 ## Choose a consumer group
 

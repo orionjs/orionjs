@@ -62,11 +62,11 @@ The options are:
 | `data` | payload for that topic | Any value that MongoDB can persist. |
 | `headers` | `Record<string, string>` | Optional string metadata such as source, trace, or schema version. |
 
-Every call creates a new event ID. Pulse v1 does not expose producer idempotency keys, so retry a failed `publish()` only when your producer can tolerate the possibility of two distinct events.
+Every call creates a new event ID. Pulse does not expose producer idempotency keys, so retry a failed `publish()` only when your producer can tolerate the possibility of two distinct events.
 
 ## Event ordering
 
-Events are discovered by `createdAt` and then by their UUIDv7 `_id`. With an ordered subscription, Pulse runs one event at a time for a specific `consumerGroup + topic`, including time spent waiting for retries.
+Events are discovered by their MongoDB-assigned sequence. Retained events written before sequences were introduced use `createdAt` and UUIDv7 `_id` as an independent fallback cursor. Once materialized, deliveries are claimed independently and may execute concurrently.
 
 Ordering does not span topics or consumer groups, and Pulse does not provide a single global sequence. If two producers publish at almost the same time, design the payload so your domain can detect stale updates when that matters.
 

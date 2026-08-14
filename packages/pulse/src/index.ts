@@ -10,7 +10,6 @@ export type {
   PulseDeliveryMode,
   PulseEventHandler,
   PulseEventMap,
-  PulseExecutionVersion,
   PulseHeaders,
   PulseHistoryApi,
   PulseHistoryError,

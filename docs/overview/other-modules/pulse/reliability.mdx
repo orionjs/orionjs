@@ -1,282 +1,163 @@
 ---
 title: 'Reliability and recovery'
-description: 'Delivery guarantees, leases, fencing, reconciliation, retention, and idempotency'
+description: 'Delivery guarantees, leases, fencing, retention, and idempotency'
 ---
 
-Pulse uses MongoDB documents, unique indexes, renewable leases, and fencing tokens to provide
-recoverable delivery. The original execution path remains available for ordered delivery and
-rolling compatibility; an opt-in embedded path removes multi-collection writes from unordered
-handler execution.
+Pulse combines durable MongoDB state, expiring leases, fencing tokens, and retries to provide
+recoverable concurrent delivery. Queue state and attempt outcomes live on the delivery document, so
+claiming, retrying, and completing an attempt do not require cross-collection transactions.
 
 ## Delivery lifecycle
 
-Execution version 1 follows this lifecycle:
+Each event produces one delivery per subscribed consumer group:
 
 ```text
-event
-  → durable delivery (pending)
-  → history attempt (pending, no lock)
-  → history attempt (pending, leased)
-  → handler
-  → history attempt (success or error)
-  → delivery (success, retry, or terminal error)
+event discovered
+  → delivery queued
+  → attempt claimed with a lock token
+  → handler runs while the lease is renewed
+  → success, retry, or terminal error committed atomically
+  → retention applied
 ```
 
-The history attempt exists before the handler starts. Operators can therefore distinguish work that is queued, currently running, or abandoned by a dead worker.
+Pulse persists the claim before invoking the handler. A delivery stores:
 
-Execution version 2 stores the same logical state on one delivery document:
+- Its queue or terminal state.
+- The current attempt number and retry deadline.
+- The active lock owner, token, and expiration.
+- The terminal outcome and error when present.
+- A bounded window containing the latest ten completed attempts.
 
-```text
-event
-  → delivery (v2-pending)
-  → delivery (v2-processing, leased)
-  → handler
-  → delivery (v2-success, v2-error, or next v2-pending retry)
-```
+`pulse.history.find()` projects its public records from these embedded attempts and the current
+attempt state.
 
-The completion update appends the attempt outcome and changes the queue state atomically. This path
-does not write the physical history collection, although `pulse.history.find()` projects its
-most recent 10 embedded attempts through the same public API. The delivery's attempt counter remains
-exact, while bounded error strings and the fixed history window keep document size independent from
-`maxRetries`. Version 2 is opt-in and currently supports unordered subscriptions only.
+## Delivery guarantees
 
-| History state | Meaning |
-| --- | --- |
-| `pending` without `lockedUntil` | Queued or waiting for `nextAttemptAt`. |
-| `pending` with a future `lockedUntil` | A worker is executing it. |
-| `pending` with an expired `lockedUntil` | The worker or machine stopped renewing its lease. |
-| `success` | The handler completed and Pulse acknowledged the attempt. |
-| `error` | The handler failed, the worker was lost, or the payload expired. |
+### At-least-once
+
+This is the default. If a process disappears before acknowledging an attempt, another replica can
+recover it after the lease expires. A handler may therefore run more than once.
+
+### At-most-once attempt
+
+With `delivery: 'at-most-once'`, Pulse does not retry after a handler starts. This reduces duplicate
+execution but can lose processing if the worker disappears mid-handler.
+
+Neither mode can make external side effects exactly-once. Use `event.id` as an idempotency key.
 
 ## Leases, heartbeats, and fencing
 
-When a worker acquires an attempt, it writes:
+An active attempt stores a random `lockToken` and `lockedUntil`. Pulse renews the lease about every
+third of `lockTimeoutMs` while the callback runs.
 
-- `startedAt`, `lockedAt`, and `lockedUntil`
-- a UUIDv7 `lockOwner`
-- a new UUIDv7 `lockToken`
-- `heartbeatAt`
+Every completion update matches both the delivery ID and lock token. If the lease was reaped and a
+new worker owns the delivery, a stale worker cannot acknowledge or reschedule it. Pulse reports
+`PulseLockLostError` instead.
 
-Pulse renews the attempt lease approximately every third of `lockTimeoutMs`. Ordered consumers also renew the topic ordering lease.
+Choose `lockTimeoutMs` comfortably above ordinary MongoDB latency. Heartbeats protect handlers that
+run longer than the timeout; they do not require handlers to finish within it.
 
-Every success or error update includes the fencing token in its MongoDB filter. If another replica has already recovered the attempt, the stale worker's token no longer matches and it cannot overwrite the new result.
+## Crash recovery
 
-Choose a `lockTimeoutMs` that comfortably exceeds expected event-loop stalls and temporary MongoDB connectivity interruptions. Heartbeats keep normal long-running asynchronous handlers alive, but blocking the JavaScript event loop can prevent renewal.
+Only the discovery leader for a topic performs maintenance:
 
-Calling `close()` stops acquisition of new work but keeps heartbeats active for callbacks already
-running. Pulse waits for those callbacks to settle before closing MongoDB, preventing another
-replica from reaping intentionally draining work during graceful shutdown.
+1. Scan a bounded indexed batch of expired delivery locks.
+2. Commit the expired attempt as an error.
+3. Schedule the next retry or mark the delivery terminal.
+4. Periodically delete successful deliveries whose events are behind the persisted cursor.
 
-A handler may initiate and await `close()` without deadlocking itself. Pulse starts the graceful
-close and lets that handler return so its attempt can be acknowledged. Lifecycle code outside the
-handler can call `close()` again to await the shared close promise.
+Expired-lock reaping and delivery cleanup use their own schedules outside the handler hot loop.
+When a bounded batch is full, Pulse immediately continues draining; otherwise it waits before the
+next maintenance pass.
 
-## Recovery after a crash
+Because each attempt transition is one atomic delivery update, there is no attempt/delivery
+reconciliation phase.
 
-The process coordinator schedules recovery independently from backlog execution:
+## Discovery cursors
 
-1. Reap bounded batches of expired version 1 history locks and version 2 delivery locks.
-2. Reconcile bounded batches of marked, incomplete version 1 cross-collection state.
-3. Acquire existing work and discover new events continuously without running maintenance on every
-   hot-loop iteration.
+New events receive a MongoDB BSON timestamp through `$currentDate`. Pulse uses this server-assigned
+sequence as its durable discovery order, so publishers with skewed application clocks cannot leave
+events behind an advanced cursor.
 
-An expired attempt is atomically changed from `pending` to `error` with code `worker_lost`. At-least-once mode then creates the next numbered attempt; at-most-once mode makes the delivery terminal.
+Older retained events without a sequence remain discoverable through the historical
+`createdAt + UUIDv7` cursor. Pulse tracks both cursor forms independently while those documents
+exist.
 
-Version 1 reconciliation repairs safe partial states idempotently:
+The discovery leader advances a cursor only after materializing the corresponding delivery batch.
+The unique `consumerGroup + eventId` index makes repeated materialization idempotent after crashes or
+lease changes.
 
-- Delivery exists but its first history attempt does not.
-- History is successful but delivery is still pending.
-- History is errored but its retry was not created.
-- Event discovery was interrupted before the subscription cursor advanced.
-- A terminal delivery was written but its history and delivery TTL dates were not.
+## Failure matrix
 
-Unique indexes on `consumerGroup + eventId` and `deliveryId + attempt` ensure replicas converge on one logical record.
-
-Version 2 does not need attempt/delivery reconciliation. Its lock recovery uses a compare-and-set
-filter containing the delivery ID, `v2-processing` state, lock token, and expired deadline. The same
-atomic update records `worker_lost` and either schedules a retry or makes the delivery terminal.
-
-## Concurrent publication ordering
-
-Pulse assigns every new event an internal BSON timestamp in the same MongoDB write that creates the
-event. Discovery advances through that MongoDB-assigned sequence instead of relying on application
-clocks or the order in which concurrent `publish()` promises resolve.
-
-This prevents a slow concurrent insert from appearing behind an already-advanced cursor. The
-public `createdAt` field remains available as the application timestamp. Ordered consumers execute
-new events by the same MongoDB sequence; legacy events without a sequence fall back to
-`createdAt + eventId`.
-Events created by older Pulse versions do not have the internal sequence. Upgraded consumers keep
-an independent `createdAt + _id` cursor for those legacy events and check it before the
-MongoDB-assigned cursor, so old and new publishers can coexist during a rolling upgrade.
-
-Subscriptions first created before Pulse 4.4.3 may have only the legacy cursor. Their first current
-consumer safely scans the retained sequenced backlog and relies on the delivery unique key to avoid
-re-execution. Keep `historyRetentionMs` at least as long as `eventRetentionMs` until every durable
-subscription has a `cursorSequence`; otherwise an event whose old delivery record already expired
-can be delivered again, consistent with Pulse's at-least-once guarantee.
-
-## Crash windows
-
-| Crash point | Recovery | Handler may run again? |
+| Failure point | Durable result | Handler may repeat? |
 | --- | --- | --- |
-| Before the handler starts | Expired lease becomes `worker_lost`; retry is created. | Yes, but the previous handler did not start. |
-| During the handler | Expired lease becomes `worker_lost`; retry is created. | Yes. |
-| After a side effect but before history success | Another attempt is created. | **Yes.** |
-| After version 1 history success but before delivery success | Reconciliation finishes the delivery from successful history. | No. |
-| After version 1 history error but before retry creation | Reconciliation creates exactly the next numbered attempt. | Yes. |
-| During a version 2 acknowledgement | One atomic delivery update either commits completely or does not match the fencing token. | According to the committed state. |
+| Before delivery materialization | Discovery cursor is not advanced, so the event is discovered again. | No, unless an earlier attempt already ran. |
+| After materialization but before claim | Another worker can claim the queued delivery. | No. |
+| During the handler | The lease expires and the attempt is retried according to policy. | Yes. |
+| After the side effect but before acknowledgement | The lease expires and the attempt can run again. | Yes. |
+| During acknowledgement | The atomic update either commits completely or loses its fencing-token match. | According to committed state. |
+| After terminal state but before TTL deletion | The terminal delivery remains queryable until cleanup or TTL removes it. | No. |
 
-At-least-once delivery cannot prove whether an external side effect happened before a machine disappeared. Exactly-once side effects require idempotency in the system receiving the side effect.
+## Idempotent handlers
 
-## Design idempotent handlers
-
-Use `event.id` as the idempotency key sent to an external API:
+Use the event ID as the unique key for durable side effects:
 
 ```typescript
 await pulse.subscribe('payment.captured', async event => {
-  await ledger.recordPayment({
-    idempotencyKey: event.id,
-    paymentId: event.data.paymentId,
-    orderId: event.data.orderId,
-  })
+  await db.collection('ledgerEntries').updateOne(
+    {eventId: event.id},
+    {
+      $setOnInsert: {
+        eventId: event.id,
+        paymentId: event.data.paymentId,
+        amount: event.data.amount,
+        createdAt: new Date(),
+      },
+    },
+    {upsert: true},
+  )
 })
 ```
 
-When the side effect is in MongoDB, store the event ID with a unique index in the same transaction as the domain write:
+Enforce a unique index on the idempotency key:
 
-```typescript
-await mongoClient.withSession(async session => {
-  await session.withTransaction(async () => {
-    await processedEvents.insertOne(
-      {_id: event.id, processedAt: new Date()},
-      {session},
-    )
-    await orders.updateOne(
-      {_id: event.data.orderId},
-      {$set: {invoiced: true}},
-      {session},
-    )
-  })
-})
+```javascript
+db.ledgerEntries.createIndex({eventId: 1}, {unique: true})
 ```
 
-Treat a duplicate-key error on `processedEvents._id` as an already completed handler. Do not acknowledge the idempotency marker before a non-transactional side effect that can still fail.
+For remote APIs, send `event.id` as their idempotency key when supported. If a workflow spans
+multiple writes, use a local transaction or an outbox/inbox design.
 
-## Error codes
+## Retry policy
 
-Pulse writes these built-in error codes to history:
+The delay after failed attempt `n` is:
 
-| Code | Meaning |
+```text
+retryDelayMs × retryBackoffMultiplier ^ (n - 1)
+```
+
+`maxRetries` counts retries after the first attempt. Terminal errors and completed attempts remain
+available through the history API until the delivery expires.
+
+## Retention
+
+| Data | Retention |
 | --- | --- |
-| `handler_error` | The handler threw or rejected. |
-| `worker_lost` | The attempt lease expired before completion. |
-| `event_expired` | Retention removed the event payload before execution. |
+| Events | `eventRetentionMs` after publication. |
+| Terminal deliveries and their attempt history | `historyRetentionMs` after completion. |
 
-Internal errors and lost-fencing notifications are delivered to `onError`. The callback should report or log quickly and must not throw:
+Set either value to `null` to disable that TTL. MongoDB TTL deletion is asynchronous.
 
-```typescript
-const pulse = connect<AppEvents>({
-  connectionString,
-  databaseName: 'commerce',
-  consumerGroup: 'billing',
-  onError(error) {
-    logger.error('Pulse worker error', {error})
-  },
-})
-```
+The discovery leader also deletes successful deliveries in bounded batches, but only after its
+persisted cursor has passed the event. When `historyRetentionMs` is configured, this cleanup requires
+`expiresAt` so it cannot bypass retention. With `historyRetentionMs: null`, the cursor alone is
+sufficient.
 
-## MongoDB connection capacity
+## Operational guidance
 
-Pulse configures `maxPoolSize: 1`, `minPoolSize: 0`, and `maxIdleTimeMS: 30000` by default. With 500
-service replicas, that bounds the application pool for the active MongoDB server to 500 connections
-instead of the driver's default ceiling of 50,000. Pool sockets open on demand, and an explicitly
-larger pool can contract after traffic bursts.
-
-The limit is per `MongoClient` and per server in the MongoDB topology. The driver also keeps up to
-two monitoring connections per topology node outside the application pool. With a three-node
-replica set, every process can therefore have up to six monitoring sockets in addition to its
-application pool. If the single application connection is busy, coordination operations wait for
-it rather than opening beyond the configured maximum.
-
-Tune the limit per service when needed:
-
-```typescript
-const pulse = connect({
-  connectionString,
-  databaseName: 'commerce',
-  consumerGroup: 'high-throughput-worker',
-  maxPoolSize: 4,
-  maxIdleTimeMS: 30_000,
-})
-```
-
-Keep the default for typical consumers. `workerCount` and handler concurrency do not require the
-same number of MongoDB sockets because callbacks run outside the pool. Increase it only after
-observing pool wait time under sustained high-throughput coordination.
-
-## Polling
-
-Polling and reconciliation are Pulse's only discovery, acquisition, and recovery mechanisms. Pulse
-does not open MongoDB Change Streams. Every process has one coordinator regardless of
-`workerCount`. That coordinator performs one acquisition query across every local topic per poll,
-instead of one query per topic. Candidate topics rotate in bounded batches, so a busy topic cannot
-permanently hide another one. Use `pollIntervalMs` to balance idle query volume against delivery latency.
-
-<Note>
-  Since Pulse 4.5.2, handler slots never poll MongoDB independently. `workerCount` only controls how
-  many callbacks may execute concurrently; increasing it does not multiply the process's discovery,
-  acquisition, or recovery polling loops.
-</Note>
-
-Discovery leadership uses one renewable lease per `consumerGroup + topic`, configured with
-`discoveryLockTimeoutMs` and defaulting to 10 seconds. A process acquires and renews all of its topic
-leases in bulk, then discovers its owned topics in one aggregate query. Lease and event polling thus
-scale with processes rather than processes multiplied by topics, while a replica that registers a
-different topic set can still own and recover those topics safely.
-
-Cursor updates are fenced by the same topic lease token. If a query finishes after its lease was
-lost, the stale reader may create idempotent delivery records but cannot advance the cursor. The new
-owner safely repeats discovery. Temporary query errors do not voluntarily abandon a lease; expiry
-still permits failover.
-
-## Collections and retention
-
-With the default prefix, Pulse owns:
-
-| Collection | Retention |
-| --- | --- |
-| `orionjs.pulse.events` | `eventRetentionMs` from publication time. |
-| `orionjs.pulse.subscriptions` | Durable; no TTL. |
-| `orionjs.pulse.deliveries` | `historyRetentionMs` after terminal completion. |
-| `orionjs.pulse.history` | `historyRetentionMs` after its delivery becomes terminal. |
-
-Execution version 2 keeps completed attempts inside `deliveries`; the history collection contains
-only version 1 attempt documents.
-
-Retention uses absolute `expiresAt` dates and TTL indexes with `expireAfterSeconds: 0`. When retention is `null`, Pulse omits `expiresAt`; MongoDB keeps those documents even though the TTL index remains.
-
-Errored attempts that still have a retry do not receive an expiry date. This preserves the retry
-number and recovery evidence even when the retry delay or a complete service outage lasts longer
-than `historyRetentionMs`. Once the delivery becomes terminal, Pulse assigns the same terminal
-retention deadline to all its completed attempts, then makes the delivery expirable. If a machine
-stops between those writes, the non-expiring terminal delivery remains as a reconciliation marker.
-
-For version 2, the terminal state, final attempt, and delivery `expiresAt` are committed together.
-MongoDB TTL removal therefore deletes the complete embedded execution record in one collection.
-
-## Startup safety
-
-During initialization, Pulse creates missing collections and named indexes, then inspects their keys and relevant options. Startup fails before workers begin when:
-
-- MongoDB permissions do not allow the required setup.
-- Existing data violates a required unique index.
-- A named Pulse index has incompatible keys, uniqueness, TTL, sparse, hidden, partial-filter, or
-  collation configuration.
-
-Pulse never drops or replaces an incompatible index automatically. The error identifies the collection, index name, expected configuration, and actual configuration so an operator can make the migration explicitly.
-
-When existing duplicate data prevents a unique index from being created, the startup error includes
-the affected collection, every unresolved Pulse index name, and MongoDB's duplicate-key detail.
-
-See the [API reference](/overview/other-modules/pulse/api-reference) for the exact index names and configuration defaults.
+- Keep all replicas of one consumer group on matching persisted settings.
+- Increase `configVersion` whenever those settings change.
+- Make handlers idempotent before increasing concurrency.
+- Monitor terminal errors, retry age, expired locks, and delivery backlog.
+- Keep event retention longer than the maximum expected outage or retry window.
+- Use a new consumer group when an independent replay of retained events is required.

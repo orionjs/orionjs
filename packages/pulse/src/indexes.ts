@@ -6,17 +6,17 @@ import type {
   IndexDescriptionInfo,
 } from 'mongodb'
 import {PulseIndexError} from './errors'
-import type {DeliveryDocument, EventDocument, HistoryDocument, SubscriptionDocument} from './types'
+import type {DeliveryDocument, EventDocument, SubscriptionDocument} from './types'
 
 export interface PulseCollections {
   events: Collection<EventDocument>
   subscriptions: Collection<SubscriptionDocument>
   deliveries: Collection<DeliveryDocument>
-  history: Collection<HistoryDocument>
 }
 
 interface ExpectedIndex {
   name: string
+  aliases?: string[]
   key: Record<string, 1 | -1>
   unique?: boolean
   expireAfterSeconds?: number
@@ -50,10 +50,6 @@ const subscriptionsIndexes: ExpectedIndex[] = [
     unique: true,
   },
   {
-    name: 'pulse_subscriptions_ordered_lease',
-    key: {consumerGroup: 1, orderedLockedUntil: 1},
-  },
-  {
     name: 'pulse_subscriptions_discovery_lease',
     key: {consumerGroup: 1, discoveryLockedUntil: 1},
   },
@@ -74,60 +70,19 @@ const deliveriesIndexes: ExpectedIndex[] = [
     key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
   },
   {
-    name: 'pulse_deliveries_v2_pending',
+    name: 'pulse_deliveries_concurrent_pending',
+    aliases: ['pulse_deliveries_v2_pending'],
     key: {consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1},
     partialFilterExpression: {status: 'v2-pending'},
   },
   {
-    name: 'pulse_deliveries_v2_processing',
+    name: 'pulse_deliveries_concurrent_processing',
+    aliases: ['pulse_deliveries_v2_processing'],
     key: {consumerGroup: 1, lockedUntil: 1, topic: 1},
     partialFilterExpression: {status: 'v2-processing'},
   },
   {
-    name: 'pulse_deliveries_reconciliation',
-    key: {consumerGroup: 1, topic: 1},
-    partialFilterExpression: {needsReconciliation: true},
-  },
-  {
     name: 'pulse_deliveries_expires_at_ttl',
-    key: {expiresAt: 1},
-    expireAfterSeconds: 0,
-  },
-]
-
-const historyIndexes: ExpectedIndex[] = [
-  {
-    name: 'pulse_history_delivery_attempt_unique',
-    key: {deliveryId: 1, attempt: 1},
-    unique: true,
-  },
-  {
-    name: 'pulse_history_group_topic_created',
-    key: {consumerGroup: 1, topic: 1, createdAt: -1, _id: -1},
-  },
-  {
-    name: 'pulse_history_event',
-    key: {eventId: 1, createdAt: -1},
-  },
-  {
-    name: 'pulse_history_dead_locks',
-    key: {status: 1, lockedUntil: 1},
-  },
-  {
-    name: 'pulse_history_group_dead_locks',
-    key: {consumerGroup: 1, status: 1, lockedUntil: 1},
-  },
-  {
-    name: 'pulse_history_pending_acquisition',
-    key: {consumerGroup: 1, topic: 1, status: 1, nextAttemptAt: 1, createdAt: 1},
-  },
-  {
-    name: 'pulse_history_reconciliation',
-    key: {consumerGroup: 1, topic: 1},
-    partialFilterExpression: {needsReconciliation: true},
-  },
-  {
-    name: 'pulse_history_expires_at_ttl',
     key: {expiresAt: 1},
     expireAfterSeconds: 0,
   },
@@ -210,20 +165,28 @@ async function ensureIndexes<T extends DocumentLike>(
   expectedIndexes: ExpectedIndex[],
 ) {
   let existing = await collection.listIndexes().toArray()
-  const existingNames = new Set(existing.map(index => index.name))
+  const findExisting = (expected: ExpectedIndex) =>
+    existing.find(
+      index => index.name === expected.name || expected.aliases?.includes(index.name ?? ''),
+    )
 
   for (const expected of expectedIndexes) {
-    const actual = existing.find(index => index.name === expected.name)
+    const actual = findExisting(expected)
     if (actual) validateIndex(collection.collectionName, actual, expected)
   }
 
-  const missing = expectedIndexes.filter(index => !existingNames.has(index.name))
+  const missing = expectedIndexes.filter(expected => !findExisting(expected))
   if (missing.length > 0) {
     try {
       await collection.createIndexes(missing.map(toIndexDescription))
     } catch (error) {
       existing = await collection.listIndexes().toArray()
-      const unresolved = missing.filter(index => !existing.some(item => item.name === index.name))
+      const unresolved = missing.filter(
+        expected =>
+          !existing.some(
+            item => item.name === expected.name || expected.aliases?.includes(item.name ?? ''),
+          ),
+      )
       if (unresolved.length > 0) {
         const mongoMessage = error instanceof Error ? error.message : String(error)
         throw new PulseIndexError(
@@ -238,7 +201,9 @@ async function ensureIndexes<T extends DocumentLike>(
 
   existing = await collection.listIndexes().toArray()
   for (const expected of expectedIndexes) {
-    const actual = existing.find(index => index.name === expected.name)
+    const actual = existing.find(
+      index => index.name === expected.name || expected.aliases?.includes(index.name ?? ''),
+    )
     if (!actual) {
       throw new PulseIndexError(
         `Pulse index "${expected.name}" is missing from "${collection.collectionName}".`,
@@ -258,7 +223,6 @@ export async function createCollectionsAndIndexes(
     events: `${collectionPrefix}.events`,
     subscriptions: `${collectionPrefix}.subscriptions`,
     deliveries: `${collectionPrefix}.deliveries`,
-    history: `${collectionPrefix}.history`,
   }
 
   await Promise.all(Object.values(names).map(name => ensureCollection(db, name)))
@@ -267,14 +231,12 @@ export async function createCollectionsAndIndexes(
     events: db.collection<EventDocument>(names.events),
     subscriptions: db.collection<SubscriptionDocument>(names.subscriptions),
     deliveries: db.collection<DeliveryDocument>(names.deliveries),
-    history: db.collection<HistoryDocument>(names.history),
   }
 
   await Promise.all([
     ensureIndexes(collections.events, eventsIndexes),
     ensureIndexes(collections.subscriptions, subscriptionsIndexes),
     ensureIndexes(collections.deliveries, deliveriesIndexes),
-    ensureIndexes(collections.history, historyIndexes),
   ])
 
   return collections

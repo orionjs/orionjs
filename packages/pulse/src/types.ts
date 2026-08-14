@@ -5,7 +5,6 @@ export type PulseTopic<TEvents extends PulseEventMap> = Extract<keyof TEvents, s
 export type PulseHeaders = Record<string, string>
 export type PulseDeliveryMode = 'at-least-once' | 'at-most-once'
 export type PulseOffsetReset = 'latest' | 'earliest'
-export type PulseExecutionVersion = 1 | 2
 export type PulseHistoryStatus = 'pending' | 'success' | 'error'
 export type PulseLockState = 'queued' | 'active' | 'expired'
 
@@ -49,18 +48,11 @@ export interface PulseReceivedEvent<TTopic extends string = string, TData = unkn
 }
 
 export interface PulseSubscribeOptions {
-  /** Defaults to false. */
-  ordered?: boolean
   /**
    * Integer version for persisted subscription settings. Higher versions win.
    * Legacy and omitted versions are treated as zero.
    */
   configVersion?: number
-  /**
-   * Internal queue architecture. Version 2 stores attempts atomically on the delivery document.
-   * Deploy a bridge-capable Pulse version everywhere before enabling it with a configVersion bump.
-   */
-  executionVersion?: PulseExecutionVersion
   offsetReset?: PulseOffsetReset
   delivery?: PulseDeliveryMode
   maxRetries?: number
@@ -78,8 +70,6 @@ export interface PulseSubscriptionInfo {
   topic: string
   consumerGroup: string
   configVersion: number
-  executionVersion: PulseExecutionVersion
-  ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
   maxRetries: number
@@ -163,10 +153,6 @@ export interface SubscriptionDocument extends Document {
   consumerGroup: string
   topic: string
   configVersion?: number
-  executionVersion?: PulseExecutionVersion
-  /** Sticky bridge marker so version 2 backlog remains recoverable after configuration rollback. */
-  embeddedExecutionSeen?: true
-  ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
   maxRetries: number
@@ -181,16 +167,11 @@ export interface SubscriptionDocument extends Document {
   discoveryLockOwner?: string
   discoveryLockToken?: string
   discoveryLockedUntil?: Date
-  orderedLockOwner?: string
-  orderedLockToken?: string
-  orderedLockedUntil?: Date
 }
 
-export type DeliveryStatus = 'pending' | 'success' | 'error'
+export type ConcurrentDeliveryStatus = 'v2-pending' | 'v2-processing' | 'v2-success' | 'v2-error'
 
-export type EmbeddedDeliveryStatus = 'v2-pending' | 'v2-processing' | 'v2-success' | 'v2-error'
-
-export interface EmbeddedAttemptDocument {
+export interface DeliveryAttemptDocument {
   _id: string
   attempt: number
   status: 'success' | 'error'
@@ -214,15 +195,14 @@ export interface DeliveryDocument extends Document {
   topic: string
   eventCreatedAt: Date
   eventSequence?: Timestamp
-  status: DeliveryStatus | EmbeddedDeliveryStatus
-  executionVersion?: PulseExecutionVersion
+  status: ConcurrentDeliveryStatus
   createdAt: Date
   updatedAt: Date
   endedAt?: Date
   expiresAt?: Date
   finalAttempt?: number
   error?: PulseHistoryError
-  /** Version 2 queue state. The total number of attempts claimed so far. */
+  /** Total number of attempts claimed so far for a concurrent delivery. */
   attempt?: number
   attemptId?: string
   attemptCreatedAt?: Date
@@ -233,40 +213,12 @@ export interface DeliveryDocument extends Document {
   lockedAt?: Date
   lockedUntil?: Date
   heartbeatAt?: Date
-  /** Most recent version 2 attempt outcomes, retained in a bounded window. */
-  attempts?: EmbeddedAttemptDocument[]
-  /** Internal crash-recovery marker. Present only while a cross-collection write is incomplete. */
-  needsReconciliation?: true
-}
-
-export interface HistoryDocument extends Document {
-  _id: string
-  deliveryId: string
-  eventId: string
-  consumerGroup: string
-  topic: string
-  attempt: number
-  status: PulseHistoryStatus
-  createdAt: Date
-  nextAttemptAt: Date
-  startedAt?: Date
-  lockOwner?: string
-  lockToken?: string
-  lockedAt?: Date
-  lockedUntil?: Date
-  heartbeatAt?: Date
-  endedAt?: Date
-  durationMs?: number
-  expiresAt?: Date
-  error?: PulseHistoryError
-  /** Internal crash-recovery marker. Present only while its delivery still needs an update. */
-  needsReconciliation?: true
+  /** Most recent concurrent attempt outcomes, retained in a bounded window. */
+  attempts?: DeliveryAttemptDocument[]
 }
 
 export interface ResolvedSubscribeOptions {
   configVersion: number
-  executionVersion: PulseExecutionVersion
-  ordered: boolean
   offsetReset: PulseOffsetReset
   delivery: PulseDeliveryMode
   maxRetries: number
