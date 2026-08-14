@@ -1,5 +1,13 @@
 # @orion-js/echoes
 
+## 4.5.6
+
+### Patch Changes
+
+- e92cdc9: Remove the execution-version and ordering selectors. Pulse now uses one delivery-resident execution model for every listener, with atomic claims, retries, outcomes, and bounded attempt history stored on each delivery. Echoes removes the corresponding event and subscription options.
+- Updated dependencies [e92cdc9]
+  - @orion-js/pulse@4.5.14
+
 ## 4.5.5
 
 ### Patch Changes
