@@ -62,65 +62,6 @@ receive the same value, so services can trace who emitted an event without addin
 
 Call `await pulse.close()` during graceful shutdown.
 
-## Monitoring dashboard
-
-Pulse ships with a self-contained, read-only monitoring dashboard:
-
-```bash
-bunx orion-pulse dashboard "$MONGO_URL"
-```
-
-The database can be included in the URI or provided explicitly:
-
-```bash
-bunx orion-pulse dashboard "$MONGO_URL" \
-  --database app \
-  --prefix orionjs.pulse \
-  --port 4111
-```
-
-The command starts a Node.js process and opens `http://127.0.0.1:4111`. Use `--no-open` to
-prevent the browser from opening or `--host` to change the bind address.
-
-The dashboard includes:
-
-- System health, MongoDB latency, error rate, oldest pending delivery, and lock health.
-- Published, successful, and failed throughput over configurable time windows.
-- Per-topic and per-consumer-group delivery state.
-- Paginated explorers for events, deliveries, attempts, and durable subscriptions.
-- Filtering for statuses and queued, active, or expired locks.
-- Event payload, headers, retry errors, lease state, and execution timing details.
-- Five-second live refresh, manual refresh, responsive layouts, and light/dark themes.
-
-Every value is queried directly from the four Pulse MongoDB collections. The dashboard does not
-load an OrionJS application, import service code, or call Pulse runtime APIs. Its HTTP API accepts
-only reads and rejects mutation methods.
-
-The current dashboard's counters and attempt explorer describe execution version 1. Monitor
-`v2-*` delivery states directly in MongoDB during a version 2 rollout; `pulse.history.find()` already
-projects recent version 2 attempts.
-
-React, Vite, Tailwind CSS, and dashboard components are used only at package build time. The
-compiled frontend lives under `assets/dashboard`, while the CLI launches `node assets/dashboard.js`.
-Importing `@orion-js/pulse` in an application does not load the dashboard server or browser assets
-into memory.
-
-Dashboard options:
-
-| Option | Default | Description |
-| --- | --- | --- |
-| MongoDB URI | `MONGO_URL`, `MONGODB_URI`, or `DATABASE_URL` | First positional argument or environment variable. |
-| `-d, --database` | database in URI | Database to inspect. |
-| `-p, --port` | `4111` | Dashboard HTTP port; use `0` for an ephemeral port. |
-| `--host` | `127.0.0.1` | Network interface to bind. |
-| `--prefix` | `orionjs.pulse` | Pulse collection prefix. |
-| `--query-timeout-ms` | `30000` | Maximum time for each MongoDB dashboard operation. |
-| `--no-open` | disabled | Do not open the browser automatically. |
-
-Dashboard reads use `secondaryPreferred` and fall back to the primary only when a secondary is not
-available. Queries and network waits time out after thirty seconds by default. The dashboard server
-does not cache results.
-
 ## Connection options
 
 | Option | Default | Description |

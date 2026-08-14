@@ -794,10 +794,6 @@ describe('Pulse persistence', () => {
     const expected = {
       'orionjs.pulse.events': [
         {
-          name: 'pulse_events_dashboard_created',
-          key: {createdAt: -1, _id: -1},
-        },
-        {
           name: 'pulse_events_topic_created_id',
           key: {topic: 1, createdAt: 1, _id: 1},
         },
@@ -855,21 +851,9 @@ describe('Pulse persistence', () => {
           partialFilterExpression: {status: 'v2-processing'},
         },
         {
-          name: 'pulse_deliveries_dashboard_pending',
-          key: {status: 1, eventCreatedAt: 1, eventId: 1},
-        },
-        {
           name: 'pulse_deliveries_reconciliation',
           key: {consumerGroup: 1, topic: 1},
           partialFilterExpression: {needsReconciliation: true},
-        },
-        {
-          name: 'pulse_deliveries_dashboard_updated',
-          key: {updatedAt: -1, _id: -1},
-        },
-        {
-          name: 'pulse_deliveries_dashboard_status_updated',
-          key: {status: 1, updatedAt: -1, _id: -1},
         },
         {
           name: 'pulse_deliveries_expires_at_ttl',
@@ -878,10 +862,6 @@ describe('Pulse persistence', () => {
         },
       ],
       'orionjs.pulse.history': [
-        {
-          name: 'pulse_history_dashboard_created',
-          key: {createdAt: -1, _id: -1},
-        },
         {
           name: 'pulse_history_delivery_attempt_unique',
           key: {deliveryId: 1, attempt: 1},
@@ -1073,36 +1053,6 @@ describe('Pulse persistence', () => {
       .sort({eventCreatedAt: 1, eventId: 1})
       .limit(1)
       .explain('executionStats')
-    const dashboardPendingExplain = await db
-      .collection('orionjs.pulse.deliveries')
-      .find({status: 'pending'})
-      .sort({eventCreatedAt: 1, eventId: 1})
-      .limit(1)
-      .explain('executionStats')
-    const dashboardEventsExplain = await db
-      .collection('orionjs.pulse.events')
-      .find({})
-      .sort({createdAt: -1, _id: -1})
-      .limit(25)
-      .explain('executionStats')
-    const dashboardDeliveriesExplain = await db
-      .collection('orionjs.pulse.deliveries')
-      .find({})
-      .sort({updatedAt: -1, _id: -1})
-      .limit(25)
-      .explain('executionStats')
-    const dashboardDeliveryStatusExplain = await db
-      .collection('orionjs.pulse.deliveries')
-      .find({status: 'error'})
-      .sort({updatedAt: -1, _id: -1})
-      .limit(25)
-      .explain('executionStats')
-    const dashboardHistoryExplain = await db
-      .collection('orionjs.pulse.history')
-      .find({})
-      .sort({createdAt: -1, _id: -1})
-      .limit(25)
-      .explain('executionStats')
     const historyExplain = await db
       .collection('orionjs.pulse.history')
       .find({
@@ -1165,11 +1115,6 @@ describe('Pulse persistence', () => {
     const assertions: Array<[unknown, string]> = [
       [legacyExplain, 'pulse_events_legacy_topic_created_id'],
       [deliveryExplain, 'pulse_deliveries_acquisition'],
-      [dashboardPendingExplain, 'pulse_deliveries_dashboard_pending'],
-      [dashboardEventsExplain, 'pulse_events_dashboard_created'],
-      [dashboardDeliveriesExplain, 'pulse_deliveries_dashboard_updated'],
-      [dashboardDeliveryStatusExplain, 'pulse_deliveries_dashboard_status_updated'],
-      [dashboardHistoryExplain, 'pulse_history_dashboard_created'],
       [historyExplain, 'pulse_history_pending_acquisition'],
       [deadLockExplain, 'pulse_history_group_dead_locks'],
       [embeddedPendingExplain, 'pulse_deliveries_v2_pending'],

@@ -98,10 +98,9 @@ pulse_deliveries_v2_processing
 // partial: {status: 'v2-processing'}
 ```
 
-The standalone dashboard has not been changed as part of this runtime migration. Its direct
-collection counters and physical-history explorer remain version 1 views. Use MongoDB Atlas and
-direct `v2-*` delivery queries for rollout monitoring; application code using
-`pulse.history.find()` does see the recent version 2 attempts.
+Starting with Pulse 4.5.13, the package no longer ships the standalone dashboard, its CLI, or its
+dashboard-only indexes. Use MongoDB Atlas and direct `v2-*` delivery queries for rollout monitoring;
+application code using `pulse.history.find()` continues to expose recent version 2 attempts.
 
 ## Patch update: stop polling the drained v1 path
 

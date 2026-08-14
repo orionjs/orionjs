@@ -3,7 +3,7 @@ title: 'Pulse'
 description: 'Distributed, recoverable event delivery backed only by MongoDB'
 ---
 
-Pulse is a typed pub/sub system for services that already operate MongoDB and do not want to run a separate event broker. It provides durable consumer groups, ordered or concurrent handlers, retries, execution history, crash recovery, and a built-in operations dashboard.
+Pulse is a typed pub/sub system for services that already operate MongoDB and do not want to run a separate event broker. It provides durable consumer groups, ordered or concurrent handlers, retries, execution history, and crash recovery.
 
 Pulse is published as `@orion-js/pulse`, but it does not depend on Orionjs. You can use it from an Orionjs service, an older Orionjs application, or a standalone Node.js or Bun process.
 
@@ -137,5 +137,4 @@ The name should describe the responsibility, not the host, pod, or deployment re
 - [Publish typed events](/overview/other-modules/pulse/publishing)
 - [Configure consumers and retries](/overview/other-modules/pulse/consuming)
 - [Understand delivery and crash recovery](/overview/other-modules/pulse/reliability)
-- [Operate Pulse with the dashboard](/overview/other-modules/pulse/dashboard)
 - [Review the complete API](/overview/other-modules/pulse/api-reference)

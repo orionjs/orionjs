@@ -12,13 +12,8 @@
     "require": "./dist/index.cjs"
   },
   "files": [
-    "assets",
-    "dist",
-    "dist-cli"
+    "dist"
   ],
-  "bin": {
-    "orion-pulse": "dist-cli/orion-pulse.js"
-  },
   "author": "nicolaslopezj",
   "license": "MIT",
   "engines": {
@@ -27,8 +22,8 @@
   "scripts": {
     "test": "bun test",
     "prepack": "bun run build",
-    "clean": "rm -rf ./assets ./dist ./dist-cli",
-    "build": "tsup && bun run ../../scripts/emit-declarations.ts && tsup --config dashboard.tsup.config.ts && vite build --config dashboard/vite.config.ts && tsup --config cli.tsup.config.ts",
+    "clean": "rm -rf ./dist",
+    "build": "tsup && bun run ../../scripts/emit-declarations.ts",
     "dev": "tsup --watch"
   },
   "dependencies": {
@@ -38,26 +33,12 @@
     "mongodb": "^6.15.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.14",
     "@types/bun": "latest",
     "@types/node": "^18.19.86",
-    "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "^4.3.4",
-    "@xyflow/react": "^12.11.2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.468.0",
     "mongodb": "6.15.0",
     "mongodb-memory-server": "^10.1.4",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "recharts": "^3.1.0",
-    "tailwind-merge": "^3.0.1",
-    "tailwindcss": "^4.1.14",
     "tsup": "^8.0.1",
-    "typescript": "^7.0.2",
-    "vite": "^6.1.0"
+    "typescript": "^7.0.2"
   },
   "publishConfig": {
     "access": "public"
