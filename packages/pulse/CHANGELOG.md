@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.12
+
+### Patch Changes
+
+- d902d1a: Stop polling the legacy execution path after version 1 work has drained from version 2 subscriptions, while retaining periodic indexed rollout safety audits.
+
 ## 4.5.11
 
 ### Patch Changes
