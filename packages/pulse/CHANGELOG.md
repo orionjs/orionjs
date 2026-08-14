@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.13
+
+### Patch Changes
+
+- 4ec34ab: Remove the standalone Pulse dashboard, its CLI and browser assets, dashboard-only indexes, and all dashboard build dependencies.
+
 ## 4.5.12
 
 ### Patch Changes
