@@ -50,6 +50,9 @@ function getRuntimeState(pulse: Pulse<any>) {
     activeExecutions: Set<Promise<void>>
     discoveryLeases: Map<string, unknown>
     discoveryRefreshAt: number
+    legacyExecutionState: 'unknown' | 'required' | 'drained'
+    localSubscriptionRevision: number
+    nextLegacyExecutionAuditAt: number
     nextReapAt: number
     nextReconciliationAt: number
     nextDeliveryCleanupAt: number
@@ -65,11 +68,12 @@ function getRuntimeState(pulse: Pulse<any>) {
     coordinateOnce(): Promise<boolean>
     discoverEvents(scanEvents: boolean): Promise<{discovered: boolean; scanned: boolean}>
     refreshDiscoveryLeases(): Promise<void>
+    needsLegacyExecution(): Promise<boolean>
     findExecutionCandidates(capacity: number): Promise<unknown[]>
-    claimExecutions(capacity: number): Promise<unknown[]>
+    claimExecutions(capacity: number, needsLegacyExecution?: boolean): Promise<unknown[]>
     materializeDeliveries(events: Document[]): Promise<void>
     runExecution(execution: unknown): Promise<void>
-    reapExpiredAttempts(topics: string[]): Promise<number>
+    reapExpiredAttempts(topics: string[], needsLegacyExecution?: boolean): Promise<number>
     reconcileDeliveries(topics: string[]): Promise<number>
     cleanupSuccessfulDeliveries(topics: string[]): Promise<number>
   }
@@ -321,6 +325,8 @@ describe('Pulse persistence', () => {
     runtime.running = false
     runtime.wakeCoordinator()
     await runtime.coordinatorPromise
+    expect(await runtime.needsLegacyExecution()).toBe(false)
+    expect(runtime.legacyExecutionState).toBe('drained')
 
     const history = runtime.collections.history
     const originals = {
@@ -344,7 +350,7 @@ describe('Pulse persistence', () => {
       if (!eventDocument) throw new Error('Expected the event document.')
       await runtime.materializeDeliveries([eventDocument])
       runtime.running = true
-      const [execution] = await runtime.claimExecutions(1)
+      const [execution] = await runtime.claimExecutions(1, await runtime.needsLegacyExecution())
       if (!execution) throw new Error('Expected the embedded delivery to be claimable.')
       await runtime.runExecution(execution)
       runtime.running = false
@@ -396,6 +402,8 @@ describe('Pulse persistence', () => {
     runtime.discoveryRefreshAt = 0
     await runtime.refreshDiscoveryLeases()
     expect(pulse.getSubscriptions()[0]).toMatchObject({executionVersion: 2, configVersion: 1})
+    expect(await runtime.needsLegacyExecution()).toBe(true)
+    expect(runtime.legacyExecutionState).toBe('required')
 
     const embeddedEvent = await pulse.publish({topic, data: {version: 2}})
     const embeddedDocument = await db
@@ -428,6 +436,112 @@ describe('Pulse persistence', () => {
     expect(received.sort()).toEqual([legacyEvent.id, embeddedEvent.id].sort())
     const history = await pulse.history.find({consumerGroup, topic})
     expect(history.records.map(record => record.status).sort()).toEqual(['success', 'success'])
+  })
+
+  it('re-enables legacy execution when a pre-patch replica writes after the drain audit', async () => {
+    const databaseName = uniqueName('embedded_late_legacy')
+    const consumerGroup = 'embedded-late-legacy-group'
+    const topic = 'embedded-late-legacy.topic'
+    const received: string[] = []
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    await pulse.subscribe(
+      topic,
+      async event => {
+        received.push(event.id)
+      },
+      {executionVersion: 2, configVersion: 1, offsetReset: 'latest'},
+    )
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+    expect(await runtime.needsLegacyExecution()).toBe(false)
+
+    const db = await rawDatabase(databaseName)
+    const now = new Date()
+    const eventId = uuidv7()
+    const deliveryId = uuidv7()
+    await db.collection('orionjs.pulse.events').insertOne({
+      _id: eventId,
+      topic,
+      data: null,
+      createdAt: now,
+    })
+    await db.collection('orionjs.pulse.deliveries').insertOne({
+      _id: deliveryId,
+      eventId,
+      consumerGroup,
+      topic,
+      eventCreatedAt: now,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    })
+    await db.collection('orionjs.pulse.history').insertOne({
+      _id: uuidv7(),
+      deliveryId,
+      eventId,
+      consumerGroup,
+      topic,
+      attempt: 1,
+      status: 'pending',
+      createdAt: now,
+      nextAttemptAt: now,
+    })
+
+    runtime.nextLegacyExecutionAuditAt = 0
+    expect(await runtime.needsLegacyExecution()).toBe(true)
+    expect(runtime.legacyExecutionState).toBe('required')
+    runtime.running = true
+    const [execution] = await runtime.claimExecutions(1, true)
+    if (!execution) throw new Error('Expected the late legacy delivery to be claimable.')
+    await runtime.runExecution(execution)
+    runtime.running = false
+
+    expect(received).toEqual([eventId])
+    expect(
+      await db.collection('orionjs.pulse.deliveries').findOne({_id: deliveryId}),
+    ).toMatchObject({status: 'success'})
+  })
+
+  it('does not commit a drained audit across a local subscription revision', async () => {
+    const pulse = createPulse(
+      uniqueName('embedded_audit_revision'),
+      'embedded-audit-revision-group',
+    )
+    await pulse.awaitConnection()
+    await pulse.subscribe('embedded-audit-revision.topic', async () => {}, {
+      executionVersion: 2,
+      configVersion: 1,
+      offsetReset: 'latest',
+    })
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has('embedded-audit-revision.topic'))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    runtime.legacyExecutionState = 'unknown'
+    runtime.nextLegacyExecutionAuditAt = 0
+    const history = runtime.collections.history
+    const findOne = history.findOne
+    let revisionChanged = false
+    history.findOne = async (...args: unknown[]) => {
+      const result = await findOne.apply(history, args)
+      if (!revisionChanged) {
+        revisionChanged = true
+        runtime.localSubscriptionRevision++
+      }
+      return result
+    }
+    try {
+      expect(await runtime.needsLegacyExecution()).toBe(true)
+      expect(runtime.legacyExecutionState).toBe('unknown')
+    } finally {
+      history.findOne = findOne
+    }
   })
 
   it('retries embedded deliveries without writing the history collection', async () => {

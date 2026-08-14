@@ -45,6 +45,7 @@ const DISCOVERY_BATCH_SIZE = 100
 const DISCOVERY_TOPIC_BATCH_SIZE = 50
 const RECONCILIATION_BATCH_SIZE = 25
 const RECONCILIATION_INTERVAL_MS = 30_000
+const LEGACY_EXECUTION_DRAINED_AUDIT_INTERVAL_MS = 5 * 60_000
 const MAX_REAPER_IDLE_INTERVAL_MS = 10_000
 const EMBEDDED_ATTEMPT_HISTORY_LIMIT = 10
 const ERROR_NAME_LIMIT = 256
@@ -463,6 +464,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private deliveryCleanupTopicOffset = 0
   private embeddedClaimFirst = true
   private embeddedWorkEnabled = false
+  private legacyExecutionState: 'unknown' | 'required' | 'drained' = 'unknown'
+  private nextLegacyExecutionAuditAt = 0
   private nextLegacyClaimAt = 0
   private nextEmbeddedClaimAt = 0
   private db?: Db
@@ -576,6 +579,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       }
       this.localSubscriptions.set(topic, local)
       this.localSubscriptionRevision++
+      this.invalidateLegacyExecutionState()
       this.discoveryRefreshAt = 0
       this.requestDiscovery()
 
@@ -589,6 +593,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           if (this.localSubscriptions.get(topic) === local) {
             this.localSubscriptions.delete(topic)
             this.localSubscriptionRevision++
+            this.invalidateLegacyExecutionState()
           }
           await this.releaseDiscoveryLeaseForTopic(topic)
           this.discoveryRefreshAt = 0
@@ -662,6 +667,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       this.nextDiscoveryAt = discovery.discovered ? 0 : Date.now() + this.options.pollIntervalMs
     }
 
+    const needsLegacyExecution = await this.needsLegacyExecution()
+
     const leaderTopics = [...this.discoveryLeases.keys()].filter(topic =>
       this.localSubscriptions.has(topic),
     )
@@ -670,8 +677,10 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     let cleaned = 0
     if (leaderTopics.length > 0) {
       const now = Date.now()
-      if (now >= this.nextReapAt) reaped = await this.reapExpiredAttempts(leaderTopics)
-      if (now >= this.nextReconciliationAt) {
+      if (now >= this.nextReapAt) {
+        reaped = await this.reapExpiredAttempts(leaderTopics, needsLegacyExecution)
+      }
+      if (needsLegacyExecution && now >= this.nextReconciliationAt) {
         reconciled = await this.reconcileDeliveries(leaderTopics)
       }
       if (now >= this.nextDeliveryCleanupAt) {
@@ -681,13 +690,100 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
     let dispatched = false
     const capacity = this.options.workerCount - this.activeExecutions.size
-    const executions = capacity > 0 ? await this.claimExecutions(capacity) : []
+    const executions =
+      capacity > 0 ? await this.claimExecutions(capacity, needsLegacyExecution) : []
     for (const execution of executions) {
       if (!this.running) break
       this.startExecution(execution)
       dispatched = true
     }
     return discovery.discovered || reaped > 0 || reconciled > 0 || cleaned > 0 || dispatched
+  }
+
+  private invalidateLegacyExecutionState() {
+    this.legacyExecutionState = 'unknown'
+    this.nextLegacyExecutionAuditAt = 0
+    this.nextLegacyClaimAt = 0
+    this.nextReconciliationAt = 0
+    this.nextReapAt = 0
+  }
+
+  private async needsLegacyExecution() {
+    const locals = [...this.localSubscriptions.values()].filter(local => !local.unsubscribed)
+    if (locals.some(local => local.options.executionVersion === 1)) {
+      this.legacyExecutionState = 'required'
+      this.nextLegacyExecutionAuditAt = Number.POSITIVE_INFINITY
+      return true
+    }
+    if (locals.length === 0) return false
+
+    const now = Date.now()
+    if (this.legacyExecutionState === 'drained' && now < this.nextLegacyExecutionAuditAt) {
+      return false
+    }
+    if (this.legacyExecutionState === 'required' && now < this.nextLegacyExecutionAuditAt) {
+      return true
+    }
+
+    const subscriptionRevision = this.localSubscriptionRevision
+    const topics = locals.map(local => local.document.topic)
+    const collections = this.getCollections()
+    const projection = {_id: 1}
+    const pendingHistory = await collections.history.findOne(
+      {
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        status: 'pending',
+      },
+      {projection, hint: 'pulse_history_pending_acquisition'},
+    )
+    if (pendingHistory) {
+      this.legacyExecutionState = 'required'
+      this.nextLegacyExecutionAuditAt = now + RECONCILIATION_INTERVAL_MS
+      return true
+    }
+
+    const historyMarker = await collections.history.findOne(
+      {
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        needsReconciliation: true,
+      },
+      {projection, hint: 'pulse_history_reconciliation'},
+    )
+    if (historyMarker) {
+      this.legacyExecutionState = 'required'
+      this.nextLegacyExecutionAuditAt = now + RECONCILIATION_INTERVAL_MS
+      return true
+    }
+
+    const deliveryMarker = await collections.deliveries.findOne(
+      {
+        consumerGroup: this.options.consumerGroup,
+        topic: {$in: topics},
+        needsReconciliation: true,
+      },
+      {projection, hint: 'pulse_deliveries_reconciliation'},
+    )
+    if (deliveryMarker) {
+      this.legacyExecutionState = 'required'
+      this.nextLegacyExecutionAuditAt = now + RECONCILIATION_INTERVAL_MS
+      return true
+    }
+
+    // A subscription may be added while the indexed reads are in flight. Keep the
+    // bridge enabled for this pass and audit the new snapshot on the next pass.
+    if (subscriptionRevision !== this.localSubscriptionRevision) {
+      this.legacyExecutionState = 'unknown'
+      this.nextLegacyExecutionAuditAt = 0
+      return true
+    }
+
+    this.legacyExecutionState = 'drained'
+    // A slow re-audit covers a pre-patch replica that materializes v1 work after
+    // this process observed a clean bridge during a rolling deployment.
+    this.nextLegacyExecutionAuditAt = now + LEGACY_EXECUTION_DRAINED_AUDIT_INTERVAL_MS
+    return false
   }
 
   private async discoverEvents(scanEvents: boolean): Promise<DiscoveryResult> {
@@ -953,8 +1049,19 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     )
   }
 
-  private async claimExecutions(capacity: number): Promise<ClaimedExecution[]> {
+  private async claimExecutions(
+    capacity: number,
+    needsLegacyExecution = true,
+  ): Promise<ClaimedExecution[]> {
     if (capacity <= 0) return []
+
+    if (!needsLegacyExecution) {
+      if (Date.now() < this.nextEmbeddedClaimAt) return []
+      const executions = await this.claimEmbeddedExecutions(capacity)
+      this.nextEmbeddedClaimAt =
+        executions.length === 0 ? Date.now() + this.options.pollIntervalMs : 0
+      return executions
+    }
 
     const claimEmbeddedFirst = this.embeddedClaimFirst
     this.embeddedClaimFirst = !this.embeddedClaimFirst
@@ -1971,8 +2078,18 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
   }
 
-  private async reapExpiredAttempts(topics: string[]) {
+  private async reapExpiredAttempts(topics: string[], needsLegacyExecution = true) {
     if (topics.length === 0) return 0
+    if (!needsLegacyExecution) {
+      const reaped = await this.reapExpiredEmbeddedAttempts(topics, RECONCILIATION_BATCH_SIZE)
+      if (reaped === RECONCILIATION_BATCH_SIZE) {
+        this.nextReapAt = 0
+        return reaped
+      }
+      this.scheduleNextReap()
+      return reaped
+    }
+
     const historyCollection = this.getCollections().history
     const now = new Date()
     const candidates = await historyCollection
@@ -2041,12 +2158,16 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       return reaped
     }
 
+    this.scheduleNextReap()
+    return reaped
+  }
+
+  private scheduleNextReap() {
     const idleInterval = Math.max(
       this.options.pollIntervalMs,
       Math.min(MAX_REAPER_IDLE_INTERVAL_MS, Math.max(10, this.options.lockTimeoutMs / 3)),
     )
     this.nextReapAt = Date.now() + idleInterval + Math.floor(Math.random() * idleInterval * 0.2)
-    return reaped
   }
 
   private embeddedAttemptContext(delivery: DeliveryDocument): EmbeddedAttemptContext | undefined {
@@ -2744,8 +2865,10 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   }
 
   private updateLocalSubscription(local: LocalSubscription, document: SubscriptionDocument) {
+    const executionVersion = local.options.executionVersion
     local.document = document
     local.options = optionsFromDocument(document, local.configuredMaxConcurrency)
+    if (local.options.executionVersion !== executionVersion) this.invalidateLegacyExecutionState()
   }
 
   private toSubscriptionInfo(local: LocalSubscription): PulseSubscriptionInfo {

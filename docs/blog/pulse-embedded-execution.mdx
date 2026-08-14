@@ -103,6 +103,28 @@ collection counters and physical-history explorer remain version 1 views. Use Mo
 direct `v2-*` delivery queries for rollout monitoring; application code using
 `pulse.history.find()` does see the recent version 2 attempts.
 
+## Patch update: stop polling the drained v1 path
+
+Pulse 4.5.12 keeps the same bridge and configuration contract, but removes its steady-state legacy
+cost. When every local subscription uses execution version 2, each process performs a bounded,
+indexed audit for three kinds of recoverable version 1 state:
+
+- pending physical history attempts;
+- physical history records marked `needsReconciliation`;
+- delivery records marked `needsReconciliation`.
+
+The bridge continues to claim, reap, and reconcile version 1 work while any of that evidence exists.
+After it drains, the process stops issuing those hot-path legacy queries and runs only a small
+indexed safety audit every five minutes. That audit catches late writes from a 4.5.11 replica during
+a rolling deployment. A restart audits immediately before disabling the bridge, and a persisted
+configuration change back to version 1 enables it immediately.
+
+This is a patch upgrade: no application configuration, data migration, or additional MongoDB index
+is required. The audit uses `pulse_history_pending_acquisition`,
+`pulse_history_reconciliation`, and `pulse_deliveries_reconciliation`, which bridge-capable Pulse
+versions already create. Mixed 4.5.11 and 4.5.12 replicas remain compatible during a rolling deploy;
+4.5.11 keeps polling both formats while 4.5.12 can silence its drained version 1 path.
+
 ## Rollback
 
 Rollback the configuration before rolling back the bridge package:

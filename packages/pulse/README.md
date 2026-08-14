@@ -200,6 +200,12 @@ formats during the rollout. Read the
 [hot rollout guide](https://orionjs.com/blog/pulse-embedded-execution) before enabling it in
 production.
 
+After every local subscription uses version 2, Pulse performs an indexed audit for recoverable
+version 1 work. It keeps the bridge active while pending attempts or reconciliation markers exist.
+Once they are gone, that process stops the version 1 claim, reaper, and reconciliation queries and
+runs only a small indexed safety audit every five minutes; restarts audit immediately. This is
+automatic and requires no new option or index.
+
 Version 2 retains the most recent 10 attempt outcomes on each delivery and keeps the exact total in
 the delivery's attempt counter. This bounds MongoDB document size even when `maxRetries` is large.
 
