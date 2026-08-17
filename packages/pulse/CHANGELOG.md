@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.15
+
+### Patch Changes
+
+- Simplify event discovery to use only MongoDB sequence cursors and retire temporal discovery indexes.
+
 ## 4.5.14
 
 ### Patch Changes
