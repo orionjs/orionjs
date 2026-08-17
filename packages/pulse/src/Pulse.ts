@@ -446,7 +446,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
     const createdAt = new Date()
     const expiresAt = getExpiresAt(createdAt, this.options.eventRetentionMs)
-    const candidate: EventDocument<TEvents[TTopic]> = {
+    const candidate: Omit<EventDocument<TEvents[TTopic]>, 'sequence'> = {
       _id: uuidv7(),
       topic: options.topic,
       data: options.data,
@@ -640,7 +640,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     const branches: Document[][] = []
     for (const local of locals) {
       const subscription = local.document
-      const sequencedMatch = subscription.cursorSequence
+      const match = subscription.cursorSequence
         ? {
             $or: [
               {topic: subscription.topic, sequence: {$gt: subscription.cursorSequence}},
@@ -651,37 +651,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
               },
             ],
           }
-        : {topic: subscription.topic, sequence: {$exists: true}}
-      const sequencedBranch: Document[] = [
-        {$match: sequencedMatch},
-        {$sort: {sequence: 1, _id: 1}},
-        {$limit: perTopicLimit},
-        {$set: {__pulseLegacy: false}},
-      ]
-      const legacyMatch = subscription.cursorCreatedAt
-        ? {
-            $or: [
-              {
-                topic: subscription.topic,
-                sequence: {$exists: false},
-                createdAt: {$gt: subscription.cursorCreatedAt},
-              },
-              {
-                topic: subscription.topic,
-                sequence: {$exists: false},
-                createdAt: subscription.cursorCreatedAt,
-                _id: {$gt: subscription.cursorEventId ?? ''},
-              },
-            ],
-          }
-        : {topic: subscription.topic, sequence: {$exists: false}}
-      const legacyBranch: Document[] = [
-        {$match: legacyMatch},
-        {$sort: {createdAt: 1, _id: 1}},
-        {$limit: perTopicLimit},
-        {$set: {__pulseLegacy: true}},
-      ]
-      branches.push(sequencedBranch, legacyBranch)
+        : {topic: subscription.topic}
+      branches.push([{$match: match}, {$sort: {sequence: 1, _id: 1}}, {$limit: perTopicLimit}])
     }
 
     const [firstBranch, ...remainingBranches] = branches
@@ -690,11 +661,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       pipeline.push({$unionWith: {coll: events.collectionName, pipeline: branch}})
     }
 
-    const discoveredEvents = (await events.aggregate(pipeline).toArray()) as Array<
-      EventDocument & {__pulseLegacy: boolean}
-    >
-    const latestLegacy = new Map<string, EventDocument>()
-    const latestSequenced = new Map<string, EventDocument>()
+    const discoveredEvents = (await events.aggregate(pipeline).toArray()) as EventDocument[]
+    const latestEvents = new Map<string, EventDocument>()
     const batchLeaseTokens = new Map(
       locals.map(local => [
         local.document.topic,
@@ -705,7 +673,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
     for (let batchStart = 0; batchStart < discoveredEvents.length; batchStart += 25) {
       if (batchStart > 0) await this.refreshDiscoveryLeases()
-      const validEvents: Array<EventDocument & {__pulseLegacy: boolean}> = []
+      const validEvents: EventDocument[] = []
       for (const event of discoveredEvents.slice(batchStart, batchStart + 25)) {
         const local = this.localSubscriptions.get(event.topic)
         const expectedToken = batchLeaseTokens.get(event.topic)
@@ -718,37 +686,18 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           invalidTopics.has(event.topic)
         ) {
           invalidTopics.add(event.topic)
-          latestLegacy.delete(event.topic)
-          latestSequenced.delete(event.topic)
+          latestEvents.delete(event.topic)
           continue
         }
         validEvents.push(event)
       }
       await this.materializeDeliveries(validEvents)
       for (const event of validEvents) {
-        if (event.__pulseLegacy) latestLegacy.set(event.topic, event)
-        else latestSequenced.set(event.topic, event)
+        latestEvents.set(event.topic, event)
       }
     }
 
-    for (const [topic, event] of latestLegacy) {
-      const local = this.localSubscriptions.get(topic)
-      const expectedToken = batchLeaseTokens.get(topic)
-      if (!local || local.unsubscribed || !expectedToken || invalidTopics.has(topic)) continue
-      this.updateLocalSubscription(
-        local,
-        await this.advanceDiscoveryCursor(
-          local.document,
-          {
-            cursorCreatedAt: event.createdAt,
-            cursorEventId: event._id,
-          },
-          expectedToken,
-        ),
-      )
-    }
-    for (const [topic, event] of latestSequenced) {
-      if (!event.sequence) continue
+    for (const [topic, event] of latestEvents) {
       const local = this.localSubscriptions.get(topic)
       const expectedToken = batchLeaseTokens.get(topic)
       if (!local || local.unsubscribed || !expectedToken || invalidTopics.has(topic)) continue
@@ -779,7 +728,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         consumerGroup: this.options.consumerGroup,
         topic: event.topic,
         eventCreatedAt: event.createdAt,
-        ...(event.sequence ? {eventSequence: event.sequence} : {}),
+        eventSequence: event.sequence,
         status: 'v2-pending' as const,
         attempt: 0,
         attemptId: uuidv7(),
@@ -1326,19 +1275,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           })
         }
       }
-      if (subscription.cursorCreatedAt) {
-        cursorBranches.push({
-          eventSequence: {$exists: false},
-          eventCreatedAt: {$lt: subscription.cursorCreatedAt},
-        })
-        if (subscription.cursorEventId !== undefined) {
-          cursorBranches.push({
-            eventSequence: {$exists: false},
-            eventCreatedAt: subscription.cursorCreatedAt,
-            eventId: {$lte: subscription.cursorEventId},
-          })
-        }
-      }
       if (cursorBranches.length === 0) continue
 
       const remaining = DELIVERY_CLEANUP_BATCH_SIZE - candidateIds.length
@@ -1590,36 +1526,22 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   private async advanceDiscoveryCursor(
     subscription: SubscriptionDocument,
-    cursor: Pick<
-      SubscriptionDocument,
-      'cursorCreatedAt' | 'cursorEventId' | 'cursorSequence' | 'cursorSequenceEventId'
-    >,
+    cursor: {
+      cursorSequence: EventDocument['sequence']
+      cursorSequenceEventId: string
+    },
     expectedLockToken: string,
   ) {
-    const sequenceFilter = cursor.cursorSequence
-      ? {
-          $or: [
-            {cursorSequence: {$exists: false}},
-            {cursorSequence: {$lt: cursor.cursorSequence}},
-            {
-              cursorSequence: cursor.cursorSequence,
-              cursorSequenceEventId: {$lt: cursor.cursorSequenceEventId ?? ''},
-            },
-          ],
-        }
-      : undefined
-    const legacyFilter = cursor.cursorCreatedAt
-      ? {
-          $or: [
-            {cursorCreatedAt: {$exists: false}},
-            {cursorCreatedAt: {$lt: cursor.cursorCreatedAt}},
-            {
-              cursorCreatedAt: cursor.cursorCreatedAt,
-              cursorEventId: {$lt: cursor.cursorEventId ?? ''},
-            },
-          ],
-        }
-      : undefined
+    const sequenceFilter = {
+      $or: [
+        {cursorSequence: {$exists: false}},
+        {cursorSequence: {$lt: cursor.cursorSequence}},
+        {
+          cursorSequence: cursor.cursorSequence,
+          cursorSequenceEventId: {$lt: cursor.cursorSequenceEventId},
+        },
+      ],
+    }
     const lease = this.discoveryLeases.get(subscription.topic)
     if (!lease || lease.lockToken !== expectedLockToken) {
       return (
@@ -1630,7 +1552,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       {
         _id: subscription._id,
         discoveryLockToken: expectedLockToken,
-        ...(sequenceFilter ?? legacyFilter ?? {}),
+        ...sequenceFilter,
       },
       {
         $set: {
@@ -1659,17 +1581,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       const now = new Date()
       const latest =
         requestedOptions.offsetReset === 'latest'
-          ? await this.getCollections().events.findOne(
-              {topic, sequence: {$exists: false}},
-              {sort: {createdAt: -1, _id: -1}},
-            )
-          : undefined
-      const latestSequenced =
-        requestedOptions.offsetReset === 'latest'
-          ? await this.getCollections().events.findOne(
-              {topic, sequence: {$exists: true}},
-              {sort: {sequence: -1, _id: -1}},
-            )
+          ? await this.getCollections().events.findOne({topic}, {sort: {sequence: -1, _id: -1}})
           : undefined
       const candidate: SubscriptionDocument = {
         _id: uuidv7(),
@@ -1680,12 +1592,10 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         updatedAt: now,
         ...(requestedOptions.offsetReset === 'latest'
           ? {
-              cursorCreatedAt: latest?.createdAt ?? now,
-              cursorEventId: latest?._id ?? '',
-              ...(latestSequenced?.sequence
+              ...(latest
                 ? {
-                    cursorSequence: latestSequenced.sequence,
-                    cursorSequenceEventId: latestSequenced._id,
+                    cursorSequence: latest.sequence,
+                    cursorSequenceEventId: latest._id,
                   }
                 : {}),
             }

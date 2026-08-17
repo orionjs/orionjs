@@ -25,16 +25,8 @@ interface ExpectedIndex {
 
 const eventsIndexes: ExpectedIndex[] = [
   {
-    name: 'pulse_events_topic_created_id',
-    key: {topic: 1, createdAt: 1, _id: 1},
-  },
-  {
     name: 'pulse_events_topic_sequence_id',
     key: {topic: 1, sequence: 1, _id: 1},
-  },
-  {
-    name: 'pulse_events_legacy_topic_created_id',
-    key: {topic: 1, sequence: 1, createdAt: 1, _id: 1},
   },
   {
     name: 'pulse_events_expires_at_ttl',

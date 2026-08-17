@@ -141,10 +141,8 @@ export interface EventDocument<TData = unknown> extends Document {
   publisher?: string
   headers?: PulseHeaders
   createdAt: Date
-  /**
-   * MongoDB-assigned ordering token. Legacy events may not have one.
-   */
-  sequence?: Timestamp
+  /** MongoDB-assigned ordering token. */
+  sequence: Timestamp
   expiresAt?: Date
 }
 
@@ -160,8 +158,6 @@ export interface SubscriptionDocument extends Document {
   retryBackoffMultiplier: number
   createdAt: Date
   updatedAt: Date
-  cursorCreatedAt?: Date
-  cursorEventId?: string
   cursorSequence?: Timestamp
   cursorSequenceEventId?: string
   discoveryLockOwner?: string

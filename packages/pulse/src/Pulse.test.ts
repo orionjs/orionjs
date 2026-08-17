@@ -207,8 +207,6 @@ describe('Pulse persistence', () => {
       retryBackoffMultiplier: 2,
       createdAt: now,
       updatedAt: now,
-      cursorCreatedAt: now,
-      cursorEventId: '',
     })
 
     let calls = 0
@@ -486,16 +484,8 @@ describe('Pulse persistence', () => {
     const expected = {
       'orionjs.pulse.events': [
         {
-          name: 'pulse_events_topic_created_id',
-          key: {topic: 1, createdAt: 1, _id: 1},
-        },
-        {
           name: 'pulse_events_topic_sequence_id',
           key: {topic: 1, sequence: 1, _id: 1},
-        },
-        {
-          name: 'pulse_events_legacy_topic_created_id',
-          key: {topic: 1, sequence: 1, createdAt: 1, _id: 1},
         },
         {
           name: 'pulse_events_expires_at_ttl',
@@ -580,7 +570,7 @@ describe('Pulse persistence', () => {
     await db.createCollection('orionjs.pulse.events')
     await db
       .collection('orionjs.pulse.events')
-      .createIndex({wrongField: 1}, {name: 'pulse_events_topic_created_id'})
+      .createIndex({wrongField: 1}, {name: 'pulse_events_topic_sequence_id'})
 
     const pulse = createPulse(databaseName, 'bad-index-group')
     await expect(pulse.awaitConnection()).rejects.toBeInstanceOf(PulseIndexError)
@@ -624,16 +614,13 @@ describe('Pulse persistence', () => {
     const db = await rawDatabase(databaseName)
     const now = new Date()
 
-    await db.collection<any>('orionjs.pulse.events').insertMany([
-      {
-        _id: uuidv7(),
-        topic,
-        data: {sequenced: true},
-        createdAt: now,
-        sequence: new Timestamp({t: 1, i: 1}),
-      },
-      {_id: uuidv7(), topic, data: {legacy: true}, createdAt: now},
-    ])
+    await db.collection<any>('orionjs.pulse.events').insertOne({
+      _id: uuidv7(),
+      topic,
+      data: {sequenced: true},
+      createdAt: now,
+      sequence: new Timestamp({t: 1, i: 1}),
+    })
     await db.collection<any>('orionjs.pulse.deliveries').insertMany([
       {
         _id: uuidv7(),
@@ -668,12 +655,6 @@ describe('Pulse persistence', () => {
       },
     ])
 
-    const legacyExplain = await db
-      .collection('orionjs.pulse.events')
-      .find({topic, sequence: {$exists: false}, createdAt: {$gte: now}})
-      .sort({createdAt: 1, _id: 1})
-      .limit(100)
-      .explain('executionStats')
     const sequencedExplain = await db
       .collection('orionjs.pulse.events')
       .find({topic, sequence: {$gt: new Timestamp({t: 0, i: 0})}})
@@ -704,7 +685,6 @@ describe('Pulse persistence', () => {
       .explain('executionStats')
 
     const assertions: Array<[unknown, string]> = [
-      [legacyExplain, 'pulse_events_legacy_topic_created_id'],
       [sequencedExplain, 'pulse_events_topic_sequence_id'],
       [pendingExplain, 'pulse_deliveries_concurrent_pending'],
       [processingExplain, 'pulse_deliveries_concurrent_processing'],
@@ -750,7 +730,7 @@ describe('Pulse persistence', () => {
     expect(cleanupCalls).toBe(1)
   })
 
-  it('cleans retained successes only after their persisted sequenced or legacy cursor', async () => {
+  it('cleans retained successes only after their persisted sequence cursor', async () => {
     const databaseName = uniqueName('delivery_cleanup_cursors')
     const consumerGroup = 'delivery-cleanup-cursors-group'
     const topic = 'delivery-cleanup-cursors.topic'
@@ -765,21 +745,15 @@ describe('Pulse persistence', () => {
 
     const db = await rawDatabase(databaseName)
     const now = new Date()
-    const cursorCreatedAt = new Date(now.getTime() - 1_000)
     const cursorSequence = new Timestamp({t: 20, i: 2})
-    const [
-      lowerSequenceEventId,
-      lowerLegacyEventId,
-      cursorEventId,
-      higherSequenceEventId,
-      higherLegacyEventId,
-    ] = Array.from({length: 5}, () => uuidv7()).sort()
+    const [lowerSequenceEventId, cursorEventId, higherSequenceEventId] = Array.from(
+      {length: 3},
+      () => uuidv7(),
+    ).sort()
     await db.collection('orionjs.pulse.subscriptions').updateOne(
       {consumerGroup, topic},
       {
         $set: {
-          cursorCreatedAt,
-          cursorEventId,
           cursorSequence,
           cursorSequenceEventId: cursorEventId,
           discoveryLockedUntil: new Date(Date.now() + 60_000),
@@ -792,7 +766,6 @@ describe('Pulse persistence', () => {
       eventId: string,
       options: {
         status?: 'success' | 'v2-pending' | 'v2-success' | 'v2-error'
-        eventCreatedAt?: Date
         eventSequence?: Timestamp
         expiresAt?: Date
       } = {},
@@ -801,24 +774,15 @@ describe('Pulse persistence', () => {
       eventId,
       consumerGroup,
       topic,
-      eventCreatedAt: options.eventCreatedAt ?? cursorCreatedAt,
-      ...(options.eventSequence ? {eventSequence: options.eventSequence} : {}),
+      eventCreatedAt: now,
+      eventSequence: options.eventSequence ?? cursorSequence,
       status: options.status ?? ('v2-success' as const),
       createdAt: now,
       updatedAt: now,
       ...(options.expiresAt ? {expiresAt: options.expiresAt} : {}),
     })
-    const deletedEventIds = [uuidv7(), lowerSequenceEventId, uuidv7(), lowerLegacyEventId]
-    const keptEventIds = [
-      higherSequenceEventId,
-      uuidv7(),
-      higherLegacyEventId,
-      uuidv7(),
-      uuidv7(),
-      uuidv7(),
-      uuidv7(),
-      uuidv7(),
-    ]
+    const deletedEventIds = [uuidv7(), lowerSequenceEventId]
+    const keptEventIds = [higherSequenceEventId, uuidv7(), uuidv7(), uuidv7(), uuidv7(), uuidv7()]
     await db.collection<any>('orionjs.pulse.deliveries').insertMany([
       delivery(deletedEventIds[0], {
         eventSequence: new Timestamp({t: 20, i: 1}),
@@ -830,32 +794,17 @@ describe('Pulse persistence', () => {
         eventSequence: new Timestamp({t: 20, i: 3}),
         expiresAt: retainedUntil,
       }),
-      delivery(deletedEventIds[2], {
-        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
-        expiresAt: retainedUntil,
-      }),
-      delivery(deletedEventIds[3], {expiresAt: retainedUntil}),
-      delivery(keptEventIds[2], {expiresAt: retainedUntil}),
+      delivery(keptEventIds[2]),
       delivery(keptEventIds[3], {
-        eventCreatedAt: new Date(cursorCreatedAt.getTime() + 1),
+        status: 'v2-pending',
         expiresAt: retainedUntil,
       }),
       delivery(keptEventIds[4], {
-        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
+        status: 'v2-error',
+        expiresAt: retainedUntil,
       }),
       delivery(keptEventIds[5], {
-        status: 'v2-pending',
-        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
-        expiresAt: retainedUntil,
-      }),
-      delivery(keptEventIds[6], {
-        status: 'v2-error',
-        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
-        expiresAt: retainedUntil,
-      }),
-      delivery(keptEventIds[7], {
         status: 'success',
-        eventCreatedAt: new Date(cursorCreatedAt.getTime() - 1),
         expiresAt: retainedUntil,
       }),
     ])
@@ -873,7 +822,7 @@ describe('Pulse persistence', () => {
       return originalDeliveryDeleteMany.apply(runtime.collections.deliveries, args)
     }
     try {
-      expect(await runtime.cleanupSuccessfulDeliveries([topic])).toBe(4)
+      expect(await runtime.cleanupSuccessfulDeliveries([topic])).toBe(2)
     } finally {
       runtime.collections.deliveries.find = originalDeliveryFind
       runtime.collections.deliveries.deleteMany = originalDeliveryDeleteMany
@@ -882,14 +831,13 @@ describe('Pulse persistence', () => {
     expect(cleanupFilter.topic).toBe(topic)
     expect(cleanupFilter.$or.every((branch: Document) => branch.topic === undefined)).toBe(true)
     expect(Object.keys(cleanupDeleteFilter ?? {})).toEqual(['_id'])
-    expect(cleanupDeleteFilter?._id.$in).toHaveLength(4)
+    expect(cleanupDeleteFilter?._id.$in).toHaveLength(2)
     const cleanupExplain = await db
       .collection('orionjs.pulse.deliveries')
       .find(cleanupFilter)
       .limit(1_000)
       .explain('executionStats')
     const cleanupPlan = JSON.stringify(cleanupExplain.queryPlanner.winningPlan)
-    expect(cleanupPlan).toContain('pulse_deliveries_acquisition')
     expect(cleanupPlan).toContain('pulse_deliveries_sequence_acquisition')
     expect(cleanupPlan).not.toContain('COLLSCAN')
 
@@ -924,18 +872,18 @@ describe('Pulse persistence', () => {
     await Promise.all(runtimes.map(runtime => runtime.coordinatorPromise))
 
     const db = await rawDatabase(databaseName)
-    const cursorCreatedAt = new Date()
+    const cursorSequence = new Timestamp({t: 30, i: 2})
     await db.collection('orionjs.pulse.subscriptions').updateOne(
       {consumerGroup, topic},
       {
         $set: {
-          cursorCreatedAt,
-          cursorEventId: '',
+          cursorSequence,
+          cursorSequenceEventId: uuidv7(),
           discoveryLockedUntil: new Date(Date.now() + 60_000),
         },
       },
     )
-    const createdAt = new Date(cursorCreatedAt.getTime() - 1)
+    const createdAt = new Date()
     await db.collection<any>('orionjs.pulse.deliveries').insertMany(
       Array.from({length: 1_005}, () => ({
         _id: uuidv7(),
@@ -943,6 +891,7 @@ describe('Pulse persistence', () => {
         consumerGroup,
         topic,
         eventCreatedAt: createdAt,
+        eventSequence: new Timestamp({t: 30, i: 1}),
         status: 'v2-success',
         createdAt,
         updatedAt: createdAt,
@@ -2302,12 +2251,14 @@ describe('Pulse delivery semantics', () => {
         topic: firstTopic,
         data: {index},
         createdAt: new Date(createdAt.getTime() + index),
+        sequence: new Timestamp({t: 40, i: index + 1}),
       })),
       {
         _id: uuidv7(),
         topic: lastTopic,
         data: {index: 0},
         createdAt,
+        sequence: new Timestamp({t: 41, i: 1}),
       },
     ])
 
@@ -2363,34 +2314,25 @@ describe('Pulse delivery semantics', () => {
     expect(events.every(event => received.has(event.id))).toBe(true)
   })
 
-  it('drains mixed legacy and sequenced backlogs larger than the aggregate batch', async () => {
-    const databaseName = uniqueName('mixed_discovery_backlog')
-    const consumerGroup = 'mixed-discovery-backlog-group'
-    const topic = 'mixed-discovery.topic'
+  it('drains a sequenced backlog larger than the aggregate batch', async () => {
+    const databaseName = uniqueName('sequenced_discovery_backlog')
+    const consumerGroup = 'sequenced-discovery-backlog-group'
+    const topic = 'sequenced-discovery.topic'
     const pulse = createPulse(databaseName, consumerGroup, {workerCount: 8})
     await pulse.awaitConnection()
     const sequenced = await Promise.all(
-      Array.from({length: 130}, (_, index) =>
+      Array.from({length: 260}, (_, index) =>
         pulse.publish({topic, data: {kind: 'sequenced', index}}),
       ),
     )
-    const db = await rawDatabase(databaseName)
-    const legacy = Array.from({length: 130}, (_, index) => ({
-      _id: uuidv7(),
-      topic,
-      data: {kind: 'legacy', index},
-      createdAt: new Date(Date.now() + index),
-    }))
-    await db.collection<any>('orionjs.pulse.events').insertMany(legacy)
 
     const received = new Set<string>()
     await pulse.subscribe(topic, async event => void received.add(event.id), {
       offsetReset: 'earliest',
       maxConcurrency: 8,
     })
-    await waitFor(() => received.size === sequenced.length + legacy.length, {timeoutMs: 20_000})
+    await waitFor(() => received.size === sequenced.length, {timeoutMs: 20_000})
     expect(sequenced.every(event => received.has(event.id))).toBe(true)
-    expect(legacy.every(event => received.has(event._id))).toBe(true)
   })
 
   it('fences a discovery reader that loses its lease while a batch query is in flight', async () => {
@@ -2762,111 +2704,5 @@ describe('Pulse delivery semantics', () => {
 
     await waitFor(() => received.includes('skewed'))
     expect(received).toEqual(['baseline', 'skewed'])
-  })
-
-  it('keeps the legacy cursor independent during a rolling publisher upgrade', async () => {
-    const databaseName = uniqueName('legacy_rolling_upgrade')
-    const consumerGroup = 'legacy-rolling-upgrade-group'
-    const topic = 'legacy-rolling-upgrade.topic'
-    const pulse = createPulse(databaseName, consumerGroup)
-    await pulse.awaitConnection()
-    const db = await rawDatabase(databaseName)
-    const received: string[] = []
-
-    await pulse.subscribe(
-      topic,
-      async event => {
-        received.push((event.data as {label: string}).label)
-      },
-      {offsetReset: 'latest'},
-    )
-    const initialSubscription = await db.collection('orionjs.pulse.subscriptions').findOne({
-      consumerGroup,
-      topic,
-    })
-    if (!initialSubscription?.cursorCreatedAt) {
-      throw new Error('Latest subscription did not persist its legacy cursor.')
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 30))
-    await pulse.publish({topic, data: {label: 'sequenced'}})
-    await waitFor(() => received.includes('sequenced'))
-
-    const legacyEventId = uuidv7()
-    await db.collection('orionjs.pulse.events').insertOne({
-      _id: legacyEventId,
-      topic,
-      data: {label: 'legacy'},
-      createdAt: new Date(initialSubscription.cursorCreatedAt.getTime() + 1),
-    })
-
-    await waitFor(() => received.includes('legacy'))
-    expect(received).toEqual(['sequenced', 'legacy'])
-  })
-
-  it('migrates a pre-sequence subscription without re-executing retained deliveries', async () => {
-    const databaseName = uniqueName('pre_sequence_subscription')
-    const consumerGroup = 'pre-sequence-subscription-group'
-    const topic = 'pre-sequence-subscription.topic'
-    const pulse = createPulse(databaseName, consumerGroup)
-    await pulse.awaitConnection()
-    const db = await rawDatabase(databaseName)
-    const cursorCreatedAt = new Date()
-    const oldEvent = {
-      _id: uuidv7(),
-      topic,
-      data: {kind: 'already-processed'},
-      createdAt: new Date(cursorCreatedAt.getTime() - 1_000),
-      sequence: new Timestamp({t: 20, i: 1}),
-    }
-    const newEvent = {
-      _id: uuidv7(),
-      topic,
-      data: {kind: 'new'},
-      createdAt: new Date(cursorCreatedAt.getTime() + 1_000),
-      sequence: new Timestamp({t: 20, i: 2}),
-    }
-    await db.collection<any>('orionjs.pulse.events').insertMany([oldEvent, newEvent])
-    const now = new Date()
-    await db.collection<any>('orionjs.pulse.subscriptions').insertOne({
-      _id: uuidv7(),
-      consumerGroup,
-      topic,
-      offsetReset: 'latest',
-      delivery: 'at-least-once',
-      maxRetries: 3,
-      retryDelayMs: 1_000,
-      retryBackoffMultiplier: 2,
-      createdAt: now,
-      updatedAt: now,
-      cursorCreatedAt,
-      cursorEventId: '',
-    })
-    await db.collection<any>('orionjs.pulse.deliveries').insertOne({
-      _id: uuidv7(),
-      eventId: oldEvent._id,
-      consumerGroup,
-      topic,
-      eventCreatedAt: oldEvent.createdAt,
-      eventSequence: oldEvent.sequence,
-      status: 'success',
-      createdAt: now,
-      updatedAt: now,
-      endedAt: now,
-      finalAttempt: 1,
-    })
-
-    const received: string[] = []
-    await pulse.subscribe(topic, async event => void received.push(event.id), {
-      offsetReset: 'latest',
-    })
-    await waitFor(() => received.includes(newEvent._id))
-    await new Promise(resolve => setTimeout(resolve, 150))
-    expect(received).toEqual([newEvent._id])
-    const migrated = await db.collection('orionjs.pulse.subscriptions').findOne({
-      consumerGroup,
-      topic,
-    })
-    expect(migrated?.cursorSequenceEventId).toBe(newEvent._id)
   })
 })
