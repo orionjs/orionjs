@@ -3,6 +3,7 @@ import {generateId, sleep} from '@orion-js/helpers'
 import {getInstance} from '@orion-js/services'
 import {defineJob, scheduleJob, startWorkers} from '.'
 import {JobsRepo} from './repos/JobsRepo'
+import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS} from './types/StartConfig'
 import {JobToRun} from './types/Worker'
 
 describe('Max tries functionality', () => {
@@ -43,6 +44,7 @@ describe('Max tries functionality', () => {
       pollInterval: 10,
       cooldownPeriod: 10,
       maxTries: 3,
+      maxTriesReachedRetentionMs: 60_000,
       onMaxTriesReached: async (jobToRun: JobToRun) => {
         maxTriesReachedCallback(jobToRun)
       },
@@ -66,6 +68,8 @@ describe('Max tries functionality', () => {
     const jobRecord = await jobsRepo.jobs.findOne({jobName})
     expect(jobRecord).toBeDefined()
     expect(jobRecord.status).toBe('maxTriesReached')
+    expect(jobRecord.maxTriesReachedAt).toBeInstanceOf(Date)
+    expect(jobRecord.expiresAt).toEqual(new Date(jobRecord.maxTriesReachedAt.getTime() + 60_000))
   })
 
   it('should use job-specific maxTries when defined', async () => {
@@ -489,6 +493,66 @@ describe('JobsRepo maxTriesReached filtering', () => {
     const job = await jobsRepo.jobs.findOne(jobId)
     expect(job.status).toBe('maxTriesReached')
     expect(job.lockedUntil).toBeUndefined()
+    expect(job.maxTriesReachedAt).toBeInstanceOf(Date)
+    expect(job.expiresAt).toEqual(
+      new Date(job.maxTriesReachedAt.getTime() + DEFAULT_MAX_TRIES_REACHED_RETENTION_MS),
+    )
+  })
+
+  it('should ensure the TTL index and apply retention to existing maxTriesReached jobs', async () => {
+    const jobId = generateId()
+    const lastRunAt = new Date(Date.now() + 60_000)
+    await jobsRepo.jobs.insertOne({
+      _id: jobId,
+      jobName: 'legacy-max-tries-job',
+      type: 'event',
+      priority: 100,
+      nextRunAt: new Date(),
+      lastRunAt,
+      status: 'maxTriesReached',
+    })
+
+    await jobsRepo.ensureMaxTriesReachedRetention(10_000)
+
+    const indexes = await jobsRepo.jobs.rawCollection.indexes()
+    expect(indexes).toContainEqual(
+      expect.objectContaining({
+        name: 'jobs_dogs_records_expires_at_ttl',
+        key: {expiresAt: 1},
+        expireAfterSeconds: 0,
+      }),
+    )
+
+    const backfilledJob = await jobsRepo.jobs.findOne(jobId)
+    expect(backfilledJob.maxTriesReachedAt).toEqual(lastRunAt)
+    expect(backfilledJob.expiresAt).toEqual(new Date(lastRunAt.getTime() + 10_000))
+
+    await jobsRepo.ensureMaxTriesReachedRetention(20_000)
+
+    const updatedJob = await jobsRepo.jobs.findOne(jobId)
+    expect(updatedJob.maxTriesReachedAt).toEqual(lastRunAt)
+    expect(updatedJob.expiresAt).toEqual(new Date(lastRunAt.getTime() + 20_000))
+  })
+
+  it('should keep maxTriesReached jobs indefinitely when retention is null', async () => {
+    const jobId = generateId()
+    const maxTriesReachedAt = new Date()
+    await jobsRepo.jobs.insertOne({
+      _id: jobId,
+      jobName: 'permanent-max-tries-job',
+      type: 'event',
+      priority: 100,
+      nextRunAt: new Date(),
+      status: 'maxTriesReached',
+      maxTriesReachedAt,
+      expiresAt: new Date(Date.now() + 60_000),
+    })
+
+    await jobsRepo.ensureMaxTriesReachedRetention(null)
+
+    const job = await jobsRepo.jobs.findOne(jobId)
+    expect(job.maxTriesReachedAt).toEqual(maxTriesReachedAt)
+    expect(job.expiresAt).toBeUndefined()
   })
 
   it('should not mark a recurrent job as maxTriesReached', async () => {

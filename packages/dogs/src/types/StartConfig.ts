@@ -3,6 +3,8 @@ import {JobToRun} from './Worker'
 
 export type LogLevels = 'debug' | 'info' | 'warn' | 'error' | 'none'
 
+export const DEFAULT_MAX_TRIES_REACHED_RETENTION_MS = 1000 * 60 * 60 * 24 * 7
+
 export interface StartWorkersConfig {
   /**
    * Object map of the jobs that this workers will execute
@@ -14,9 +16,15 @@ export interface StartWorkersConfig {
    */
   maxTries?: number
   /**
+   * Time in milliseconds to keep event jobs after they reach their maximum tries.
+   * Defaults to one week. Set to null to keep them indefinitely.
+   */
+  maxTriesReachedRetentionMs?: number | null
+  /**
    * Callback invoked when an event job reaches its maximum tries limit.
    * Use this to notify administrators (e.g., send an email alert).
-   * The job will remain in the database with status 'maxTriesReached'.
+   * The job will remain in the database with status 'maxTriesReached' until its
+   * configured retention period expires.
    */
   onMaxTriesReached?: (job: JobToRun) => Promise<void>
   /**

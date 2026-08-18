@@ -23,6 +23,15 @@ export const JobRecordSchema = schemaWithName('JobRecord', {
    * Records without this field are treated as 'pending'.
    */
   status: {type: JobStatusEnum, optional: true},
+  /**
+   * Date when the job reached its maximum tries. Used as the stable anchor when
+   * maxTriesReachedRetentionMs changes between worker restarts.
+   */
+  maxTriesReachedAt: {type: 'date', optional: true},
+  /**
+   * Date when MongoDB should remove a terminal event job through the TTL index.
+   */
+  expiresAt: {type: 'date', optional: true},
 })
 
 export type JobRecord = InferSchemaType<typeof JobRecordSchema>

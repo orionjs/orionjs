@@ -3,7 +3,7 @@ import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
-import {StartWorkersConfig} from '../types/StartConfig'
+import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS, StartWorkersConfig} from '../types/StartConfig'
 import {JobToRun, WorkerInstance, WorkersInstance} from '../types/Worker'
 import {ExecuteJobConfig, Executor} from './Executor'
 
@@ -129,6 +129,7 @@ export class WorkerService {
     const executeConfig: ExecuteJobConfig = {
       jobs: config.jobs,
       maxTries: config.maxTries,
+      maxTriesReachedRetentionMs: config.maxTriesReachedRetentionMs,
       onMaxTriesReached: config.onMaxTriesReached,
     }
 
@@ -217,6 +218,11 @@ export class WorkerService {
   }
 
   async runWorkers(config: StartWorkersConfig, workersInstance: WorkersInstance) {
+    logger.debug('Will ensure maxTriesReached retention and TTL index')
+    const ensureRetentionPromise = this.jobsRepo
+      .ensureMaxTriesReachedRetention(config.maxTriesReachedRetentionMs)
+      .catch(error => logger.error('Error ensuring maxTriesReached retention', {error}))
+
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
 
@@ -227,6 +233,8 @@ export class WorkerService {
     for (let workerIndex = 0; workerIndex < workersCount; workerIndex++) {
       this.startANewWorker(config, workersInstance, workerIndex)
     }
+
+    await ensureRetentionPromise
   }
 
   /**
@@ -234,6 +242,18 @@ export class WorkerService {
    * @param userConfig - Configuration for the workers. Required field: jobs
    */
   startWorkers(userConfig: StartWorkersConfig): WorkersInstance {
+    const maxTriesReachedRetentionMs =
+      userConfig.maxTriesReachedRetentionMs === undefined
+        ? DEFAULT_MAX_TRIES_REACHED_RETENTION_MS
+        : userConfig.maxTriesReachedRetentionMs
+
+    if (
+      maxTriesReachedRetentionMs !== null &&
+      (!Number.isFinite(maxTriesReachedRetentionMs) || maxTriesReachedRetentionMs < 0)
+    ) {
+      throw new Error('maxTriesReachedRetentionMs must be null, zero, or a positive number')
+    }
+
     // Apply defaults for optional fields
     const config: StartWorkersConfig = {
       cooldownPeriod: 100,
@@ -241,6 +261,7 @@ export class WorkerService {
       workersCount: 4,
       defaultLockTime: 30 * 1000,
       ...userConfig,
+      maxTriesReachedRetentionMs,
     }
 
     setNameToJobs(config.jobs)

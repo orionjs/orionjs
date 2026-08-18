@@ -107,6 +107,7 @@
       {
         "tab": "Blog",
         "pages": [
+          "blog/dogs-max-tries-retention",
           "blog/pulse-delivery-resident-execution",
           "blog/orionjs-4-5-migration",
           "blog/typescript-7",

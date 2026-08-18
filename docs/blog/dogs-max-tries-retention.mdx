@@ -1,0 +1,88 @@
+---
+title: 'Expire event jobs after max tries'
+description: 'Configure how long Dogs retains maxTriesReached jobs and let MongoDB remove them automatically'
+---
+
+Event jobs that exhaust their retries are marked as `maxTriesReached`. Dogs keeps the record so
+you can inspect its name, parameters, tries, and identifiers, but those terminal records no longer
+need to remain in MongoDB forever.
+
+Dogs now retains them for one week by default and removes them through a MongoDB TTL index.
+
+## Configure the retention period
+
+Set `maxTriesReachedRetentionMs` when starting the workers. The value is expressed in
+milliseconds and applies only to event jobs that reach `maxTries`:
+
+```typescript
+import {startWorkers} from '@orion-js/dogs'
+
+const oneWeek = 7 * 24 * 60 * 60 * 1000
+
+const workers = startWorkers({
+  jobs,
+  maxTries: 5,
+  maxTriesReachedRetentionMs: oneWeek,
+  onMaxTriesReached: async job => {
+    logger.error('Job reached max tries', {
+      jobName: job.name,
+      jobId: job.jobId,
+      tries: job.tries,
+    })
+  },
+})
+```
+
+The option defaults to one week, so it can be omitted when that retention period is appropriate:
+
+```typescript
+startWorkers({
+  jobs,
+  maxTries: 5,
+})
+```
+
+Use any non-negative duration. For example, keep terminal jobs for 30 days:
+
+```typescript
+startWorkers({
+  jobs,
+  maxTriesReachedRetentionMs: 30 * 24 * 60 * 60 * 1000,
+})
+```
+
+Set the option to `null` when the records must be retained indefinitely:
+
+```typescript
+startWorkers({
+  jobs,
+  maxTriesReachedRetentionMs: null,
+})
+```
+
+## How expiration works
+
+When an event job reaches its maximum tries, Dogs stores two dates on the job record:
+
+- `maxTriesReachedAt` records when the job became terminal.
+- `expiresAt` records when the job becomes eligible for deletion.
+
+The `orionjs.jobs_dogs_records` collection has a TTL index on `expiresAt` with
+`expireAfterSeconds: 0`. Only records with an `expiresAt` date can expire, so pending and recurrent
+jobs are unaffected.
+
+MongoDB's TTL monitor removes eligible records asynchronously. A record can therefore remain for
+a short time after its exact `expiresAt` value.
+
+## Existing maxTriesReached records
+
+Every `startWorkers()` call applies the configured retention to existing terminal event jobs.
+Records created before this feature use `lastRunAt` as their retention anchor when available, or
+the migration time otherwise.
+
+Changing `maxTriesReachedRetentionMs` also recalculates `expiresAt` from the stable
+`maxTriesReachedAt` value. The TTL index itself does not need to be rebuilt when the duration
+changes.
+
+See the [Jobs guide](/overview/controllers/jobs) for retry handling, per-job `maxTries`, and worker
+configuration.

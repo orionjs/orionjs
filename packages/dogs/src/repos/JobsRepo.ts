@@ -4,6 +4,7 @@ import {Collection, MongoCollection, MongoDB, Repository} from '@orion-js/mongod
 import {ScheduleJobRecordOptions, ScheduleJobsResult} from '../types/Events'
 import {JobRecord, JobRecordSchema} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
+import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS} from '../types/StartConfig'
 import {JobToRun} from '../types/Worker'
 
 @Repository()
@@ -37,6 +38,13 @@ export class JobsRepo {
           unique: true,
           sparse: true,
         },
+      },
+      {
+        keys: {
+          expiresAt: 1,
+        },
+        name: 'jobs_dogs_records_expires_at_ttl',
+        expireAfterSeconds: 0,
       },
     ],
   })
@@ -122,16 +130,61 @@ export class JobsRepo {
 
   /**
    * Marks an event job as having reached its maximum tries limit.
-   * The job will remain in the database but won't be picked up for execution.
+   * The job won't be picked up for execution and MongoDB will delete it after
+   * the configured retention period.
    */
-  async markJobAsMaxTriesReached(jobId: string) {
+  async markJobAsMaxTriesReached(
+    jobId: string,
+    retentionMs: number | null = DEFAULT_MAX_TRIES_REACHED_RETENTION_MS,
+  ) {
+    const maxTriesReachedAt = new Date()
     await this.jobs.updateOne(
       {_id: jobId, type: 'event'},
       {
-        $set: {status: 'maxTriesReached'},
-        $unset: {lockedUntil: ''},
+        $set: {
+          status: 'maxTriesReached',
+          maxTriesReachedAt,
+          ...(retentionMs === null
+            ? {}
+            : {expiresAt: new Date(maxTriesReachedAt.getTime() + retentionMs)}),
+        },
+        $unset: {
+          lockedUntil: '',
+          ...(retentionMs === null ? {expiresAt: ''} : {}),
+        },
       },
     )
+  }
+
+  /**
+   * Applies the current retention configuration to existing maxTriesReached
+   * event jobs. The collection definition ensures the TTL index. Legacy records
+   * use lastRunAt as their retention anchor when available.
+   */
+  async ensureMaxTriesReachedRetention(retentionMs: number | null) {
+    const selector = {
+      type: 'event' as const,
+      status: 'maxTriesReached' as const,
+    }
+
+    if (retentionMs === null) {
+      await this.jobs.updateMany(selector, {$unset: {expiresAt: ''}})
+      return
+    }
+
+    const now = new Date()
+    const retentionAnchor = {
+      $ifNull: ['$maxTriesReachedAt', {$ifNull: ['$lastRunAt', now]}],
+    }
+
+    await this.jobs.rawCollection.updateMany(selector, [
+      {
+        $set: {
+          maxTriesReachedAt: retentionAnchor,
+          expiresAt: {$add: [retentionAnchor, retentionMs]},
+        },
+      },
+    ])
   }
 
   async extendLockTime(jobId: string, extraTime: number) {

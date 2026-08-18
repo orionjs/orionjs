@@ -14,6 +14,7 @@ import {getNextRunDate} from './getNextRunDate'
 export interface ExecuteJobConfig {
   jobs: JobsDefinition
   maxTries?: number
+  maxTriesReachedRetentionMs?: number | null
   onMaxTriesReached?: (job: JobToRun) => Promise<void>
 }
 
@@ -82,6 +83,7 @@ export class Executor {
    */
   async handleMaxTriesReached(
     jobToRun: JobToRun,
+    retentionMs?: number | null,
     onMaxTriesReached?: (job: JobToRun) => Promise<void>,
   ) {
     const jobLogger = logger.addMetadata({
@@ -92,7 +94,7 @@ export class Executor {
     jobLogger.warn(
       `Job "${jobToRun.name}" has exceeded max tries (${jobToRun.tries}). Marking as maxTriesReached.`,
     )
-    await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId)
+    await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId, retentionMs)
 
     if (!onMaxTriesReached) return
 
@@ -209,7 +211,11 @@ export class Executor {
     if (job.type === 'event') {
       const effectiveMaxTries = this.getEffectiveMaxTries(job, config.maxTries)
       if (typeof effectiveMaxTries === 'number' && jobToRun.tries > effectiveMaxTries) {
-        await this.handleMaxTriesReached(jobToRun, config.onMaxTriesReached)
+        await this.handleMaxTriesReached(
+          jobToRun,
+          config.maxTriesReachedRetentionMs,
+          config.onMaxTriesReached,
+        )
         return
       }
     }

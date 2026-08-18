@@ -215,6 +215,7 @@ const workersInstance = startWorkers({
   cooldownPeriod: 100, // Milliseconds to wait after job execution (default: 100)
   defaultLockTime: 30000, // Default lock time in milliseconds (default: 30000 = 30 seconds)
   maxTries: 10, // Optional. Applies only to event jobs
+  maxTriesReachedRetentionMs: 7 * 24 * 60 * 60 * 1000, // Default: 1 week. Use null to keep forever
   onMaxTriesReached: async (job) => {
     logger.error('Job reached max tries', {jobName: job.name, jobId: job.jobId})
   }
@@ -226,6 +227,11 @@ process.on('SIGTERM', async () => {
   process.exit(0)
 })
 ```
+
+`maxTriesReachedRetentionMs` controls how long terminal event-job records remain in MongoDB.
+It defaults to one week; set it to `null` to retain them indefinitely. Dogs stores an
+`expiresAt` date, ensures a TTL index for that field, and applies the configured retention to
+existing `maxTriesReached` records whenever workers start.
 
 Use `maxParallelExecutionsPerServer` when a job is safe to queue but should not run too many times concurrently on the same server, for example:
 
