@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.5.1
+
+### Patch Changes
+
+- Expire `maxTriesReached` event jobs through a configurable MongoDB TTL, defaulting to one week.
+
 ## 4.5.0
 
 ### Minor Changes
