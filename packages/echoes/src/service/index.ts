@@ -1,6 +1,6 @@
-import {createEchoEvent, createEchoRequest} from '../echo'
+import {createEchoBatchEvent, createEchoEvent, createEchoRequest} from '../echo'
 import {getEchoesRuntime, runWithEchoesContext} from '../runtime'
-import {EchoConfig, type EchoEventConfig, EchoesMap} from '../types'
+import {type EchoBatchEventConfig, EchoConfig, type EchoEventConfig, EchoesMap} from '../types'
 
 export interface EchoesPropertyDescriptor extends Omit<PropertyDecorator, 'value'> {
   value?: EchoConfig<any, any>['resolve']
@@ -60,6 +60,32 @@ export function EchoEvent(options = {}) {
       pendingEchoEntries[propertyKey] = (instance: any) => instance[propertyKey]
     }
 
+    return method
+  }
+}
+
+export function EchoBatchEvent(
+  options: Omit<EchoBatchEventConfig<any>, 'resolveBatch'>,
+): (method: any, context: ClassMethodDecoratorContext) => any
+export function EchoBatchEvent(options: Omit<EchoBatchEventConfig<any>, 'resolveBatch'>) {
+  return (method: any, context: ClassMethodDecoratorContext) => {
+    const propertyKey = String(context.name)
+    pendingEchoEntries[propertyKey] = (instance: any) => {
+      const originalResolveBatch = instance[propertyKey].bind(instance)
+      return createEchoBatchEvent({
+        ...options,
+        resolveBatch: async events => {
+          return await runWithEchoesContext(
+            {
+              controllerType: 'echo',
+              echoName: propertyKey,
+              params: events.map(event => event.params),
+            },
+            async () => await originalResolveBatch(events),
+          )
+        },
+      })
+    }
     return method
   }
 }

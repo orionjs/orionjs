@@ -149,7 +149,46 @@ Using the same version with different settings fails fast. Existing callbacks fi
 new work converges on the winning configuration.
 
 Pulse listeners keep queue state, leases, retries, and completed attempts atomically on their
-delivery documents. `events.pulse.subscription.maxConcurrency` controls local per-topic concurrency.
+delivery documents. Configure `maxConcurrency` on an event to override
+`events.pulse.subscription.maxConcurrency` for that receiver.
+
+### Batch event handlers with Pulse
+
+Use `@EchoBatchEvent()` when one receiver invocation should process multiple events together:
+
+```typescript
+@Echoes()
+export class InvoiceEventsEchoes {
+  @EchoBatchEvent({
+    configVersion: 2,
+    batchSize: 100,
+    maxConcurrency: 2,
+  })
+  async invoiceCreated(events) {
+    await invoices.insertMany(
+      events.map(({params, context}) => ({
+        eventId: context.eventId,
+        ...params,
+      })),
+    )
+  }
+}
+```
+
+Each array element contains its cleaned `params` and individual `context`, including `eventId`,
+headers, creation time, and attempt number. `batchSize` is a maximum; Pulse immediately invokes the
+handler with whatever is available and never waits to fill the array. One `resolveBatch` invocation
+consumes one worker and one `maxConcurrency` slot.
+
+The complete array is one retry and acknowledgement unit. If the handler throws, Pulse retries the
+whole delivery, so bulk side effects should use each `context.eventId` as an idempotency key. Batch
+event receivers are Pulse-only and require a transaction-capable MongoDB deployment. Kafka
+consumption fails at startup when a batch receiver is configured.
+
+For a hot rollout, first deploy the new handler and packages with `batchSize: 1`. After every replica
+understands batch deliveries, increase `configVersion` and set the intended size. Processes using a
+normal handler can consume a multi-event delivery sequentially, while batch handlers naturally
+receive an older one-event delivery as an array of length one.
 
 ## Making Requests
 

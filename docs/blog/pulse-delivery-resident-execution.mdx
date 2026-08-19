@@ -43,8 +43,7 @@ Pulse no longer creates attempt documents in a second collection, acquires a top
 lease, or reconciles partial writes between deliveries and attempts. Crash recovery only needs an
 indexed bounded scan for expired delivery locks.
 
-The public `pulse.history.find()` API remains available. It projects the current attempt and the
-latest ten completed outcomes stored on each delivery.
+Pulse retains the latest ten completed outcomes on each delivery for direct operational inspection.
 
 ## Concurrency
 

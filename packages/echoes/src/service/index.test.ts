@@ -1,6 +1,6 @@
 import {createEchoEvent, createEchoRequest} from '../echo'
 import {typedEchoesSchema} from '../schema'
-import {EchoEvent, Echoes, EchoRequest, getServiceEchoes} from '.'
+import {EchoBatchEvent, EchoEvent, Echoes, EchoRequest, getServiceEchoes} from '.'
 
 describe('Echoes with service injections', () => {
   it('Should define a echoes map using services', async () => {
@@ -15,6 +15,11 @@ describe('Echoes with service injections', () => {
       async echoEvent() {
         return 2
       }
+
+      @EchoBatchEvent({configVersion: 3, batchSize: 100, maxConcurrency: 2})
+      async echoBatch(events: Array<{params: unknown}>) {
+        return events.length
+      }
     }
 
     const echoes = getServiceEchoes(ExampleEchoesService)
@@ -25,6 +30,14 @@ describe('Echoes with service injections', () => {
     expect('ordered' in echoes.echoEvent).toBe(false)
     expect(echoes.echoEvent.configVersion).toBe(2)
     expect(typeof echoes.echoEvent.resolve).toBe('function')
+    expect(echoes.echoBatch).toMatchObject({
+      type: 'event',
+      receiverMode: 'batch',
+      batchSize: 100,
+      maxConcurrency: 2,
+      configVersion: 3,
+    })
+    expect(typeof echoes.echoBatch.resolveBatch).toBe('function')
   })
 
   it('should be able to define echoes using the v4 syntax', async () => {

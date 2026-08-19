@@ -48,7 +48,17 @@ export default class EventBus {
         topic,
         attemptsBeforeDeadLetter: echo.attemptsBeforeDeadLetter,
         configVersion: echo.configVersion,
+        maxConcurrency: echo.maxConcurrency,
+        receiverMode: echo.receiverMode ?? 'single',
+        batchSize: echo.batchSize ?? 1,
       }))
+
+    if (
+      this.consumeFrom.includes('kafka') &&
+      subscriptions.some(subscription => subscription.receiverMode === 'batch')
+    ) {
+      throw new Error('Echoes batch event receivers are supported only by the Pulse transport.')
+    }
 
     try {
       for (const name of selected) {
@@ -59,6 +69,7 @@ export default class EventBus {
           publish: this.publishTo === name,
           subscriptions,
           onEvent: event => this.handleEvent(event),
+          onEvents: events => this.handleEvents(events),
         })
       }
       this.started = true
@@ -114,5 +125,15 @@ export default class EventBus {
       attempt: event.attempt,
       data: event.data,
     })
+  }
+
+  private async handleEvents(events: EchoesReceivedEvent[]) {
+    if (events.length === 0) return
+    const echo = this.echoes[events[0].topic]
+    if (echo?.type === 'event' && echo.onEvents) {
+      await echo.onEvents(events)
+      return
+    }
+    for (const event of events) await this.handleEvent(event)
   }
 }

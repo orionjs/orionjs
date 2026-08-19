@@ -41,6 +41,39 @@ The handler receives:
 A Pulse instance can have one local handler per topic. Create separate Pulse instances if one
 process intentionally needs two independent consumer groups.
 
+## Batch receivers
+
+Use `subscribeBatch()` when one handler invocation should receive an ordered array:
+
+```typescript
+await pulse.subscribeBatch(
+  'invoice.created',
+  async events => {
+    await invoices.insertMany(
+      events.map(event => ({
+        eventId: event.id,
+        ...event.data,
+      })),
+    )
+  },
+  {
+    configVersion: 2,
+    batchSize: 100,
+    maxConcurrency: 2,
+  },
+)
+```
+
+`batchSize` is a required positive integer and a maximum, not a minimum. Pulse never waits to fill
+a batch. If 23 events are available, it creates and executes that partial batch immediately. Events
+inside the array retain publication order. Different batch handlers may run concurrently and finish
+in any order.
+
+One batch delivery is the retry, fencing, heartbeat, and acknowledgement unit. If the handler
+throws, the whole batch is retried and may repeat side effects. Use each element's `event.id` as its
+idempotency key. Batch receivers require a transaction-capable MongoDB deployment such as a replica
+set, sharded cluster, or Atlas.
+
 ## Consumer groups and replicas
 
 All replicas of one service use the same `consumerGroup` and persisted subscription settings:
@@ -59,8 +92,8 @@ await pulse.subscribe('order.created', handleOrder, {
 })
 ```
 
-The unique delivery key is `consumerGroup + eventId`. Multiple replicas compete through atomic
-delivery leases, so only one replica owns an attempt at a time.
+Multiple replicas compete through atomic delivery leases, so only one replica owns a delivery
+attempt at a time.
 
 Use another consumer group for an independent responsibility:
 
@@ -100,9 +133,10 @@ await pulse.subscribe('image.requested', resizeImage, {
 })
 ```
 
-`maxConcurrency` limits running handlers for that topic in the current process. Total concurrency
-also depends on `workerCount` and the number of replicas. It is a local execution limit and is not
-part of the durable subscription configuration.
+`maxConcurrency` limits running handler invocations for that topic in the current process. A normal
+`resolve` and an entire `resolveBatch` each consume one worker. Total concurrency also depends on
+`workerCount` and the number of replicas. It is a local execution limit and is not part of the
+durable subscription configuration.
 
 Queue state, retries, the active lease, terminal outcome, and the latest ten completed attempts are
 stored atomically on the delivery document. No separate attempt collection participates in the
@@ -183,6 +217,8 @@ Pulse persists these options for each `consumerGroup + topic`:
 - `maxRetries`
 - `retryDelayMs`
 - `retryBackoffMultiplier`
+- `receiverMode`
+- `batchSize`
 
 `maxConcurrency` remains local to each process.
 

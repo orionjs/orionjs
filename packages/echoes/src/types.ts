@@ -24,10 +24,29 @@ export interface EchoEventConfig<
    * Pulse only. Integer version for persisted subscription settings. Higher versions win.
    */
   configVersion?: number
+  /** Pulse only. Maximum simultaneous resolve invocations for this event. */
+  maxConcurrency?: number
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
   ): Promise<InferEchoesSchema<TReturnsSchema>>
+  attemptsBeforeDeadLetter?: number
+}
+
+export interface EchoBatchItem<TParams = any> {
+  params: TParams
+  context: Record<string, any>
+}
+
+export interface EchoBatchEventConfig<TParamsSchema extends EchoesSchema = any> {
+  params?: TParamsSchema
+  /** Pulse only. Integer version for persisted subscription settings. Higher versions win. */
+  configVersion?: number
+  /** Maximum number of events passed to one resolveBatch invocation. */
+  batchSize: number
+  /** Pulse only. Maximum simultaneous resolveBatch invocations for this event. */
+  maxConcurrency?: number
+  resolveBatch(events: EchoBatchItem<InferEchoesSchema<TParamsSchema>>[]): Promise<void>
   attemptsBeforeDeadLetter?: number
 }
 
@@ -50,12 +69,17 @@ export type EchoType<
   returns?: TReturnsSchema
   attemptsBeforeDeadLetter?: number
   configVersion?: number
+  maxConcurrency?: number
+  receiverMode?: 'single' | 'batch'
+  batchSize?: number
   type: TEchoType
   resolve(
     params?: InferEchoesSchema<TParamsSchema>,
     context?: any,
   ): Promise<InferEchoesSchema<TReturnsSchema>>
   onEvent?(event: EchoesReceivedEvent): Promise<void>
+  resolveBatch?(events: EchoBatchItem<InferEchoesSchema<TParamsSchema>>[]): Promise<void>
+  onEvents?(events: EchoesReceivedEvent[]): Promise<void>
   /**
    * @deprecated Kafka compatibility entrypoint. Event transports use onEvent.
    */

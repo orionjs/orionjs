@@ -9,18 +9,18 @@ import {
 } from 'mongodb'
 import {uuidv7} from 'uuidv7'
 import {PulseConfigurationError, PulseLockLostError} from './errors'
-import {HistoryApi} from './HistoryApi'
 import {createCollectionsAndIndexes, type PulseCollections} from './indexes'
 import type {
   DeliveryAttemptDocument,
   DeliveryDocument,
   EventDocument,
   LocalSubscription,
+  PulseBatchEventHandler,
+  PulseBatchSubscribeOptions,
   PulseConnectOptions,
   PulseEventHandler,
   PulseEventMap,
-  PulseHistoryApi,
-  PulseHistoryError,
+  PulseExecutionError,
   PulsePublishedEvent,
   PulsePublishOptions,
   PulseReceivedEvent,
@@ -91,6 +91,7 @@ interface ConcurrentClaimedExecution {
   local: LocalSubscription
   delivery: DeliveryDocument
   attempt: DeliveryAttemptContext
+  events?: EventDocument[]
 }
 
 type ClaimedExecution = ConcurrentClaimedExecution
@@ -229,6 +230,8 @@ function resolveOptions(options: PulseConnectOptions): ResolvedConnectOptions {
 function resolveSubscribeOptions(
   options: PulseSubscribeOptions,
   workerCount: number,
+  receiverMode: ResolvedSubscribeOptions['receiverMode'] = 'single',
+  batchSize = 1,
 ): ResolvedSubscribeOptions {
   if (!options || typeof options !== 'object') {
     throw new PulseConfigurationError('subscribe options must be an object.')
@@ -241,6 +244,8 @@ function resolveSubscribeOptions(
     retryDelayMs: options.retryDelayMs ?? 1000,
     retryBackoffMultiplier: options.retryBackoffMultiplier ?? 2,
     maxConcurrency: options.maxConcurrency ?? workerCount,
+    receiverMode,
+    batchSize,
   }
 
   assertNonNegativeInteger(resolved.configVersion, 'configVersion')
@@ -250,6 +255,7 @@ function resolveSubscribeOptions(
   assertPositiveNumber(resolved.retryDelayMs, 'retryDelayMs', true)
   assertPositiveNumber(resolved.retryBackoffMultiplier, 'retryBackoffMultiplier')
   assertPositiveInteger(resolved.maxConcurrency, 'maxConcurrency')
+  assertPositiveInteger(resolved.batchSize, 'batchSize')
   if (resolved.delivery === 'at-most-once' && options.maxRetries && options.maxRetries > 0) {
     throw new PulseConfigurationError(
       'maxRetries must be zero or omitted when delivery is "at-most-once".',
@@ -287,7 +293,7 @@ function truncateString(value: string, limit: number) {
   return value.length <= limit ? value : `${value.slice(0, limit - 1)}…`
 }
 
-function serializeError(error: unknown, code = 'handler_error'): PulseHistoryError {
+function serializeError(error: unknown, code = 'handler_error'): PulseExecutionError {
   if (!(error instanceof Error)) {
     return {
       code,
@@ -323,7 +329,7 @@ function serializeError(error: unknown, code = 'handler_error'): PulseHistoryErr
   }
 }
 
-function serializeExecutionError(error: unknown, code = 'handler_error'): PulseHistoryError {
+function serializeExecutionError(error: unknown, code = 'handler_error'): PulseExecutionError {
   const serialized = serializeError(error, code)
   return {
     code: serialized.code,
@@ -341,6 +347,8 @@ function subscriptionConfig(document: SubscriptionDocument) {
     maxRetries: document.maxRetries,
     retryDelayMs: document.retryDelayMs,
     retryBackoffMultiplier: document.retryBackoffMultiplier,
+    receiverMode: document.receiverMode ?? 'single',
+    batchSize: document.batchSize ?? 1,
   }
 }
 
@@ -352,6 +360,8 @@ function configsMatch(document: SubscriptionDocument, options: ResolvedSubscribe
     maxRetries: options.maxRetries,
     retryDelayMs: options.retryDelayMs,
     retryBackoffMultiplier: options.retryBackoffMultiplier,
+    receiverMode: options.receiverMode,
+    batchSize: options.batchSize,
   }
   return JSON.stringify(subscriptionConfig(document)) === JSON.stringify(expected)
 }
@@ -364,6 +374,8 @@ function persistedConfig(options: ResolvedSubscribeOptions) {
     maxRetries: options.maxRetries,
     retryDelayMs: options.retryDelayMs,
     retryBackoffMultiplier: options.retryBackoffMultiplier,
+    receiverMode: options.receiverMode,
+    batchSize: options.batchSize,
   }
 }
 
@@ -390,8 +402,6 @@ function circularBatch<T>(items: T[], offset: number, limit: number) {
 }
 
 export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
-  readonly history: PulseHistoryApi
-
   private readonly options: ResolvedConnectOptions
   private readonly client: MongoClient
   private readonly readyPromise: Promise<void>
@@ -417,6 +427,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private nextDeliveryCleanupAt = Date.now() + DELIVERY_CLEANUP_INTERVAL_MS
   private running = true
   private closePromise?: Promise<void>
+  private transactionSupportPromise?: Promise<void>
 
   constructor(options: PulseConnectOptions) {
     this.options = resolveOptions(options)
@@ -426,10 +437,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       minPoolSize: 0,
       maxIdleTimeMS: this.options.maxIdleTimeMS,
     } satisfies MongoClientOptions)
-    this.history = new HistoryApi(
-      () => this.awaitConnection(),
-      () => this.getCollections(),
-    )
     this.readyPromise = this.initialize()
     void this.readyPromise.catch(error => this.reportError(error))
   }
@@ -487,10 +494,48 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     handler: PulseEventHandler<TTopic, TEvents[TTopic]>,
     userOptions: PulseSubscribeOptions = {},
   ): Promise<PulseSubscription> {
+    return await this.subscribeWithMode(
+      topic,
+      handler as PulseEventHandler<string, unknown>,
+      userOptions,
+      'single',
+      1,
+    )
+  }
+
+  async subscribeBatch<TTopic extends PulseTopic<TEvents>>(
+    topic: TTopic,
+    handler: PulseBatchEventHandler<TTopic, TEvents[TTopic]>,
+    userOptions: PulseBatchSubscribeOptions,
+  ): Promise<PulseSubscription> {
+    if (!userOptions || typeof userOptions !== 'object') {
+      throw new PulseConfigurationError('subscribeBatch options must be an object.')
+    }
+    assertPositiveInteger(userOptions.batchSize, 'batchSize')
+    await this.awaitConnection()
+    await this.assertTransactionsSupported()
+    return await this.subscribeWithMode(
+      topic,
+      handler as PulseBatchEventHandler<string, unknown>,
+      userOptions,
+      'batch',
+      userOptions.batchSize,
+    )
+  }
+
+  private async subscribeWithMode(
+    topic: string,
+    handler: PulseEventHandler<string, unknown> | PulseBatchEventHandler<string, unknown>,
+    userOptions: PulseSubscribeOptions,
+    handlerMode: ResolvedSubscribeOptions['receiverMode'],
+    batchSize: number,
+  ): Promise<PulseSubscription> {
     await this.awaitConnection()
     assertNonEmptyString(topic, 'topic')
     if (typeof handler !== 'function') {
-      throw new PulseConfigurationError('subscribe handler must be a function.')
+      throw new PulseConfigurationError(
+        `${handlerMode === 'batch' ? 'subscribeBatch' : 'subscribe'} handler must be a function.`,
+      )
     }
     if (this.localSubscriptions.has(topic)) {
       throw new PulseConfigurationError(`Pulse is already subscribed to topic "${topic}".`)
@@ -502,7 +547,12 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
 
     const configuredMaxConcurrency = userOptions.maxConcurrency ?? this.options.workerCount
-    const requestedOptions = resolveSubscribeOptions(userOptions, this.options.workerCount)
+    const requestedOptions = resolveSubscribeOptions(
+      userOptions,
+      this.options.workerCount,
+      handlerMode,
+      batchSize,
+    )
     this.subscribingTopics.add(topic)
     try {
       const document = await this.getOrCreateSubscription(topic, requestedOptions)
@@ -510,7 +560,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         document,
         options: optionsFromDocument(document, configuredMaxConcurrency),
         configuredMaxConcurrency,
-        handler: handler as PulseEventHandler<string, unknown>,
+        handlerMode,
+        handler,
         running: 0,
         unsubscribed: false,
       }
@@ -540,6 +591,24 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     } finally {
       this.subscribingTopics.delete(topic)
     }
+  }
+
+  private async assertTransactionsSupported() {
+    if (!this.transactionSupportPromise) {
+      this.transactionSupportPromise = (async () => {
+        const hello = await this.client.db('admin').command({hello: 1})
+        const supported =
+          typeof hello.setName === 'string' ||
+          hello.msg === 'isdbgrid' ||
+          hello.serviceId !== undefined
+        if (!supported) {
+          throw new PulseConfigurationError(
+            'subscribeBatch requires MongoDB transactions (replica set, sharded cluster, or Atlas).',
+          )
+        }
+      })()
+    }
+    return await this.transactionSupportPromise
   }
 
   getSubscriptions(): PulseSubscriptionInfo[] {
@@ -620,12 +689,47 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     let dispatched = false
     const capacity = this.options.workerCount - this.activeExecutions.size
     const executions = capacity > 0 ? await this.claimExecutions(capacity) : []
+    if (executions.length > 0) {
+      try {
+        await this.hydrateExecutions(executions)
+      } catch (error) {
+        await Promise.all(executions.map(execution => this.abandonClaimedExecution(execution)))
+        throw error
+      }
+    }
     for (const execution of executions) {
       if (!this.running) break
       this.startExecution(execution)
       dispatched = true
     }
     return discovery.discovered || reaped > 0 || cleaned > 0 || dispatched
+  }
+
+  private async hydrateExecutions(executions: ClaimedExecution[]) {
+    const eventIds = [
+      ...new Set(
+        executions.flatMap(execution =>
+          execution.delivery.eventIds?.length
+            ? execution.delivery.eventIds
+            : [execution.delivery.eventId],
+        ),
+      ),
+    ]
+    if (eventIds.length === 0) return
+
+    const events = await this.getCollections()
+      .events.find({_id: {$in: eventIds}})
+      .toArray()
+    const byId = new Map(events.map(event => [event._id, event]))
+    for (const execution of executions) {
+      const deliveryEventIds = execution.delivery.eventIds?.length
+        ? execution.delivery.eventIds
+        : [execution.delivery.eventId]
+      execution.events = deliveryEventIds.flatMap(event => {
+        const document = byId.get(event)
+        return document ? [document] : []
+      })
+    }
   }
 
   private async discoverEvents(scanEvents: boolean): Promise<DiscoveryResult> {
@@ -652,7 +756,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
             ],
           }
         : {topic: subscription.topic}
-      branches.push([{$match: match}, {$sort: {sequence: 1, _id: 1}}, {$limit: perTopicLimit}])
+      const limit = local.options.receiverMode === 'batch' ? local.options.batchSize : perTopicLimit
+      branches.push([{$match: match}, {$sort: {sequence: 1, _id: 1}}, {$limit: limit}])
     }
 
     const [firstBranch, ...remainingBranches] = branches
@@ -662,45 +767,87 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
 
     const discoveredEvents = (await events.aggregate(pipeline).toArray()) as EventDocument[]
-    const latestEvents = new Map<string, EventDocument>()
+    const eventsByTopic = new Map<string, EventDocument[]>()
+    for (const event of discoveredEvents) {
+      const topicEvents = eventsByTopic.get(event.topic) ?? []
+      topicEvents.push(event)
+      eventsByTopic.set(event.topic, topicEvents)
+    }
+
     const batchLeaseTokens = new Map(
       locals.map(local => [
         local.document.topic,
         this.discoveryLeases.get(local.document.topic)?.lockToken,
       ]),
     )
-    const invalidTopics = new Set<string>()
+    const batchTopics = new Set(
+      locals
+        .filter(local => local.options.receiverMode === 'batch')
+        .map(local => local.document.topic),
+    )
+    let batchTopicsSinceLeaseRefresh = 0
+    for (const local of locals) {
+      const topic = local.document.topic
+      if (!batchTopics.has(topic)) continue
+      const topicEvents = eventsByTopic.get(topic) ?? []
+      if (topicEvents.length === 0) continue
+      if (batchTopicsSinceLeaseRefresh >= 25) {
+        await this.refreshDiscoveryLeases()
+        batchTopicsSinceLeaseRefresh = 0
+      }
+      batchTopicsSinceLeaseRefresh++
 
-    for (let batchStart = 0; batchStart < discoveredEvents.length; batchStart += 25) {
+      const expectedToken = batchLeaseTokens.get(topic)
+      const currentLocal = this.localSubscriptions.get(topic)
+      const currentToken = this.discoveryLeases.get(topic)?.lockToken
+      if (
+        !currentLocal ||
+        currentLocal.unsubscribed ||
+        !expectedToken ||
+        currentToken !== expectedToken
+      ) {
+        continue
+      }
+
+      if (currentLocal.options.receiverMode !== 'batch') continue
+      const advanced = await this.materializeBatchDelivery(currentLocal, topicEvents, expectedToken)
+      if (advanced) this.updateLocalSubscription(currentLocal, advanced)
+    }
+
+    const latestSingleEvents = new Map<string, EventDocument>()
+    const invalidSingleTopics = new Set<string>()
+    const singleEvents = discoveredEvents.filter(event => !batchTopics.has(event.topic))
+    for (let batchStart = 0; batchStart < singleEvents.length; batchStart += 25) {
       if (batchStart > 0) await this.refreshDiscoveryLeases()
       const validEvents: EventDocument[] = []
-      for (const event of discoveredEvents.slice(batchStart, batchStart + 25)) {
+      for (const event of singleEvents.slice(batchStart, batchStart + 25)) {
         const local = this.localSubscriptions.get(event.topic)
         const expectedToken = batchLeaseTokens.get(event.topic)
         const currentToken = this.discoveryLeases.get(event.topic)?.lockToken
         if (
           !local ||
           local.unsubscribed ||
+          local.options.receiverMode !== 'single' ||
           !expectedToken ||
           currentToken !== expectedToken ||
-          invalidTopics.has(event.topic)
+          invalidSingleTopics.has(event.topic)
         ) {
-          invalidTopics.add(event.topic)
-          latestEvents.delete(event.topic)
+          invalidSingleTopics.add(event.topic)
+          latestSingleEvents.delete(event.topic)
           continue
         }
         validEvents.push(event)
       }
       await this.materializeDeliveries(validEvents)
-      for (const event of validEvents) {
-        latestEvents.set(event.topic, event)
-      }
+      for (const event of validEvents) latestSingleEvents.set(event.topic, event)
     }
 
-    for (const [topic, event] of latestEvents) {
+    for (const [topic, event] of latestSingleEvents) {
       const local = this.localSubscriptions.get(topic)
       const expectedToken = batchLeaseTokens.get(topic)
-      if (!local || local.unsubscribed || !expectedToken || invalidTopics.has(topic)) continue
+      if (!local || local.unsubscribed || !expectedToken || invalidSingleTopics.has(topic)) {
+        continue
+      }
       this.updateLocalSubscription(
         local,
         await this.advanceDiscoveryCursor(
@@ -715,6 +862,80 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     }
 
     return {discovered: discoveredEvents.length > 0, scanned: true}
+  }
+
+  private async materializeBatchDelivery(
+    local: LocalSubscription,
+    events: EventDocument[],
+    expectedLockToken: string,
+  ) {
+    if (events.length === 0) return undefined
+    const last = events.at(-1)
+    if (!last) return undefined
+
+    const createdAt = new Date()
+    const candidate: DeliveryDocument = {
+      _id: uuidv7(),
+      eventId: last._id,
+      eventIds: events.map(event => event._id),
+      consumerGroup: this.options.consumerGroup,
+      topic: local.document.topic,
+      eventCreatedAt: last.createdAt,
+      eventSequence: last.sequence,
+      status: 'v2-pending',
+      attempt: 0,
+      attemptId: uuidv7(),
+      attemptCreatedAt: createdAt,
+      nextAttemptAt: createdAt,
+      attempts: [],
+      createdAt,
+      updatedAt: createdAt,
+    }
+
+    const expectedCursor = local.document.cursorSequence
+      ? {
+          cursorSequence: local.document.cursorSequence,
+          ...(local.document.cursorSequenceEventId === undefined
+            ? {cursorSequenceEventId: {$exists: false}}
+            : {cursorSequenceEventId: local.document.cursorSequenceEventId}),
+        }
+      : {cursorSequence: {$exists: false}}
+
+    let advanced: SubscriptionDocument | null = null
+    try {
+      await this.client.withSession(async session => {
+        await session.withTransaction(async () => {
+          advanced = null
+          await this.getCollections().deliveries.insertOne(candidate, {session})
+          advanced = await this.getCollections().subscriptions.findOneAndUpdate(
+            {
+              _id: local.document._id,
+              discoveryLockToken: expectedLockToken,
+              ...expectedCursor,
+            },
+            {
+              $set: {
+                cursorSequence: last.sequence,
+                cursorSequenceEventId: last._id,
+                updatedAt: createdAt,
+              },
+            },
+            {session, returnDocument: 'after'},
+          )
+          if (!advanced) {
+            throw new PulseLockLostError(
+              `Pulse discovery lease was lost while materializing a batch for ${local.document.topic}.`,
+            )
+          }
+        })
+      })
+    } catch (error) {
+      if (error instanceof PulseLockLostError) return undefined
+      throw error
+    }
+
+    this.nextConcurrentClaimAt = 0
+    return advanced as SubscriptionDocument | null
   }
 
   private async materializeDeliveries(events: EventDocument[]) {
@@ -892,9 +1113,18 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   }
 
   private async runExecution(execution: ClaimedExecution) {
+    let started = false
     try {
-      await this.executeConcurrentAttempt(execution.local, execution.delivery, execution.attempt)
+      if (execution.events === undefined) await this.hydrateExecutions([execution])
+      started = true
+      await this.executeConcurrentAttempt(
+        execution.local,
+        execution.delivery,
+        execution.attempt,
+        execution.events ?? [],
+      )
     } catch (error) {
+      if (!started) await this.releaseUnstartedConcurrentAttempt(execution.delivery)
       this.reportError(error)
     } finally {
       execution.local.running--
@@ -905,6 +1135,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     local: LocalSubscription,
     delivery: DeliveryDocument,
     attempt: DeliveryAttemptContext,
+    events: EventDocument[],
   ) {
     let lockLost = false
     let heartbeatRunning = false
@@ -941,8 +1172,9 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     interval.unref?.()
 
     try {
-      const event = await this.getCollections().events.findOne({_id: delivery.eventId})
-      if (!event) {
+      const deliveryEventIds = delivery.eventIds?.length ? delivery.eventIds : [delivery.eventId]
+      const expiredEventCount = Math.max(0, deliveryEventIds.length - events.length)
+      if (events.length === 0) {
         const finalized = await this.finishConcurrentAttemptWithError(
           delivery,
           attempt,
@@ -951,16 +1183,18 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
             new Error('The event expired before it could be processed.'),
             'event_expired',
           ),
+          undefined,
+          expiredEventCount,
         )
         if (!finalized) {
           throw new PulseLockLostError(
-            `Pulse lock was lost while recording the missing event ${delivery.eventId}.`,
+            `Pulse lock was lost while recording expired events for delivery ${delivery._id}.`,
           )
         }
         return
       }
 
-      const received: PulseReceivedEvent = {
+      const receivedEvents: PulseReceivedEvent[] = events.map(event => ({
         id: event._id,
         topic: event.topic,
         data: event.data,
@@ -970,15 +1204,44 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         expiresAt: event.expiresAt,
         consumerGroup: this.options.consumerGroup,
         attempt: attempt.attempt,
+      }))
+
+      if (local.handlerMode === 'batch') {
+        const handler = local.handler as PulseBatchEventHandler<string, unknown>
+        await this.handlerContext.run(true, () => handler(receivedEvents))
+      } else {
+        const handler = local.handler as PulseEventHandler<string, unknown>
+        const errors: unknown[] = []
+        for (const received of receivedEvents) {
+          try {
+            await this.handlerContext.run(true, () => handler(received))
+          } catch (error) {
+            errors.push(error)
+          }
+        }
+        if (errors.length === 1) throw errors[0]
+        if (errors.length > 1) {
+          throw new AggregateError(
+            errors,
+            `${errors.length} event handlers failed in delivery ${delivery._id}.`,
+          )
+        }
       }
-      await this.handlerContext.run(true, () => local.handler(received))
       if (lockLost) {
-        throw new PulseLockLostError(`Pulse lock was lost while processing event ${event._id}.`)
+        throw new PulseLockLostError(
+          `Pulse lock was lost while processing delivery ${delivery._id}.`,
+        )
       }
 
-      const finalized = await this.finishConcurrentAttemptWithSuccess(delivery, attempt)
+      const finalized = await this.finishConcurrentAttemptWithSuccess(
+        delivery,
+        attempt,
+        expiredEventCount,
+      )
       if (!finalized) {
-        throw new PulseLockLostError(`Pulse lock was lost while acknowledging event ${event._id}.`)
+        throw new PulseLockLostError(
+          `Pulse lock was lost while acknowledging delivery ${delivery._id}.`,
+        )
       }
     } catch (error) {
       if (error instanceof PulseLockLostError || lockLost) {
@@ -990,11 +1253,13 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         attempt,
         local.options,
         serializeExecutionError(error),
+        undefined,
+        Math.max(0, (delivery.eventIds?.length ? delivery.eventIds.length : 1) - events.length),
       )
       if (!finalized) {
         this.reportError(
           new PulseLockLostError(
-            `Pulse lock was lost while recording an error for event ${delivery.eventId}.`,
+            `Pulse lock was lost while recording an error for delivery ${delivery._id}.`,
           ),
         )
       }
@@ -1007,7 +1272,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     attempt: DeliveryAttemptContext,
     status: 'success' | 'error',
     endedAt: Date,
-    error?: PulseHistoryError,
+    error?: PulseExecutionError,
+    expiredEventCount = 0,
   ): DeliveryAttemptDocument {
     return {
       _id: attempt._id,
@@ -1024,6 +1290,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       endedAt,
       durationMs: endedAt.getTime() - attempt.startedAt.getTime(),
       ...(error ? {error} : {}),
+      ...(expiredEventCount > 0 ? {expiredEventCount} : {}),
     }
   }
 
@@ -1044,6 +1311,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
   private async finishConcurrentAttemptWithSuccess(
     delivery: DeliveryDocument,
     attempt: DeliveryAttemptContext,
+    expiredEventCount = 0,
   ) {
     const endedAt = new Date()
     const expiresAt = getExpiresAt(endedAt, this.options.historyRetentionMs)
@@ -1060,14 +1328,20 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           updatedAt: endedAt,
           endedAt,
           ...(expiresAt ? {expiresAt} : {}),
+          ...(expiredEventCount > 0 ? {expiredEventCount} : {}),
         },
         $push: {
           attempts: {
-            $each: [this.attemptOutcome(attempt, 'success', endedAt)],
+            $each: [this.attemptOutcome(attempt, 'success', endedAt, undefined, expiredEventCount)],
             $slice: -ATTEMPT_HISTORY_LIMIT,
           },
         },
-        $unset: {...this.attemptUnset(), error: '', ...(expiresAt ? {} : {expiresAt: ''})},
+        $unset: {
+          ...this.attemptUnset(),
+          error: '',
+          ...(expiresAt ? {} : {expiresAt: ''}),
+          ...(expiredEventCount > 0 ? {} : {expiredEventCount: ''}),
+        },
       } as Document,
       {returnDocument: 'after'},
     )
@@ -1082,8 +1356,9 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     delivery: DeliveryDocument,
     attempt: DeliveryAttemptContext,
     options: ResolvedSubscribeOptions,
-    error: PulseHistoryError,
+    error: PulseExecutionError,
     expiredBefore?: Date,
+    expiredEventCount = 0,
   ) {
     const endedAt = new Date()
     const terminal =
@@ -1107,6 +1382,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           updatedAt: endedAt,
           endedAt,
           ...(expiresAt ? {expiresAt} : {}),
+          ...(expiredEventCount > 0 ? {expiredEventCount} : {}),
         }
       : {
           status: 'v2-pending',
@@ -1129,7 +1405,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         $set: set,
         $push: {
           attempts: {
-            $each: [this.attemptOutcome(attempt, 'error', endedAt, error)],
+            $each: [this.attemptOutcome(attempt, 'error', endedAt, error, expiredEventCount)],
             $slice: -ATTEMPT_HISTORY_LIMIT,
           },
         },
@@ -1671,6 +1947,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       retryDelayMs: local.options.retryDelayMs,
       retryBackoffMultiplier: local.options.retryBackoffMultiplier,
       maxConcurrency: local.options.maxConcurrency,
+      receiverMode: local.options.receiverMode,
+      batchSize: local.options.batchSize,
     }
   }
 

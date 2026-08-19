@@ -3,7 +3,7 @@ title: 'Pulse'
 description: 'Distributed, recoverable event delivery backed only by MongoDB'
 ---
 
-Pulse is a typed pub/sub system for services that already operate MongoDB and do not want to run a separate event broker. It provides durable consumer groups, concurrent handlers, retries, execution history, and crash recovery.
+Pulse is a typed pub/sub system for services that already operate MongoDB and do not want to run a separate event broker. It provides durable consumer groups, concurrent handlers, retries, and crash recovery.
 
 Pulse is published as `@orion-js/pulse`, but it does not depend on Orionjs. You can use it from an Orionjs service, an older Orionjs application, or a standalone Node.js or Bun process.
 
@@ -59,7 +59,7 @@ await pulse.publish({
 })
 ```
 
-`connect()` returns immediately and starts initialization in the background. `awaitConnection()` resolves only after MongoDB is connected and every required collection and index has been created and validated. `publish()`, `subscribe()`, and history reads wait for that same readiness promise automatically.
+`connect()` returns immediately and starts initialization in the background. `awaitConnection()` resolves only after MongoDB is connected and every required collection and index has been created and validated. `publish()`, `subscribe()`, and `subscribeBatch()` wait for that same readiness promise automatically.
 
 Each Pulse client limits its MongoDB application pool to one connection by default instead of the
 driver default of 100. Callbacks remain concurrent because they do not retain the socket; only
@@ -94,11 +94,12 @@ Pulse persists three kinds of records:
 | --- | --- |
 | Event | Immutable topic, payload, headers, creation time, and retention time. |
 | Subscription | Durable cursor and delivery configuration for one `consumerGroup + topic`. |
-| Delivery | Queue state, lease, retries, attempts, and outcome for one event and consumer group. |
+| Delivery | Queue state, lease, retries, attempts, and outcome for one or more events and a consumer group. |
 
-Publishing stores one event. Each subscribed consumer group materializes its own delivery and
-execution state. Replicas with the same consumer group compete for that delivery; services with
-different consumer groups each receive it.
+Publishing stores one event. Each subscribed consumer group materializes its own execution state.
+A normal receiver uses one delivery per event; a batch receiver stores multiple ordered event IDs
+in one delivery. Replicas with the same consumer group compete for those deliveries; services with
+different consumer groups receive independent work.
 
 ```text
 order.created

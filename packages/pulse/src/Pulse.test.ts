@@ -8,7 +8,7 @@ import {
   MongoClient,
   Timestamp,
 } from 'mongodb'
-import {MongoMemoryServer} from 'mongodb-memory-server'
+import {MongoMemoryReplSet, MongoMemoryServer} from 'mongodb-memory-server'
 import {uuidv7} from 'uuidv7'
 import {connect, type Pulse, PulseConfigurationError, PulseIndexError} from './index'
 
@@ -16,7 +16,7 @@ setDefaultTimeout(60_000)
 
 const uuidV7Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
-let standalone: MongoMemoryServer
+let standalone: MongoMemoryReplSet
 const pulseClients: Array<Pulse<any>> = []
 const mongoClients: MongoClient[] = []
 const childProcesses = new Set<ChildProcess>()
@@ -113,8 +113,9 @@ async function rawDatabase(databaseName: string) {
 }
 
 beforeAll(async () => {
-  standalone = await MongoMemoryServer.create({
-    instance: {args: ['--setParameter', 'ttlMonitorSleepSecs=1']},
+  standalone = await MongoMemoryReplSet.create({
+    replSet: {count: 1},
+    instanceOpts: [{args: ['--setParameter', 'ttlMonitorSleepSecs=1']}],
   })
 })
 
@@ -132,6 +133,295 @@ afterAll(async () => {
 })
 
 describe('Pulse persistence', () => {
+  it('materializes and executes a batch as one delivery in publication order', async () => {
+    const databaseName = uniqueName('batch_delivery')
+    const consumerGroup = 'batch-delivery-group'
+    const topic = 'batch-delivery.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+
+    const published = []
+    for (let index = 0; index < 5; index++) {
+      published.push(await pulse.publish({topic, data: {index}}))
+    }
+
+    const received: Array<Array<{id: string; index: number}>> = []
+    const subscription = await pulse.subscribeBatch(
+      topic,
+      async events => {
+        received.push(
+          events.map(event => ({
+            id: event.id,
+            index: (event.data as {index: number}).index,
+          })),
+        )
+      },
+      {
+        configVersion: 1,
+        offsetReset: 'earliest',
+        batchSize: 100,
+        maxConcurrency: 2,
+      },
+    )
+
+    await waitFor(() => received.length === 1)
+    expect(received[0]).toEqual(published.map((event, index) => ({id: event.id, index})))
+    expect(subscription).toMatchObject({
+      receiverMode: 'batch',
+      batchSize: 100,
+      maxConcurrency: 2,
+    })
+
+    const db = await rawDatabase(databaseName)
+    const deliveries = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({consumerGroup, topic})
+      .toArray()
+    expect(deliveries).toHaveLength(1)
+    expect(deliveries[0]).toMatchObject({
+      eventId: published.at(-1)?.id,
+      eventIds: published.map(event => event.id),
+      status: 'v2-success',
+      attempt: 1,
+      finalAttempt: 1,
+    })
+    expect(deliveries[0].attempts).toHaveLength(1)
+
+    const persisted = await db
+      .collection('orionjs.pulse.subscriptions')
+      .findOne({consumerGroup, topic})
+    expect(persisted).toMatchObject({receiverMode: 'batch', batchSize: 100, configVersion: 1})
+  })
+
+  it('requires transaction-capable MongoDB for batch receivers', async () => {
+    const mongo = await MongoMemoryServer.create()
+    const pulse = connect({
+      connectionString: mongo.getUri('batch_standalone'),
+      databaseName: 'batch_standalone',
+      consumerGroup: 'batch-standalone-group',
+    })
+    pulseClients.push(pulse)
+    try {
+      await expect(
+        pulse.subscribeBatch('batch.topic', async () => {}, {batchSize: 10}),
+      ).rejects.toThrow('requires MongoDB transactions')
+    } finally {
+      await pulse.close()
+      await mongo.stop()
+    }
+  })
+
+  it('lets a batch handler consume an old single-event delivery', async () => {
+    const databaseName = uniqueName('batch_old_delivery')
+    const topic = 'batch-old-delivery.topic'
+    const pulse = createPulse(databaseName, 'batch-old-delivery-group')
+    await pulse.awaitConnection()
+    const singleSubscription = await pulse.subscribe(topic, async () => {}, {
+      offsetReset: 'latest',
+      configVersion: 1,
+    })
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+    await pulse.publish({topic, data: {value: 7}})
+    await runtime.discoverEvents(true)
+    await singleSubscription.unsubscribe()
+
+    const batches: number[][] = []
+    await pulse.subscribeBatch(
+      topic,
+      async events => {
+        batches.push(events.map(event => (event.data as {value: number}).value))
+      },
+      {batchSize: 10, offsetReset: 'latest', configVersion: 2},
+    )
+
+    runtime.running = true
+    const [execution] = await runtime.claimExecutions(1)
+    if (!execution) throw new Error('Expected the old delivery to be claimable.')
+    await runtime.runExecution(execution)
+    runtime.running = false
+    expect(batches).toEqual([[7]])
+    const db = await rawDatabase(databaseName)
+    const delivery = await db.collection('orionjs.pulse.deliveries').findOne({topic})
+    expect(delivery?.eventIds).toBeUndefined()
+  })
+
+  it('lets a normal handler consume a multi-event delivery sequentially', async () => {
+    const databaseName = uniqueName('single_batch_delivery')
+    const consumerGroup = 'single-batch-delivery-group'
+    const topic = 'single-batch-delivery.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const batchSubscription = await pulse.subscribeBatch(topic, async () => {}, {
+      batchSize: 100,
+      offsetReset: 'latest',
+      configVersion: 1,
+    })
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    for (let value = 1; value <= 3; value++) {
+      await pulse.publish({topic, data: {value}})
+    }
+    await runtime.discoverEvents(true)
+    await batchSubscription.unsubscribe()
+
+    const values: number[] = []
+    await pulse.subscribe(
+      topic,
+      async event => {
+        const value = (event.data as {value: number}).value
+        values.push(value)
+        if (value === 2) throw new Error('second event failed')
+      },
+      {configVersion: 2, offsetReset: 'latest', maxRetries: 0},
+    )
+
+    runtime.running = true
+    const [execution] = await runtime.claimExecutions(1)
+    if (!execution) throw new Error('Expected the batch delivery to be claimable.')
+    await runtime.runExecution(execution)
+    runtime.running = false
+
+    expect(values).toEqual([1, 2, 3])
+    const db = await rawDatabase(databaseName)
+    const delivery = await db.collection('orionjs.pulse.deliveries').findOne({consumerGroup, topic})
+    expect(delivery).toMatchObject({status: 'v2-error', finalAttempt: 1})
+    expect(delivery?.eventIds).toHaveLength(3)
+  })
+
+  it('omits expired payloads from a batch and records their count', async () => {
+    const databaseName = uniqueName('batch_partial_expiry')
+    const consumerGroup = 'batch-partial-expiry-group'
+    const topic = 'batch-partial-expiry.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    const received: number[][] = []
+    await pulse.subscribeBatch(
+      topic,
+      async events => {
+        received.push(events.map(event => (event.data as {value: number}).value))
+      },
+      {batchSize: 100, offsetReset: 'latest', configVersion: 1},
+    )
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    const events = []
+    for (let value = 1; value <= 3; value++) {
+      events.push(await pulse.publish({topic, data: {value}}))
+    }
+    await runtime.discoverEvents(true)
+    const db = await rawDatabase(databaseName)
+    await db.collection('orionjs.pulse.events').deleteOne({_id: events[1].id})
+
+    runtime.running = true
+    const [execution] = await runtime.claimExecutions(1)
+    if (!execution) throw new Error('Expected the batch delivery to be claimable.')
+    await runtime.runExecution(execution)
+    runtime.running = false
+
+    expect(received).toEqual([[1, 3]])
+    const delivery = await db.collection('orionjs.pulse.deliveries').findOne({consumerGroup, topic})
+    expect(delivery).toMatchObject({status: 'v2-success', expiredEventCount: 1})
+    expect(delivery?.attempts[0]).toMatchObject({status: 'success', expiredEventCount: 1})
+  })
+
+  it('materializes one batch while replicas compete for discovery', async () => {
+    const databaseName = uniqueName('batch_replica_race')
+    const consumerGroup = 'batch-replica-race-group'
+    const topic = 'batch-replica-race.topic'
+    const replicaA = createPulse(databaseName, consumerGroup)
+    const replicaB = createPulse(databaseName, consumerGroup)
+    await Promise.all([replicaA.awaitConnection(), replicaB.awaitConnection()])
+    const published = []
+    for (let index = 0; index < 20; index++) {
+      published.push(await replicaA.publish({topic, data: {index}}))
+    }
+
+    const batches: string[][] = []
+    const handler = async (events: Array<{id: string}>) => {
+      batches.push(events.map(event => event.id))
+    }
+    await Promise.all([
+      replicaA.subscribeBatch(topic, handler, {
+        configVersion: 1,
+        offsetReset: 'earliest',
+        batchSize: 100,
+      }),
+      replicaB.subscribeBatch(topic, handler, {
+        configVersion: 1,
+        offsetReset: 'earliest',
+        batchSize: 100,
+      }),
+    ])
+
+    await waitFor(() => batches.length === 1)
+    expect(batches[0]).toEqual(published.map(event => event.id))
+    const db = await rawDatabase(databaseName)
+    expect(
+      await db.collection('orionjs.pulse.deliveries').countDocuments({consumerGroup, topic}),
+    ).toBe(1)
+  })
+
+  it('retries a failed batch as one complete execution unit', async () => {
+    const databaseName = uniqueName('batch_retry')
+    const consumerGroup = 'batch-retry-group'
+    const topic = 'batch-retry.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    for (let value = 1; value <= 3; value++) {
+      await pulse.publish({topic, data: {value}})
+    }
+
+    const attempts: Array<{attempt: number; values: number[]}> = []
+    await pulse.subscribeBatch(
+      topic,
+      async events => {
+        attempts.push({
+          attempt: events[0].attempt,
+          values: events.map(event => (event.data as {value: number}).value),
+        })
+        if (events[0].attempt === 1) throw new Error('retry the whole batch')
+      },
+      {
+        batchSize: 100,
+        offsetReset: 'earliest',
+        configVersion: 1,
+        maxRetries: 1,
+        retryDelayMs: 0,
+      },
+    )
+
+    const db = await rawDatabase(databaseName)
+    await waitFor(async () => {
+      if (attempts.length !== 2) return false
+      const delivery = await db
+        .collection('orionjs.pulse.deliveries')
+        .findOne({consumerGroup, topic})
+      return delivery?.status === 'v2-success'
+    })
+    expect(attempts).toEqual([
+      {attempt: 1, values: [1, 2, 3]},
+      {attempt: 2, values: [1, 2, 3]},
+    ])
+    const delivery = await db.collection('orionjs.pulse.deliveries').findOne({consumerGroup, topic})
+    expect(delivery).toMatchObject({status: 'v2-success', finalAttempt: 2})
+    expect(delivery?.attempts.map((attempt: Document) => attempt.status)).toEqual([
+      'error',
+      'success',
+    ])
+  })
+
   it('uses one expiring MongoDB pool connection by default and supports overrides', async () => {
     const defaultPulse = createPulse(uniqueName('default_pool'), 'default-pool-group')
     const configuredPulse = createPulse(uniqueName('configured_pool'), 'configured-pool-group', {
@@ -347,8 +637,6 @@ describe('Pulse persistence', () => {
       'error',
       'success',
     ])
-    const history = await pulse.history.find({eventId: event.id})
-    expect(history.records.map(record => record.status).sort()).toEqual(['error', 'success'])
   })
 
   it('bounds concurrent attempt history independently from the retry count', async () => {
@@ -985,13 +1273,6 @@ describe('Pulse persistence', () => {
     expect(pending?.lockToken).toMatch(uuidV7Pattern)
     expect(pending?.lockOwner).toMatch(uuidV7Pattern)
     expect(pending?.lockedUntil.getTime()).toBeGreaterThan(Date.now())
-    const activeHistory = await pulse.history.find({
-      eventId: event.id,
-      lockState: 'active',
-    })
-    expect(activeHistory.records).toHaveLength(1)
-    expect(activeHistory.records[0].status).toBe('pending')
-
     release()
     await waitFor(async () => {
       const record = await db.collection('orionjs.pulse.deliveries').findOne({eventId: event.id})
@@ -1376,10 +1657,11 @@ describe('Pulse delivery semantics', () => {
       {delivery: 'at-most-once', offsetReset: 'latest'},
     )
     const event = await pulse.publish({topic: 'at-most.topic', data: null})
+    const db = await rawDatabase(databaseName)
 
     await waitFor(async () => {
-      const history = await pulse.history.find({eventId: event.id})
-      return history.records[0]?.status === 'error'
+      const delivery = await db.collection('orionjs.pulse.deliveries').findOne({eventId: event.id})
+      return delivery?.status === 'v2-error'
     })
     await new Promise(resolve => setTimeout(resolve, 200))
     expect(attempts).toEqual([1])
@@ -1549,16 +1831,14 @@ describe('Pulse delivery semantics', () => {
     ])
 
     const event = await replicaA.publish({topic: 'heartbeat.topic', data: null})
+    const db = await rawDatabase(databaseName)
     await waitFor(async () => {
-      const history = await replicaA.history.find({eventId: event.id})
-      return history.records[0]?.status === 'success'
+      const delivery = await db.collection('orionjs.pulse.deliveries').findOne({eventId: event.id})
+      return delivery?.status === 'v2-success'
     })
     await new Promise(resolve => setTimeout(resolve, 150))
 
     expect(calls).toBe(1)
-    const history = await replicaA.history.find({eventId: event.id})
-    expect(history.records).toHaveLength(1)
-    expect(history.records[0].status).toBe('success')
   })
 
   it('keeps heartbeating an active handler during graceful close', async () => {
@@ -1610,12 +1890,11 @@ describe('Pulse delivery semantics', () => {
     await closing
 
     expect(callsBeforeRelease).toBe(0)
+    const db = await rawDatabase(databaseName)
     await waitFor(async () => {
-      const history = await replicaB.history.find({eventId: event.id})
-      return history.records[0]?.status === 'success'
+      const delivery = await db.collection('orionjs.pulse.deliveries').findOne({eventId: event.id})
+      return delivery?.status === 'v2-success'
     })
-    const history = await replicaB.history.find({eventId: event.id})
-    expect(history.records).toHaveLength(1)
     expect(recoveryCalls).toBe(0)
   })
 

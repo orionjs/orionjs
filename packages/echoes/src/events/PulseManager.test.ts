@@ -1,7 +1,8 @@
 import {expect, it} from 'bun:test'
+import {connect} from '@orion-js/pulse'
 import {MongoClient} from 'mongodb'
-import {MongoMemoryServer} from 'mongodb-memory-server'
-import {createEchoEvent} from '../echo'
+import {MongoMemoryReplSet, MongoMemoryServer} from 'mongodb-memory-server'
+import {createEchoBatchEvent, createEchoEvent} from '../echo'
 import publish from '../publish'
 import startService, {stopService} from '../startService'
 import type {EchoesOptions} from '../types'
@@ -106,3 +107,61 @@ it('does not allow Change Streams through the Echoes Pulse configuration', async
     } as any),
   ).rejects.toThrow('changeStreams is no longer supported')
 })
+
+it('consumes a Pulse delivery through an Echoes batch receiver', async () => {
+  const mongo = await MongoMemoryReplSet.create({replSet: {count: 1}})
+  const databaseName = 'echoes_batch'
+  const connectionString = mongo.getUri(databaseName)
+  const publisher = connect({
+    connectionString,
+    databaseName,
+    consumerGroup: 'batch-publisher',
+    eventRetentionMs: null,
+  })
+  await publisher.awaitConnection()
+  for (let index = 0; index < 4; index++) {
+    await publisher.publish({topic: 'invoice.created', data: {params: {index}}})
+  }
+  await publisher.close()
+
+  const batches: Array<Array<{params: unknown; context: any}>> = []
+  try {
+    await startService({
+      echoes: {
+        'invoice.created': createEchoBatchEvent({
+          batchSize: 100,
+          configVersion: 1,
+          maxConcurrency: 2,
+          async resolveBatch(events) {
+            batches.push(events)
+          },
+        }),
+      },
+      events: {
+        pulse: {
+          connectionString,
+          databaseName,
+          consumerGroup: 'billing-batch',
+          pollIntervalMs: 10,
+          eventRetentionMs: null,
+          historyRetentionMs: null,
+          subscription: {offsetReset: 'earliest'},
+        },
+        consumeFrom: ['pulse'],
+        publishTo: 'pulse',
+      },
+    })
+
+    await waitFor(() => expect(batches).toHaveLength(1))
+    expect(batches[0].map(event => event.params)).toEqual([
+      {index: 0},
+      {index: 1},
+      {index: 2},
+      {index: 3},
+    ])
+    expect(batches[0].every(event => event.context.transport === 'pulse')).toBe(true)
+  } finally {
+    await stopService()
+    await mongo.stop()
+  }
+}, 30_000)

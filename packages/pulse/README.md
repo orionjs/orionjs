@@ -1,7 +1,7 @@
 # `@orion-js/pulse`
 
 Pulse is a distributed, recoverable pub/sub system backed only by MongoDB. It provides durable
-consumer groups, concurrent delivery, retries, execution history, polling, and crash recovery
+consumer groups, concurrent delivery, retries, polling, and crash recovery
 without a separate broker.
 
 ## Install
@@ -36,7 +36,7 @@ await pulse.publish({
 })
 ```
 
-Each event is stored once. Pulse creates one delivery per subscribed consumer group.
+Each event is stored once. Pulse creates execution deliveries for every subscribed consumer group.
 
 ## Subscribe
 
@@ -60,6 +60,29 @@ Deliveries are independent and may run concurrently. `maxConcurrency` limits con
 for one topic in one process; `workerCount` limits them across the entire Pulse instance. Atomic
 MongoDB fencing prevents two replicas from owning the same attempt at the same time.
 
+## Batch receivers
+
+Use a distinct batch handler when one callback should process multiple events together:
+
+```ts
+await pulse.subscribeBatch(
+  'invoices.created',
+  async events => {
+    await insertInvoices(events.map(event => event.data))
+  },
+  {
+    configVersion: 2,
+    batchSize: 100,
+    maxConcurrency: 2,
+  },
+)
+```
+
+`batchSize` is a maximum. Pulse does not wait to fill a batch: if 23 events are available, the
+handler receives 23 immediately. One batch handler invocation consumes one worker, and one delivery
+stores the ordered event IDs for that invocation. Batch subscriptions require MongoDB transactions,
+which are available on replica sets, sharded clusters, and Atlas.
+
 ## Subscription options
 
 | Option | Default | Description |
@@ -71,6 +94,8 @@ MongoDB fencing prevents two replicas from owning the same attempt at the same t
 | `retryDelayMs` | `1000` | Initial retry delay. |
 | `retryBackoffMultiplier` | `2` | Exponential retry multiplier. |
 | `maxConcurrency` | `workerCount` | Per-process concurrency for this topic. |
+
+`subscribeBatch()` additionally requires a positive integer `batchSize`.
 
 Pulse persists subscription settings per `consumerGroup + topic`. Increase `configVersion` when
 changing persisted settings. A replica with a lower version adopts the stored higher version;
@@ -86,16 +111,6 @@ Pulse renews active leases while handlers run. If a process disappears, the disc
 the expired delivery lock and either schedules its retry or marks it terminal. Every mutation is
 fenced with the attempt lock token, so a stale worker cannot acknowledge work after losing its
 lease.
-
-The public history API projects attempt records from delivery documents:
-
-```ts
-const result = await pulse.history.find({
-  topic: 'orders.created',
-  status: 'error',
-  limit: 100,
-})
-```
 
 Pulse retains at most ten completed attempt records per delivery. `historyRetentionMs` controls the
 TTL applied when a delivery becomes terminal; `null` disables that TTL.

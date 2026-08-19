@@ -107,6 +107,7 @@
       {
         "tab": "Blog",
         "pages": [
+          "blog/pulse-batch-receivers",
           "blog/dogs-max-tries-retention",
           "blog/pulse-delivery-resident-execution",
           "blog/orionjs-4-5-migration",

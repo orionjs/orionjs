@@ -21,6 +21,7 @@
   },
   "scripts": {
     "test": "bun test",
+    "test:stress": "bun run scripts/stress-batching.ts",
     "prepack": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "tsup && bun run ../../scripts/emit-declarations.ts",

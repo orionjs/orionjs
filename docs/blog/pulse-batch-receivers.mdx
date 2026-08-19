@@ -1,0 +1,179 @@
+---
+title: 'Process Pulse events in batches'
+description: 'Build high-throughput Pulse and Echoes receivers with bounded batches, bulk writes, safe retries, and hot deploys'
+---
+
+Pulse can deliver several events to one receiver invocation. This is useful when the downstream
+operation already has an efficient bulk API, such as MongoDB `insertMany()`, a batched HTTP request,
+or a data warehouse ingestion call.
+
+A batch is one durable delivery. It is claimed by one worker, heartbeated with one lease, and
+acknowledged with one outcome. Pulse still preserves each event's ID, payload, headers, creation
+time, and publication order inside the array.
+
+## Subscribe directly with Pulse
+
+Use `subscribeBatch()` and choose a maximum batch size:
+
+```typescript
+await pulse.subscribeBatch(
+  'invoice.created',
+  async events => {
+    await invoices.insertMany(
+      events.map(event => ({
+        eventId: event.id,
+        ...event.data,
+      })),
+    )
+  },
+  {
+    configVersion: 4,
+    batchSize: 100,
+    maxConcurrency: 2,
+    maxRetries: 5,
+  },
+)
+```
+
+`batchSize` is a maximum, not a minimum. Pulse never waits for more events. If 23 are available, it
+immediately calls the handler with those 23. If a backlog exists, it continues creating bounded
+batches until the cursor catches up.
+
+Events inside one batch are ordered by their MongoDB-assigned publication sequence. Separate batch
+invocations may run concurrently and finish in any order.
+
+## Use a batch receiver in Echoes
+
+Echoes exposes the same behavior per event with `@EchoBatchEvent()`:
+
+```typescript
+import {EchoBatchEvent, Echoes} from '@orion-js/echoes'
+
+@Echoes()
+export class InvoiceEventsEchoes {
+  @EchoBatchEvent({
+    configVersion: 4,
+    batchSize: 100,
+    maxConcurrency: 2,
+  })
+  async invoiceCreated(events) {
+    await invoices.insertMany(
+      events.map(({params, context}) => ({
+        eventId: context.eventId,
+        ...params,
+      })),
+    )
+  }
+}
+```
+
+Every item contains cleaned `params` and its own context. Use `context.eventId` as the idempotency
+key for downstream writes.
+
+Batch event receivers are Pulse-only. Echoes fails at startup if a batch receiver is configured for
+Kafka consumption instead of silently changing its semantics.
+
+## Understand workers and concurrency
+
+One complete array is one worker invocation:
+
+```text
+workerCount: 4
+
+worker 1 → invoice.created [100 events]
+worker 2 → invoice.created [100 events]
+worker 3 → email.sent       [1 event]
+worker 4 → idle or another eligible delivery
+```
+
+`workerCount` limits all running invocations in one Pulse process. `maxConcurrency` limits
+invocations for one topic in that process. It does not reserve workers for a topic, so a process can
+serve more topics than workers without creating a static allocation table.
+
+With `batchSize: 100`, `maxConcurrency: 2`, and enough backlog, one process can have up to 200 events
+inside that receiver's two active invocations. Add replicas only when the downstream system can
+accept the additional parallel load.
+
+## Size a batch
+
+A practical starting point is 50 or 100 events and one or two concurrent invocations. Then measure:
+
+- Handler duration and downstream bulk-write latency.
+- Delivery backlog age instead of only delivery count.
+- Retry frequency and repeated side effects.
+- Event payload size and process memory.
+
+Pulse intentionally does not impose an arbitrary maximum. Keep the value operationally reasonable:
+the delivery stores all event IDs, and MongoDB documents still have their normal size limit.
+
+Very small or latency-sensitive streams may be better served by a normal `subscribe()` or
+`@EchoEvent()` handler. Batching is most valuable when it replaces many downstream operations with
+one real bulk operation.
+
+## Design retries before enabling batches
+
+The complete array is the retry, fencing, heartbeat, and acknowledgement unit. If the handler
+throws after partially writing downstream, Pulse retries every event in the batch.
+
+Prefer an idempotent bulk operation:
+
+```typescript
+await collection.bulkWrite(
+  events.map(event => ({
+    updateOne: {
+      filter: {eventId: event.id},
+      update: {$setOnInsert: event.data},
+      upsert: true,
+    },
+  })),
+  {ordered: false},
+)
+```
+
+Pulse retains the latest completed attempt outcomes on the delivery, including errors and the
+number of payloads that expired before execution.
+
+## Deploy it without stopping consumers
+
+Use two production deploys when existing replicas run a Pulse version without batch support:
+
+1. Upgrade every replica to `@orion-js/pulse@^4.5.16` and `@orion-js/echoes@^4.5.7` without changing
+   the existing single-event handler.
+2. After the package rollout completes, replace that receiver with `subscribeBatch()` or
+   `@EchoBatchEvent()`, increase its `configVersion`, and set the intended `batchSize`.
+
+During the second deploy, updated normal handlers can consume a multi-event delivery sequentially,
+while batch handlers can consume an older one-event delivery as an array of length one. Higher
+`configVersion` settings win, so old application configuration cannot overwrite the new durable
+receiver mode.
+
+If both changes must ship in one deploy, use `batchSize: 1` first. Increase the size in another
+deploy only after every replica runs the new packages.
+
+## MongoDB requirement
+
+Batch materialization inserts the delivery and advances the persisted discovery cursor in one short
+transaction. Use a replica set, sharded cluster, or Atlas. Standalone MongoDB deployments fail fast
+when `subscribeBatch()` starts.
+
+No new index or delivery migration is required. Pulse uses the existing event sequence, queue, and
+processing indexes.
+
+## What the stress tests showed
+
+The release was exercised locally against a real one-member MongoDB replica set:
+
+- 30,000 events were drained by four competing Pulse replicas in 300 deliveries of exactly 100.
+- A mixed rollout split 15,000 events between batch and normal handlers without loss or duplicate
+  successful side effects.
+- 15,000 batches worth of events were forced to fail once and then retry successfully as complete
+  units.
+- One process with four workers reached all four concurrent batch invocations.
+- Twelve mixed batch and normal topics shared four workers without starving a topic.
+
+Across 70,000 published events, the assertions found no lost event, duplicate successful event, or
+stranded delivery. Treat the measured throughput as local test evidence rather than a production
+capacity guarantee; database latency, payload size, and downstream work determine the real limit.
+
+Continue with [Consuming events](/overview/other-modules/pulse/consuming) for every option and
+[Reliability and recovery](/overview/other-modules/pulse/reliability) for lease and retry behavior.

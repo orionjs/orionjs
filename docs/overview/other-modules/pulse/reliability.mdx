@@ -5,15 +5,17 @@ description: 'Delivery guarantees, leases, fencing, retention, and idempotency'
 
 Pulse combines durable MongoDB state, expiring leases, fencing tokens, and retries to provide
 recoverable concurrent delivery. Queue state and attempt outcomes live on the delivery document, so
-claiming, retrying, and completing an attempt do not require cross-collection transactions.
+claiming, retrying, and completing an attempt do not require cross-collection transactions. Batch
+materialization uses one short transaction to insert its delivery and advance the discovery cursor.
 
 ## Delivery lifecycle
 
-Each event produces one delivery per subscribed consumer group:
+Normal receivers produce one delivery per event and consumer group. Batch receivers group up to
+`batchSize` ordered events into one delivery:
 
 ```text
 event discovered
-  → delivery queued
+  → one event or an ordered batch is queued
   → attempt claimed with a lock token
   → handler runs while the lease is renewed
   → success, retry, or terminal error committed atomically
@@ -27,9 +29,6 @@ Pulse persists the claim before invoking the handler. A delivery stores:
 - The active lock owner, token, and expiration.
 - The terminal outcome and error when present.
 - A bounded window containing the latest ten completed attempts.
-
-`pulse.history.find()` projects its public records from these embedded attempts and the current
-attempt state.
 
 ## Delivery guarantees
 
@@ -79,13 +78,10 @@ New events receive a MongoDB BSON timestamp through `$currentDate`. Pulse uses t
 sequence as its durable discovery order, so publishers with skewed application clocks cannot leave
 events behind an advanced cursor.
 
-Older retained events without a sequence remain discoverable through the historical
-`createdAt + UUIDv7` cursor. Pulse tracks both cursor forms independently while those documents
-exist.
-
-The discovery leader advances a cursor only after materializing the corresponding delivery batch.
-The unique `consumerGroup + eventId` index makes repeated materialization idempotent after crashes or
-lease changes.
+The discovery leader advances a normal receiver cursor only after materializing its deliveries. For
+a batch receiver, inserting the multi-event delivery and advancing the cursor to the last event are
+committed in one MongoDB transaction. A crash therefore commits both changes or neither, preventing
+overlapping batches and skipped events.
 
 ## Failure matrix
 
@@ -136,8 +132,8 @@ The delay after failed attempt `n` is:
 retryDelayMs × retryBackoffMultiplier ^ (n - 1)
 ```
 
-`maxRetries` counts retries after the first attempt. Terminal errors and completed attempts remain
-available through the history API until the delivery expires.
+`maxRetries` counts retries after the first attempt. Pulse retains the latest ten completed attempt
+outcomes inside the delivery document until that delivery expires.
 
 ## Retention
 

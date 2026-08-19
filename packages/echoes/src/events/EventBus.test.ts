@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test'
-import {createEchoEvent} from '../echo'
+import {createEchoBatchEvent, createEchoEvent} from '../echo'
 import type {EchoesEventTransportName, PublishOptions} from '../types'
 import {resolveEventsConfig} from './createEventBus'
 import EventBus from './EventBus'
@@ -35,9 +35,67 @@ class FakeTransport implements EventTransport {
       attempt: 1,
     })
   }
+
+  async emitBatch(topic: string, params: unknown[]) {
+    await this.startOptions.onEvents(
+      params.map((value, index) => ({
+        id: `${this.name}-event-${index}`,
+        topic,
+        data: {params: value},
+        transport: this.name,
+        createdAt: new Date(),
+        attempt: 1,
+      })),
+    )
+  }
 }
 
 describe('Echoes EventBus', () => {
+  it('routes Pulse batches and rejects batch receivers on Kafka', async () => {
+    const pulse = new FakeTransport('pulse')
+    const received: unknown[][] = []
+    const echoes = {
+      'invoice.created': createEchoBatchEvent({
+        batchSize: 100,
+        configVersion: 3,
+        maxConcurrency: 2,
+        async resolveBatch(events) {
+          received.push(events.map(event => event.params))
+        },
+      }),
+    }
+    const pulseBus = new EventBus({
+      echoes,
+      transports: {pulse},
+      consumeFrom: ['pulse'],
+      publishTo: 'pulse',
+    })
+
+    await pulseBus.start()
+    expect(pulse.startOptions?.subscriptions).toEqual([
+      {
+        topic: 'invoice.created',
+        attemptsBeforeDeadLetter: undefined,
+        configVersion: 3,
+        maxConcurrency: 2,
+        receiverMode: 'batch',
+        batchSize: 100,
+      },
+    ])
+    await pulse.emitBatch('invoice.created', [{id: 1}, {id: 2}])
+    expect(received).toEqual([[{id: 1}, {id: 2}]])
+    await pulseBus.close()
+
+    const kafka = new FakeTransport('kafka')
+    const kafkaBus = new EventBus({
+      echoes,
+      transports: {kafka},
+      consumeFrom: ['kafka'],
+      publishTo: 'kafka',
+    })
+    await expect(kafkaBus.start()).rejects.toThrow('supported only by the Pulse transport')
+  })
+
   it('consumes from Kafka and Pulse while publishing to Kafka only', async () => {
     const contexts: Array<{params: unknown; transport: EchoesEventTransportName}> = []
     const kafka = new FakeTransport('kafka')
@@ -68,6 +126,9 @@ describe('Echoes EventBus', () => {
         topic: 'order.created',
         attemptsBeforeDeadLetter: 4,
         configVersion: 2,
+        maxConcurrency: undefined,
+        receiverMode: 'single',
+        batchSize: 1,
       },
     ])
 

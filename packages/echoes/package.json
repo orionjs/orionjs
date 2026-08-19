@@ -19,7 +19,7 @@
     "serialize-javascript": "^6.0.0"
   },
   "peerDependencies": {
-    "@orion-js/pulse": "^4.5.14",
+    "@orion-js/pulse": "^4.5.16",
     "kafkajs": "^2.2.4"
   },
   "peerDependenciesMeta": {
@@ -31,7 +31,7 @@
     }
   },
   "devDependencies": {
-    "@orion-js/pulse": "4.5.14",
+    "@orion-js/pulse": "4.5.16",
     "@types/node": "^18.0.0",
     "@types/supertest": "2.0.11",
     "kafkajs": "^2.2.4",

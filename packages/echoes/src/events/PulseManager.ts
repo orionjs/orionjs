@@ -6,7 +6,9 @@ import type {
 } from '../types'
 import type {EventTransport, EventTransportStartOptions} from './EventTransport'
 
-type PulseSubscribeOptions = NonNullable<EchoesPulseEventsConfig['subscription']>
+type PulseSubscribeOptions = NonNullable<EchoesPulseEventsConfig['subscription']> & {
+  batchSize?: number
+}
 
 interface PulseReceivedEvent {
   id: string
@@ -49,6 +51,18 @@ export default class PulseManager implements EventTransport {
     this.subscriptions = await Promise.all(
       options.subscriptions.map(async definition => {
         const subscribeOptions = this.getSubscribeOptions(subscription, definition)
+        if (definition.receiverMode === 'batch') {
+          if (typeof this.pulse.subscribeBatch !== 'function') {
+            throw new Error(
+              'Echoes batch event receivers require a version of @orion-js/pulse with subscribeBatch support.',
+            )
+          }
+          return await this.pulse.subscribeBatch(
+            definition.topic,
+            events => options.onEvents(events.map(event => this.createReceivedEvent(event))),
+            {...subscribeOptions, batchSize: definition.batchSize},
+          )
+        }
         return await this.pulse.subscribe(
           definition.topic,
           event => options.onEvent(this.createReceivedEvent(event)),
@@ -84,6 +98,9 @@ export default class PulseManager implements EventTransport {
       ...(definition.attemptsBeforeDeadLetter === undefined
         ? {}
         : {maxRetries: definition.attemptsBeforeDeadLetter}),
+      ...(definition.maxConcurrency === undefined
+        ? {}
+        : {maxConcurrency: definition.maxConcurrency}),
     }
   }
 

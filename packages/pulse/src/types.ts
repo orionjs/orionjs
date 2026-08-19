@@ -5,8 +5,7 @@ export type PulseTopic<TEvents extends PulseEventMap> = Extract<keyof TEvents, s
 export type PulseHeaders = Record<string, string>
 export type PulseDeliveryMode = 'at-least-once' | 'at-most-once'
 export type PulseOffsetReset = 'latest' | 'earliest'
-export type PulseHistoryStatus = 'pending' | 'success' | 'error'
-export type PulseLockState = 'queued' | 'active' | 'expired'
+export type PulseReceiverMode = 'single' | 'batch'
 
 export interface PulseConnectOptions {
   connectionString: string
@@ -61,8 +60,17 @@ export interface PulseSubscribeOptions {
   maxConcurrency?: number
 }
 
+export interface PulseBatchSubscribeOptions extends PulseSubscribeOptions {
+  /** Maximum number of events delivered to one batch handler invocation. */
+  batchSize: number
+}
+
 export type PulseEventHandler<TTopic extends string = string, TData = unknown> = (
   event: PulseReceivedEvent<TTopic, TData>,
+) => Promise<void> | void
+
+export type PulseBatchEventHandler<TTopic extends string = string, TData = unknown> = (
+  events: PulseReceivedEvent<TTopic, TData>[],
 ) => Promise<void> | void
 
 export interface PulseSubscriptionInfo {
@@ -76,61 +84,19 @@ export interface PulseSubscriptionInfo {
   retryDelayMs: number
   retryBackoffMultiplier: number
   maxConcurrency: number
+  receiverMode: PulseReceiverMode
+  batchSize: number
 }
 
 export interface PulseSubscription extends PulseSubscriptionInfo {
   unsubscribe(): Promise<void>
 }
 
-export interface PulseHistoryError {
+export interface PulseExecutionError {
   code: string
   name: string
   message: string
   stack?: string
-}
-
-export interface PulseHistoryRecord {
-  id: string
-  deliveryId: string
-  eventId: string
-  consumerGroup: string
-  topic: string
-  attempt: number
-  status: PulseHistoryStatus
-  lockState?: PulseLockState
-  createdAt: Date
-  nextAttemptAt: Date
-  startedAt?: Date
-  lockedAt?: Date
-  lockedUntil?: Date
-  heartbeatAt?: Date
-  lockOwner?: string
-  lockToken?: string
-  endedAt?: Date
-  durationMs?: number
-  expiresAt?: Date
-  error?: PulseHistoryError
-}
-
-export interface PulseHistoryFindOptions {
-  topic?: string
-  eventId?: string
-  consumerGroup?: string
-  status?: PulseHistoryStatus
-  lockState?: PulseLockState
-  from?: Date
-  to?: Date
-  cursor?: string
-  limit?: number
-}
-
-export interface PulseHistoryFindResult {
-  records: PulseHistoryRecord[]
-  nextCursor?: string
-}
-
-export interface PulseHistoryApi {
-  find(options?: PulseHistoryFindOptions): Promise<PulseHistoryFindResult>
 }
 
 export interface EventDocument<TData = unknown> extends Document {
@@ -156,6 +122,8 @@ export interface SubscriptionDocument extends Document {
   maxRetries: number
   retryDelayMs: number
   retryBackoffMultiplier: number
+  receiverMode?: PulseReceiverMode
+  batchSize?: number
   createdAt: Date
   updatedAt: Date
   cursorSequence?: Timestamp
@@ -181,12 +149,16 @@ export interface DeliveryAttemptDocument {
   lockToken: string
   endedAt: Date
   durationMs: number
-  error?: PulseHistoryError
+  error?: PulseExecutionError
+  expiredEventCount?: number
 }
 
 export interface DeliveryDocument extends Document {
   _id: string
+  /** Last event in the delivery. Retained for cursor indexes and old single-event readers. */
   eventId: string
+  /** Ordered events in this execution unit. Missing on deliveries created before batching. */
+  eventIds?: string[]
   consumerGroup: string
   topic: string
   eventCreatedAt: Date
@@ -197,7 +169,7 @@ export interface DeliveryDocument extends Document {
   endedAt?: Date
   expiresAt?: Date
   finalAttempt?: number
-  error?: PulseHistoryError
+  error?: PulseExecutionError
   /** Total number of attempts claimed so far for a concurrent delivery. */
   attempt?: number
   attemptId?: string
@@ -209,6 +181,8 @@ export interface DeliveryDocument extends Document {
   lockedAt?: Date
   lockedUntil?: Date
   heartbeatAt?: Date
+  /** Number of payloads that expired before the latest attempt could execute. */
+  expiredEventCount?: number
   /** Most recent concurrent attempt outcomes, retained in a bounded window. */
   attempts?: DeliveryAttemptDocument[]
 }
@@ -221,13 +195,16 @@ export interface ResolvedSubscribeOptions {
   retryDelayMs: number
   retryBackoffMultiplier: number
   maxConcurrency: number
+  receiverMode: PulseReceiverMode
+  batchSize: number
 }
 
 export interface LocalSubscription {
   document: SubscriptionDocument
   options: ResolvedSubscribeOptions
   configuredMaxConcurrency: number
-  handler: PulseEventHandler<string, unknown>
+  handlerMode: PulseReceiverMode
+  handler: PulseEventHandler<string, unknown> | PulseBatchEventHandler<string, unknown>
   running: number
   unsubscribed: boolean
 }

@@ -1,6 +1,6 @@
 ---
 title: 'API reference'
-description: 'Pulse connection, publishing, subscriptions, history, errors, collections, and indexes'
+description: 'Pulse connection, publishing, subscriptions, errors, collections, and indexes'
 ---
 
 ## `connect()`
@@ -54,7 +54,7 @@ await pulse.awaitConnection(): Promise<void>
 
 Resolves after the MongoDB client connects, the database is selected, and collections and indexes are ready. Workers start only after successful initialization.
 
-`publish()`, `subscribe()`, and `history.find()` call it internally.
+`publish()`, `subscribe()`, and `subscribeBatch()` call it internally.
 
 ## `pulse.publish()`
 
@@ -112,6 +112,33 @@ type PulseEventHandler<TTopic extends string, TData> = (
 The returned subscription contains the resolved options, including the winning `configVersion`,
 and an idempotent asynchronous `unsubscribe()` method.
 
+## `pulse.subscribeBatch()`
+
+```typescript
+const subscription = await pulse.subscribeBatch(topic, batchHandler, {
+  configVersion: 2,
+  batchSize: 100,
+  maxConcurrency: 2,
+})
+```
+
+The handler receives an ordered array and can return `void` or `Promise<void>`:
+
+```typescript
+type PulseBatchEventHandler<TTopic extends string, TData> = (
+  events: PulseReceivedEvent<TTopic, TData>[],
+) => Promise<void> | void
+```
+
+It accepts all ordinary subscription options and requires `batchSize`, a positive integer with no
+library-defined maximum. The configured size is a maximum. Pulse immediately executes a partial
+batch when fewer events are available; it does not add a batching timer.
+
+One array invocation consumes one worker and one `maxConcurrency` slot. Retry, fencing, heartbeat,
+and acknowledgement apply to the complete array. Batch materialization atomically inserts the
+delivery and advances its discovery cursor in a MongoDB transaction, so this API requires a replica
+set, sharded cluster, or Atlas.
+
 ## `pulse.getSubscriptions()`
 
 ```typescript
@@ -119,46 +146,6 @@ const subscriptions = pulse.getSubscriptions()
 ```
 
 Returns the subscriptions registered in this process. It does not query durable subscriptions created by other replicas.
-
-## `pulse.history.find()`
-
-```typescript
-const page = await pulse.history.find({
-  topic: 'order.created',
-  status: 'error',
-  from: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  limit: 100,
-})
-```
-
-### History filters
-
-| Option | Type | Description |
-| --- | --- | --- |
-| `topic` | `string` | Exact topic. |
-| `eventId` | `string` | Exact event UUIDv7. |
-| `consumerGroup` | `string` | Exact consumer group. |
-| `status` | `'pending' \| 'success' \| 'error'` | Attempt state. |
-| `lockState` | `'queued' \| 'active' \| 'expired'` | Pending lock classification. Implies `status: 'pending'`. |
-| `from` | `Date` | Inclusive lower bound on attempt `createdAt`. |
-| `to` | `Date` | Inclusive upper bound on attempt `createdAt`. |
-| `cursor` | `string` | `nextCursor` from the previous page. |
-| `limit` | `number` | Defaults to 100 and is clamped from 1 to 500. |
-
-Results are sorted by UUIDv7 `_id` descending:
-
-```typescript
-interface PulseHistoryFindResult {
-  records: PulseHistoryRecord[]
-  nextCursor?: string
-}
-```
-
-Each record exposes delivery and event IDs, topic, group, attempt number, status, lock state and timestamps, duration, expiration, and serialized error.
-
-Pulse projects the current attempt and up to the 10 most recent completed outcomes from the
-delivery document. The delivery attempt counter remains exact even when older attempt details have
-left that bounded window.
 
 ## `pulse.close()`
 
@@ -189,7 +176,7 @@ The names use `collectionPrefix`, which defaults to `orionjs.pulse`:
 | --- | --- | --- |
 | `.events` | `orionjs.pulse.events` | Immutable published events. |
 | `.subscriptions` | `orionjs.pulse.subscriptions` | Durable group/topic configuration, cursor, and discovery lease. |
-| `.deliveries` | `orionjs.pulse.deliveries` | Queue state, attempt lease, retry history, and outcome for one group and event. |
+| `.deliveries` | `orionjs.pulse.deliveries` | Queue state, attempt lease, retry history, and outcome for one group and one or more events. |
 
 Every Pulse-created `_id`, lock owner, and fencing token is a UUIDv7 string.
 
