@@ -14,7 +14,9 @@ import {
   deliveriesPendingIndexKey,
   deliveriesProcessingIndexKey,
   deliveriesSequenceAcquisitionIndexKey,
+  eventsTopicSequenceIndexKey,
   type PulseCollections,
+  subscriptionsGroupTopicIndexKey,
 } from './indexes'
 import type {
   DeliveryAttemptDocument,
@@ -772,7 +774,9 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       pipeline.push({$unionWith: {coll: events.collectionName, pipeline: branch}})
     }
 
-    const discoveredEvents = (await events.aggregate(pipeline).toArray()) as EventDocument[]
+    const discoveredEvents = (await events
+      .aggregate(pipeline, {hint: eventsTopicSequenceIndexKey})
+      .toArray()) as EventDocument[]
     const eventsByTopic = new Map<string, EventDocument[]>()
     for (const event of discoveredEvents) {
       const topicEvents = eventsByTopic.get(event.topic) ?? []
@@ -1495,10 +1499,13 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       const local = this.localSubscriptions.get(delivery.topic)
       const subscription =
         local?.document ??
-        (await this.getCollections().subscriptions.findOne({
-          consumerGroup: delivery.consumerGroup,
-          topic: delivery.topic,
-        }))
+        (await this.getCollections().subscriptions.findOne(
+          {
+            consumerGroup: delivery.consumerGroup,
+            topic: delivery.topic,
+          },
+          {hint: subscriptionsGroupTopicIndexKey},
+        ))
       if (!subscription) continue
       const options = local?.options ?? optionsFromDocument(subscription, this.options.workerCount)
       const result = await this.finishConcurrentAttemptWithError(
@@ -1538,6 +1545,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         discoveryLockOwner: this.coordinatorId,
         discoveryLockedUntil: {$gt: now},
       })
+      .hint(subscriptionsGroupTopicIndexKey)
       .toArray()
     const subscriptionsByTopic = new Map(
       subscriptions.map(subscription => [subscription.topic, subscription]),
@@ -1610,6 +1618,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         consumerGroup: this.options.consumerGroup,
         topic: {$in: [...activeTopics]},
       })
+      .hint(subscriptionsGroupTopicIndexKey)
       .toArray()
     const byTopic = new Map(documents.map(document => [document.topic, document]))
     const operations: AnyBulkWriteOperation<SubscriptionDocument>[] = []
@@ -1705,6 +1714,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           consumerGroup: this.options.consumerGroup,
           topic: {$in: [...activeTopics]},
         })
+        .hint(subscriptionsGroupTopicIndexKey)
         .toArray()
     }
 
@@ -1861,12 +1871,18 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     requestedOptions: ResolvedSubscribeOptions,
   ): Promise<SubscriptionDocument> {
     const subscriptions = this.getCollections().subscriptions
-    let document = await subscriptions.findOne({consumerGroup: this.options.consumerGroup, topic})
+    let document = await subscriptions.findOne(
+      {consumerGroup: this.options.consumerGroup, topic},
+      {hint: subscriptionsGroupTopicIndexKey},
+    )
     if (!document) {
       const now = new Date()
       const latest =
         requestedOptions.offsetReset === 'latest'
-          ? await this.getCollections().events.findOne({topic}, {sort: {sequence: -1, _id: -1}})
+          ? await this.getCollections().events.findOne(
+              {topic},
+              {hint: eventsTopicSequenceIndexKey, sort: {sequence: -1, _id: -1}},
+            )
           : undefined
       const candidate: SubscriptionDocument = {
         _id: uuidv7(),
@@ -1891,10 +1907,13 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         document = candidate
       } catch (error) {
         if (!isDuplicateKeyError(error)) throw error
-        document = await subscriptions.findOne({
-          consumerGroup: this.options.consumerGroup,
-          topic,
-        })
+        document = await subscriptions.findOne(
+          {
+            consumerGroup: this.options.consumerGroup,
+            topic,
+          },
+          {hint: subscriptionsGroupTopicIndexKey},
+        )
       }
     }
     if (!document) {

@@ -15,6 +15,8 @@ import {
   deliveriesPendingIndexKey,
   deliveriesProcessingIndexKey,
   deliveriesSequenceAcquisitionIndexKey,
+  eventsTopicSequenceIndexKey,
+  subscriptionsGroupTopicIndexKey,
 } from './indexes'
 
 setDefaultTimeout(60_000)
@@ -1013,6 +1015,7 @@ describe('Pulse persistence', () => {
     const sequencedExplain = await db
       .collection('orionjs.pulse.events')
       .find({topic, sequence: {$gt: new Timestamp({t: 0, i: 0})}})
+      .hint(eventsTopicSequenceIndexKey)
       .sort({sequence: 1, _id: 1})
       .limit(100)
       .explain('executionStats')
@@ -1051,9 +1054,16 @@ describe('Pulse persistence', () => {
       .hint(deliveriesSequenceAcquisitionIndexKey)
       .limit(1)
       .explain('executionStats')
+    const subscriptionsExplain = await db
+      .collection('orionjs.pulse.subscriptions')
+      .find({consumerGroup, topic: {$in: [topic]}})
+      .hint(subscriptionsGroupTopicIndexKey)
+      .limit(1)
+      .explain('executionStats')
 
     const assertions: Array<[unknown, string]> = [
       [sequencedExplain, 'pulse_events_topic_sequence_id'],
+      [subscriptionsExplain, 'pulse_subscriptions_group_topic_unique'],
       [pendingExplain, 'pulse_deliveries_concurrent_pending'],
       [processingExplain, 'pulse_deliveries_concurrent_processing'],
       [cleanupExplain, 'pulse_deliveries_sequence_acquisition'],

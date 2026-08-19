@@ -4,9 +4,10 @@
 
 ### Patch Changes
 
-- Force the validated key patterns for pending claims, expired-lock recovery, and successful-delivery
-  cleanup so MongoDB cannot choose broader legacy indexes. Key-pattern hints remain compatible with
-  production databases that still use the previous physical names for Pulse queue indexes.
+- Force validated key patterns for recurring event discovery, latest-offset reads, subscription
+  lookups, pending claims, expired-lock recovery, and successful-delivery cleanup so MongoDB cannot
+  choose broader legacy indexes. Key-pattern hints remain compatible with production databases that
+  still use previous physical names for Pulse queue indexes.
 
 ## 4.5.16
 

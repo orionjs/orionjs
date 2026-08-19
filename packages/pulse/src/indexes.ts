@@ -23,6 +23,10 @@ interface ExpectedIndex {
   partialFilterExpression?: Record<string, unknown>
 }
 
+export const eventsTopicSequenceIndexKey = {topic: 1, sequence: 1, _id: 1} as const
+
+export const subscriptionsGroupTopicIndexKey = {consumerGroup: 1, topic: 1} as const
+
 export const deliveriesSequenceAcquisitionIndexKey = {
   consumerGroup: 1,
   topic: 1,
@@ -47,7 +51,7 @@ export const deliveriesProcessingIndexKey = {
 const eventsIndexes: ExpectedIndex[] = [
   {
     name: 'pulse_events_topic_sequence_id',
-    key: {topic: 1, sequence: 1, _id: 1},
+    key: eventsTopicSequenceIndexKey,
   },
   {
     name: 'pulse_events_expires_at_ttl',
@@ -59,7 +63,7 @@ const eventsIndexes: ExpectedIndex[] = [
 const subscriptionsIndexes: ExpectedIndex[] = [
   {
     name: 'pulse_subscriptions_group_topic_unique',
-    key: {consumerGroup: 1, topic: 1},
+    key: subscriptionsGroupTopicIndexKey,
     unique: true,
   },
   {
