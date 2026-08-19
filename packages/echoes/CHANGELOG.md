@@ -1,5 +1,18 @@
 # @orion-js/echoes
 
+## 4.5.7
+
+### Patch Changes
+
+- Add durable per-topic batch receivers to Pulse and Echoes. Pulse materializes ordered event arrays
+  as one transactionally cursor-safe delivery, executes each array as one worker invocation, and
+  retries, heartbeats, fences, and acknowledges the complete batch. Echoes adds `createEchoBatchEvent`
+  and `@EchoBatchEvent` for Pulse-only bulk handlers, while updated normal handlers remain compatible
+  with multi-event deliveries during hot rollouts. Remove the obsolete public history query API while
+  retaining bounded attempt outcomes on each delivery.
+- Updated dependencies
+  - @orion-js/pulse@4.5.16
+
 ## 4.5.6
 
 ### Patch Changes
