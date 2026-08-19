@@ -23,6 +23,27 @@ interface ExpectedIndex {
   partialFilterExpression?: Record<string, unknown>
 }
 
+export const deliveriesSequenceAcquisitionIndexKey = {
+  consumerGroup: 1,
+  topic: 1,
+  status: 1,
+  eventSequence: 1,
+  eventId: 1,
+} as const
+
+export const deliveriesPendingIndexKey = {
+  consumerGroup: 1,
+  nextAttemptAt: 1,
+  createdAt: 1,
+  topic: 1,
+} as const
+
+export const deliveriesProcessingIndexKey = {
+  consumerGroup: 1,
+  lockedUntil: 1,
+  topic: 1,
+} as const
+
 const eventsIndexes: ExpectedIndex[] = [
   {
     name: 'pulse_events_topic_sequence_id',
@@ -59,18 +80,18 @@ const deliveriesIndexes: ExpectedIndex[] = [
   },
   {
     name: 'pulse_deliveries_sequence_acquisition',
-    key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
+    key: deliveriesSequenceAcquisitionIndexKey,
   },
   {
     name: 'pulse_deliveries_concurrent_pending',
     aliases: ['pulse_deliveries_v2_pending'],
-    key: {consumerGroup: 1, nextAttemptAt: 1, createdAt: 1, topic: 1},
+    key: deliveriesPendingIndexKey,
     partialFilterExpression: {status: 'v2-pending'},
   },
   {
     name: 'pulse_deliveries_concurrent_processing',
     aliases: ['pulse_deliveries_v2_processing'],
-    key: {consumerGroup: 1, lockedUntil: 1, topic: 1},
+    key: deliveriesProcessingIndexKey,
     partialFilterExpression: {status: 'v2-processing'},
   },
   {

@@ -11,6 +11,11 @@ import {
 import {MongoMemoryReplSet, MongoMemoryServer} from 'mongodb-memory-server'
 import {uuidv7} from 'uuidv7'
 import {connect, type Pulse, PulseConfigurationError, PulseIndexError} from './index'
+import {
+  deliveriesPendingIndexKey,
+  deliveriesProcessingIndexKey,
+  deliveriesSequenceAcquisitionIndexKey,
+} from './indexes'
 
 setDefaultTimeout(60_000)
 
@@ -891,6 +896,68 @@ describe('Pulse persistence', () => {
     expect(indexes.some(index => index.name === 'pulse_deliveries_concurrent_processing')).toBe(
       false,
     )
+
+    const now = new Date()
+    await deliveries.insertMany([
+      {
+        _id: uuidv7(),
+        eventId: uuidv7(),
+        consumerGroup: 'concurrent-index-aliases-group',
+        topic: 'aliases.topic',
+        eventCreatedAt: now,
+        status: 'v2-pending',
+        attempt: 0,
+        attemptId: uuidv7(),
+        attemptCreatedAt: now,
+        nextAttemptAt: now,
+        attempts: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        _id: uuidv7(),
+        eventId: uuidv7(),
+        consumerGroup: 'concurrent-index-aliases-group',
+        topic: 'aliases.topic',
+        eventCreatedAt: now,
+        status: 'v2-processing',
+        attempt: 1,
+        attemptId: uuidv7(),
+        attemptCreatedAt: now,
+        nextAttemptAt: now,
+        lockedUntil: now,
+        attempts: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
+
+    const pendingPlan = JSON.stringify(
+      (
+        await deliveries
+          .find({
+            consumerGroup: 'concurrent-index-aliases-group',
+            status: 'v2-pending',
+            nextAttemptAt: {$lte: now},
+          })
+          .hint(deliveriesPendingIndexKey)
+          .explain()
+      ).queryPlanner.winningPlan,
+    )
+    const processingPlan = JSON.stringify(
+      (
+        await deliveries
+          .find({
+            consumerGroup: 'concurrent-index-aliases-group',
+            status: 'v2-processing',
+            lockedUntil: {$lte: now},
+          })
+          .hint(deliveriesProcessingIndexKey)
+          .explain()
+      ).queryPlanner.winningPlan,
+    )
+    expect(pendingPlan).toContain('pulse_deliveries_v2_pending')
+    expect(processingPlan).toContain('pulse_deliveries_v2_processing')
   })
 
   it('uses indexed, non-blocking sorts for every hot polling branch', async () => {
@@ -957,6 +1024,7 @@ describe('Pulse persistence', () => {
         status: 'v2-pending',
         nextAttemptAt: {$lte: now},
       })
+      .hint(deliveriesPendingIndexKey)
       .sort({nextAttemptAt: 1, createdAt: 1})
       .limit(4)
       .explain('executionStats')
@@ -968,14 +1036,27 @@ describe('Pulse persistence', () => {
         status: 'v2-processing',
         lockedUntil: {$lte: now},
       })
+      .hint(deliveriesProcessingIndexKey)
       .sort({lockedUntil: 1})
       .limit(25)
+      .explain('executionStats')
+    const cleanupExplain = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({
+        consumerGroup,
+        topic,
+        status: 'v2-success',
+        eventSequence: {$lt: new Timestamp({t: 2, i: 0})},
+      })
+      .hint(deliveriesSequenceAcquisitionIndexKey)
+      .limit(1)
       .explain('executionStats')
 
     const assertions: Array<[unknown, string]> = [
       [sequencedExplain, 'pulse_events_topic_sequence_id'],
       [pendingExplain, 'pulse_deliveries_concurrent_pending'],
       [processingExplain, 'pulse_deliveries_concurrent_processing'],
+      [cleanupExplain, 'pulse_deliveries_sequence_acquisition'],
     ]
     for (const [explain, expectedIndex] of assertions) {
       const winningPlan = JSON.stringify((explain as any).queryPlanner.winningPlan)

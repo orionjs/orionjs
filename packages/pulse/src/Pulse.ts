@@ -9,7 +9,13 @@ import {
 } from 'mongodb'
 import {uuidv7} from 'uuidv7'
 import {PulseConfigurationError, PulseLockLostError} from './errors'
-import {createCollectionsAndIndexes, type PulseCollections} from './indexes'
+import {
+  createCollectionsAndIndexes,
+  deliveriesPendingIndexKey,
+  deliveriesProcessingIndexKey,
+  deliveriesSequenceAcquisitionIndexKey,
+  type PulseCollections,
+} from './indexes'
 import type {
   DeliveryAttemptDocument,
   DeliveryDocument,
@@ -1025,6 +1031,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
             },
           },
           {
+            hint: deliveriesPendingIndexKey,
             sort: {nextAttemptAt: 1, createdAt: 1},
             returnDocument: 'after',
           },
@@ -1477,6 +1484,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
         status: 'v2-processing',
         lockedUntil: {$lte: now},
       })
+      .hint(deliveriesProcessingIndexKey)
       .sort({lockedUntil: 1})
       .limit(limit)
       .toArray()
@@ -1565,6 +1573,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           },
           {projection: {_id: 1}},
         )
+        .hint(deliveriesSequenceAcquisitionIndexKey)
         .limit(remaining)
         .toArray()
       candidateIds.push(...candidates.map(delivery => delivery._id))
