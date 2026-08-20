@@ -64,9 +64,12 @@ function getRuntimeState(pulse: Pulse<any>) {
       subscriptions: any
       deliveries: any
     }
+    discoveryRequestRevision: number
     wakeCoordinator(): void
     coordinateOnce(): Promise<boolean>
-    discoverEvents(scanEvents: boolean): Promise<{discovered: boolean; scanned: boolean}>
+    discoverEvents(
+      scanEvents: boolean,
+    ): Promise<{discovered: boolean; scanned: boolean; hasMore: boolean}>
     refreshDiscoveryLeases(): Promise<void>
     claimExecutions(capacity: number): Promise<unknown[]>
     materializeDeliveries(events: Document[]): Promise<void>
@@ -1620,10 +1623,78 @@ describe('Pulse delivery semantics', () => {
       return originalEventsAggregate(...args)
     }
 
-    expect(await runtime.discoverEvents(true)).toEqual({discovered: false, scanned: true})
+    expect(await runtime.discoverEvents(true)).toEqual({
+      discovered: false,
+      scanned: true,
+      hasMore: false,
+    })
     expect(discoveryPolls).toBe(1)
     const serializedPipeline = JSON.stringify(discoveryPipeline)
     for (const topic of topics) expect(serializedPipeline).toContain(topic)
+  })
+
+  it('does not request local discovery when publishing an event', async () => {
+    const databaseName = uniqueName('publish_without_discovery_request')
+    const topic = 'publish-without-discovery-request.topic'
+    const pulse = createPulse(databaseName, 'publish-without-discovery-request-group')
+    await pulse.awaitConnection()
+    await pulse.subscribe(topic, async () => {})
+
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    const revisionBeforePublish = runtime.discoveryRequestRevision
+
+    await pulse.publish({topic, data: {value: 1}})
+
+    expect(runtime.discoveryRequestRevision).toBe(revisionBeforePublish)
+  })
+
+  it('repeats discovery immediately only when the extra event proves backlog', async () => {
+    const databaseName = uniqueName('discovery_backlog_sentinel')
+    const consumerGroup = 'discovery-backlog-sentinel-group'
+    const topic = 'discovery-backlog-sentinel.topic'
+    const pulse = createPulse(databaseName, consumerGroup)
+    await pulse.awaitConnection()
+    await pulse.subscribeBatch(topic, async () => {}, {
+      batchSize: 3,
+      offsetReset: 'latest',
+      configVersion: 1,
+    })
+
+    const runtime = getRuntimeState(pulse)
+    await waitFor(() => runtime.discoveryLeases.has(topic))
+    runtime.running = false
+    runtime.wakeCoordinator()
+    await runtime.coordinatorPromise
+
+    await Promise.all(Array.from({length: 3}, (_, index) => pulse.publish({topic, data: {index}})))
+    expect(await runtime.discoverEvents(true)).toEqual({
+      discovered: true,
+      scanned: true,
+      hasMore: false,
+    })
+
+    await Promise.all(
+      Array.from({length: 4}, (_, index) => pulse.publish({topic, data: {index: index + 3}})),
+    )
+    expect(await runtime.discoverEvents(true)).toEqual({
+      discovered: true,
+      scanned: true,
+      hasMore: true,
+    })
+    expect(await runtime.discoverEvents(true)).toEqual({
+      discovered: true,
+      scanned: true,
+      hasMore: false,
+    })
+
+    const db = await rawDatabase(databaseName)
+    const deliveries = await db
+      .collection('orionjs.pulse.deliveries')
+      .find({consumerGroup, topic})
+      .sort({eventSequence: 1})
+      .toArray()
+    expect(deliveries.map(delivery => delivery.eventIds.length)).toEqual([3, 3, 1])
   })
 
   it('materializes a full discovery batch with bounded bulk commands', async () => {

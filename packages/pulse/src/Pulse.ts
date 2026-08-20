@@ -107,6 +107,7 @@ type ClaimedExecution = ConcurrentClaimedExecution
 interface DiscoveryResult {
   discovered: boolean
   scanned: boolean
+  hasMore: boolean
 }
 
 function isDuplicateKeyError(error: unknown) {
@@ -484,8 +485,6 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     if (!document) {
       throw new Error(`MongoDB did not return published event ${candidate._id}.`)
     }
-    this.requestDiscovery()
-
     return {
       id: document._id,
       topic: options.topic,
@@ -676,7 +675,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
     const discovery = await this.discoverEvents(shouldScanEvents)
     if (shouldScanEvents || discovery.scanned) {
       this.handledDiscoveryRequestRevision = requestedRevision
-      this.nextDiscoveryAt = discovery.discovered ? 0 : Date.now() + this.options.pollIntervalMs
+      this.nextDiscoveryAt = discovery.hasMore ? 0 : Date.now() + this.options.pollIntervalMs
     }
 
     const leaderTopics = [...this.discoveryLeases.keys()].filter(topic =>
@@ -742,13 +741,14 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
 
   private async discoverEvents(scanEvents: boolean): Promise<DiscoveryResult> {
     await this.refreshDiscoveryLeases()
-    if (!scanEvents) return {discovered: false, scanned: false}
+    if (!scanEvents) return {discovered: false, scanned: false, hasMore: false}
 
     const locals = this.discoverySubscriptionsInFairBatch()
-    if (locals.length === 0) return {discovered: false, scanned: false}
+    if (locals.length === 0) return {discovered: false, scanned: false, hasMore: false}
 
     const events = this.getCollections().events
     const perTopicLimit = Math.max(1, Math.floor(DISCOVERY_BATCH_SIZE / locals.length))
+    const limitsByTopic = new Map<string, number>()
     const branches: Document[][] = []
     for (const local of locals) {
       const subscription = local.document
@@ -765,7 +765,8 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
           }
         : {topic: subscription.topic}
       const limit = local.options.receiverMode === 'batch' ? local.options.batchSize : perTopicLimit
-      branches.push([{$match: match}, {$sort: {sequence: 1, _id: 1}}, {$limit: limit}])
+      limitsByTopic.set(subscription.topic, limit)
+      branches.push([{$match: match}, {$sort: {sequence: 1, _id: 1}}, {$limit: limit + 1}])
     }
 
     const [firstBranch, ...remainingBranches] = branches
@@ -774,14 +775,27 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       pipeline.push({$unionWith: {coll: events.collectionName, pipeline: branch}})
     }
 
-    const discoveredEvents = (await events
+    const fetchedEvents = (await events
       .aggregate(pipeline, {hint: eventsTopicSequenceIndexKey})
       .toArray()) as EventDocument[]
-    const eventsByTopic = new Map<string, EventDocument[]>()
-    for (const event of discoveredEvents) {
-      const topicEvents = eventsByTopic.get(event.topic) ?? []
+    const fetchedEventsByTopic = new Map<string, EventDocument[]>()
+    for (const event of fetchedEvents) {
+      const topicEvents = fetchedEventsByTopic.get(event.topic) ?? []
       topicEvents.push(event)
-      eventsByTopic.set(event.topic, topicEvents)
+      fetchedEventsByTopic.set(event.topic, topicEvents)
+    }
+
+    let hasMore = false
+    const eventsByTopic = new Map<string, EventDocument[]>()
+    const discoveredEvents: EventDocument[] = []
+    for (const local of locals) {
+      const topic = local.document.topic
+      const limit = limitsByTopic.get(topic) ?? perTopicLimit
+      const fetchedTopicEvents = fetchedEventsByTopic.get(topic) ?? []
+      if (fetchedTopicEvents.length > limit) hasMore = true
+      const topicEvents = fetchedTopicEvents.slice(0, limit)
+      eventsByTopic.set(topic, topicEvents)
+      discoveredEvents.push(...topicEvents)
     }
 
     const batchLeaseTokens = new Map(
@@ -871,7 +885,7 @@ export class Pulse<TEvents extends PulseEventMap = Record<string, unknown>> {
       )
     }
 
-    return {discovered: discoveredEvents.length > 0, scanned: true}
+    return {discovered: discoveredEvents.length > 0, scanned: true, hasMore}
   }
 
   private async materializeBatchDelivery(
