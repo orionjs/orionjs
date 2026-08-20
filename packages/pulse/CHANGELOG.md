@@ -1,5 +1,11 @@
 # @orion-js/pulse
 
+## 4.5.18
+
+### Patch Changes
+
+- Reduce unnecessary discovery polls by relying on the normal polling interval after publishing and only continuing discovery immediately when an extra fetched event proves that backlog remains.
+
 ## 4.5.17
 
 ### Patch Changes
