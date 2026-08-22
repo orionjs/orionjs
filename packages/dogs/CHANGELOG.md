@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.6.1
+
+### Patch Changes
+
+- Prevent terminally stale executions from extending their locks and document the centralized scheduler behavior.
+
 ## 4.6.0
 
 ### Minor Changes
