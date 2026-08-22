@@ -1,5 +1,11 @@
 # @orion-js/mongodb
 
+## 4.5.1
+
+### Patch Changes
+
+- Keep server startup running when MongoDB index creation or recreation fails, logging a warning instead.
+
 ## 4.5.0
 
 ### Minor Changes
