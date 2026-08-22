@@ -1,7 +1,8 @@
 import {generateId} from '@orion-js/helpers'
+import {createIndexesPromises} from '@orion-js/mongodb'
 import {getInstance} from '@orion-js/services'
 import {defineJob, scheduleJob, startWorkers} from '../index'
-import {JobsRepo} from './JobsRepo'
+import {CANDIDATE_JOB_ACQUISITION_HINT, INITIAL_JOB_ACQUISITION_HINT, JobsRepo} from './JobsRepo'
 
 describe('JobsRepo', () => {
   let jobsRepo: JobsRepo
@@ -94,6 +95,22 @@ describe('JobsRepo', () => {
   })
 
   describe('getJobAndLock method', () => {
+    it('should support explains with both acquisition hints', async () => {
+      await Promise.all(createIndexesPromises)
+
+      const initialExecutionTime = await jobsRepo.getJobAcquisitionExecutionTime(
+        ['test-job'],
+        INITIAL_JOB_ACQUISITION_HINT,
+      )
+      const candidateExecutionTime = await jobsRepo.getJobAcquisitionExecutionTime(
+        ['test-job'],
+        CANDIDATE_JOB_ACQUISITION_HINT,
+      )
+
+      expect(initialExecutionTime).toBeGreaterThanOrEqual(0)
+      expect(candidateExecutionTime).toBeGreaterThanOrEqual(0)
+    })
+
     it('should increment tries when picking up a stale job', async () => {
       // Arrange: Create a stale job (locked in the past)
       const jobId = generateId()
@@ -109,7 +126,11 @@ describe('JobsRepo', () => {
       })
 
       // Act: Get and lock the job
-      const jobToRun = await jobsRepo.getJobAndLock(['test-job'], 5000)
+      const jobToRun = await jobsRepo.getJobAndLock(
+        ['test-job'],
+        5000,
+        CANDIDATE_JOB_ACQUISITION_HINT,
+      )
 
       // Assert: Job should be returned with incremented tries
       expect(jobToRun).toBeDefined()

@@ -1,0 +1,66 @@
+---
+title: 'Dogs adapts its MongoDB acquisition index'
+description: 'Let each scheduler choose the fastest job acquisition index for its own workload'
+---
+
+`@orion-js/dogs@4.6.2` can now choose between two MongoDB indexes when claiming jobs. Each
+`startWorkers()` instance measures both alternatives against its own configured job names and keeps
+the faster hint in memory.
+
+This matters because the best acquisition plan depends on the scheduler's workload. An application
+that accepts a small subset of job names can benefit from leading the index with `jobName`, while a
+server that accepts most jobs may scan less work when the index starts with `priority`.
+
+## The two acquisition indexes
+
+Dogs declares both indexes on `orionjs.jobs_dogs_records`:
+
+```javascript
+{jobName: 1, priority: -1, nextRunAt: 1}
+{priority: -1, nextRunAt: 1}
+```
+
+The first remains the initial hint. The second is the alternative evaluated by the scheduler. The
+real atomic `findOneAndUpdate` claim always receives the hint currently selected by that
+`startWorkers()` instance.
+
+## Measure the real claim shape
+
+The comparison runs once at startup in the background and then every 30 minutes. It uses the same
+eligibility filter and sort as the real claim, including every job configured for the scheduler:
+
+```javascript
+find(eligibilitySelector)
+  .sort({priority: -1, nextRunAt: 1})
+  .limit(1)
+  .explain('executionStats')
+```
+
+Each probe runs three explains per hint, alternating their order to reduce ordering bias. Queries
+run on the primary with `maxTimeMS: 1000`, and Dogs compares the median
+`executionTimeMillis` reported by MongoDB.
+
+The first successful probe applies its winner immediately. Later probes require the alternative to
+win twice consecutively before changing the active hint. Ties, failures, and timeouts keep the
+current hint and reset the pending win streak.
+
+## Operational behavior
+
+The feature requires no configuration and stores no state outside the running process. Different
+servers can therefore select different hints for the same collection when their configured jobs or
+data distributions differ.
+
+Dogs logs the initial selection and later changes at `info`, retained hints at `debug`, and probe
+failures at `warn`. A scheduler with zero configured jobs does not run probes.
+
+Calling `stop()` cancels the next scheduled probe and waits for an explain already in flight. Once
+that explain returns, Dogs discards the rest of the incomplete comparison.
+
+## Upgrade notes
+
+- There are no public API or job-document changes.
+- Allow Orion's normal collection index setup to create both declared indexes before starting work.
+- Each scheduler adds six lightweight explain queries at startup and every 30 minutes.
+- Both indexes remain present so the scheduler can adapt again when the workload changes.
+
+See the [Jobs guide](/overview/controllers/jobs) for worker configuration and shutdown behavior.

@@ -1,6 +1,7 @@
 import {describe, expect, it, mock} from 'bun:test'
 import {sleep} from '@orion-js/helpers'
 import {getInstance} from '@orion-js/services'
+import {CANDIDATE_JOB_ACQUISITION_HINT, INITIAL_JOB_ACQUISITION_HINT} from '../repos/JobsRepo'
 import {JobToRun} from '../types/Worker'
 import {WorkerService} from './WorkerService'
 
@@ -26,6 +27,22 @@ function job(executionId: string, name = 'testJob'): JobToRun {
   }
 }
 
+function probeWithEqualTimes() {
+  return mock(async () => 1)
+}
+
+function workersConfig() {
+  return {
+    jobs: {
+      firstJob: {type: 'event', resolve: async () => {}},
+      secondJob: {type: 'event', resolve: async () => {}},
+    },
+    workersCount: 2,
+    pollInterval: 1000,
+    defaultLockTime: 1000,
+  } as any
+}
+
 describe('WorkerService', () => {
   it('should expose startWorkers', () => {
     const workerService = getInstance(WorkerService)
@@ -49,6 +66,7 @@ describe('WorkerService', () => {
     workerService.jobsRepo = {
       ensureMaxTriesReachedRetention: mock(async () => {}),
       getJobAndLock,
+      getJobAcquisitionExecutionTime: probeWithEqualTimes(),
     }
 
     const instance = workerService.startWorkers({
@@ -74,6 +92,7 @@ describe('WorkerService', () => {
     workerService.jobsRepo = {
       ensureMaxTriesReachedRetention: mock(async () => {}),
       getJobAndLock: mock(async () => pendingJobs.shift()),
+      getJobAcquisitionExecutionTime: probeWithEqualTimes(),
     }
     workerService.executor = {
       executeJob: mock(async (_config, jobToRun: JobToRun) => {
@@ -108,6 +127,7 @@ describe('WorkerService', () => {
     workerService.jobsRepo = {
       ensureMaxTriesReachedRetention: mock(async () => {}),
       getJobAndLock: mock(async () => pendingJobs.shift()),
+      getJobAcquisitionExecutionTime: probeWithEqualTimes(),
     }
     workerService.executor = {
       executeJob: mock(async (_config, jobToRun: JobToRun, onStale: () => void) => {
@@ -147,6 +167,7 @@ describe('WorkerService', () => {
     workerService.jobsRepo = {
       ensureMaxTriesReachedRetention: mock(async () => {}),
       getJobAndLock,
+      getJobAcquisitionExecutionTime: probeWithEqualTimes(),
     }
     workerService.executor = {executeJob}
 
@@ -163,5 +184,161 @@ describe('WorkerService', () => {
 
     expect(executeJob).toHaveBeenCalledTimes(1)
     expect(instance.runningExecutions).toBe(0)
+  })
+
+  it('should select the startup winner immediately and require two later wins to switch', async () => {
+    const workerService = new WorkerService() as any
+    const config = workersConfig()
+    let candidateIsFaster = true
+    const getJobAcquisitionExecutionTime = mock(async (_jobNames, hint) => {
+      if (candidateIsFaster) {
+        return hint === CANDIDATE_JOB_ACQUISITION_HINT ? 2 : 10
+      }
+      return hint === INITIAL_JOB_ACQUISITION_HINT ? 2 : 10
+    })
+    workerService.jobsRepo = {getJobAcquisitionExecutionTime}
+    const instance = workerService.createWorkersInstanceDefinition(config) as any
+
+    await workerService.runJobAcquisitionHintProbe(config, instance)
+    expect(instance.jobAcquisitionHint).toBe(CANDIDATE_JOB_ACQUISITION_HINT)
+
+    candidateIsFaster = false
+    await workerService.runJobAcquisitionHintProbe(config, instance)
+    expect(instance.jobAcquisitionHint).toBe(CANDIDATE_JOB_ACQUISITION_HINT)
+
+    await workerService.runJobAcquisitionHintProbe(config, instance)
+    expect(instance.jobAcquisitionHint).toBe(INITIAL_JOB_ACQUISITION_HINT)
+
+    const hints = getJobAcquisitionExecutionTime.mock.calls.map(call => call[1])
+    expect(hints.slice(0, 6)).toEqual([
+      INITIAL_JOB_ACQUISITION_HINT,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+      INITIAL_JOB_ACQUISITION_HINT,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+      INITIAL_JOB_ACQUISITION_HINT,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+    ])
+    expect(hints.slice(6, 12)).toEqual([
+      CANDIDATE_JOB_ACQUISITION_HINT,
+      INITIAL_JOB_ACQUISITION_HINT,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+      INITIAL_JOB_ACQUISITION_HINT,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+      INITIAL_JOB_ACQUISITION_HINT,
+    ])
+    expect(getJobAcquisitionExecutionTime.mock.calls[0][0]).toEqual(['firstJob', 'secondJob'])
+  })
+
+  it('should keep the current hint and reset the win streak when a probe fails', async () => {
+    const workerService = new WorkerService() as any
+    const config = workersConfig()
+    workerService.jobsRepo = {
+      getJobAcquisitionExecutionTime: mock(async () => {
+        throw new Error('explain timed out')
+      }),
+    }
+    const instance = workerService.createWorkersInstanceDefinition(config) as any
+    instance.hasCompletedInitialJobAcquisitionHintProbe = true
+    instance.pendingJobAcquisitionHint = CANDIDATE_JOB_ACQUISITION_HINT
+    instance.pendingJobAcquisitionHintWins = 1
+
+    await workerService.runJobAcquisitionHintProbe(config, instance)
+
+    expect(instance.jobAcquisitionHint).toBe(INITIAL_JOB_ACQUISITION_HINT)
+    expect(instance.pendingJobAcquisitionHint).toBeUndefined()
+    expect(instance.pendingJobAcquisitionHintWins).toBe(0)
+  })
+
+  it('should keep the current hint and reset the win streak when medians tie', async () => {
+    const workerService = new WorkerService() as any
+    const config = workersConfig()
+    workerService.jobsRepo = {getJobAcquisitionExecutionTime: probeWithEqualTimes()}
+    const instance = workerService.createWorkersInstanceDefinition(config) as any
+    instance.hasCompletedInitialJobAcquisitionHintProbe = true
+    instance.pendingJobAcquisitionHint = CANDIDATE_JOB_ACQUISITION_HINT
+    instance.pendingJobAcquisitionHintWins = 1
+
+    await workerService.runJobAcquisitionHintProbe(config, instance)
+
+    expect(instance.jobAcquisitionHint).toBe(INITIAL_JOB_ACQUISITION_HINT)
+    expect(instance.pendingJobAcquisitionHint).toBeUndefined()
+    expect(instance.pendingJobAcquisitionHintWins).toBe(0)
+  })
+
+  it('should skip probes when no jobs are configured', async () => {
+    const workerService = new WorkerService() as any
+    const getJobAcquisitionExecutionTime = probeWithEqualTimes()
+    workerService.jobsRepo = {
+      ensureMaxTriesReachedRetention: mock(async () => {}),
+      getJobAcquisitionExecutionTime,
+    }
+
+    const instance = workerService.startWorkers({jobs: {}})
+    await instance.stop()
+
+    expect(getJobAcquisitionExecutionTime).not.toHaveBeenCalled()
+  })
+
+  it('should run periodic probes without overlap', async () => {
+    const workerService = new WorkerService() as any
+    workerService.jobAcquisitionHintProbeIntervalMs = 5
+    let explainsInFlight = 0
+    let maxExplainsInFlight = 0
+    const getJobAcquisitionExecutionTime = mock(async () => {
+      explainsInFlight++
+      maxExplainsInFlight = Math.max(maxExplainsInFlight, explainsInFlight)
+      await sleep(2)
+      explainsInFlight--
+      return 1
+    })
+    workerService.jobsRepo = {
+      ensureMaxTriesReachedRetention: mock(async () => {}),
+      getJobAndLock: mock(async () => undefined),
+      getJobAcquisitionExecutionTime,
+    }
+
+    const instance = workerService.startWorkers({
+      jobs: {testJob: {type: 'event', resolve: async () => {}}} as any,
+      pollInterval: 1000,
+    })
+    await waitUntil(() => getJobAcquisitionExecutionTime.mock.calls.length >= 12)
+    await instance.stop()
+
+    expect(maxExplainsInFlight).toBe(1)
+    expect(getJobAcquisitionExecutionTime).toHaveBeenCalledTimes(12)
+  })
+
+  it('should wait for an in-flight probe on stop and skip its remaining explains', async () => {
+    const workerService = new WorkerService() as any
+    let resolveExplain!: (executionTimeMillis: number) => void
+    const getJobAcquisitionExecutionTime = mock(
+      async () =>
+        await new Promise<number>(resolve => {
+          resolveExplain = resolve
+        }),
+    )
+    workerService.jobsRepo = {
+      ensureMaxTriesReachedRetention: mock(async () => {}),
+      getJobAndLock: mock(async () => undefined),
+      getJobAcquisitionExecutionTime,
+    }
+
+    const instance = workerService.startWorkers({
+      jobs: {testJob: {type: 'event', resolve: async () => {}}} as any,
+      pollInterval: 1000,
+    })
+    await waitUntil(() => getJobAcquisitionExecutionTime.mock.calls.length === 1)
+
+    let didStop = false
+    const stopPromise = instance.stop().then(() => {
+      didStop = true
+    })
+    await sleep(5)
+    expect(didStop).toBe(false)
+
+    resolveExplain(1)
+    await stopPromise
+
+    expect(getJobAcquisitionExecutionTime).toHaveBeenCalledTimes(1)
   })
 })

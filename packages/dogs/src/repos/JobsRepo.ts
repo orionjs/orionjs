@@ -7,6 +7,41 @@ import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefini
 import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS} from '../types/StartConfig'
 import {JobToRun} from '../types/Worker'
 
+export type JobAcquisitionHint = 'byJobName' | 'globalPriority'
+
+export const JOB_ACQUISITION_HINTS = {
+  byJobName: {
+    jobName: 1,
+    priority: -1,
+    nextRunAt: 1,
+  },
+  globalPriority: {
+    priority: -1,
+    nextRunAt: 1,
+  },
+} as const satisfies Record<JobAcquisitionHint, MongoDB.IndexSpecification>
+
+export const INITIAL_JOB_ACQUISITION_HINT = 'byJobName' as const satisfies JobAcquisitionHint
+export const CANDIDATE_JOB_ACQUISITION_HINT = 'globalPriority' as const satisfies JobAcquisitionHint
+
+const JOB_ACQUISITION_SORT: MongoDB.Sort = {
+  priority: -1,
+  nextRunAt: 1,
+}
+
+function getJobAcquisitionSelector(jobNames: string[], now: Date): MongoDB.Filter<JobRecord> {
+  return {
+    jobName: {$in: jobNames},
+    nextRunAt: {$lte: now},
+    $and: [
+      {$or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: now}}]},
+      // Exclude event jobs that have reached max tries. Recurrent jobs keep running even
+      // if old records still have this status from previous versions.
+      {$or: [{type: {$ne: 'event'}}, {status: {$ne: 'maxTriesReached'}}]},
+    ],
+  }
+}
+
 @Repository()
 export class JobsRepo {
   @MongoCollection({
@@ -15,11 +50,10 @@ export class JobsRepo {
     schema: JobRecordSchema,
     indexes: [
       {
-        keys: {
-          jobName: 1,
-          priority: -1,
-          nextRunAt: 1,
-        },
+        keys: JOB_ACQUISITION_HINTS.byJobName,
+      },
+      {
+        keys: JOB_ACQUISITION_HINTS.globalPriority,
       },
       {
         keys: {
@@ -50,31 +84,25 @@ export class JobsRepo {
   })
   jobs: Collection<JobRecord>
 
-  async getJobAndLock(jobNames: string[], lockTime: number): Promise<JobToRun> {
+  async getJobAndLock(
+    jobNames: string[],
+    lockTime: number,
+    hint: JobAcquisitionHint = INITIAL_JOB_ACQUISITION_HINT,
+  ): Promise<JobToRun> {
     const executionId = generateId()
-    const lockedUntil = new Date(Date.now() + lockTime)
+    const now = new Date()
+    const lockedUntil = new Date(now.getTime() + lockTime)
 
     const job = await this.jobs.findOneAndUpdate(
+      getJobAcquisitionSelector(jobNames, now),
       {
-        jobName: {$in: jobNames},
-        nextRunAt: {$lte: new Date()},
-        $and: [
-          {$or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: new Date()}}]},
-          // Exclude event jobs that have reached max tries. Recurrent jobs keep running even
-          // if old records still have this status from previous versions.
-          {$or: [{type: {$ne: 'event'}}, {status: {$ne: 'maxTriesReached'}}]},
-        ],
-      },
-      {
-        $set: {lockId: executionId, lockedUntil, lastRunAt: new Date()},
+        $set: {lockId: executionId, lockedUntil, lastRunAt: now},
         $inc: {tries: 1},
       },
       {
         mongoOptions: {
-          sort: {
-            priority: -1,
-            nextRunAt: 1,
-          },
+          hint: JOB_ACQUISITION_HINTS[hint],
+          sort: JOB_ACQUISITION_SORT,
           returnDocument: 'before',
         },
       },
@@ -102,6 +130,28 @@ export class JobsRepo {
       uniqueIdentifier: job.uniqueIdentifier,
       wasStale,
     }
+  }
+
+  async getJobAcquisitionExecutionTime(
+    jobNames: string[],
+    hint: JobAcquisitionHint,
+  ): Promise<number> {
+    const explain = await this.jobs
+      .find(getJobAcquisitionSelector(jobNames, new Date()), {
+        hint: JOB_ACQUISITION_HINTS[hint],
+        maxTimeMS: 1000,
+        readPreference: 'primary',
+      })
+      .sort(JOB_ACQUISITION_SORT)
+      .limit(1)
+      .explain('executionStats')
+
+    const executionTimeMillis = explain.executionStats?.executionTimeMillis
+    if (typeof executionTimeMillis !== 'number' || !Number.isFinite(executionTimeMillis)) {
+      throw new Error(`Explain for acquisition hint "${hint}" returned no execution time`)
+    }
+
+    return executionTimeMillis
   }
 
   async setJobRecordPriority(jobId: string, priority: number, lockId?: string) {

@@ -1,7 +1,12 @@
 import {sleep} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {Inject, Service} from '@orion-js/services'
-import {JobsRepo} from '../repos/JobsRepo'
+import {
+  CANDIDATE_JOB_ACQUISITION_HINT,
+  INITIAL_JOB_ACQUISITION_HINT,
+  JobAcquisitionHint,
+  JobsRepo,
+} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS, StartWorkersConfig} from '../types/StartConfig'
 import {JobToRun, WorkersInstance} from '../types/Worker'
@@ -19,6 +24,14 @@ interface InternalWorkersInstance extends WorkersInstance {
   activeExecutions: Map<string, TrackedExecution>
   staleExecutions: Map<string, TrackedExecution>
   runningJobsByName: Map<string, number>
+  jobAcquisitionHint: JobAcquisitionHint
+  jobAcquisitionHintProbeCycle: number
+  hasCompletedInitialJobAcquisitionHintProbe: boolean
+  pendingJobAcquisitionHint?: JobAcquisitionHint
+  pendingJobAcquisitionHintWins: number
+  jobAcquisitionHintProbePromise: Promise<void>
+  jobAcquisitionHintProbeTimer?: ReturnType<typeof setTimeout>
+  cancelJobAcquisitionHintProbeWait?: () => void
   schedulerPromise: Promise<void>
   stopSignal: Promise<void>
   signalStop: () => void
@@ -27,6 +40,8 @@ interface InternalWorkersInstance extends WorkersInstance {
 
 @Service()
 export class WorkerService {
+  private jobAcquisitionHintProbeIntervalMs = 30 * 60 * 1000
+
   @Inject(() => JobsRepo)
   private jobsRepo: JobsRepo
 
@@ -177,6 +192,7 @@ export class WorkerService {
           const jobToRun = await this.jobsRepo.getJobAndLock(
             availableJobNames,
             config.defaultLockTime,
+            workersInstance.jobAcquisitionHint,
           )
 
           if (!jobToRun) {
@@ -208,6 +224,132 @@ export class WorkerService {
     }
   }
 
+  getOtherJobAcquisitionHint(hint: JobAcquisitionHint): JobAcquisitionHint {
+    return hint === INITIAL_JOB_ACQUISITION_HINT
+      ? CANDIDATE_JOB_ACQUISITION_HINT
+      : INITIAL_JOB_ACQUISITION_HINT
+  }
+
+  getMedian(values: number[]): number {
+    const sortedValues = [...values].sort((left, right) => left - right)
+    return sortedValues[Math.floor(sortedValues.length / 2)]
+  }
+
+  resetPendingJobAcquisitionHint(workersInstance: InternalWorkersInstance) {
+    workersInstance.pendingJobAcquisitionHint = undefined
+    workersInstance.pendingJobAcquisitionHintWins = 0
+  }
+
+  async runJobAcquisitionHintProbe(
+    config: StartWorkersConfig,
+    workersInstance: InternalWorkersInstance,
+  ) {
+    const jobNames = this.getJobNames(config.jobs)
+    if (jobNames.length === 0 || !workersInstance.running) return
+
+    const byHint: Record<JobAcquisitionHint, number[]> = {
+      [INITIAL_JOB_ACQUISITION_HINT]: [],
+      [CANDIDATE_JOB_ACQUISITION_HINT]: [],
+    }
+    const startsWithInitialHint = workersInstance.jobAcquisitionHintProbeCycle % 2 === 0
+    const firstHint = startsWithInitialHint
+      ? INITIAL_JOB_ACQUISITION_HINT
+      : CANDIDATE_JOB_ACQUISITION_HINT
+    const secondHint = this.getOtherJobAcquisitionHint(firstHint)
+    workersInstance.jobAcquisitionHintProbeCycle++
+
+    try {
+      for (let sample = 0; sample < 3; sample++) {
+        for (const hint of [firstHint, secondHint]) {
+          if (!workersInstance.running) return
+          const executionTimeMillis = await this.jobsRepo.getJobAcquisitionExecutionTime(
+            jobNames,
+            hint,
+          )
+          if (!workersInstance.running) return
+          byHint[hint].push(executionTimeMillis)
+        }
+      }
+    } catch (error) {
+      this.resetPendingJobAcquisitionHint(workersInstance)
+      if (workersInstance.running) {
+        logger.warn('Job acquisition hint probe failed; keeping the current hint.', {error})
+      }
+      return
+    }
+
+    const currentHint = workersInstance.jobAcquisitionHint
+    const otherHint = this.getOtherJobAcquisitionHint(currentHint)
+    const currentMedian = this.getMedian(byHint[currentHint])
+    const otherMedian = this.getMedian(byHint[otherHint])
+    const winner = otherMedian < currentMedian ? otherHint : currentHint
+
+    if (!workersInstance.hasCompletedInitialJobAcquisitionHintProbe) {
+      workersInstance.hasCompletedInitialJobAcquisitionHintProbe = true
+      workersInstance.jobAcquisitionHint = winner
+      this.resetPendingJobAcquisitionHint(workersInstance)
+      logger.info(`Selected job acquisition hint "${winner}" after startup probe.`)
+      return
+    }
+
+    if (winner === currentHint) {
+      this.resetPendingJobAcquisitionHint(workersInstance)
+      logger.debug(`Keeping job acquisition hint "${currentHint}" after probe.`)
+      return
+    }
+
+    if (workersInstance.pendingJobAcquisitionHint === winner) {
+      workersInstance.pendingJobAcquisitionHintWins++
+    } else {
+      workersInstance.pendingJobAcquisitionHint = winner
+      workersInstance.pendingJobAcquisitionHintWins = 1
+    }
+
+    if (workersInstance.pendingJobAcquisitionHintWins < 2) {
+      logger.debug(
+        `Keeping job acquisition hint "${currentHint}"; "${winner}" has one consecutive probe win.`,
+      )
+      return
+    }
+
+    workersInstance.jobAcquisitionHint = winner
+    this.resetPendingJobAcquisitionHint(workersInstance)
+    logger.info(`Changed job acquisition hint from "${currentHint}" to "${winner}".`)
+  }
+
+  async waitForNextJobAcquisitionHintProbe(workersInstance: InternalWorkersInstance) {
+    await new Promise<void>(resolve => {
+      let resolved = false
+      const finishWait = () => {
+        if (resolved) return
+        resolved = true
+        clearTimeout(workersInstance.jobAcquisitionHintProbeTimer)
+        workersInstance.jobAcquisitionHintProbeTimer = undefined
+        workersInstance.cancelJobAcquisitionHintProbeWait = undefined
+        resolve()
+      }
+
+      workersInstance.jobAcquisitionHintProbeTimer = setTimeout(
+        finishWait,
+        this.jobAcquisitionHintProbeIntervalMs,
+      )
+      workersInstance.cancelJobAcquisitionHintProbeWait = finishWait
+    })
+  }
+
+  async runJobAcquisitionHintProbeLoop(
+    config: StartWorkersConfig,
+    workersInstance: InternalWorkersInstance,
+  ) {
+    if (this.getJobNames(config.jobs).length === 0) return
+
+    while (workersInstance.running) {
+      await this.runJobAcquisitionHintProbe(config, workersInstance)
+      if (!workersInstance.running) return
+      await this.waitForNextJobAcquisitionHintProbe(workersInstance)
+    }
+  }
+
   createWorkersInstanceDefinition(config: StartWorkersConfig): InternalWorkersInstance {
     let signalStop!: () => void
     const stopSignal = new Promise<void>(resolve => {
@@ -220,6 +362,11 @@ export class WorkerService {
       activeExecutions: new Map(),
       staleExecutions: new Map(),
       runningJobsByName: new Map(),
+      jobAcquisitionHint: INITIAL_JOB_ACQUISITION_HINT,
+      jobAcquisitionHintProbeCycle: 0,
+      hasCompletedInitialJobAcquisitionHintProbe: false,
+      pendingJobAcquisitionHintWins: 0,
+      jobAcquisitionHintProbePromise: Promise.resolve(),
       schedulerPromise: Promise.resolve(),
       stopSignal,
       signalStop,
@@ -233,8 +380,12 @@ export class WorkerService {
           logger.info('Stopping job scheduler...')
           workersInstance.running = false
           workersInstance.signalStop()
+          workersInstance.cancelJobAcquisitionHintProbeWait?.()
 
-          await workersInstance.schedulerPromise
+          await Promise.all([
+            workersInstance.schedulerPromise,
+            workersInstance.jobAcquisitionHintProbePromise,
+          ])
 
           const activeCapacity = Array.from(
             workersInstance.activeExecutions.values(),
@@ -306,8 +457,15 @@ export class WorkerService {
     const workersInstance = this.createWorkersInstanceDefinition(config)
     logger.debug('Starting job scheduler', config)
 
+    workersInstance.jobAcquisitionHintProbePromise = this.runJobAcquisitionHintProbeLoop(
+      config,
+      workersInstance,
+    )
+
     workersInstance.schedulerPromise = this.runScheduler(config, workersInstance).catch(error => {
       workersInstance.running = false
+      workersInstance.signalStop()
+      workersInstance.cancelJobAcquisitionHintProbeWait?.()
       logger.error('Job scheduler stopped after an unexpected error.', {error})
     })
 

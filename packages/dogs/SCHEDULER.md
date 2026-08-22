@@ -28,6 +28,27 @@ regardless of `workersCount`. Successful claims continue immediately until capac
 when all concurrency slots are occupied, or when every job name has reached its local parallelism
 limit.
 
+## Adaptive acquisition hint
+
+Each `startWorkers()` instance keeps its selected MongoDB hint only in memory. It starts with
+`{jobName: 1, priority: -1, nextRunAt: 1}` and compares it with
+`{priority: -1, nextRunAt: 1}`. Both indexes are declared by `JobsRepo`; the scheduler assumes they
+already exist and does not add a migration or index-detection path.
+
+The comparison runs immediately in the background and then every 30 minutes, without jitter or
+overlap. It uses every configured job name and the same eligibility selector and sort as the real
+claim. Each cycle alternates three `find().sort().limit(1).explain('executionStats')` calls per hint
+on the primary, with a one-second maximum execution time.
+
+The hint with the lower median `executionTimeMillis` wins. A tie keeps the current hint. The startup
+probe applies its winner immediately; later probes require the other hint to win twice
+consecutively before switching. A current-hint win, tie, failure, or timeout resets that streak.
+Failures retain the current hint and are retried at the next interval.
+
+Instances with no configured jobs do not run probes. `stop()` cancels a scheduled probe and waits
+for an explain already in flight; after that explain returns, the rest of its incomplete cycle is
+discarded.
+
 ## Execution state
 
 The scheduler owns two internal maps:
