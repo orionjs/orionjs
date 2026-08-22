@@ -34,16 +34,31 @@ export class Executor {
     return job.lockTime ?? jobToRun.lockTime
   }
 
-  getContext(job: JobDefinition, jobToRun: JobToRun, onStale: () => void): ExecutionContext {
+  getContext(
+    job: JobDefinition,
+    jobToRun: JobToRun,
+    onStale: () => void,
+    isExecutionActive: () => boolean,
+  ): ExecutionContext {
     const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
     let staleTimeout = setTimeout(() => onStale(), effectiveLockTime)
     staleTimeout.unref?.()
+    const contextLogger = logger.addMetadata({
+      jobName: jobToRun.name,
+      jobId: jobToRun.jobId,
+    })
+
     return {
       definition: job,
       record: jobToRun,
       tries: jobToRun.tries || 0,
       clearStaleTimeout: () => clearTimeout(staleTimeout),
       extendLockTime: async (extraTime: number) => {
+        if (!isExecutionActive()) {
+          contextLogger.warn(`Will not extend lock for stale execution "${jobToRun.executionId}"`)
+          return
+        }
+
         clearTimeout(staleTimeout)
         let didExtend = false
         try {
@@ -59,10 +74,7 @@ export class Executor {
         staleTimeout = setTimeout(() => onStale(), extraTime)
         staleTimeout.unref?.()
       },
-      logger: logger.addMetadata({
-        jobName: jobToRun.name,
-        jobId: jobToRun.jobId,
-      }),
+      logger: contextLogger,
     }
   }
 
@@ -313,7 +325,12 @@ export class Executor {
           return staleHandlingPromise
         }
 
-        context = this.getContext(job, jobToRun, () => void markAsStale())
+        context = this.getContext(
+          job,
+          jobToRun,
+          () => void markAsStale(),
+          () => executionStatus === 'running',
+        )
 
         const extraContext = {
           controllerType: 'job' as const,

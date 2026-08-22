@@ -1,0 +1,91 @@
+---
+title: 'Dogs now uses one central scheduler'
+description: 'Run concurrent jobs with one polling loop, ephemeral executions, and fenced stale-job recovery'
+---
+
+`@orion-js/dogs@4.6.1` replaces persistent worker loops with one scheduler per
+`startWorkers()` call. Applications keep the same `workersCount` configuration, but the number now
+represents concurrent job executions instead of independent database pollers.
+
+```text
+Before
+worker 1 -> poll -> execute -> cool down -> poll
+worker 2 -> poll -> execute -> cool down -> poll
+worker 3 -> poll -> execute -> cool down -> poll
+
+Now
+scheduler -> claim -> execution 1
+          -> claim -> execution 2
+          -> claim -> execution 3
+```
+
+The scheduler claims jobs atomically with `findOneAndUpdate` until capacity is full. Each claim
+starts an ephemeral promise that disappears after the job finishes. There are no idle worker loops
+to retain and no worker-specific cooldown.
+
+## Poll once when the queue is empty
+
+With the previous architecture, configuring 20 workers could produce 20 independent empty polling
+loops. The centralized scheduler now makes at most one unsuccessful query per `pollInterval` for
+each `startWorkers()` instance, regardless of `workersCount`.
+
+Successful claims do not wait for the next interval. The scheduler keeps claiming immediately until
+it reaches global capacity or every eligible job name reaches its local
+`maxParallelExecutionsPerServer` limit.
+
+```typescript
+const workers = startWorkers({
+  jobs,
+  workersCount: 20,
+  pollInterval: 3000,
+})
+```
+
+This configuration permits up to 20 concurrent executions while using one acquisition loop. When
+the queue is empty, it performs one unsuccessful poll every three seconds.
+
+## Treat stale executions as terminal
+
+Every claim now writes a unique `lockId`. Mutations made by an execution, including lock extension,
+retry scheduling, recurrent scheduling, max-tries handling, priority changes, and event-job
+deletion, match both the job ID and that lock ID.
+
+When a lock expires, Dogs marks the old execution as stale, logs a warning, records stale history,
+and releases its scheduler capacity. The underlying promise remains observed until it settles, but
+its late success or error cannot update the job or overwrite the stale result. Calls to
+`context.extendLockTime()` after the execution becomes stale are ignored with a warning.
+
+This fencing matters when another server has already reclaimed the same job: the old promise no
+longer owns the new execution's record.
+
+## Stop without waiting for detached work
+
+`workers.stop()` stops new acquisitions and waits for executions that still own their locks. It does
+not wait indefinitely for detached stale promises. If a MongoDB claim was already in flight when
+`stop()` was called, that claim is treated as committed and included in the shutdown wait.
+
+Use `runningExecutions` to observe current capacity usage:
+
+```typescript
+const workers = startWorkers({jobs, workersCount: 8})
+
+logger.info('Active Dogs executions', {
+  count: workers.runningExecutions,
+})
+
+await workers.stop()
+```
+
+## Upgrade notes
+
+- `workersCount` remains supported and now means maximum concurrent executions.
+- `cooldownPeriod` is deprecated, accepted for compatibility, and ignored.
+- `WorkersInstance.workers` and the `WorkerInstance` type were removed because workers are no longer
+  persistent objects. Use `runningExecutions` for active capacity.
+- No MongoDB migration is required. Existing job records receive a `lockId` the next time this
+  version claims them.
+- During a mixed-version rollout, fencing is guaranteed only for executions started by the new
+  version. Complete the rollout promptly to apply terminal stale behavior across every server.
+
+See the [Jobs guide](/overview/controllers/jobs) for the complete scheduler configuration and
+shutdown API.

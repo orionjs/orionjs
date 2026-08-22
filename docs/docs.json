@@ -107,6 +107,7 @@
       {
         "tab": "Blog",
         "pages": [
+          "blog/dogs-central-scheduler",
           "blog/pulse-batch-receivers",
           "blog/dogs-max-tries-retention",
           "blog/pulse-delivery-resident-execution",
