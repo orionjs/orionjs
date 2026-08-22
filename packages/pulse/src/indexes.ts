@@ -79,10 +79,6 @@ const deliveriesIndexes: ExpectedIndex[] = [
     unique: true,
   },
   {
-    name: 'pulse_deliveries_acquisition',
-    key: {consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1},
-  },
-  {
     name: 'pulse_deliveries_sequence_acquisition',
     key: deliveriesSequenceAcquisitionIndexKey,
   },

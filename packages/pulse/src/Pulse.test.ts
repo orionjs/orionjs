@@ -809,10 +809,6 @@ describe('Pulse persistence', () => {
           unique: true,
         },
         {
-          name: 'pulse_deliveries_acquisition',
-          key: {consumerGroup: 1, topic: 1, status: 1, eventCreatedAt: 1, eventId: 1},
-        },
-        {
           name: 'pulse_deliveries_sequence_acquisition',
           key: {consumerGroup: 1, topic: 1, status: 1, eventSequence: 1, eventId: 1},
         },
@@ -1438,7 +1434,7 @@ describe('Pulse delivery semantics', () => {
         workerCount: 4,
         pollIntervalMs: 120,
         lockTimeoutMs: 300,
-        discoveryLockTimeoutMs: 60,
+        discoveryLockTimeoutMs: 300,
       }),
     )
     await Promise.all(replicas.map(replica => replica.awaitConnection()))
@@ -1469,7 +1465,7 @@ describe('Pulse delivery semantics', () => {
     const initialToken = initialLease?.discoveryLockToken
     expect(initialToken).toMatch(uuidV7Pattern)
 
-    await new Promise(resolve => setTimeout(resolve, 140))
+    await new Promise(resolve => setTimeout(resolve, 340))
     const renewedLease = await db.collection('orionjs.pulse.subscriptions').findOne({
       consumerGroup,
       topic: topics[0],
