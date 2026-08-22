@@ -34,7 +34,7 @@ export class Executor {
     return job.lockTime ?? jobToRun.lockTime
   }
 
-  getContext(job: JobDefinition, jobToRun: JobToRun, onStale: Function): ExecutionContext {
+  getContext(job: JobDefinition, jobToRun: JobToRun, onStale: () => void): ExecutionContext {
     const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
     let staleTimeout = setTimeout(() => onStale(), effectiveLockTime)
     staleTimeout.unref?.()
@@ -45,9 +45,19 @@ export class Executor {
       clearStaleTimeout: () => clearTimeout(staleTimeout),
       extendLockTime: async (extraTime: number) => {
         clearTimeout(staleTimeout)
+        let didExtend = false
+        try {
+          didExtend = await this.jobsRepo.extendLockTime(jobToRun.jobId, extraTime, jobToRun.lockId)
+        } catch (error) {
+          onStale()
+          throw error
+        }
+        if (!didExtend) {
+          onStale()
+          return
+        }
         staleTimeout = setTimeout(() => onStale(), extraTime)
         staleTimeout.unref?.()
-        await this.jobsRepo.extendLockTime(jobToRun.jobId, extraTime)
       },
       logger: logger.addMetadata({
         jobName: jobToRun.name,
@@ -94,9 +104,18 @@ export class Executor {
     jobLogger.warn(
       `Job "${jobToRun.name}" has exceeded max tries (${jobToRun.tries}). Marking as maxTriesReached.`,
     )
-    await this.jobsRepo.markJobAsMaxTriesReached(jobToRun.jobId, retentionMs)
+    const didMark = await this.jobsRepo.markJobAsMaxTriesReached(
+      jobToRun.jobId,
+      retentionMs,
+      jobToRun.lockId,
+    )
 
-    if (!onMaxTriesReached) return
+    if (!didMark) {
+      jobLogger.warn(`Could not mark job "${jobToRun.name}" because its lock is no longer owned`)
+      return false
+    }
+
+    if (!onMaxTriesReached) return true
 
     // Invoke the callback to notify administrators
     try {
@@ -106,35 +125,39 @@ export class Executor {
         error: callbackError,
       })
     }
+
+    return true
   }
 
   async onError(error: unknown, job: JobDefinition, jobToRun: JobToRun, context: ExecutionContext) {
     // Helper to schedule next run for recurrent jobs (used when dismissing)
     const scheduleRecurrent = async () => {
       if (job.type === 'recurrent') {
-        await this.jobsRepo.scheduleNextRun({
+        return this.jobsRepo.scheduleNextRun({
           jobId: jobToRun.jobId,
           nextRunAt: getNextRunDate(job),
           resetTries: true,
           priority: job.priority,
+          lockId: jobToRun.lockId,
         })
       }
+      return true
     }
 
     const handleRetry = async (nextRunAt: Date) => {
-      await this.jobsRepo.scheduleNextRun({
+      return this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt,
         resetTries: false,
         priority: job.type === 'recurrent' ? job.priority : jobToRun.priority,
+        lockId: jobToRun.lockId,
       })
     }
 
     if (!job.onError) {
       context.logger.error(`Error executing job "${jobToRun.name}"`, {error})
 
-      await scheduleRecurrent()
-      return
+      return scheduleRecurrent()
     }
 
     context.logger.info(`Error executing job "${jobToRun.name}"`, {error})
@@ -145,13 +168,14 @@ export class Executor {
     )
 
     if (result.action === 'dismiss') {
-      await scheduleRecurrent()
-      return
+      return scheduleRecurrent()
     }
 
     if (result.action === 'retry') {
-      await handleRetry(getNextRunDate(result))
+      return handleRetry(getNextRunDate(result))
     }
+
+    return true
   }
 
   async saveExecution(options: {
@@ -191,20 +215,22 @@ export class Executor {
   async afterExecutionSuccess(job: JobDefinition, jobToRun: JobToRun, context: ExecutionContext) {
     if (job.type === 'recurrent') {
       context.logger.debug(`Scheduling next run for recurrent job "${jobToRun.name}"`)
-      await this.jobsRepo.scheduleNextRun({
+      return this.jobsRepo.scheduleNextRun({
         jobId: jobToRun.jobId,
         nextRunAt: getNextRunDate(job),
         resetTries: true,
         priority: job.priority,
+        lockId: jobToRun.lockId,
       })
     }
     if (job.type === 'event') {
       context.logger.debug(`Removing event job after success "${jobToRun.name}"`)
-      await this.jobsRepo.deleteEventJob(jobToRun.jobId)
+      return this.jobsRepo.deleteEventJob(jobToRun.jobId, jobToRun.lockId)
     }
+    return false
   }
 
-  async executeJob(config: ExecuteJobConfig, jobToRun: JobToRun, respawnWorker: () => void) {
+  async executeJob(config: ExecuteJobConfig, jobToRun: JobToRun, onExecutionStale: () => void) {
     const job = this.getJobDefinition(jobToRun, config.jobs)
     if (!job) return
 
@@ -223,7 +249,15 @@ export class Executor {
     // If job has a custom lockTime different from the default, update the database lock
     const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
     if (effectiveLockTime !== jobToRun.lockTime) {
-      await this.jobsRepo.updateLockTime(jobToRun.jobId, effectiveLockTime)
+      const didUpdateLock = await this.jobsRepo.updateLockTime(
+        jobToRun.jobId,
+        effectiveLockTime,
+        jobToRun.lockId,
+      )
+      if (!didUpdateLock) {
+        logger.warn(`Will not execute job "${jobToRun.name}" because its lock is no longer owned`)
+        return
+      }
     }
 
     const tracer = trace.getTracer('orionjs.dogs', '1.0')
@@ -231,32 +265,55 @@ export class Executor {
     await tracer.startActiveSpan(`job.${jobToRun.name}.${jobToRun.executionId}`, async span => {
       try {
         const startedAt = new Date()
+        let executionStatus: 'running' | 'stale' = 'running'
+        let staleHandlingPromise: Promise<void> | undefined
+        let context: ExecutionContext
 
-        const onStale = async () => {
-          if (job.onStale) {
-            context.logger.info(`Job "${jobToRun.name}" is stale`)
-            job.onStale(jobToRun.params, context)
-          } else {
-            context.logger.error(`Job "${jobToRun.name}" is stale`)
-          }
+        const markAsStale = () => {
+          if (executionStatus === 'stale') return staleHandlingPromise
 
-          await this.jobsRepo.setJobRecordPriority(jobToRun.jobId, 0)
+          executionStatus = 'stale'
+          context.clearStaleTimeout()
 
-          void respawnWorker()
+          staleHandlingPromise = (async () => {
+            context.logger.warn(`Job "${jobToRun.name}" is stale`)
 
-          void this.saveExecution({
-            startedAt,
-            status: 'stale',
-            result: null,
-            errorMessage: null,
-            job,
-            jobToRun,
-          }).catch(error => {
-            context.logger.error('Error saving stale execution history', {error})
+            if (job.onStale) {
+              void Promise.resolve(job.onStale(jobToRun.params, context)).catch(error => {
+                context.logger.error(`Error in onStale callback for job "${jobToRun.name}"`, {
+                  error,
+                })
+              })
+            }
+
+            try {
+              await this.jobsRepo.setJobRecordPriority(jobToRun.jobId, 0, jobToRun.lockId)
+            } catch (error) {
+              context.logger.error(`Error lowering priority for stale job "${jobToRun.name}"`, {
+                error,
+              })
+            } finally {
+              // Preserve the current ordering guarantee: a stale retry only becomes eligible for
+              // local capacity after its priority has been lowered.
+              onExecutionStale()
+            }
+
+            await this.saveExecution({
+              startedAt,
+              status: 'stale',
+              result: null,
+              errorMessage: null,
+              job,
+              jobToRun,
+            })
+          })().catch(error => {
+            context.logger.error('Error handling stale execution', {error})
           })
+
+          return staleHandlingPromise
         }
 
-        const context = this.getContext(job, jobToRun, onStale)
+        context = this.getContext(job, jobToRun, () => void markAsStale())
 
         const extraContext = {
           controllerType: 'job' as const,
@@ -276,6 +333,20 @@ export class Executor {
             const result = await job.resolve(jobToRun.params, context)
             context.clearStaleTimeout()
 
+            if (executionStatus === 'stale') {
+              await staleHandlingPromise
+              context.logger.warn(
+                `Ignoring late success from stale execution "${jobToRun.executionId}"`,
+              )
+              return
+            }
+
+            const stillOwnsJob = await this.afterExecutionSuccess(job, jobToRun, context)
+            if (!stillOwnsJob) {
+              await markAsStale()
+              return
+            }
+
             void this.saveExecution({
               startedAt,
               status: 'success',
@@ -286,10 +357,24 @@ export class Executor {
             }).catch(error => {
               context.logger.error('Error saving successful execution history', {error})
             })
-
-            await this.afterExecutionSuccess(job, jobToRun, context)
           } catch (error) {
             context.clearStaleTimeout()
+
+            if (executionStatus === 'stale') {
+              await staleHandlingPromise
+              context.logger.warn(
+                `Ignoring late error from stale execution "${jobToRun.executionId}"`,
+                {error},
+              )
+              return
+            }
+
+            const stillOwnsJob = await this.onError(error, job, jobToRun, context)
+            if (!stillOwnsJob) {
+              await markAsStale()
+              return
+            }
+
             void this.saveExecution({
               startedAt,
               status: 'error',
@@ -300,8 +385,6 @@ export class Executor {
             }).catch(saveError => {
               context.logger.error('Error saving failed execution history', {error: saveError})
             })
-
-            await this.onError(error, job, jobToRun, context)
           }
         })
       } catch (error) {

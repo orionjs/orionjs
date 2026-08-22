@@ -36,7 +36,8 @@ describe('Stale Jobs Management', () => {
     await scheduleJob({name: jobName2})
 
     await sleep(500)
-    expect(instance.workers.length).toBe(instance.workersCount)
+    expect(instance.runningExecutions).toBe(0)
+    expect('workers' in instance).toBe(false)
     await instance.stop()
 
     const executions1 = await jobsHistoryRepo.getExecutions(jobName1)

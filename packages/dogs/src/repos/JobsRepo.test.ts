@@ -114,6 +114,7 @@ describe('JobsRepo', () => {
       // Assert: Job should be returned with incremented tries
       expect(jobToRun).toBeDefined()
       expect(jobToRun.tries).toBe(initialTries + 1)
+      expect(jobToRun.lockId).toBe(jobToRun.executionId)
 
       // Wait a bit for the async database update to complete
       await new Promise(resolve => setTimeout(resolve, 10))
@@ -121,6 +122,7 @@ describe('JobsRepo', () => {
       // Verify the database was updated
       const updatedJob = await jobsRepo.jobs.findOne(jobId)
       expect(updatedJob.tries).toBe(initialTries + 1)
+      expect(updatedJob.lockId).toBe(jobToRun.executionId)
     })
 
     it('should increment tries when picking up a non-stale job', async () => {
@@ -143,6 +145,37 @@ describe('JobsRepo', () => {
       // Assert: Job should be returned with incremented tries
       expect(jobToRun).toBeDefined()
       expect(jobToRun.tries).toBe(initialTries + 1)
+      expect(jobToRun.lockId).toBe(jobToRun.executionId)
+    })
+
+    it('should reject mutations from an execution that no longer owns the lock', async () => {
+      const jobId = generateId()
+      await jobsRepo.jobs.insertOne({
+        _id: jobId,
+        jobName: 'fenced-job',
+        type: 'event',
+        priority: 100,
+        nextRunAt: new Date(),
+        lockedUntil: new Date(Date.now() + 5000),
+        lockId: 'new-execution',
+      })
+
+      const didDelete = await jobsRepo.deleteEventJob(jobId, 'stale-execution')
+      const didReschedule = await jobsRepo.scheduleNextRun({
+        jobId,
+        lockId: 'stale-execution',
+        nextRunAt: new Date(Date.now() + 1000),
+        resetTries: false,
+        priority: 0,
+      })
+
+      expect(didDelete).toBe(false)
+      expect(didReschedule).toBe(false)
+
+      const job = await jobsRepo.jobs.findOne(jobId)
+      expect(job).toBeDefined()
+      expect(job.lockId).toBe('new-execution')
+      expect(job.priority).toBe(100)
     })
   })
 

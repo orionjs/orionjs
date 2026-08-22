@@ -4,8 +4,26 @@ import {Inject, Service} from '@orion-js/services'
 import {JobsRepo} from '../repos/JobsRepo'
 import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS, StartWorkersConfig} from '../types/StartConfig'
-import {JobToRun, WorkerInstance, WorkersInstance} from '../types/Worker'
+import {JobToRun, WorkersInstance} from '../types/Worker'
 import {ExecuteJobConfig, Executor} from './Executor'
+
+interface TrackedExecution {
+  job: JobToRun
+  promise: Promise<void>
+  capacityPromise: Promise<void>
+  releaseCapacity: () => void
+  status: 'running' | 'stale' | 'finished'
+}
+
+interface InternalWorkersInstance extends WorkersInstance {
+  activeExecutions: Map<string, TrackedExecution>
+  staleExecutions: Map<string, TrackedExecution>
+  runningJobsByName: Map<string, number>
+  schedulerPromise: Promise<void>
+  stopSignal: Promise<void>
+  signalStop: () => void
+  stopPromise?: Promise<void>
+}
 
 @Service()
 export class WorkerService {
@@ -30,7 +48,7 @@ export class WorkerService {
 
   getAvailableJobNames(
     config: StartWorkersConfig,
-    workersInstance: WorkersInstance,
+    workersInstance: InternalWorkersInstance,
     jobNames: string[],
   ) {
     return jobNames.filter(jobName => {
@@ -45,12 +63,12 @@ export class WorkerService {
     })
   }
 
-  reserveJobExecution(workersInstance: WorkersInstance, jobName: string) {
+  reserveJobExecution(workersInstance: InternalWorkersInstance, jobName: string) {
     const currentExecutions = workersInstance.runningJobsByName.get(jobName) || 0
     workersInstance.runningJobsByName.set(jobName, currentExecutions + 1)
   }
 
-  releaseJobExecution(workersInstance: WorkersInstance, jobName: string) {
+  releaseJobExecution(workersInstance: InternalWorkersInstance, jobName: string) {
     const currentExecutions = workersInstance.runningJobsByName.get(jobName) || 0
     if (currentExecutions <= 1) {
       workersInstance.runningJobsByName.delete(jobName)
@@ -60,72 +78,80 @@ export class WorkerService {
     workersInstance.runningJobsByName.set(jobName, currentExecutions - 1)
   }
 
-  async withJobAcquisitionLock<T>(workersInstance: WorkersInstance, callback: () => Promise<T>) {
-    const previousLock = workersInstance.jobAcquisitionLock
-    let releaseLock!: () => void
-    workersInstance.jobAcquisitionLock = new Promise<void>(resolve => {
-      releaseLock = resolve
+  releaseExecutionCapacity(
+    workersInstance: InternalWorkersInstance,
+    execution: TrackedExecution,
+    nextStatus: 'stale' | 'finished',
+  ) {
+    if (execution.status !== 'running') return
+
+    execution.status = nextStatus
+    workersInstance.activeExecutions.delete(execution.job.executionId)
+    this.releaseJobExecution(workersInstance, execution.job.name)
+    execution.releaseCapacity()
+
+    if (nextStatus === 'stale') {
+      workersInstance.staleExecutions.set(execution.job.executionId, execution)
+    }
+  }
+
+  startExecution(
+    config: ExecuteJobConfig,
+    workersInstance: InternalWorkersInstance,
+    jobToRun: JobToRun,
+  ) {
+    let releaseCapacity!: () => void
+    const capacityPromise = new Promise<void>(resolve => {
+      releaseCapacity = resolve
     })
 
-    await previousLock
-
-    try {
-      return await callback()
-    } finally {
-      releaseLock()
+    const execution: TrackedExecution = {
+      job: jobToRun,
+      promise: Promise.resolve(),
+      capacityPromise,
+      releaseCapacity,
+      status: 'running',
     }
-  }
 
-  async getJobAndReserveExecution(
-    config: StartWorkersConfig,
-    workersInstance: WorkersInstance,
-    jobNames: string[],
-  ): Promise<JobToRun | undefined> {
-    return this.withJobAcquisitionLock(workersInstance, async () => {
-      const availableJobNames = this.getAvailableJobNames(config, workersInstance, jobNames)
-      if (availableJobNames.length === 0) return
+    this.reserveJobExecution(workersInstance, jobToRun.name)
+    workersInstance.activeExecutions.set(jobToRun.executionId, execution)
 
-      const jobToRun = await this.jobsRepo.getJobAndLock(availableJobNames, config.defaultLockTime)
-      if (!jobToRun) return
+    logger.debug(`Starting job execution "${jobToRun.executionId}"`, jobToRun)
 
-      this.reserveJobExecution(workersInstance, jobToRun.name)
-      return jobToRun
+    const executionPromise = this.executor.executeJob(config, jobToRun, () => {
+      this.releaseExecutionCapacity(workersInstance, execution, 'stale')
     })
+    execution.promise = executionPromise
+
+    void executionPromise
+      .catch(error => {
+        logger.error(`Unhandled error executing job "${jobToRun.name}"`, {error})
+      })
+      .finally(() => {
+        if (execution.status === 'running') {
+          this.releaseExecutionCapacity(workersInstance, execution, 'finished')
+        } else if (execution.status === 'stale') {
+          workersInstance.staleExecutions.delete(jobToRun.executionId)
+        }
+      })
   }
 
-  async runWorkerLoop(
-    config: StartWorkersConfig,
-    workersInstance: WorkersInstance,
-    workerInstance: WorkerInstance,
-    jobNames: string[],
-    executeConfig: ExecuteJobConfig,
-  ) {
-    const jobToRun = await this.getJobAndReserveExecution(config, workersInstance, jobNames)
-    if (!jobToRun) {
-      logger.debug('No job to run')
-      return false
-    }
-
-    logger.debug(`Got job [w${workerInstance.workerIndex}] to run:`, jobToRun)
-
-    try {
-      await this.executor.executeJob(executeConfig, jobToRun, workerInstance.respawn)
-    } finally {
-      this.releaseJobExecution(workersInstance, jobToRun.name)
-    }
-
-    return true
+  async waitForPollOrStop(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
+    await Promise.race([sleep(config.pollInterval), workersInstance.stopSignal])
   }
 
-  async startWorker(
-    config: StartWorkersConfig,
-    workersInstance: WorkersInstance,
-    workerInstance: WorkerInstance,
-  ) {
-    const names = this.getJobNames(config.jobs)
-    logger.debug(
-      `Running worker loop [w${workerInstance.workerIndex}] for jobs "${names.join(', ')}"...`,
+  async waitForCapacityOrStop(workersInstance: InternalWorkersInstance) {
+    const capacityPromises = Array.from(
+      workersInstance.activeExecutions.values(),
+      execution => execution.capacityPromise,
     )
+
+    if (capacityPromises.length === 0) return
+    await Promise.race([...capacityPromises, workersInstance.stopSignal])
+  }
+
+  async runSchedulerLoop(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
+    const jobNames = this.getJobNames(config.jobs)
     const executeConfig: ExecuteJobConfig = {
       jobs: config.jobs,
       maxTries: config.maxTries,
@@ -133,41 +159,91 @@ export class WorkerService {
       onMaxTriesReached: config.onMaxTriesReached,
     }
 
-    while (true) {
-      if (!workerInstance.running) {
-        logger.info(`Got signal to stop. Stopping worker [w${workerInstance.workerIndex}]...`)
-        return
-      }
+    logger.debug(`Running scheduler loop for jobs "${jobNames.join(', ')}"...`)
+
+    while (workersInstance.running) {
+      let didMiss = false
+      let allJobNamesAtCapacity = false
 
       try {
-        const didRun = await this.runWorkerLoop(
-          config,
-          workersInstance,
-          workerInstance,
-          names,
-          executeConfig,
-        )
-        if (!didRun) await sleep(config.pollInterval)
-        if (didRun) await sleep(config.cooldownPeriod)
+        while (workersInstance.activeExecutions.size < config.workersCount) {
+          const availableJobNames = this.getAvailableJobNames(config, workersInstance, jobNames)
+
+          if (availableJobNames.length === 0) {
+            allJobNamesAtCapacity = workersInstance.activeExecutions.size > 0
+            break
+          }
+
+          const jobToRun = await this.jobsRepo.getJobAndLock(
+            availableJobNames,
+            config.defaultLockTime,
+          )
+
+          if (!jobToRun) {
+            logger.debug('No job to run')
+            didMiss = true
+            break
+          }
+
+          // An acquisition already in flight when stop() is called is considered committed.
+          this.startExecution(executeConfig, workersInstance, jobToRun)
+          if (!workersInstance.running) break
+        }
       } catch (error) {
-        logger.error('Error in job runner.', {error})
-        await sleep(config.pollInterval)
+        logger.error('Error in job scheduler.', {error})
+        didMiss = true
+      }
+
+      if (!workersInstance.running) return
+
+      const concurrencyIsFull =
+        workersInstance.activeExecutions.size >= config.workersCount &&
+        workersInstance.activeExecutions.size > 0
+
+      if (concurrencyIsFull || allJobNamesAtCapacity) {
+        await this.waitForCapacityOrStop(workersInstance)
+      } else if (didMiss || workersInstance.activeExecutions.size === 0) {
+        await this.waitForPollOrStop(config, workersInstance)
       }
     }
   }
 
-  createWorkersInstanceDefinition(config: StartWorkersConfig): WorkersInstance {
-    const workersInstance: WorkersInstance = {
+  createWorkersInstanceDefinition(config: StartWorkersConfig): InternalWorkersInstance {
+    let signalStop!: () => void
+    const stopSignal = new Promise<void>(resolve => {
+      signalStop = resolve
+    })
+
+    const workersInstance: InternalWorkersInstance = {
       running: true,
       workersCount: config.workersCount,
-      workers: [],
+      activeExecutions: new Map(),
+      staleExecutions: new Map(),
       runningJobsByName: new Map(),
-      jobAcquisitionLock: Promise.resolve(),
+      schedulerPromise: Promise.resolve(),
+      stopSignal,
+      signalStop,
+      get runningExecutions() {
+        return this.activeExecutions.size
+      },
       stop: async () => {
-        logger.info('Stopping workers...')
-        workersInstance.running = false
-        const stopingPromises = workersInstance.workers.map(worker => worker.stop())
-        await Promise.all(stopingPromises)
+        if (workersInstance.stopPromise) return workersInstance.stopPromise
+
+        workersInstance.stopPromise = (async () => {
+          logger.info('Stopping job scheduler...')
+          workersInstance.running = false
+          workersInstance.signalStop()
+
+          await workersInstance.schedulerPromise
+
+          const activeCapacity = Array.from(
+            workersInstance.activeExecutions.values(),
+            execution => execution.capacityPromise,
+          )
+          await Promise.all(activeCapacity)
+        })()
+
+        return workersInstance.stopPromise
       },
     }
 
@@ -187,59 +263,22 @@ export class WorkerService {
     )
   }
 
-  async startANewWorker(
-    config: StartWorkersConfig,
-    workersInstance: WorkersInstance,
-    workerIndex = workersInstance.workers.length,
-  ) {
-    if (!workersInstance.running) {
-      return
-    }
-
-    const workerInstance: WorkerInstance = {
-      running: true,
-      workerIndex,
-      stop: async () => {
-        logger.info(`Stopping worker [w${workerIndex}]...`)
-        workerInstance.running = false
-        await workerInstance.promise
-      },
-      respawn: async () => {
-        logger.info(`Respawning worker [w${workerIndex}]...`)
-        workerInstance.running = false
-        await this.startANewWorker(config, workersInstance, workerIndex)
-      },
-    }
-
-    const workerPromise = this.startWorker(config, workersInstance, workerInstance)
-
-    workerInstance.promise = workerPromise
-    workersInstance.workers[workerIndex] = workerInstance
-  }
-
-  async runWorkers(config: StartWorkersConfig, workersInstance: WorkersInstance) {
+  async runScheduler(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
     logger.debug('Will ensure maxTriesReached retention and TTL index')
-    const ensureRetentionPromise = this.jobsRepo
+    void this.jobsRepo
       .ensureMaxTriesReachedRetention(config.maxTriesReachedRetentionMs)
       .catch(error => logger.error('Error ensuring maxTriesReached retention', {error}))
 
     logger.debug('Will ensure records for recurrent jobs')
     await this.ensureRecords(config)
 
-    const workersCount = config.workersCount
-    const workerWord = workersCount === 1 ? 'worker' : 'workers'
-    logger.info(`Starting ${workersCount} ${workerWord}`)
-
-    for (let workerIndex = 0; workerIndex < workersCount; workerIndex++) {
-      this.startANewWorker(config, workersInstance, workerIndex)
-    }
-
-    await ensureRetentionPromise
+    logger.info(`Starting job scheduler with concurrency ${config.workersCount}`)
+    await this.runSchedulerLoop(config, workersInstance)
   }
 
   /**
-   * Starts the job workers with the provided configuration.
-   * @param userConfig - Configuration for the workers. Required field: jobs
+   * Starts one job scheduler with the provided concurrency configuration.
+   * @param userConfig - Configuration for the scheduler. Required field: jobs
    */
   startWorkers(userConfig: StartWorkersConfig): WorkersInstance {
     const maxTriesReachedRetentionMs =
@@ -254,9 +293,7 @@ export class WorkerService {
       throw new Error('maxTriesReachedRetentionMs must be null, zero, or a positive number')
     }
 
-    // Apply defaults for optional fields
     const config: StartWorkersConfig = {
-      cooldownPeriod: 100,
       pollInterval: 3000,
       workersCount: 4,
       defaultLockTime: 30 * 1000,
@@ -267,9 +304,12 @@ export class WorkerService {
     setNameToJobs(config.jobs)
 
     const workersInstance = this.createWorkersInstanceDefinition(config)
-    logger.debug('Starting workers', config)
+    logger.debug('Starting job scheduler', config)
 
-    this.runWorkers(config, workersInstance)
+    workersInstance.schedulerPromise = this.runScheduler(config, workersInstance).catch(error => {
+      workersInstance.running = false
+      logger.error('Job scheduler stopped after an unexpected error.', {error})
+    })
 
     return workersInstance
   }

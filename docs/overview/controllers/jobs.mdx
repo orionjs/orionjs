@@ -208,11 +208,10 @@ In your application setup (typically in your main file), you start workers to pr
 ```typescript
 import {startWorkers} from '@orion-js/dogs'
 
-// Workers will automatically discover jobs defined using the @Jobs() decorator
+// One scheduler discovers jobs defined using the @Jobs() decorator and runs up to four at once.
 const workersInstance = startWorkers({
-  workersCount: 2, // Number of concurrent workers (default: 1)
+  workersCount: 4, // Maximum concurrent executions (default: 4)
   pollInterval: 3000, // Milliseconds between polling for new jobs (default: 3000)
-  cooldownPeriod: 100, // Milliseconds to wait after job execution (default: 100)
   defaultLockTime: 30000, // Default lock time in milliseconds (default: 30000 = 30 seconds)
   maxTries: 10, // Optional. Applies only to event jobs
   maxTriesReachedRetentionMs: 7 * 24 * 60 * 60 * 1000, // Default: 1 week. Use null to keep forever
@@ -227,6 +226,13 @@ process.on('SIGTERM', async () => {
   process.exit(0)
 })
 ```
+
+Each `startWorkers()` call creates one scheduler loop, regardless of `workersCount`. The scheduler
+claims jobs atomically until its concurrency is full. When no job is pending, it performs at most one
+unsuccessful polling query per `pollInterval`. `cooldownPeriod` is deprecated and ignored.
+
+`workersInstance.runningExecutions` reports how many active executions currently consume scheduler
+capacity.
 
 `maxTriesReachedRetentionMs` controls how long terminal event-job records remain in MongoDB.
 It defaults to one week; set it to `null` to retain them indefinitely. Dogs stores an

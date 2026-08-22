@@ -51,6 +51,7 @@ export class JobsRepo {
   jobs: Collection<JobRecord>
 
   async getJobAndLock(jobNames: string[], lockTime: number): Promise<JobToRun> {
+    const executionId = generateId()
     const lockedUntil = new Date(Date.now() + lockTime)
 
     const job = await this.jobs.findOneAndUpdate(
@@ -65,7 +66,7 @@ export class JobsRepo {
         ],
       },
       {
-        $set: {lockedUntil, lastRunAt: new Date()},
+        $set: {lockId: executionId, lockedUntil, lastRunAt: new Date()},
         $inc: {tries: 1},
       },
       {
@@ -90,7 +91,8 @@ export class JobsRepo {
 
     return {
       jobId: job._id,
-      executionId: generateId(),
+      executionId,
+      lockId: executionId,
       name: job.jobName,
       params: job.params,
       type: job.type,
@@ -102,8 +104,11 @@ export class JobsRepo {
     }
   }
 
-  async setJobRecordPriority(jobId: string, priority: number) {
-    await this.jobs.updateOne(jobId, {$set: {priority}})
+  async setJobRecordPriority(jobId: string, priority: number, lockId?: string) {
+    const result = await this.jobs.updateOne(lockId ? {_id: jobId, lockId} : jobId, {
+      $set: {priority},
+    })
+    return result.matchedCount > 0
   }
 
   async scheduleNextRun(options: {
@@ -111,6 +116,7 @@ export class JobsRepo {
     nextRunAt: Date
     resetTries: boolean
     priority: number
+    lockId?: string
   }) {
     const updator: MongoDB.UpdateFilter<JobRecord> = {
       $set: {
@@ -118,14 +124,23 @@ export class JobsRepo {
         priority: options.priority,
         ...(options.resetTries ? {tries: 0} : {}),
       },
-      $unset: {lockedUntil: ''},
+      $unset: {lockId: '', lockedUntil: ''},
     }
 
-    await this.jobs.updateOne(options.jobId, updator)
+    const result = await this.jobs.updateOne(
+      options.lockId ? {_id: options.jobId, lockId: options.lockId} : options.jobId,
+      updator,
+    )
+    return result.matchedCount > 0
   }
 
-  async deleteEventJob(jobId: string) {
-    await this.jobs.deleteOne({_id: jobId, type: 'event'})
+  async deleteEventJob(jobId: string, lockId?: string) {
+    const result = await this.jobs.deleteOne({
+      _id: jobId,
+      type: 'event',
+      ...(lockId ? {lockId} : {}),
+    })
+    return result.deletedCount > 0
   }
 
   /**
@@ -136,10 +151,11 @@ export class JobsRepo {
   async markJobAsMaxTriesReached(
     jobId: string,
     retentionMs: number | null = DEFAULT_MAX_TRIES_REACHED_RETENTION_MS,
+    lockId?: string,
   ) {
     const maxTriesReachedAt = new Date()
-    await this.jobs.updateOne(
-      {_id: jobId, type: 'event'},
+    const result = await this.jobs.updateOne(
+      {_id: jobId, type: 'event', ...(lockId ? {lockId} : {})},
       {
         $set: {
           status: 'maxTriesReached',
@@ -149,11 +165,13 @@ export class JobsRepo {
             : {expiresAt: new Date(maxTriesReachedAt.getTime() + retentionMs)}),
         },
         $unset: {
+          lockId: '',
           lockedUntil: '',
           ...(retentionMs === null ? {expiresAt: ''} : {}),
         },
       },
     )
+    return result.matchedCount > 0
   }
 
   /**
@@ -187,24 +205,23 @@ export class JobsRepo {
     ])
   }
 
-  async extendLockTime(jobId: string, extraTime: number) {
-    await this.updateLockTime(jobId, extraTime)
+  async extendLockTime(jobId: string, extraTime: number, lockId?: string) {
+    return this.updateLockTime(jobId, extraTime, lockId)
   }
 
   /**
    * Updates the lock time for a job to the specified duration from now.
    * Can be used to both extend or shorten the lock time.
    */
-  async updateLockTime(jobId: string, lockDuration: number) {
+  async updateLockTime(jobId: string, lockDuration: number, lockId?: string) {
     const lockedUntil = new Date(Date.now() + lockDuration)
-    await this.jobs.updateOne(
-      {
-        _id: jobId,
-      },
+    const result = await this.jobs.updateOne(
+      {_id: jobId, ...(lockId ? {lockId} : {})},
       {
         $set: {lockedUntil},
       },
     )
+    return result.matchedCount > 0
   }
 
   async unlockAllJobs(): Promise<number> {
@@ -213,7 +230,7 @@ export class JobsRepo {
         lockedUntil: {$exists: true},
       },
       {
-        $unset: {lockedUntil: ''},
+        $unset: {lockId: '', lockedUntil: ''},
       },
     )
 

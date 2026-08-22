@@ -6,11 +6,11 @@ describe('Executor async context', () => {
   it('sets job context when executing', async () => {
     const executor = new Executor() as any
     executor.jobsRepo = {
-      extendLockTime: mock(),
-      scheduleNextRun: mock(),
-      deleteEventJob: mock(),
-      setJobRecordPriority: mock(),
-      markJobAsMaxTriesReached: mock(),
+      extendLockTime: mock(async () => true),
+      scheduleNextRun: mock(async () => true),
+      deleteEventJob: mock(async () => true),
+      setJobRecordPriority: mock(async () => true),
+      markJobAsMaxTriesReached: mock(async () => true),
     }
     executor.jobsHistoryRepo = {
       saveExecution: mock(),
@@ -39,6 +39,7 @@ describe('Executor async context', () => {
       {
         jobId: 'id123',
         executionId: 'exec123',
+        lockId: 'exec123',
         name: 'testJob',
         type: 'event',
         priority: 1,

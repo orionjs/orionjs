@@ -7,7 +7,7 @@ export const DEFAULT_MAX_TRIES_REACHED_RETENTION_MS = 1000 * 60 * 60 * 24 * 7
 
 export interface StartWorkersConfig {
   /**
-   * Object map of the jobs that this workers will execute
+   * Object map of the jobs that this scheduler will execute.
    */
   jobs: JobsDefinition
   /**
@@ -33,11 +33,12 @@ export interface StartWorkersConfig {
    */
   pollInterval?: number
   /**
-   * Time in milliseconds to wait too look for a job after a job execution. Default is 100.
+   * @deprecated The centralized scheduler no longer waits after successful job acquisition or
+   * execution. This option is accepted for backwards compatibility and ignored.
    */
   cooldownPeriod?: number
   /**
-   * Number of workers to start. Default is 1.
+   * Maximum number of concurrent job executions for this scheduler. Default is 4.
    */
   workersCount?: number
   /**

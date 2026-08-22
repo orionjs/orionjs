@@ -16,6 +16,11 @@ export const JobRecordSchema = schemaWithName('JobRecord', {
   nextRunAt: {type: 'date'},
   lastRunAt: {type: 'date', optional: true},
   lockedUntil: {type: 'date', optional: true},
+  /**
+   * Identifies the execution that currently owns the lock. Mutations from an execution must match
+   * this value so a stale execution cannot modify a newer claim.
+   */
+  lockId: {type: 'string', optional: true},
   tries: {type: 'number', optional: true},
   params: {type: 'blackbox', optional: true},
   /**

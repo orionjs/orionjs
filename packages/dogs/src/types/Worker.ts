@@ -5,6 +5,7 @@ import {JobDefinition} from './JobsDefinition'
 export interface JobToRun {
   jobId: string
   executionId: string
+  lockId: string
   name: string
   type: 'event' | 'recurrent'
   params: Blackbox
@@ -24,22 +25,15 @@ export interface ExecutionContext {
   clearStaleTimeout: () => void
 }
 
-export interface WorkerInstance {
-  running: boolean
-  workerIndex: number
-  stop: () => Promise<void>
-  respawn: () => Promise<void>
-  promise?: Promise<any>
-}
-
 export interface WorkersInstance {
   running: boolean
   workersCount: number
-  workers: WorkerInstance[]
-  runningJobsByName: Map<string, number>
-  jobAcquisitionLock: Promise<void>
   /**
-   * Stop all workers and wait for them to finish
+   * Number of active executions currently consuming scheduler capacity.
+   */
+  readonly runningExecutions: number
+  /**
+   * Stop acquiring jobs and wait for active lock-owning executions to finish or become stale.
    */
   stop: () => Promise<void>
 }
