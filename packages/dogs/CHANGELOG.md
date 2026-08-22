@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.6.0
+
+### Minor Changes
+
+- Refactor job processing around a single centralized scheduler with ephemeral executions, per-job concurrency limits, stale execution tracking, and fenced lock ownership.
+
 ## 4.5.1
 
 ### Patch Changes
