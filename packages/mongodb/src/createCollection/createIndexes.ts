@@ -1,13 +1,38 @@
-import {MongoExpiredSessionError, MongoNotConnectedError} from 'mongodb'
-import {Collection, ModelClassBase} from '..'
 import {logger} from '@orion-js/logger'
+import {IndexSpecification, MongoExpiredSessionError, MongoNotConnectedError} from 'mongodb'
+import {Collection, ModelClassBase} from '..'
+import {getMergedIndexes} from './collectionsRegistry'
 import {isIndexDefined} from './deleteUnusedIndexes'
 import {getIndexOptions} from './getIndexOptions'
-import {getMergedIndexes} from './collectionsRegistry'
 
 export interface MongoDBIndex {
   key: Record<string, unknown>
   name: string
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+async function createOrReplaceIndex<DocumentType extends ModelClassBase>(
+  collection: Partial<Collection<DocumentType>>,
+  keys: IndexSpecification,
+  options: ReturnType<typeof getIndexOptions>,
+): Promise<string> {
+  try {
+    return await collection.rawCollection.createIndex(keys, options)
+  } catch (error) {
+    if (error.code !== 85 && error.code !== 86) throw error
+
+    logger.info('Will delete index to create the new version')
+    const message = error.errorResponse.errmsg
+    const indexName = message.split('name: "')[1].split('"')[0]
+    await collection.rawCollection.dropIndex(indexName)
+    logger.info('Index was deleted, creating new index')
+    const result = await collection.rawCollection.createIndex(keys, options)
+    logger.info('Index updated correctly')
+    return result
+  }
 }
 
 /**
@@ -67,29 +92,20 @@ export async function loadIndexes<DocumentType extends ModelClassBase>(
       const options = getIndexOptions(indexDef)
 
       try {
-        return await collection.rawCollection.createIndex(keys, options)
+        return await createOrReplaceIndex(collection, keys, options)
       } catch (error) {
-        if (error.code === 85 || error.code === 86) {
-          console.info('Will delete index to create the new version')
-          const indexName = (() => {
-            const message = error.errorResponse.errmsg
-            const indexName = message.split('name: "')[1].split('"')[0]
-            return indexName
-          })()
-          await collection.rawCollection.dropIndex(indexName)
-          console.info('Index was deleted, creating new index')
-          const result = await collection.rawCollection.createIndex(keys, options)
-          console.info('Index updated correctly')
-          return result
-        }
-        if (error instanceof MongoExpiredSessionError || error instanceof MongoNotConnectedError) {
-          // this errors is thrown when we are on tests environment
-          // but it's not a problem never, index will be created on the next connection
-        } else {
-          console.error(`Error creating index for collection ${collection.name}: ${error.message}`)
-          console.error(error)
-          return error.message
-        }
+        const message = getErrorMessage(error)
+        const willRetry =
+          error instanceof MongoExpiredSessionError || error instanceof MongoNotConnectedError
+
+        logger.warn(
+          `Failed to create index for collection "${collection.name}". The server will continue${
+            willRetry ? ' and the index will be retried on the next connection' : ''
+          }`,
+          {error, keys},
+        )
+
+        return message
       }
     }),
   )

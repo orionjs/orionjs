@@ -37,7 +37,7 @@ describe('Test indexes', () => {
     await collection1.insertOne({a: 1})
     await collection1.insertOne({a: 1})
 
-    console.error = mock()
+    logger.warn = mock()
 
     const collection2 = createCollection({
       name: collectionName,
@@ -48,7 +48,33 @@ describe('Test indexes', () => {
 
     const result = await collection2.createIndexesPromise
     expect(result[0]).toContain('E11000')
-    expect(console.error).toHaveBeenCalled()
+    expect(logger.warn).toHaveBeenCalled()
+  })
+
+  it('Should only warn when recreating an incompatible index fails', async () => {
+    const collectionName = generateId()
+    const collection1 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {a: 1}}],
+    })
+
+    await collection1.startConnection()
+    await collection1.createIndexesPromise
+    await collection1.insertOne({a: 1})
+    await collection1.insertOne({a: 1})
+
+    logger.warn = mock()
+
+    const collection2 = createCollection({
+      name: collectionName,
+      indexes: [{keys: {a: 1}, options: {unique: true}}],
+    })
+
+    await collection2.startConnection()
+    const result = await collection2.createIndexesPromise
+
+    expect(result[0]).toContain('E11000')
+    expect(logger.warn).toHaveBeenCalled()
   })
 
   it('Should log indexes that have to be deleted when index exists in DB but not in any definition', async () => {
@@ -114,7 +140,7 @@ describe('Test indexes', () => {
     await collection1.startConnection()
     await collection1.createIndexesPromise
 
-    console.info = mock()
+    logger.info = mock()
 
     const collection2 = createCollection({
       name: collectionName,
@@ -124,6 +150,6 @@ describe('Test indexes', () => {
     await collection2.startConnection()
     await collection2.createIndexesPromise
 
-    expect(console.info).toHaveBeenCalled()
+    expect(logger.info).toHaveBeenCalled()
   })
 })
