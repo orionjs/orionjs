@@ -1,5 +1,12 @@
 # @orion-js/dogs
 
+## 4.6.2
+
+### Patch Changes
+
+- Select the fastest MongoDB job acquisition hint per Dogs scheduler instance and update packages
+  that depend on Dogs.
+
 ## 4.6.1
 
 ### Patch Changes
