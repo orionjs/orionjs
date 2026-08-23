@@ -34,7 +34,7 @@
     "bson": "^6.10.3",
     "dataloader": "2.2.3",
     "dot-object": "2.1.5",
-    "mongodb": "6.15.0",
+    "mongodb": "6.21.0",
     "mongodb-client-encryption": "^6.3.0"
   },
   "peerDependencies": {

@@ -24,6 +24,9 @@ export const JOB_ACQUISITION_HINTS = {
 export const INITIAL_JOB_ACQUISITION_HINT = 'byJobName' as const satisfies JobAcquisitionHint
 export const CANDIDATE_JOB_ACQUISITION_HINT = 'globalPriority' as const satisfies JobAcquisitionHint
 
+const SORTED_UPDATE_ONE_MIN_WIRE_VERSION = 25
+const LOCK_ID_INDEX_NAME = 'jobs_dogs_records_lock_id'
+
 const JOB_ACQUISITION_SORT: MongoDB.Sort = {
   priority: -1,
   nextRunAt: 1,
@@ -75,6 +78,15 @@ export class JobsRepo {
       },
       {
         keys: {
+          lockId: 1,
+        },
+        options: {
+          name: LOCK_ID_INDEX_NAME,
+          sparse: true,
+        },
+      },
+      {
+        keys: {
           expiresAt: 1,
         },
         name: 'jobs_dogs_records_expires_at_ttl',
@@ -84,10 +96,59 @@ export class JobsRepo {
   })
   jobs: Collection<JobRecord>
 
+  private sortedUpdateOneSupportPromise?: Promise<boolean>
+
+  async supportsSortedUpdateOne(): Promise<boolean> {
+    if (!this.sortedUpdateOneSupportPromise) {
+      this.sortedUpdateOneSupportPromise = this.detectSortedUpdateOneSupport()
+    }
+
+    return this.sortedUpdateOneSupportPromise
+  }
+
+  private async detectSortedUpdateOneSupport(): Promise<boolean> {
+    const rawCollection = await this.jobs.getRawCollection()
+    // Both acquisition implementations use explicit hints, so the first claim must wait until the
+    // declared indexes are ready even when the server needs the legacy fallback.
+    await this.jobs.createIndexesPromise
+    const hello = await rawCollection.db.admin().command({hello: 1})
+    const supportsSortedUpdateOne =
+      typeof hello.maxWireVersion === 'number' &&
+      hello.maxWireVersion >= SORTED_UPDATE_ONE_MIN_WIRE_VERSION
+
+    if (!supportsSortedUpdateOne) {
+      logger.info('MongoDB does not support sorted updateOne; using findOneAndUpdate for jobs.')
+      return false
+    }
+
+    const hasLockIdIndex = await rawCollection.indexExists(LOCK_ID_INDEX_NAME)
+    if (!hasLockIdIndex) {
+      logger.warn(
+        `MongoDB supports sorted updateOne but index "${LOCK_ID_INDEX_NAME}" is unavailable; using findOneAndUpdate for jobs.`,
+      )
+      return false
+    }
+
+    logger.info('MongoDB supports sorted updateOne; using it for job acquisition.')
+    return true
+  }
+
   async getJobAndLock(
     jobNames: string[],
     lockTime: number,
     hint: JobAcquisitionHint = INITIAL_JOB_ACQUISITION_HINT,
+  ): Promise<JobToRun> {
+    if (await this.supportsSortedUpdateOne()) {
+      return this.getJobAndLockWithSortedUpdateOne(jobNames, lockTime, hint)
+    }
+
+    return this.getJobAndLockWithFindOneAndUpdate(jobNames, lockTime, hint)
+  }
+
+  private async getJobAndLockWithFindOneAndUpdate(
+    jobNames: string[],
+    lockTime: number,
+    hint: JobAcquisitionHint,
   ): Promise<JobToRun> {
     const executionId = generateId()
     const now = new Date()
@@ -113,6 +174,53 @@ export class JobsRepo {
     const tries = (job.tries || 0) + 1
     const wasStale = Boolean(job.lockedUntil)
 
+    return this.toJobToRun(job, executionId, lockTime, tries, wasStale)
+  }
+
+  private async getJobAndLockWithSortedUpdateOne(
+    jobNames: string[],
+    lockTime: number,
+    hint: JobAcquisitionHint,
+  ): Promise<JobToRun> {
+    const executionId = generateId()
+    const now = new Date()
+    const lockedUntil = new Date(now.getTime() + lockTime)
+    const rawCollection = await this.jobs.getRawCollection()
+
+    const result = await rawCollection.updateOne(
+      getJobAcquisitionSelector(jobNames, now),
+      [
+        {
+          $set: {
+            lockId: {$literal: executionId},
+            lockedUntil: {$literal: lockedUntil},
+            lastRunAt: {$literal: now},
+            tries: {$add: [{$ifNull: ['$tries', 0]}, 1]},
+            claimWasStale: {$eq: [{$type: '$lockedUntil'}, 'date']},
+          },
+        },
+      ],
+      {
+        hint: JOB_ACQUISITION_HINTS[hint],
+        sort: JOB_ACQUISITION_SORT,
+      },
+    )
+
+    if (result.matchedCount === 0) return
+
+    const job = await rawCollection.findOne({lockId: executionId})
+    if (!job) return
+
+    return this.toJobToRun(job, executionId, lockTime, job.tries || 0, Boolean(job.claimWasStale))
+  }
+
+  private toJobToRun(
+    job: JobRecord,
+    executionId: string,
+    lockTime: number,
+    tries: number,
+    wasStale: boolean,
+  ): JobToRun {
     if (wasStale) {
       logger.info(`Running job "${job.jobName}" that was staled`)
     }
@@ -174,7 +282,7 @@ export class JobsRepo {
         priority: options.priority,
         ...(options.resetTries ? {tries: 0} : {}),
       },
-      $unset: {lockId: '', lockedUntil: ''},
+      $unset: {lockId: '', lockedUntil: '', claimWasStale: ''},
     }
 
     const result = await this.jobs.updateOne(
@@ -217,6 +325,7 @@ export class JobsRepo {
         $unset: {
           lockId: '',
           lockedUntil: '',
+          claimWasStale: '',
           ...(retentionMs === null ? {expiresAt: ''} : {}),
         },
       },
@@ -280,7 +389,7 @@ export class JobsRepo {
         lockedUntil: {$exists: true},
       },
       {
-        $unset: {lockId: '', lockedUntil: ''},
+        $unset: {lockId: '', lockedUntil: '', claimWasStale: ''},
       },
     )
 

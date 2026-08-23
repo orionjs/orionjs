@@ -1,3 +1,4 @@
+import {beforeEach, describe, expect, it, mock} from 'bun:test'
 import {generateId} from '@orion-js/helpers'
 import {createIndexesPromises} from '@orion-js/mongodb'
 import {getInstance} from '@orion-js/services'
@@ -95,6 +96,94 @@ describe('JobsRepo', () => {
   })
 
   describe('getJobAndLock method', () => {
+    it('should cache sorted updateOne support detection from the server wire version', async () => {
+      const command = mock(async () => ({maxWireVersion: 25}))
+      const indexExists = mock(async () => true)
+      const repo = new JobsRepo() as any
+      repo.jobs = {
+        createIndexesPromise: Promise.resolve([]),
+        getRawCollection: async () => ({
+          db: {admin: () => ({command})},
+          indexExists,
+        }),
+      }
+
+      expect(await repo.supportsSortedUpdateOne()).toBe(true)
+      expect(await repo.supportsSortedUpdateOne()).toBe(true)
+      expect(command).toHaveBeenCalledTimes(1)
+      expect(indexExists).toHaveBeenCalledTimes(1)
+    })
+
+    it('should fall back when the server does not support sorted updateOne', async () => {
+      const indexExists = mock(async () => true)
+      const repo = new JobsRepo() as any
+      repo.jobs = {
+        createIndexesPromise: Promise.resolve([]),
+        getRawCollection: async () => ({
+          db: {admin: () => ({command: async () => ({maxWireVersion: 24})})},
+          indexExists,
+        }),
+      }
+
+      expect(await repo.supportsSortedUpdateOne()).toBe(false)
+      expect(indexExists).not.toHaveBeenCalled()
+    })
+
+    it('should fall back when the lock recovery index is unavailable', async () => {
+      const repo = new JobsRepo() as any
+      repo.jobs = {
+        createIndexesPromise: Promise.resolve([]),
+        getRawCollection: async () => ({
+          db: {admin: () => ({command: async () => ({maxWireVersion: 25})})},
+          indexExists: async () => false,
+        }),
+      }
+
+      expect(await repo.supportsSortedUpdateOne()).toBe(false)
+    })
+
+    it('should claim with sorted updateOne and recover only its own lock', async () => {
+      const updateOne = mock(async () => ({matchedCount: 1}))
+      const findOne = mock(async selector => ({
+        _id: 'claimed-job',
+        jobName: 'test-job',
+        type: 'event',
+        priority: 100,
+        nextRunAt: new Date(),
+        tries: 4,
+        lockId: selector.lockId,
+        claimWasStale: true,
+      }))
+      const repo = new JobsRepo() as any
+      repo.supportsSortedUpdateOne = async () => true
+      repo.jobs = {getRawCollection: async () => ({updateOne, findOne})}
+
+      const claimed = await repo.getJobAndLock(['test-job'], 5000, CANDIDATE_JOB_ACQUISITION_HINT)
+
+      expect(updateOne).toHaveBeenCalledTimes(1)
+      expect(findOne).toHaveBeenCalledTimes(1)
+      expect(findOne.mock.calls[0][0]).toEqual({lockId: claimed.executionId})
+      expect(claimed).toMatchObject({
+        jobId: 'claimed-job',
+        lockId: claimed.executionId,
+        tries: 4,
+        wasStale: true,
+      })
+    })
+
+    it('should not return an ambiguous claim when lock recovery finds no document', async () => {
+      const repo = new JobsRepo() as any
+      repo.supportsSortedUpdateOne = async () => true
+      repo.jobs = {
+        getRawCollection: async () => ({
+          updateOne: async () => ({matchedCount: 1}),
+          findOne: async () => null,
+        }),
+      }
+
+      expect(await repo.getJobAndLock(['test-job'], 5000)).toBeUndefined()
+    })
+
     it('should support explains with both acquisition hints', async () => {
       await Promise.all(createIndexesPromises)
 

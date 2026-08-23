@@ -21,6 +21,11 @@ export const JobRecordSchema = schemaWithName('JobRecord', {
    * this value so a stale execution cannot modify a newer claim.
    */
   lockId: {type: 'string', optional: true},
+  /**
+   * Internal acquisition metadata used when MongoDB supports sorted updateOne. It preserves the
+   * pre-update stale state because updateOne intentionally does not return the previous document.
+   */
+  claimWasStale: {type: 'boolean', optional: true},
   tries: {type: 'number', optional: true},
   params: {type: 'blackbox', optional: true},
   /**
