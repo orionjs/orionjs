@@ -1,6 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {Collection, MongoCollection, MongoDB, Repository} from '@orion-js/mongodb'
+import {clean, validate} from '@orion-js/schema'
 import {getRandomPartition} from '../services/partitions'
 import {ScheduleJobRecordOptions, ScheduleJobsResult} from '../types/Events'
 import {JobRecord, JobRecordSchema} from '../types/JobRecord'
@@ -481,16 +482,18 @@ export class JobsRepo {
       return {scheduledCount: 0, skippedCount: 0, errors: []}
     }
 
-    // Process each job individually to handle errors properly
-    let scheduledCount = 0
-    let skippedCount = 0
     const errors: Array<{index: number; error: Error; job: ScheduleJobRecordOptions}> = []
+    const preparedJobs: Array<{
+      index: number
+      job: ScheduleJobRecordOptions
+      record: JobRecord
+    }> = []
 
     for (let i = 0; i < jobs.length; i++) {
       const job = jobs[i]
       try {
-        // Insert directly to get better error handling than the single scheduleJob method
-        await this.jobs.insertOne({
+        const record = (await clean(JobRecordSchema, {
+          _id: this.jobs.generateId(),
           jobName: job.name,
           uniqueIdentifier: job.uniqueIdentifier,
           params: job.params,
@@ -498,22 +501,76 @@ export class JobsRepo {
           priority: job.priority,
           type: 'event',
           ...(job.partition === undefined ? {} : {partition: job.partition}),
-        })
-        scheduledCount++
+        })) as JobRecord
+        await validate(JobRecordSchema, record)
+        preparedJobs.push({index: i, job, record})
       } catch (error) {
-        // Check if it's a validation error with uniqueIdentifier constraint
-        if (
-          error.isValidationError &&
-          Object.values(error.validationErrors).includes('notUnique') &&
-          job.uniqueIdentifier
-        ) {
-          logger.info(`Job "${job.name}" with identifier "${job.uniqueIdentifier}" already exists`)
-          skippedCount++
-        } else {
+        errors.push({
+          index: i,
+          error: error instanceof Error ? error : new Error(String(error)),
+          job,
+        })
+      }
+    }
+
+    if (preparedJobs.length === 0) {
+      return {scheduledCount: 0, skippedCount: 0, errors}
+    }
+
+    const rawCollection = await this.jobs.getRawCollection()
+    await this.jobs.createIndexesPromise
+    const operations: MongoDB.AnyBulkWriteOperation<JobRecord>[] = preparedJobs.map(({record}) =>
+      record.uniqueIdentifier === undefined
+        ? {insertOne: {document: record}}
+        : {
+            updateOne: {
+              filter: {uniqueIdentifier: record.uniqueIdentifier},
+              update: {$setOnInsert: record},
+              upsert: true,
+            },
+          },
+    )
+
+    let scheduledCount = 0
+    let skippedCount = 0
+
+    try {
+      const result = await rawCollection.bulkWrite(operations, {ordered: false})
+      scheduledCount = result.insertedCount + result.upsertedCount
+      skippedCount = result.matchedCount
+    } catch (error) {
+      const writeErrors =
+        error instanceof MongoDB.MongoBulkWriteError
+          ? Array.isArray(error.writeErrors)
+            ? error.writeErrors
+            : [error.writeErrors]
+          : []
+
+      if (!(error instanceof MongoDB.MongoBulkWriteError) || writeErrors.length === 0) {
+        for (const preparedJob of preparedJobs) {
           errors.push({
-            index: i,
+            index: preparedJob.index,
             error: error instanceof Error ? error : new Error(String(error)),
-            job,
+            job: preparedJob.job,
+          })
+        }
+      } else {
+        scheduledCount = error.result.insertedCount + error.result.upsertedCount
+        skippedCount = error.result.matchedCount
+
+        for (const writeError of writeErrors) {
+          const preparedJob = preparedJobs[writeError.index]
+          if (!preparedJob) continue
+
+          if (writeError.code === 11000 && preparedJob.record.uniqueIdentifier !== undefined) {
+            skippedCount++
+            continue
+          }
+
+          errors.push({
+            index: preparedJob.index,
+            error: new Error(writeError.errmsg),
+            job: preparedJob.job,
           })
         }
       }

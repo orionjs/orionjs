@@ -624,8 +624,72 @@ describe('JobsRepo', () => {
       expect(jobNames).toEqual(['valid-job-1', 'valid-job-2', 'valid-job-3'])
     })
 
-    it('should handle validation errors for individual jobs', async () => {
-      // Arrange: Create jobs with invalid data that would cause validation errors
+    it('should atomically skip duplicate unique identifiers without changing the existing job', async () => {
+      const firstRunAt = new Date('2026-01-01T00:00:00.000Z')
+      const duplicateRunAt = new Date('2026-02-01T00:00:00.000Z')
+
+      const firstResult = await jobsRepo.scheduleJobs([
+        {
+          name: 'bulk-deduplicated-job',
+          params: {version: 'original'},
+          nextRunAt: firstRunAt,
+          priority: 40,
+          partition: 3,
+          uniqueIdentifier: 'bulk-deduplicated-job-1',
+        },
+      ])
+      const duplicateResult = await jobsRepo.scheduleJobs([
+        {
+          name: 'bulk-deduplicated-job',
+          params: {version: 'duplicate'},
+          nextRunAt: duplicateRunAt,
+          priority: 999,
+          partition: 8,
+          uniqueIdentifier: 'bulk-deduplicated-job-1',
+        },
+      ])
+
+      expect(firstResult).toMatchObject({scheduledCount: 1, skippedCount: 0, errors: []})
+      expect(duplicateResult).toMatchObject({scheduledCount: 0, skippedCount: 1, errors: []})
+
+      const [record] = await jobsRepo.jobs
+        .find({uniqueIdentifier: 'bulk-deduplicated-job-1'})
+        .toArray()
+      expect(record).toMatchObject({
+        params: {version: 'original'},
+        nextRunAt: firstRunAt,
+        priority: 40,
+        partition: 3,
+      })
+    })
+
+    it('should deduplicate overlapping unordered bulk schedules under concurrency', async () => {
+      const uniqueJobs = 250
+      const callers = 4
+      const batches = Array.from({length: callers}, (_, caller) =>
+        Array.from({length: uniqueJobs}, (_, index) => ({
+          name: 'concurrent-bulk-job',
+          params: {caller, index},
+          nextRunAt: new Date(),
+          priority: 40,
+          partition: index % 30,
+          uniqueIdentifier: `concurrent-bulk-job-${index}`,
+        })),
+      )
+
+      const results = await Promise.all(batches.map(batch => jobsRepo.scheduleJobs(batch)))
+      const records = await jobsRepo.jobs.find({jobName: 'concurrent-bulk-job'}).toArray()
+
+      expect(results.reduce((total, result) => total + result.scheduledCount, 0)).toBe(uniqueJobs)
+      expect(results.reduce((total, result) => total + result.skippedCount, 0)).toBe(
+        uniqueJobs * (callers - 1),
+      )
+      expect(results.flatMap(result => result.errors)).toHaveLength(0)
+      expect(records).toHaveLength(uniqueJobs)
+      expect(records.every(record => record.partition >= 0 && record.partition < 30)).toBe(true)
+    })
+
+    it('should keep valid jobs when another item in the bulk fails validation', async () => {
       const jobs = [
         {
           name: 'valid-job',
@@ -634,9 +698,9 @@ describe('JobsRepo', () => {
           priority: 100,
         },
         {
-          name: '', // Invalid: empty name
+          name: 'invalid-job',
           params: {message: 'Invalid'},
-          nextRunAt: new Date(),
+          nextRunAt: 'not-a-date' as unknown as Date,
           priority: 100,
         },
         {
@@ -647,18 +711,15 @@ describe('JobsRepo', () => {
         },
       ]
 
-      // Act & Assert: Should handle the validation errors gracefully
-      // Note: The actual validation depends on the schema implementation
-      // This test structure is prepared for when validation is added
       const result = await jobsRepo.scheduleJobs(jobs)
 
-      // At minimum, we should get a result structure
-      expect(result).toHaveProperty('scheduledCount')
-      expect(result).toHaveProperty('skippedCount')
-      expect(result).toHaveProperty('errors')
-      expect(typeof result.scheduledCount).toBe('number')
-      expect(typeof result.skippedCount).toBe('number')
-      expect(Array.isArray(result.errors)).toBe(true)
+      expect(result.scheduledCount).toBe(2)
+      expect(result.skippedCount).toBe(0)
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]).toMatchObject({index: 1, job: jobs[1]})
+      expect(
+        await jobsRepo.jobs.find({jobName: {$in: jobs.map(job => job.name)}}).toArray(),
+      ).toHaveLength(2)
     })
 
     it('should handle jobs with different priorities and timing', async () => {

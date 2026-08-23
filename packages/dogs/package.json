@@ -18,6 +18,7 @@
   "scripts": {
     "test": "bun test",
     "stress:acquisition": "DOGS_RUN_STRESS_TEST=1 bun test --cwd ../.. packages/dogs/scripts/stress-job-acquisition.test.ts",
+    "stress:scheduling": "DOGS_RUN_STRESS_TEST=1 bun test --cwd ../.. packages/dogs/scripts/stress-bulk-scheduling.test.ts",
     "prepack": "bun run build",
     "clean": "rm -rf ./dist",
     "build": "tsup && bun run ../../scripts/emit-declarations.ts",
