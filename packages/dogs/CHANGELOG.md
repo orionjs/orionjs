@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.6.6
+
+### Patch Changes
+
+- Schedule event-job batches with unordered MongoDB bulk writes while preserving validation, atomic unique-identifier deduplication, result counts, and acquisition partitions.
+
 ## 4.6.5
 
 ### Patch Changes

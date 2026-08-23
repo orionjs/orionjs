@@ -1,5 +1,12 @@
 # @orion-js/components
 
+## 4.5.6
+
+### Patch Changes
+
+- Updated dependencies
+  - @orion-js/dogs@4.6.6
+
 ## 4.5.5
 
 ### Patch Changes
