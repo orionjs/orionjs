@@ -50,6 +50,7 @@ export interface ScheduleJobRecordOptions {
   nextRunAt: Date
   priority: number
   uniqueIdentifier?: string
+  partition?: number
 }
 
 export type ScheduleJobsOptions<TParamsSchema extends SchemaInAnyOrionForm = any> =

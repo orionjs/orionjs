@@ -42,6 +42,11 @@ export interface StartWorkersConfig {
    */
   workersCount?: number
   /**
+   * Number of database partitions used to spread job acquisition contention.
+   * Each claim queries exactly one partition. Default is 1.
+   */
+  nPartitions?: number
+  /**
    * Default time in milliseconds to lock a job for execution. Default is 30000 (30 seconds).
    * If a job is locked for longer than this time, it will be considered as failed.
    * This is to prevent a job from being executed multiple times at the same time.

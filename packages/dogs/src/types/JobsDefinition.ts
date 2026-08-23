@@ -32,6 +32,9 @@ export interface BaseJobDefinition {
    */
   jobName?: string
 
+  /** @internal Set when the job is registered in startWorkers. */
+  nPartitions?: number
+
   /**
    * Time in milliseconds to lock this specific job for execution.
    * Overrides the defaultLockTime set in startWorkers config.

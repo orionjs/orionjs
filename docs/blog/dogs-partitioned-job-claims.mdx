@@ -1,0 +1,164 @@
+---
+title: 'Dogs removes the MongoDB job-claim hotspot'
+description: 'Combine MongoDB 8 sorted updates with partitioned acquisition for 18x higher throughput under contention'
+---
+
+Dogs job acquisition used to make every scheduler compete for the same leading records in one
+MongoDB index. Increasing the number of application instances added claimers, but it also added
+write conflicts against that shared hot region. The result was high write CPU without a
+proportional increase in completed claims.
+
+`@orion-js/dogs@4.6.5` addresses the bottleneck in two layers:
+
+1. MongoDB 8 claims jobs with a sorted `updateOne`, avoiding the larger result path used by
+   `findOneAndUpdate`.
+2. Configurable acquisition partitions spread atomic claims across independent equality-prefixed
+   index regions.
+
+Both changes preserve the central guarantee: one job can be claimed by only one execution.
+
+## Change one: use MongoDB 8 sorted updates
+
+MongoDB 8 supports `sort` on `updateOne`. Dogs detects support using the server wire version and
+uses the optimized command when the server reports `maxWireVersion >= 25` and the required sparse
+`lockId` index is available.
+
+The claim is one atomic server-side operation:
+
+```javascript
+updateOne(
+  eligibilitySelector,
+  [
+    {
+      $set: {
+        lockId: executionId,
+        lockedUntil,
+        lastRunAt: now,
+        tries: {$add: [{$ifNull: ['$tries', 0]}, 1]},
+      },
+    },
+  ],
+  {
+    sort: {priority: -1, nextRunAt: 1},
+    hint: acquisitionIndex,
+  },
+)
+```
+
+After the update wins, Dogs reads the claimed record through its unique `lockId`. Older MongoDB
+versions automatically retain the existing atomic `findOneAndUpdate` implementation. Applications
+do not need a feature flag or separate deployment artifact.
+
+This first change reduces command overhead and write conflicts, but it cannot by itself remove the
+shared index hotspot: every claimer still targets the same highest-priority region.
+
+## Change two: query one partition at a time
+
+Configure the shared partition count when starting workers:
+
+```typescript
+const workers = startWorkers({
+  jobs,
+  workersCount: 32,
+  nPartitions: 16,
+})
+```
+
+New event and recurrent records receive a random integer partition in
+`[0, nPartitions)`. A scheduler begins with a shuffled partition order, queries one exact partition
+per claim, advances after every attempt, and reshuffles after completing the order.
+
+```text
+scheduler A:  7 -> 2 -> 12 -> 1 -> ...
+scheduler B: 11 -> 5 ->  3 -> 8 -> ...
+scheduler C:  1 -> 9 -> 14 -> 4 -> ...
+```
+
+The selector always contains `partition = currentPartition`. It never uses `$in` to search several
+partitions, so MongoDB can stay inside one equality-prefixed index region for the complete claim.
+An empty scheduler waits for `pollInterval` only after it has checked every configured partition.
+
+Priority is strict within each partition and approximate across partitions. This is the intentional
+tradeoff that removes the global priority hotspot.
+
+## Partition-aware adaptive indexes
+
+Dogs continues to choose between two acquisition hints, now prefixed by `partition`:
+
+```javascript
+{partition: 1, jobName: 1, priority: -1, nextRunAt: 1}
+{partition: 1, priority: -1, nextRunAt: 1}
+```
+
+The second index is eligible while every configured job name has local execution capacity. When
+`maxParallelExecutionsPerServer` filters one or more job names, Dogs always uses the first index.
+That shape keeps both `partition` and the accepted `jobName` set ahead of the priority/date sort.
+
+The periodic adaptive probe measures both hints against the same randomly selected partition for
+each sample. Its selected hint remains process-local and does not introduce routing metadata.
+
+## Repair records without a migration step
+
+Existing records have no `partition`, and changing `nPartitions` can leave records outside the new
+range. Each `startWorkers()` instance therefore runs a small background reconciler.
+
+The reconciler selects runnable records when their partition is:
+
+- missing;
+- negative; or
+- greater than or equal to the configured `nPartitions`.
+
+It repairs up to 500 records per batch, pauses briefly while full batches remain, and then checks
+periodically with jitter. It skips active locks and repeats the eligibility conditions in each
+individual update. If a claim wins between the scan and the update, that compare-and-set update no
+longer matches and the reconciler cannot move the claimed job.
+
+There is no worker registry, routing collection, or intermediate event state. Every application
+instance must use the same `nPartitions` value.
+
+## Contention benchmark
+
+We first compared both changes with the same 50,000 jobs and 256 simultaneous claimers on MongoDB
+Enterprise 8.0.4:
+
+| Implementation | Time | Claims/s | Write conflicts | Duplicate claims |
+| --- | ---: | ---: | ---: | ---: |
+| `findOneAndUpdate`, one partition | 268.218 s | 186 | 216,403 | 0 |
+| Sorted `updateOne`, one partition | 256.331 s | 195 | 189,751 | 0 |
+| Sorted `updateOne`, 32 partitions | 14.198 s | 3,522 | 55,814 | 0 |
+
+The MongoDB 8 command alone increased throughput by 4.8% and reduced write conflicts by 12.3%.
+Adding partitions increased throughput another 18.06 times and reduced conflicts by 70.6% relative
+to the sorted single-partition claim. Together, both changes delivered 18.94 times the original
+throughput and reduced total claim time by 94.7%.
+
+An extreme run doubled both dimensions to 100,000 jobs and 512 claimers:
+
+| Partitions | Time | Claims/s | Write conflicts | Duplicate claims |
+| ---: | ---: | ---: | ---: | ---: |
+| 32 | 39.385 s | 2,539 | 127,951 | 0 |
+| 64 | 24.451 s | 4,090 | 50,727 | 0 |
+| 128 | 21.193 s | 4,719 | 18,197 | 0 |
+| 256 | 22.194 s | 4,506 | 5,979 | 0 |
+
+Every run also verified that all jobs were returned, every job ID, execution ID, and stored lock was
+unique, every record had exactly one try, and a second complete sweep could not claim another job.
+
+For this artificial 512-claimer workload, 128 partitions produced the highest throughput. At 256,
+write conflicts continued to fall but the cost of empty partition checks began to outweigh the
+benefit. The appropriate production value depends on total claim concurrency and queue depth; a
+reasonable high-contention starting point is roughly one partition per four simultaneous claimers,
+followed by measurement against the real workload.
+
+## Rollout notes
+
+- Use the same `nPartitions` in every application instance.
+- Keep the previous unpartitioned acquisition indexes during a rolling deployment, because older
+  instances still require them.
+- Allow the background reconciler to repair legacy records after all instances are upgraded.
+- Once no older instances remain, remove `jobName_1_priority_-1_nextRunAt_1` and
+  `priority_-1_nextRunAt_1` to eliminate their write amplification.
+- MongoDB versions older than 8 remain supported through the `findOneAndUpdate` fallback and still
+  benefit from partitions.
+
+See the [Jobs guide](/overview/controllers/jobs) for the full scheduler configuration.

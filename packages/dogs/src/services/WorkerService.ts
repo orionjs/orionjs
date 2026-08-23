@@ -11,6 +11,7 @@ import {JobDefinitionWithName, JobsDefinition} from '../types/JobsDefinition'
 import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS, StartWorkersConfig} from '../types/StartConfig'
 import {JobToRun, WorkersInstance} from '../types/Worker'
 import {ExecuteJobConfig, Executor} from './Executor'
+import {createShuffledPartitions, getRandomPartition, validatePartitionsCount} from './partitions'
 
 const FILTERED_JOB_NAMES_ACQUISITION_HINT = 'byJobName' as const satisfies JobAcquisitionHint
 
@@ -34,6 +35,11 @@ interface InternalWorkersInstance extends WorkersInstance {
   jobAcquisitionHintProbePromise: Promise<void>
   jobAcquisitionHintProbeTimer?: ReturnType<typeof setTimeout>
   cancelJobAcquisitionHintProbeWait?: () => void
+  partitionOrder: number[]
+  partitionCursor: number
+  partitionReconcilerPromise: Promise<void>
+  partitionReconcilerTimer?: ReturnType<typeof setTimeout>
+  cancelPartitionReconcilerWait?: () => void
   schedulerPromise: Promise<void>
   stopSignal: Promise<void>
   signalStop: () => void
@@ -43,6 +49,10 @@ interface InternalWorkersInstance extends WorkersInstance {
 @Service()
 export class WorkerService {
   private jobAcquisitionHintProbeIntervalMs = 30 * 60 * 1000
+  private partitionReconcilerIntervalMs = 5 * 60 * 1000
+  private partitionReconcilerJitterMs = 30 * 1000
+  private partitionReconcilerBatchPauseMs = 250
+  private partitionReconcilerBatchSize = 500
 
   @Inject(() => JobsRepo)
   private jobsRepo: JobsRepo
@@ -167,6 +177,18 @@ export class WorkerService {
     await Promise.race([...capacityPromises, workersInstance.stopSignal])
   }
 
+  getNextPartition(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
+    const partition = workersInstance.partitionOrder[workersInstance.partitionCursor]
+    workersInstance.partitionCursor++
+
+    if (workersInstance.partitionCursor >= config.nPartitions) {
+      workersInstance.partitionOrder = createShuffledPartitions(config.nPartitions)
+      workersInstance.partitionCursor = 0
+    }
+
+    return partition
+  }
+
   async runSchedulerLoop(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
     const jobNames = this.getJobNames(config.jobs)
     const executeConfig: ExecuteJobConfig = {
@@ -177,6 +199,7 @@ export class WorkerService {
     }
 
     logger.debug(`Running scheduler loop for jobs "${jobNames.join(', ')}"...`)
+    let consecutivePartitionMisses = 0
 
     while (workersInstance.running) {
       let didMiss = false
@@ -195,24 +218,33 @@ export class WorkerService {
             availableJobNames.length < jobNames.length
               ? FILTERED_JOB_NAMES_ACQUISITION_HINT
               : workersInstance.jobAcquisitionHint
+          const partition = this.getNextPartition(config, workersInstance)
           const jobToRun = await this.jobsRepo.getJobAndLock(
             availableJobNames,
             config.defaultLockTime,
             jobAcquisitionHint,
+            partition,
           )
 
           if (!jobToRun) {
-            logger.debug('No job to run')
-            didMiss = true
-            break
+            consecutivePartitionMisses++
+            logger.debug(`No job to run in partition ${partition}`)
+            if (consecutivePartitionMisses >= config.nPartitions) {
+              consecutivePartitionMisses = 0
+              didMiss = true
+              break
+            }
+            continue
           }
 
+          consecutivePartitionMisses = 0
           // An acquisition already in flight when stop() is called is considered committed.
           this.startExecution(executeConfig, workersInstance, jobToRun)
           if (!workersInstance.running) break
         }
       } catch (error) {
         logger.error('Error in job scheduler.', {error})
+        consecutivePartitionMisses = 0
         didMiss = true
       }
 
@@ -266,11 +298,13 @@ export class WorkerService {
 
     try {
       for (let sample = 0; sample < 3; sample++) {
+        const partition = getRandomPartition(config.nPartitions)
         for (const hint of [firstHint, secondHint]) {
           if (!workersInstance.running) return
           const executionTimeMillis = await this.jobsRepo.getJobAcquisitionExecutionTime(
             jobNames,
             hint,
+            partition,
           )
           if (!workersInstance.running) return
           byHint[hint].push(executionTimeMillis)
@@ -356,6 +390,59 @@ export class WorkerService {
     }
   }
 
+  async reconcilePartitionBatch(config: StartWorkersConfig) {
+    // Some embedders replace the repository in isolated scheduler tests.
+    if (typeof this.jobsRepo.reconcilePartitions !== 'function') return 0
+
+    try {
+      return await this.jobsRepo.reconcilePartitions({
+        jobNames: this.getJobNames(config.jobs),
+        nPartitions: config.nPartitions,
+        batchSize: this.partitionReconcilerBatchSize,
+      })
+    } catch (error) {
+      logger.warn('Job partition reconciliation failed; it will be retried.', {error})
+      return 0
+    }
+  }
+
+  async waitForNextPartitionReconcile(workersInstance: InternalWorkersInstance, delayMs: number) {
+    await new Promise<void>(resolve => {
+      let resolved = false
+      const finishWait = () => {
+        if (resolved) return
+        resolved = true
+        clearTimeout(workersInstance.partitionReconcilerTimer)
+        workersInstance.partitionReconcilerTimer = undefined
+        workersInstance.cancelPartitionReconcilerWait = undefined
+        resolve()
+      }
+
+      workersInstance.partitionReconcilerTimer = setTimeout(finishWait, delayMs)
+      workersInstance.cancelPartitionReconcilerWait = finishWait
+    })
+  }
+
+  async runPartitionReconcilerLoop(
+    config: StartWorkersConfig,
+    workersInstance: InternalWorkersInstance,
+    initialReconcilePromise: Promise<number>,
+  ) {
+    let modifiedCount = await initialReconcilePromise
+
+    while (workersInstance.running) {
+      const didFillBatch = modifiedCount >= this.partitionReconcilerBatchSize
+      const delayMs = didFillBatch
+        ? this.partitionReconcilerBatchPauseMs
+        : this.partitionReconcilerIntervalMs +
+          Math.floor(Math.random() * (this.partitionReconcilerJitterMs + 1))
+
+      await this.waitForNextPartitionReconcile(workersInstance, delayMs)
+      if (!workersInstance.running) return
+      modifiedCount = await this.reconcilePartitionBatch(config)
+    }
+  }
+
   createWorkersInstanceDefinition(config: StartWorkersConfig): InternalWorkersInstance {
     let signalStop!: () => void
     const stopSignal = new Promise<void>(resolve => {
@@ -372,7 +459,10 @@ export class WorkerService {
       jobAcquisitionHintProbeCycle: 0,
       hasCompletedInitialJobAcquisitionHintProbe: false,
       pendingJobAcquisitionHintWins: 0,
+      partitionOrder: createShuffledPartitions(config.nPartitions),
+      partitionCursor: 0,
       jobAcquisitionHintProbePromise: Promise.resolve(),
+      partitionReconcilerPromise: Promise.resolve(),
       schedulerPromise: Promise.resolve(),
       stopSignal,
       signalStop,
@@ -387,10 +477,12 @@ export class WorkerService {
           workersInstance.running = false
           workersInstance.signalStop()
           workersInstance.cancelJobAcquisitionHintProbeWait?.()
+          workersInstance.cancelPartitionReconcilerWait?.()
 
           await Promise.all([
             workersInstance.schedulerPromise,
             workersInstance.jobAcquisitionHintProbePromise,
+            workersInstance.partitionReconcilerPromise,
           ])
 
           const activeCapacity = Array.from(
@@ -415,7 +507,7 @@ export class WorkerService {
         .filter(job => job.type === 'recurrent')
         .map(async job => {
           logger.debug(`Ensuring records for job "${job.name}"...`)
-          await this.jobsRepo.ensureJobRecord(job)
+          await this.jobsRepo.ensureJobRecord(job, getRandomPartition(config.nPartitions))
         }),
     )
   }
@@ -450,15 +542,20 @@ export class WorkerService {
       throw new Error('maxTriesReachedRetentionMs must be null, zero, or a positive number')
     }
 
+    const nPartitions = userConfig.nPartitions ?? 1
+    validatePartitionsCount(nPartitions)
+
     const config: StartWorkersConfig = {
       pollInterval: 3000,
       workersCount: 4,
       defaultLockTime: 30 * 1000,
       ...userConfig,
+      nPartitions,
       maxTriesReachedRetentionMs,
     }
 
-    setNameToJobs(config.jobs)
+    setNameToJobs(config.jobs, config.nPartitions)
+    this.jobsRepo.configureJobPartitions?.(this.getJobNames(config.jobs), config.nPartitions)
 
     const workersInstance = this.createWorkersInstanceDefinition(config)
     logger.debug('Starting job scheduler', config)
@@ -468,10 +565,18 @@ export class WorkerService {
       workersInstance,
     )
 
+    const initialReconcilePromise = this.reconcilePartitionBatch(config)
+    workersInstance.partitionReconcilerPromise = this.runPartitionReconcilerLoop(
+      config,
+      workersInstance,
+      initialReconcilePromise,
+    )
+
     workersInstance.schedulerPromise = this.runScheduler(config, workersInstance).catch(error => {
       workersInstance.running = false
       workersInstance.signalStop()
       workersInstance.cancelJobAcquisitionHintProbeWait?.()
+      workersInstance.cancelPartitionReconcilerWait?.()
       logger.error('Job scheduler stopped after an unexpected error.', {error})
     })
 
@@ -479,8 +584,9 @@ export class WorkerService {
   }
 }
 
-function setNameToJobs(jobs: JobsDefinition) {
+function setNameToJobs(jobs: JobsDefinition, nPartitions: number) {
   for (const name of Object.keys(jobs)) {
     jobs[name].jobName = name
+    jobs[name].nPartitions = nPartitions
   }
 }

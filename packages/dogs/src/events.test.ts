@@ -1,7 +1,24 @@
 import {generateId, sleep} from '@orion-js/helpers'
-import {defineJob, scheduleJob, startWorkers} from '.'
+import {defineJob, jobsRepo, scheduleJob, startWorkers} from '.'
 
 describe('Event tests', () => {
+  it('Should assign direct scheduled events to a configured partition', async () => {
+    const jobName = generateId()
+    const job = defineJob({type: 'event', async resolve() {}})
+    const instance = startWorkers({
+      jobs: {[jobName]: job},
+      nPartitions: 8,
+      pollInterval: 10,
+    })
+
+    await scheduleJob({name: jobName, runIn: 60_000})
+    const record = await jobsRepo.jobs.findOne({jobName})
+    await instance.stop()
+
+    expect(record.partition).toBeGreaterThanOrEqual(0)
+    expect(record.partition).toBeLessThan(8)
+  })
+
   it('Should run an event job', async () => {
     let count = 0
     const job3 = defineJob({

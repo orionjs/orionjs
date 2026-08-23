@@ -14,6 +14,10 @@ export const JobRecordSchema = schemaWithName('JobRecord', {
   priority: {type: 'number'},
   uniqueIdentifier: {type: 'string', optional: true},
   nextRunAt: {type: 'date'},
+  /**
+   * Acquisition partition. Optional so records created by previous versions can be reconciled.
+   */
+  partition: {type: 'number', optional: true},
   lastRunAt: {type: 'date', optional: true},
   lockedUntil: {type: 'date', optional: true},
   /**

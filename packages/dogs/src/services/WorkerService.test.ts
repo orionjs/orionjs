@@ -40,6 +40,7 @@ function workersConfig() {
     workersCount: 2,
     pollInterval: 1000,
     defaultLockTime: 1000,
+    nPartitions: 1,
   } as any
 }
 
@@ -58,6 +59,17 @@ describe('WorkerService', () => {
         maxTriesReachedRetentionMs: -1,
       }),
     ).toThrow('maxTriesReachedRetentionMs must be null, zero, or a positive number')
+  })
+
+  it('should reject invalid partition counts', () => {
+    const workerService = new WorkerService()
+
+    expect(() => workerService.startWorkers({jobs: {}, nPartitions: 0})).toThrow(
+      'nPartitions must be a positive integer',
+    )
+    expect(() => workerService.startWorkers({jobs: {}, nPartitions: 1.5})).toThrow(
+      'nPartitions must be a positive integer',
+    )
   })
 
   it('should use one polling loop regardless of configured concurrency', async () => {
@@ -82,6 +94,27 @@ describe('WorkerService', () => {
     expect(getJobAndLock.mock.calls.length).toBeLessThanOrEqual(4)
     expect(instance.runningExecutions).toBe(0)
     expect('workers' in instance).toBe(false)
+  })
+
+  it('should visit every partition before waiting after an empty sweep', async () => {
+    const workerService = new WorkerService() as any
+    const getJobAndLock = mock(async () => undefined)
+    workerService.jobsRepo = {getJobAndLock}
+    const config = {
+      jobs: {testJob: {type: 'event', resolve: async () => {}}},
+      workersCount: 1,
+      pollInterval: 1000,
+      defaultLockTime: 1000,
+      nPartitions: 4,
+    } as any
+    const instance = workerService.createWorkersInstanceDefinition(config) as any
+    instance.schedulerPromise = workerService.runSchedulerLoop(config, instance)
+
+    await waitUntil(() => getJobAndLock.mock.calls.length === 4)
+    const visitedPartitions = getJobAndLock.mock.calls.map(call => call[3])
+
+    expect(new Set(visitedPartitions)).toEqual(new Set([0, 1, 2, 3]))
+    await instance.stop()
   })
 
   it('should fill available capacity and refill it immediately after an execution finishes', async () => {
@@ -215,6 +248,7 @@ describe('WorkerService', () => {
       workersCount: 2,
       pollInterval: 2,
       defaultLockTime: 1000,
+      nPartitions: 1,
     } as any
     const instance = workerService.createWorkersInstanceDefinition(config) as any
     instance.jobAcquisitionHint = CANDIDATE_JOB_ACQUISITION_HINT
@@ -225,8 +259,9 @@ describe('WorkerService', () => {
       ['firstJob', 'secondJob'],
       1000,
       CANDIDATE_JOB_ACQUISITION_HINT,
+      0,
     ])
-    expect(getJobAndLock.mock.calls[1]).toEqual([['secondJob'], 1000, 'byJobName'])
+    expect(getJobAndLock.mock.calls[1]).toEqual([['secondJob'], 1000, 'byJobName', 0])
     expect(instance.jobAcquisitionHint).toBe(CANDIDATE_JOB_ACQUISITION_HINT)
 
     resolveExecution()
@@ -235,6 +270,7 @@ describe('WorkerService', () => {
       ['firstJob', 'secondJob'],
       1000,
       CANDIDATE_JOB_ACQUISITION_HINT,
+      0,
     ])
 
     await instance.stop()

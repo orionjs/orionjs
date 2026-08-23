@@ -153,6 +153,7 @@ describe('Event Job Definition - scheduleJobs method', () => {
 
       // Set the job name (normally done by startWorkers)
       jobDefinition.jobName = 'test-bulk-job'
+      jobDefinition.nPartitions = 4
 
       const jobsToSchedule = [
         {
@@ -186,6 +187,7 @@ describe('Event Job Definition - scheduleJobs method', () => {
       expect(scheduledJobs).toHaveLength(3)
       expect(scheduledJobs.every(job => job.type === 'event')).toBe(true)
       expect(scheduledJobs.every(job => job.jobName === 'test-bulk-job')).toBe(true)
+      expect(scheduledJobs.every(job => job.partition >= 0 && job.partition < 4)).toBe(true)
 
       // Verify parameters are correctly stored
       const messages = scheduledJobs.map(job => job.params.message).sort()

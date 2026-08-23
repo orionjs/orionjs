@@ -153,14 +153,21 @@ describe('JobsRepo', () => {
         tries: 4,
         lockId: selector.lockId,
         claimWasStale: true,
+        partition: 3,
       }))
       const repo = new JobsRepo() as any
       repo.supportsSortedUpdateOne = async () => true
       repo.jobs = {getRawCollection: async () => ({updateOne, findOne})}
 
-      const claimed = await repo.getJobAndLock(['test-job'], 5000, CANDIDATE_JOB_ACQUISITION_HINT)
+      const claimed = await repo.getJobAndLock(
+        ['test-job'],
+        5000,
+        CANDIDATE_JOB_ACQUISITION_HINT,
+        3,
+      )
 
       expect(updateOne).toHaveBeenCalledTimes(1)
+      expect(updateOne.mock.calls[0][0].partition).toBe(3)
       expect(findOne).toHaveBeenCalledTimes(1)
       expect(findOne.mock.calls[0][0]).toEqual({lockId: claimed.executionId})
       expect(claimed).toMatchObject({
@@ -212,6 +219,7 @@ describe('JobsRepo', () => {
         nextRunAt: new Date(Date.now() - 1000), // Past date
         tries: initialTries,
         lockedUntil: new Date(Date.now() - 1000), // Past lock time (stale)
+        partition: 0,
       })
 
       // Act: Get and lock the job
@@ -246,6 +254,7 @@ describe('JobsRepo', () => {
         priority: 100,
         nextRunAt: new Date(Date.now() - 1000), // Past date (ready to run)
         tries: initialTries,
+        partition: 0,
         // No lockedUntil (not locked)
       })
 
@@ -436,6 +445,86 @@ describe('JobsRepo', () => {
     })
   })
 
+  describe('partition reconciliation', () => {
+    it('repairs missing and out-of-range partitions without moving active locks', async () => {
+      const now = new Date()
+      const records = [
+        {_id: 'missing', jobName: 'partition-job'},
+        {_id: 'negative', jobName: 'partition-job', partition: -1},
+        {_id: 'too-high', jobName: 'partition-job', partition: 8},
+        {_id: 'valid', jobName: 'partition-job', partition: 2},
+        {
+          _id: 'locked',
+          jobName: 'partition-job',
+          partition: 9,
+          lockedUntil: new Date(now.getTime() + 60_000),
+          lockId: 'active-lock',
+        },
+        {
+          _id: 'terminal',
+          jobName: 'partition-job',
+          status: 'maxTriesReached' as const,
+        },
+      ]
+
+      await jobsRepo.jobs.rawCollection.insertMany(
+        records.map(record => ({
+          ...record,
+          type: 'event',
+          priority: 100,
+          nextRunAt: now,
+        })),
+      )
+
+      const modifiedCount = await jobsRepo.reconcilePartitions({
+        jobNames: ['partition-job'],
+        nPartitions: 4,
+        batchSize: 100,
+      })
+      const byId = new Map(
+        (await jobsRepo.jobs.find({jobName: 'partition-job'}).toArray()).map(record => [
+          record._id,
+          record,
+        ]),
+      )
+
+      expect(modifiedCount).toBe(3)
+      for (const id of ['missing', 'negative', 'too-high']) {
+        expect(byId.get(id).partition).toBeGreaterThanOrEqual(0)
+        expect(byId.get(id).partition).toBeLessThan(4)
+      }
+      expect(byId.get('valid').partition).toBe(2)
+      expect(byId.get('locked').partition).toBe(9)
+      expect(byId.get('terminal').partition).toBeUndefined()
+    })
+
+    it('does not move a job after a concurrent claim wins its lock', async () => {
+      await jobsRepo.jobs.insertOne({
+        _id: 'claim-before-reconcile',
+        jobName: 'partition-job',
+        type: 'event',
+        priority: 100,
+        nextRunAt: new Date(),
+        partition: 0,
+      })
+
+      const claimed = await jobsRepo.getJobAndLock(['partition-job'], 60_000)
+      expect(claimed).toBeDefined()
+
+      await jobsRepo.jobs.updateOne('claim-before-reconcile', {$set: {partition: 9}})
+      const modifiedCount = await jobsRepo.reconcilePartitions({
+        jobNames: ['partition-job'],
+        nPartitions: 4,
+        batchSize: 100,
+      })
+      const record = await jobsRepo.jobs.findOne('claim-before-reconcile')
+
+      expect(modifiedCount).toBe(0)
+      expect(record.partition).toBe(9)
+      expect(record.lockId).toBe(claimed.lockId)
+    })
+  })
+
   describe('scheduleJobs method (bulk scheduling)', () => {
     it('should schedule multiple jobs successfully', async () => {
       // Arrange: Create multiple job options
@@ -445,18 +534,21 @@ describe('JobsRepo', () => {
           params: {message: 'Hello 1'},
           nextRunAt: new Date(),
           priority: 100,
+          partition: 0,
         },
         {
           name: 'bulk-job-2',
           params: {message: 'Hello 2'},
           nextRunAt: new Date(),
           priority: 200,
+          partition: 1,
         },
         {
           name: 'bulk-job-3',
           params: {message: 'Hello 3'},
           nextRunAt: new Date(),
           priority: 150,
+          partition: 2,
         },
       ]
 
@@ -476,6 +568,7 @@ describe('JobsRepo', () => {
         .toArray()
       expect(scheduledJobs).toHaveLength(3)
       expect(scheduledJobs.every(job => job.type === 'event')).toBe(true)
+      expect(scheduledJobs.map(job => job.partition).sort()).toEqual([0, 1, 2])
     })
 
     it('should handle empty job array', async () => {

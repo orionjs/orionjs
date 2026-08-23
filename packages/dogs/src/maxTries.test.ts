@@ -415,6 +415,7 @@ describe('JobsRepo maxTriesReached filtering', () => {
       type: 'event',
       priority: 100,
       nextRunAt: new Date(Date.now() - 1000),
+      partition: 0,
     })
 
     // Insert a job marked as maxTriesReached (should NOT be picked up)
@@ -426,6 +427,7 @@ describe('JobsRepo maxTriesReached filtering', () => {
       priority: 100,
       nextRunAt: new Date(Date.now() - 1000),
       status: 'maxTriesReached',
+      partition: 0,
     })
 
     // Try to get a job
@@ -446,6 +448,7 @@ describe('JobsRepo maxTriesReached filtering', () => {
       priority: 100,
       nextRunAt: new Date(Date.now() - 1000),
       status: 'maxTriesReached',
+      partition: 0,
     })
 
     const jobToRun = await jobsRepo.getJobAndLock(['recurrent-job'], 5000)
@@ -464,6 +467,7 @@ describe('JobsRepo maxTriesReached filtering', () => {
       type: 'event',
       priority: 100,
       nextRunAt: new Date(Date.now() - 1000),
+      partition: 0,
       // No status field - simulating old records
     })
 

@@ -211,6 +211,7 @@ import {startWorkers} from '@orion-js/dogs'
 // One scheduler discovers jobs defined using the @Jobs() decorator and runs up to four at once.
 const workersInstance = startWorkers({
   workersCount: 4, // Maximum concurrent executions (default: 4)
+  nPartitions: 16, // MongoDB acquisition partitions (default: 1)
   pollInterval: 3000, // Milliseconds between polling for new jobs (default: 3000)
   defaultLockTime: 30000, // Default lock time in milliseconds (default: 30000 = 30 seconds)
   maxTries: 10, // Optional. Applies only to event jobs
@@ -228,8 +229,14 @@ process.on('SIGTERM', async () => {
 ```
 
 Each `startWorkers()` call creates one scheduler loop, regardless of `workersCount`. The scheduler
-claims jobs atomically until its concurrency is full. When no job is pending, it performs at most one
-unsuccessful polling query per `pollInterval`. `cooldownPeriod` is deprecated and ignored.
+claims jobs atomically until its concurrency is full. It queries one partition at a time, advances
+through a shuffled order, and waits `pollInterval` only after a complete empty sweep. This avoids a
+`$in` across partitions and keeps each acquisition on an equality-prefixed index. Priority is strict
+inside each partition and approximate across partitions.
+
+Use the same `nPartitions` value in every application instance. Dogs stores no worker registry or
+partition metadata. A background reconciler gradually assigns legacy records and repairs partitions
+outside the configured range without moving actively locked jobs.
 
 `workersInstance.runningExecutions` reports how many active executions currently consume scheduler
 capacity.

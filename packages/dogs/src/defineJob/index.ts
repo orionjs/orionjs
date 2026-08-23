@@ -1,7 +1,8 @@
 import {cleanAndValidate, SchemaInAnyOrionForm} from '@orion-js/schema'
 import {CronExpressionParser} from 'cron-parser'
 import parse from 'parse-duration'
-import {ScheduleJobsResult, scheduleJob, scheduleJobs} from '..'
+import {ScheduleJobsResult} from '..'
+import {scheduleJobInternal, scheduleJobsInternal} from '../schedule'
 import {ScheduleJobOptionsWithoutName} from '../types/Events'
 import {
   CreateEventJobOptions,
@@ -33,11 +34,14 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
       ? await cleanAndValidate(jobDefinition.params, scheduleOptions.params)
       : scheduleOptions.params
 
-    return await scheduleJob({
-      ...scheduleOptions,
-      name: jobDefinition.jobName,
-      params,
-    })
+    return await scheduleJobInternal(
+      {
+        ...scheduleOptions,
+        name: jobDefinition.jobName,
+        params,
+      },
+      jobDefinition.nPartitions,
+    )
   }
 
   jobDefinition.scheduleJobs = async (
@@ -62,7 +66,7 @@ export function createEventJob<TParamsSchema extends SchemaInAnyOrionForm>(
       }),
     )
 
-    return await scheduleJobs(processedJobs)
+    return await scheduleJobsInternal(processedJobs, jobDefinition.nPartitions)
   }
 
   return jobDefinition

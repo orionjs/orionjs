@@ -2,10 +2,10 @@ import {expect, it, setDefaultTimeout} from 'bun:test'
 
 const stressTest = process.env.DOGS_RUN_STRESS_TEST === '1' ? it : it.skip
 
-setDefaultTimeout(15 * 60 * 1000)
+setDefaultTimeout(Number(process.env.DOGS_STRESS_TIMEOUT_MS || 15 * 60 * 1000))
 
 stressTest('does not return duplicate claims under heavy concurrency', async () => {
-  const totalJobs = Number(process.env.DOGS_STRESS_JOBS || 10_000)
+  const totalJobs = Number(process.env.DOGS_STRESS_JOBS || 50_000)
   const concurrentClaimers = Number(process.env.DOGS_STRESS_CLAIMERS || 256)
   const baseMongoUrl = process.env.DOGS_STRESS_MONGO_URL || 'mongodb://127.0.0.1:3003'
   const databaseName = `orionjs_dogs_stress_${Date.now()}_${Math.random().toString(16).slice(2)}`
@@ -35,7 +35,16 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
     return Number(status.metrics?.operation?.writeConflicts || 0)
   }
 
-  async function seedJobs() {
+  function shuffledPartitions(nPartitions: number) {
+    const partitions = Array.from({length: nPartitions}, (_, partition) => partition)
+    for (let index = partitions.length - 1; index > 0; index--) {
+      const swapIndex = Math.floor(Math.random() * (index + 1))
+      ;[partitions[index], partitions[swapIndex]] = [partitions[swapIndex], partitions[index]]
+    }
+    return partitions
+  }
+
+  async function seedJobs(nPartitions: number) {
     await rawCollection.deleteMany({})
     const firstRunAt = Date.now() - totalJobs - 60_000
 
@@ -50,6 +59,7 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
             type: 'event',
             priority: 100,
             nextRunAt: new Date(firstRunAt + index),
+            partition: index % nPartitions,
             params: {index},
           }
         }),
@@ -57,8 +67,8 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
     }
   }
 
-  async function runScenario(label: string, sortedUpdateOne: boolean) {
-    await seedJobs()
+  async function runScenario(label: string, sortedUpdateOne: boolean, nPartitions: number) {
+    await seedJobs(nPartitions)
     ;(jobsRepo as any).sortedUpdateOneSupportPromise = Promise.resolve(sortedUpdateOne)
 
     const claimedJobIds: string[] = []
@@ -68,13 +78,29 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
 
     await Promise.all(
       Array.from({length: concurrentClaimers}, async () => {
-        while (true) {
+        let partitionOrder = shuffledPartitions(nPartitions)
+        let partitionCursor = 0
+        let consecutiveMisses = 0
+
+        while (consecutiveMisses < nPartitions) {
+          const partition = partitionOrder[partitionCursor]
+          partitionCursor++
+          if (partitionCursor === nPartitions) {
+            partitionOrder = shuffledPartitions(nPartitions)
+            partitionCursor = 0
+          }
+
           const job = await jobsRepo.getJobAndLock(
             jobNames,
             30 * 60 * 1000,
             CANDIDATE_JOB_ACQUISITION_HINT,
+            partition,
           )
-          if (!job) return
+          if (!job) {
+            consecutiveMisses++
+            continue
+          }
+          consecutiveMisses = 0
           claimedJobIds.push(job.jobId)
           claimedExecutionIds.push(job.executionId)
         }
@@ -87,8 +113,8 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
     const invalidTries = await rawCollection.countDocuments({tries: {$ne: 1}})
     const storedLockIds = await rawCollection.distinct('lockId')
     const secondClaims = await Promise.all(
-      Array.from({length: concurrentClaimers}, () =>
-        jobsRepo.getJobAndLock(jobNames, 30 * 60 * 1000, CANDIDATE_JOB_ACQUISITION_HINT),
+      Array.from({length: nPartitions}, (_, partition) =>
+        jobsRepo.getJobAndLock(jobNames, 30 * 60 * 1000, CANDIDATE_JOB_ACQUISITION_HINT, partition),
       ),
     )
 
@@ -116,6 +142,7 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
       label,
       jobs: totalJobs,
       claimers: concurrentClaimers,
+      partitions: nPartitions,
       elapsedMs: Math.round(elapsedMs),
       claimsPerSecond: Math.round((totalJobs / elapsedMs) * 1000),
       writeConflicts: conflicts,
@@ -128,15 +155,78 @@ stressTest('does not return duplicate claims under heavy concurrency', async () 
     expect(await jobsRepo.supportsSortedUpdateOne()).toBe(true)
 
     const hello = await admin.command({hello: 1})
+    const scenarioDefinitions = [
+      {
+        key: 'legacy',
+        label: 'findOneAndUpdate / 1 partition',
+        sortedUpdateOne: false,
+        nPartitions: 1,
+      },
+      {
+        key: 'sorted1',
+        label: 'sorted updateOne / 1 partition',
+        sortedUpdateOne: true,
+        nPartitions: 1,
+      },
+      {
+        key: 'sorted8',
+        label: 'sorted updateOne / 8 partitions',
+        sortedUpdateOne: true,
+        nPartitions: 8,
+      },
+      {
+        key: 'sorted32',
+        label: 'sorted updateOne / 32 partitions',
+        sortedUpdateOne: true,
+        nPartitions: 32,
+      },
+      {
+        key: 'sorted64',
+        label: 'sorted updateOne / 64 partitions',
+        sortedUpdateOne: true,
+        nPartitions: 64,
+      },
+      {
+        key: 'sorted128',
+        label: 'sorted updateOne / 128 partitions',
+        sortedUpdateOne: true,
+        nPartitions: 128,
+      },
+      {
+        key: 'sorted256',
+        label: 'sorted updateOne / 256 partitions',
+        sortedUpdateOne: true,
+        nPartitions: 256,
+      },
+    ]
+    const requestedScenario = process.env.DOGS_STRESS_SCENARIO
+    const selectedScenarios = requestedScenario
+      ? scenarioDefinitions.filter(scenario => scenario.key === requestedScenario)
+      : scenarioDefinitions.filter(scenario =>
+          ['legacy', 'sorted1', 'sorted8', 'sorted32'].includes(scenario.key),
+        )
+
+    if (selectedScenarios.length === 0) {
+      throw new Error(`Unknown stress scenario "${requestedScenario}"`)
+    }
+
+    const scenarios = []
+    for (const scenario of selectedScenarios) {
+      const result = await runScenario(
+        scenario.label,
+        scenario.sortedUpdateOne,
+        scenario.nPartitions,
+      )
+      scenarios.push(result)
+      console.log(JSON.stringify({databaseName, maxWireVersion: hello.maxWireVersion, result}))
+    }
+
     console.log(
       JSON.stringify(
         {
           databaseName,
           maxWireVersion: hello.maxWireVersion,
-          scenarios: [
-            await runScenario('findOneAndUpdate', false),
-            await runScenario('sorted updateOne', true),
-          ],
+          scenarios,
         },
         null,
         2,

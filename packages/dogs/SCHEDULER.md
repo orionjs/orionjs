@@ -9,9 +9,9 @@ job executions for that scheduler; it no longer creates persistent worker loops.
 while scheduler is running
   while active executions are below workersCount
     calculate job names with available per-job capacity
-    atomically claim the next job with findOneAndUpdate
+    atomically claim the next job from the current partition
 
-    if no job is pending
+    if every partition has been checked without a successful claim
       wait pollInterval
       continue
 
@@ -21,8 +21,18 @@ while scheduler is running
     wait until an execution finishes or becomes stale
 ```
 
-There is at most one unsuccessful polling query per `pollInterval` and `startWorkers()` instance,
-regardless of `workersCount`. Successful claims continue immediately until capacity is full.
+There is at most one unsuccessful query per configured partition before `pollInterval`, regardless
+of `workersCount`. Each scheduler starts with a shuffled partition order, advances after every
+attempt, and reshuffles after every full sweep. Claims always use `partition = currentPartition`;
+they never query multiple partitions with `$in`.
+
+`nPartitions` defaults to `1`. Event and recurrent records receive a random partition when they are
+created. Priority remains strict inside a partition and approximate across partitions.
+
+One reconciler per `startWorkers()` instance repairs runnable records whose partition is missing,
+negative, or outside the configured range. It skips active locks, processes 500 records at a time,
+and uses compare-and-set updates so it cannot move a job after a claim wins. It runs once at startup,
+continues with short pauses while migration work remains, and checks again periodically with jitter.
 
 `cooldownPeriod` is deprecated and ignored. The scheduler waits only when there is no eligible job,
 when all concurrency slots are occupied, or when every job name has reached its local parallelism
@@ -31,9 +41,9 @@ limit.
 ## Adaptive acquisition hint
 
 Each `startWorkers()` instance keeps its selected MongoDB hint only in memory. It starts with
-`{jobName: 1, priority: -1, nextRunAt: 1}` and compares it with
-`{priority: -1, nextRunAt: 1}`. Both indexes are declared by `JobsRepo`; the scheduler assumes they
-already exist and does not add a migration or index-detection path.
+`{partition: 1, jobName: 1, priority: -1, nextRunAt: 1}` and compares it with
+`{partition: 1, priority: -1, nextRunAt: 1}`. Both indexes are declared by `JobsRepo`; the scheduler
+assumes they already exist and does not add a migration or index-detection path.
 
 The comparison runs immediately in the background and then every 30 minutes, without jitter or
 overlap. It uses every configured job name and the same eligibility selector and sort as the real
@@ -45,10 +55,17 @@ probe applies its winner immediately; later probes require the other hint to win
 consecutively before switching. A current-hint win, tie, failure, or timeout resets that streak.
 Failures retain the current hint and are retried at the next interval.
 
-The selected hint is used while every configured job name has local capacity. If
+Both acquisition indexes start with `partition`. The selected hint is used while every configured
+job name has local capacity. If
 `maxParallelExecutionsPerServer` filters one or more event job names from a claim, that claim uses
-`{jobName: 1, priority: -1, nextRunAt: 1}`. This temporary override does not change the selected
-hint or affect later probes; claims return to the selected hint as soon as no job names are filtered.
+`{partition: 1, jobName: 1, priority: -1, nextRunAt: 1}`. This temporary override does not change the
+selected hint or affect later probes; claims return to the selected hint as soon as no job names are
+filtered.
+
+Rolling deployments keep the previous unpartitioned indexes until every application instance runs
+the partition-aware version. After rollout and reconciliation, remove only
+`jobName_1_priority_-1_nextRunAt_1` and `priority_-1_nextRunAt_1` to eliminate their write
+amplification.
 
 Instances with no configured jobs do not run probes. `stop()` cancels a scheduled probe and waits
 for an explain already in flight; after that explain returns, the rest of its incomplete cycle is
@@ -80,7 +97,9 @@ new execution.
 It does not wait indefinitely for detached stale promises. If a MongoDB acquisition was already in
 flight when `stop()` was called, that acquired job is executed and included in the shutdown wait.
 
-`workersCount` remains the public concurrency setting. `WorkerInstance` and
+`workersCount` remains the public concurrency setting. `nPartitions` independently controls how
+many index regions schedulers rotate through. All application instances must use the same value;
+Dogs intentionally stores no cluster metadata for this setting. `WorkerInstance` and
 `WorkersInstance.workers` are removed because there are no persistent workers. A read-only
 `runningExecutions` count exposes current active capacity usage without exposing the internal maps.
 

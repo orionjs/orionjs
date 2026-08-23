@@ -1,6 +1,7 @@
 import {generateId} from '@orion-js/helpers'
 import {logger} from '@orion-js/logger'
 import {Collection, MongoCollection, MongoDB, Repository} from '@orion-js/mongodb'
+import {getRandomPartition} from '../services/partitions'
 import {ScheduleJobRecordOptions, ScheduleJobsResult} from '../types/Events'
 import {JobRecord, JobRecordSchema} from '../types/JobRecord'
 import {JobDefinitionWithName, RecurrentJobDefinition} from '../types/JobsDefinition'
@@ -11,11 +12,13 @@ export type JobAcquisitionHint = 'byJobName' | 'globalPriority'
 
 export const JOB_ACQUISITION_HINTS = {
   byJobName: {
+    partition: 1,
     jobName: 1,
     priority: -1,
     nextRunAt: 1,
   },
   globalPriority: {
+    partition: 1,
     priority: -1,
     nextRunAt: 1,
   },
@@ -26,14 +29,21 @@ export const CANDIDATE_JOB_ACQUISITION_HINT = 'globalPriority' as const satisfie
 
 const SORTED_UPDATE_ONE_MIN_WIRE_VERSION = 25
 const LOCK_ID_INDEX_NAME = 'jobs_dogs_records_lock_id'
+const PARTITION_JOB_NAME_INDEX_NAME = 'jobs_dogs_records_partition_job_name_priority_next_run'
+const PARTITION_PRIORITY_INDEX_NAME = 'jobs_dogs_records_partition_priority_next_run'
 
 const JOB_ACQUISITION_SORT: MongoDB.Sort = {
   priority: -1,
   nextRunAt: 1,
 }
 
-function getJobAcquisitionSelector(jobNames: string[], now: Date): MongoDB.Filter<JobRecord> {
+function getJobAcquisitionSelector(
+  jobNames: string[],
+  now: Date,
+  partition: number,
+): MongoDB.Filter<JobRecord> {
   return {
+    partition,
     jobName: {$in: jobNames},
     nextRunAt: {$lte: now},
     $and: [
@@ -54,9 +64,11 @@ export class JobsRepo {
     indexes: [
       {
         keys: JOB_ACQUISITION_HINTS.byJobName,
+        options: {name: PARTITION_JOB_NAME_INDEX_NAME},
       },
       {
         keys: JOB_ACQUISITION_HINTS.globalPriority,
+        options: {name: PARTITION_PRIORITY_INDEX_NAME},
       },
       {
         keys: {
@@ -97,6 +109,17 @@ export class JobsRepo {
   jobs: Collection<JobRecord>
 
   private sortedUpdateOneSupportPromise?: Promise<boolean>
+  private partitionsByJobName = new Map<string, number>()
+
+  configureJobPartitions(jobNames: string[], nPartitions: number) {
+    for (const jobName of jobNames) {
+      this.partitionsByJobName.set(jobName, nPartitions)
+    }
+  }
+
+  getJobPartitionsCount(jobName: string) {
+    return this.partitionsByJobName.get(jobName)
+  }
 
   async supportsSortedUpdateOne(): Promise<boolean> {
     if (!this.sortedUpdateOneSupportPromise) {
@@ -137,25 +160,27 @@ export class JobsRepo {
     jobNames: string[],
     lockTime: number,
     hint: JobAcquisitionHint = INITIAL_JOB_ACQUISITION_HINT,
+    partition = 0,
   ): Promise<JobToRun> {
     if (await this.supportsSortedUpdateOne()) {
-      return this.getJobAndLockWithSortedUpdateOne(jobNames, lockTime, hint)
+      return this.getJobAndLockWithSortedUpdateOne(jobNames, lockTime, hint, partition)
     }
 
-    return this.getJobAndLockWithFindOneAndUpdate(jobNames, lockTime, hint)
+    return this.getJobAndLockWithFindOneAndUpdate(jobNames, lockTime, hint, partition)
   }
 
   private async getJobAndLockWithFindOneAndUpdate(
     jobNames: string[],
     lockTime: number,
     hint: JobAcquisitionHint,
+    partition: number,
   ): Promise<JobToRun> {
     const executionId = generateId()
     const now = new Date()
     const lockedUntil = new Date(now.getTime() + lockTime)
 
     const job = await this.jobs.findOneAndUpdate(
-      getJobAcquisitionSelector(jobNames, now),
+      getJobAcquisitionSelector(jobNames, now, partition),
       {
         $set: {lockId: executionId, lockedUntil, lastRunAt: now},
         $inc: {tries: 1},
@@ -181,6 +206,7 @@ export class JobsRepo {
     jobNames: string[],
     lockTime: number,
     hint: JobAcquisitionHint,
+    partition: number,
   ): Promise<JobToRun> {
     const executionId = generateId()
     const now = new Date()
@@ -188,7 +214,7 @@ export class JobsRepo {
     const rawCollection = await this.jobs.getRawCollection()
 
     const result = await rawCollection.updateOne(
-      getJobAcquisitionSelector(jobNames, now),
+      getJobAcquisitionSelector(jobNames, now, partition),
       [
         {
           $set: {
@@ -243,9 +269,10 @@ export class JobsRepo {
   async getJobAcquisitionExecutionTime(
     jobNames: string[],
     hint: JobAcquisitionHint,
+    partition = 0,
   ): Promise<number> {
     const explain = await this.jobs
-      .find(getJobAcquisitionSelector(jobNames, new Date()), {
+      .find(getJobAcquisitionSelector(jobNames, new Date(), partition), {
         hint: JOB_ACQUISITION_HINTS[hint],
         maxTimeMS: 1000,
         readPreference: 'primary',
@@ -396,7 +423,7 @@ export class JobsRepo {
     return result.modifiedCount
   }
 
-  async ensureJobRecord(job: JobDefinitionWithName) {
+  async ensureJobRecord(job: JobDefinitionWithName, partition = 0) {
     const result = await this.jobs.upsert(
       {
         jobName: job.name,
@@ -411,6 +438,7 @@ export class JobsRepo {
         },
         $setOnInsert: {
           nextRunAt: new Date(),
+          partition,
         },
       },
     )
@@ -431,6 +459,7 @@ export class JobsRepo {
         nextRunAt: options.nextRunAt,
         priority: options.priority,
         type: 'event',
+        ...(options.partition === undefined ? {} : {partition: options.partition}),
       })
     } catch (error) {
       if (
@@ -468,6 +497,7 @@ export class JobsRepo {
           nextRunAt: job.nextRunAt,
           priority: job.priority,
           type: 'event',
+          ...(job.partition === undefined ? {} : {partition: job.partition}),
         })
         scheduledCount++
       } catch (error) {
@@ -498,5 +528,56 @@ export class JobsRepo {
       skippedCount,
       errors,
     }
+  }
+
+  async reconcilePartitions(options: {
+    jobNames: string[]
+    nPartitions: number
+    batchSize: number
+  }): Promise<number> {
+    if (options.jobNames.length === 0) return 0
+
+    const rawCollection = await this.jobs.getRawCollection()
+    await this.jobs.createIndexesPromise
+    const now = new Date()
+    const invalidPartition: MongoDB.Filter<JobRecord> = {
+      $or: [
+        {partition: {$exists: false}},
+        {partition: {$lt: 0}},
+        {partition: {$gte: options.nPartitions}},
+      ],
+    }
+    const availableLock: MongoDB.Filter<JobRecord> = {
+      $or: [{lockedUntil: {$exists: false}}, {lockedUntil: {$lte: now}}],
+    }
+    const runnableJob: MongoDB.Filter<JobRecord> = {
+      $or: [{type: {$ne: 'event'}}, {status: {$ne: 'maxTriesReached'}}],
+    }
+
+    const jobs = await rawCollection
+      .find({
+        jobName: {$in: options.jobNames},
+        $and: [invalidPartition, availableLock, runnableJob],
+      })
+      .project({_id: 1})
+      .limit(options.batchSize)
+      .toArray()
+
+    if (jobs.length === 0) return 0
+
+    const result = await rawCollection.bulkWrite(
+      jobs.map(job => ({
+        updateOne: {
+          filter: {
+            _id: job._id,
+            $and: [invalidPartition, availableLock, runnableJob],
+          },
+          update: {$set: {partition: getRandomPartition(options.nPartitions)}},
+        },
+      })),
+      {ordered: false},
+    )
+
+    return result.modifiedCount
   }
 }
