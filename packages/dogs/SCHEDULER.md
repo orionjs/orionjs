@@ -45,6 +45,11 @@ probe applies its winner immediately; later probes require the other hint to win
 consecutively before switching. A current-hint win, tie, failure, or timeout resets that streak.
 Failures retain the current hint and are retried at the next interval.
 
+The selected hint is used while every configured job name has local capacity. If
+`maxParallelExecutionsPerServer` filters one or more event job names from a claim, that claim uses
+`{jobName: 1, priority: -1, nextRunAt: 1}`. This temporary override does not change the selected
+hint or affect later probes; claims return to the selected hint as soon as no job names are filtered.
+
 Instances with no configured jobs do not run probes. `stop()` cancels a scheduled probe and waits
 for an explain already in flight; after that explain returns, the rest of its incomplete cycle is
 discarded.

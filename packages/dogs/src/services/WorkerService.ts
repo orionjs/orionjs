@@ -12,6 +12,8 @@ import {DEFAULT_MAX_TRIES_REACHED_RETENTION_MS, StartWorkersConfig} from '../typ
 import {JobToRun, WorkersInstance} from '../types/Worker'
 import {ExecuteJobConfig, Executor} from './Executor'
 
+const FILTERED_JOB_NAMES_ACQUISITION_HINT = 'byJobName' as const satisfies JobAcquisitionHint
+
 interface TrackedExecution {
   job: JobToRun
   promise: Promise<void>
@@ -189,10 +191,14 @@ export class WorkerService {
             break
           }
 
+          const jobAcquisitionHint =
+            availableJobNames.length < jobNames.length
+              ? FILTERED_JOB_NAMES_ACQUISITION_HINT
+              : workersInstance.jobAcquisitionHint
           const jobToRun = await this.jobsRepo.getJobAndLock(
             availableJobNames,
             config.defaultLockTime,
-            workersInstance.jobAcquisitionHint,
+            jobAcquisitionHint,
           )
 
           if (!jobToRun) {

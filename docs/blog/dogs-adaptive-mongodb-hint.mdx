@@ -21,8 +21,11 @@ Dogs declares both indexes on `orionjs.jobs_dogs_records`:
 ```
 
 The first remains the initial hint. The second is the alternative evaluated by the scheduler. The
-real atomic `findOneAndUpdate` claim always receives the hint currently selected by that
-`startWorkers()` instance.
+real atomic `findOneAndUpdate` claim receives the hint currently selected by that `startWorkers()`
+instance while every configured job name has local capacity. When
+`maxParallelExecutionsPerServer` filters one or more event job names, that claim temporarily uses
+the first, job-name-leading index. This override does not change the selected hint, and claims
+return to it as soon as no job names are filtered.
 
 ## Measure the real claim shape
 

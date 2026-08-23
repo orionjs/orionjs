@@ -186,6 +186,60 @@ describe('WorkerService', () => {
     expect(instance.runningExecutions).toBe(0)
   })
 
+  it('should use the by-job-name hint only while local job capacity filters job names', async () => {
+    const workerService = new WorkerService() as any
+    let resolveExecution!: () => void
+    const getJobAndLock = mock(async (_jobNames: string[]) => {
+      if (getJobAndLock.mock.calls.length === 1) return job('execution-1', 'firstJob')
+      return undefined
+    })
+    workerService.jobsRepo = {getJobAndLock}
+    workerService.executor = {
+      executeJob: mock(
+        async () =>
+          await new Promise<void>(resolve => {
+            resolveExecution = resolve
+          }),
+      ),
+    }
+
+    const config = {
+      jobs: {
+        firstJob: {
+          type: 'event',
+          maxParallelExecutionsPerServer: 1,
+          resolve: async () => {},
+        },
+        secondJob: {type: 'event', resolve: async () => {}},
+      },
+      workersCount: 2,
+      pollInterval: 2,
+      defaultLockTime: 1000,
+    } as any
+    const instance = workerService.createWorkersInstanceDefinition(config) as any
+    instance.jobAcquisitionHint = CANDIDATE_JOB_ACQUISITION_HINT
+    instance.schedulerPromise = workerService.runSchedulerLoop(config, instance)
+
+    await waitUntil(() => getJobAndLock.mock.calls.length === 2)
+    expect(getJobAndLock.mock.calls[0]).toEqual([
+      ['firstJob', 'secondJob'],
+      1000,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+    ])
+    expect(getJobAndLock.mock.calls[1]).toEqual([['secondJob'], 1000, 'byJobName'])
+    expect(instance.jobAcquisitionHint).toBe(CANDIDATE_JOB_ACQUISITION_HINT)
+
+    resolveExecution()
+    await waitUntil(() => getJobAndLock.mock.calls.length === 3)
+    expect(getJobAndLock.mock.calls[2]).toEqual([
+      ['firstJob', 'secondJob'],
+      1000,
+      CANDIDATE_JOB_ACQUISITION_HINT,
+    ])
+
+    await instance.stop()
+  })
+
   it('should select the startup winner immediately and require two later wins to switch', async () => {
     const workerService = new WorkerService() as any
     const config = workersConfig()
