@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.6.4
+
+### Patch Changes
+
+- Use the job-name acquisition index while per-server parallel execution limits filter jobs.
+
 ## 4.6.3
 
 ### Patch Changes
