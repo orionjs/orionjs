@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/dogs",
-  "version": "4.6.4",
+  "version": "4.6.5",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -36,11 +36,11 @@
   },
   "peerDependencies": {
     "@orion-js/logger": "4.5.0",
-    "@orion-js/mongodb": "4.5.1"
+    "@orion-js/mongodb": "4.5.2"
   },
   "devDependencies": {
     "@orion-js/logger": "4.5.0",
-    "@orion-js/mongodb": "4.5.1",
+    "@orion-js/mongodb": "4.5.2",
     "mongodb-memory-server": "^10.1.4",
     "tsup": "^8.0.1",
     "typescript": "^7.0.2"

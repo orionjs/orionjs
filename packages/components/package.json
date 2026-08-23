@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/components",
-  "version": "4.5.4",
+  "version": "4.5.5",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,14 +15,14 @@
     "@orion-js/echoes-orion": "4.5.0"
   },
   "peerDependencies": {
-    "@orion-js/dogs": "4.6.4",
+    "@orion-js/dogs": "4.6.5",
     "@orion-js/echoes": "^4.5.7",
     "@orion-js/graphql": "4.5.0",
     "@orion-js/helpers": "4.5.0",
     "@orion-js/http": "4.5.0",
     "@orion-js/logger": "4.5.0",
     "@orion-js/models": "4.5.0",
-    "@orion-js/mongodb": "4.5.1",
+    "@orion-js/mongodb": "4.5.2",
     "@orion-js/services": "4.5.0",
     "@orion-js/trpc": "4.5.0",
     "@trpc/server": "^11.0.0"
@@ -36,7 +36,7 @@
     }
   },
   "devDependencies": {
-    "@orion-js/dogs": "4.6.4",
+    "@orion-js/dogs": "4.6.5",
     "@orion-js/echoes": "4.5.7",
     "@orion-js/echoes-orion": "4.5.0",
     "@orion-js/graphql": "4.5.0",

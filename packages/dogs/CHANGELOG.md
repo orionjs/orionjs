@@ -1,5 +1,16 @@
 # @orion-js/dogs
 
+## 4.6.5
+
+### Patch Changes
+
+- d9c0c49: Use MongoDB 8 sorted `updateOne` for lower-contention job acquisition, with automatic fallback on
+  older servers, and update the MongoDB driver to support the optimized command.
+- Add configurable job acquisition partitions with randomized scheduler sweeps and automatic repair
+  of legacy or out-of-range job records.
+- Updated dependencies [d9c0c49]
+  - @orion-js/mongodb@4.5.2
+
 ## 4.6.4
 
 ### Patch Changes

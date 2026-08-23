@@ -1,5 +1,14 @@
 # @orion-js/components
 
+## 4.5.5
+
+### Patch Changes
+
+- Updated dependencies [d9c0c49]
+- Updated dependencies
+  - @orion-js/dogs@4.6.5
+  - @orion-js/mongodb@4.5.2
+
 ## 4.5.4
 
 ### Patch Changes
