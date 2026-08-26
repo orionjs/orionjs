@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.6.7
+
+### Patch Changes
+
+- Serialize and coalesce concurrent execution lock renewals so MongoDB writes and stale watchdogs cannot race or leave orphan timers.
+
 ## 4.6.6
 
 ### Patch Changes
