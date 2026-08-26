@@ -107,6 +107,7 @@
       {
         "tab": "Blog",
         "pages": [
+          "blog/dogs-concurrent-lock-renewals",
           "blog/dogs-partitioned-job-claims",
           "blog/dogs-adaptive-mongodb-hint",
           "blog/dogs-central-scheduler",

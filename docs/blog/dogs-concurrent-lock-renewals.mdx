@@ -1,0 +1,90 @@
+---
+title: 'Dogs makes lock heartbeats concurrency-safe'
+description: 'Serialize overlapping lock extensions, coalesce heartbeat bursts, and keep the watchdog aligned with MongoDB'
+---
+
+Long-running Dogs jobs often renew their execution lock from more than one place. A periodic
+heartbeat may call `context.extendLockTime()` while a progress callback renews the same lock at the
+same time.
+
+Before `@orion-js/dogs@4.6.7`, those calls could overlap while MongoDB was updating the job record.
+Each call cleared the local stale watchdog, waited for its own database update, and then installed a
+new watchdog. Both timers remained active, but only the last handle was retained. The orphaned timer
+could mark a healthy execution stale even though later heartbeats had successfully renewed its
+MongoDB lock.
+
+Dogs now owns the complete concurrency boundary around lock renewal. Applications keep the same
+`ExecutionContext` API and do not need a mutex around heartbeats.
+
+## One MongoDB renewal at a time
+
+`extendLockTime()` now uses one single-flight renewal loop per execution. While a MongoDB update is
+pending, additional pulses are coalesced into at most one follow-up update.
+
+```text
+heartbeat ------> MongoDB renewal 1 ----------------> watchdog 1
+progress pulse ---------> coalesced renewal 2 ------> watchdog 2
+more pulses ------------> same pending renewal 2
+```
+
+There are never concurrent lock-renewal writes for the same execution. This prevents an older write
+from arriving after a newer write and reducing `lockedUntil`. If concurrent pulses request different
+durations, Dogs retains the longest pending duration.
+
+The pending state is constant-size: a burst of heartbeats does not create an unbounded promise or
+database-operation queue.
+
+## Keep one local watchdog
+
+Successful renewal replaces the current stale watchdog through one code path. Dogs clears the old
+timer before installing its replacement, so an execution owns either zero or one active watchdog
+and cannot leave an unreferenced timer behind.
+
+The local deadline is derived when the MongoDB renewal starts:
+
+```text
+lockedUntil = renewalStartedAt + extraTime
+watchdog delay = lockedUntil - responseReceivedAt
+```
+
+MongoDB response latency therefore consumes part of the requested lock duration instead of being
+added to it. The local watchdog expires at the deadline written for the lock. If the response arrives
+after that deadline, the watchdog becomes immediately eligible to mark the execution stale.
+
+## Terminal execution states win
+
+Dogs rechecks execution state after every asynchronous renewal. A completed or stale execution
+cannot install another timer, and `clearStaleTimeout()` permanently disarms the watchdog for that
+execution context. This also protects against a heartbeat callback that was already waiting for
+MongoDB when the job finished.
+
+If MongoDB reports that the `lockId` no longer owns the job, Dogs invokes stale handling exactly
+once. A database error keeps the existing behavior: the execution becomes stale and the original
+error rejects `extendLockTime()`.
+
+## Application code does not change
+
+Periodic and progress-driven renewals can safely coexist:
+
+```typescript
+async resolve(params, context) {
+  const heartbeat = setInterval(() => {
+    void context.extendLockTime(60_000)
+  }, 15_000)
+
+  try {
+    return await processFile(params.fileId, {
+      onProgress: async () => {
+        await context.extendLockTime(60_000)
+      },
+    })
+  } finally {
+    clearInterval(heartbeat)
+  }
+}
+```
+
+No job retry settings or `maxTries` behavior changed. Upgrade Dogs to `4.6.7` to apply the fix to
+every consumer using `ExecutionContext.extendLockTime()`.
+
+See the [Jobs guide](/overview/controllers/jobs) for job and lock-time configuration.

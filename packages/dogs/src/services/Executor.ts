@@ -41,38 +41,122 @@ export class Executor {
     isExecutionActive: () => boolean,
   ): ExecutionContext {
     const effectiveLockTime = this.getEffectiveLockTime(job, jobToRun)
-    let staleTimeout = setTimeout(() => onStale(), effectiveLockTime)
-    staleTimeout.unref?.()
     const contextLogger = logger.addMetadata({
       jobName: jobToRun.name,
       jobId: jobToRun.jobId,
     })
+    let staleTimeout: ReturnType<typeof setTimeout> | undefined
+    let watchdogCleared = false
+    let staleReported = false
+    let pendingExtraTime: number | undefined
+    let renewalRunning = false
+    let renewalPromise: Promise<void> | undefined
+
+    const clearCurrentStaleTimeout = () => {
+      if (staleTimeout === undefined) return
+      clearTimeout(staleTimeout)
+      staleTimeout = undefined
+    }
+
+    const reportStale = () => {
+      if (staleReported) return
+      staleReported = true
+      watchdogCleared = true
+      pendingExtraTime = undefined
+      clearCurrentStaleTimeout()
+      onStale()
+    }
+
+    const armStaleTimeout = (lockedUntil: number) => {
+      if (watchdogCleared || staleReported || !isExecutionActive()) return
+
+      clearCurrentStaleTimeout()
+      staleTimeout = setTimeout(
+        () => {
+          staleTimeout = undefined
+          reportStale()
+        },
+        Math.max(0, lockedUntil - Date.now()),
+      )
+      staleTimeout.unref?.()
+    }
+
+    const runRenewals = async () => {
+      try {
+        while (pendingExtraTime !== undefined) {
+          const extraTime = pendingExtraTime
+          pendingExtraTime = undefined
+
+          if (watchdogCleared || staleReported || !isExecutionActive()) {
+            clearCurrentStaleTimeout()
+            return
+          }
+
+          clearCurrentStaleTimeout()
+
+          // JobsRepo calculates lockedUntil synchronously when this call starts. Keep the local
+          // watchdog on that same deadline instead of adding Mongo response latency to the lock.
+          const lockedUntil = Date.now() + extraTime
+          let didExtend = false
+          try {
+            didExtend = await this.jobsRepo.extendLockTime(
+              jobToRun.jobId,
+              extraTime,
+              jobToRun.lockId,
+            )
+          } catch (error) {
+            reportStale()
+            throw error
+          }
+
+          if (!didExtend) {
+            reportStale()
+            return
+          }
+
+          if (watchdogCleared || staleReported || !isExecutionActive()) {
+            pendingExtraTime = undefined
+            clearCurrentStaleTimeout()
+            return
+          }
+
+          armStaleTimeout(lockedUntil)
+        }
+      } finally {
+        // Clear the single-flight state before the promise settles so a pulse queued in the same
+        // microtask checkpoint cannot attach itself to a renewal loop that has already stopped.
+        renewalRunning = false
+        renewalPromise = undefined
+      }
+    }
+
+    armStaleTimeout(Date.now() + effectiveLockTime)
 
     return {
       definition: job,
       record: jobToRun,
       tries: jobToRun.tries || 0,
-      clearStaleTimeout: () => clearTimeout(staleTimeout),
-      extendLockTime: async (extraTime: number) => {
-        if (!isExecutionActive()) {
+      clearStaleTimeout: () => {
+        watchdogCleared = true
+        pendingExtraTime = undefined
+        clearCurrentStaleTimeout()
+      },
+      extendLockTime: (extraTime: number) => {
+        if (watchdogCleared || staleReported || !isExecutionActive()) {
           contextLogger.warn(`Will not extend lock for stale execution "${jobToRun.executionId}"`)
-          return
+          return Promise.resolve()
         }
 
-        clearTimeout(staleTimeout)
-        let didExtend = false
-        try {
-          didExtend = await this.jobsRepo.extendLockTime(jobToRun.jobId, extraTime, jobToRun.lockId)
-        } catch (error) {
-          onStale()
-          throw error
+        // One pending duration coalesces any number of pulses while Mongo is busy. Keeping the
+        // longest duration prevents a shorter coalesced pulse from reducing the intended lock.
+        pendingExtraTime = Math.max(pendingExtraTime ?? extraTime, extraTime)
+
+        if (!renewalRunning) {
+          renewalRunning = true
+          renewalPromise = runRenewals()
         }
-        if (!didExtend) {
-          onStale()
-          return
-        }
-        staleTimeout = setTimeout(() => onStale(), extraTime)
-        staleTimeout.unref?.()
+
+        return renewalPromise ?? Promise.resolve()
       },
       logger: contextLogger,
     }
