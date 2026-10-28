@@ -12,8 +12,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@apollo/server": "^4.3.0",
-    "@graphql-tools/schema": "^9.0.12",
+    "@apollo/server": "^5.5.1",
     "@orion-js/env": "4.5.0",
     "@orion-js/helpers": "4.5.0",
     "@orion-js/http": "4.5.0",
@@ -26,15 +25,15 @@
     "graphql-subscriptions": "2.0.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.11.2",
-    "subscriptions-transport-ws": "^0.11.0",
-    "ws": "^8.11.0"
+    "ws": "^8.11.0",
+    "@as-integrations/express4": "^1.1.2"
   },
   "devDependencies": {
     "@apollo/client": "^3.7.3",
     "@types/node": "^18.0.0",
     "@types/supertest": "2.0.12",
     "@types/ws": "^8.5.4",
-    "graphql": "^16.6.0",
+    "graphql": "^16.11.0",
     "supertest": "^6.3.3",
     "superwstest": "^2.0.3",
     "tsup": "^8.0.1",
@@ -42,7 +41,7 @@
   },
   "peerDependencies": {
     "@orion-js/logger": "4.5.0",
-    "graphql": "*"
+    "graphql": "^16.11.0"
   },
   "publishConfig": {
     "access": "public"

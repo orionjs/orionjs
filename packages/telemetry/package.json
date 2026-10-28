@@ -12,10 +12,10 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.56.1",
-    "@opentelemetry/exporter-prometheus": "^0.57.2",
-    "@opentelemetry/host-metrics": "^0.35.5",
-    "@opentelemetry/sdk-node": "^0.57.2"
+    "@opentelemetry/auto-instrumentations-node": "^0.81.2",
+    "@opentelemetry/exporter-prometheus": "^0.223.0",
+    "@opentelemetry/host-metrics": "^0.39.0",
+    "@opentelemetry/sdk-node": "^0.223.0"
   },
   "peerDependencies": {
     "@orion-js/logger": "4.5.0"
