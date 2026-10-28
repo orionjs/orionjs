@@ -1,5 +1,13 @@
 # @orion-js/echoes-orion
 
+## 4.5.1
+
+### Patch Changes
+
+- Updated dependencies [800e577]
+  - @orion-js/http@4.5.1
+  - @orion-js/echoes@4.5.8
+
 ## 4.5.0
 
 ### Minor Changes

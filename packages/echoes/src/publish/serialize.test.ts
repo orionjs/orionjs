@@ -172,6 +172,14 @@ describe('serializeEchoesPayload', () => {
     expect(fixedOutput).toBe(legacyOutput)
   })
 
+  it('matches the serialize-javascript v6 wire format so mixed-version services interoperate', () => {
+    // Output captured with serialize-javascript@6.0.2. Echoes v6 and v7 consumers eval this string.
+    const expectedV6Output =
+      '{"string":"echoes","number":42,"infinity":Infinity,"negativeInfinity":-Infinity,"notANumber":null,"boolean":true,"nil":null,"undefinedValue":undefined,"bigint":BigInt("9007199254740993"),"date":new Date("2026-08-04T12:00:00.000Z"),"regexp":new RegExp("echoes", "giu"),"map":new Map([["order",{"_id":"order-id","nested":{}}],[{"key":"object"},new Set([1,undefined,{"_id":"set-order","nested":{}}])]]),"set":new Set([{"_id":"order-id","nested":{}},"value",undefined]),"url":new URL("https:\\u002F\\u002Fwww.orionjs.com\\u002Foverview\\u002Fcontrollers\\u002Fechoes?transport=kafka"),"buffer":{"type":"Buffer","data":[0,127,255]},"typedArray":{"0":1,"1":256,"2":65535},"array":[{"_id":"order-id","nested":{}},undefined,new RegExp("nested", "i")],"sparse":Array.prototype.slice.call({"0":"first","2":undefined,"4":BigInt("42"),"length":5}),"repeated":{"first":{"_id":"order-id","nested":{}},"second":{"_id":"order-id","nested":{}}},"privateModel":{"_id":"private-model","status":"ready","nested":{}}}'
+
+    expect(serializeEchoesPayload(createRepresentativePayload())).toBe(expectedV6Output)
+  })
+
   it('preserves the existing supported runtime types and sparse arrays', () => {
     const payload = createRepresentativePayload()
     const sparseFunction = payload.sparse[3]

@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/echoes-orion",
-  "version": "4.5.0",
+  "version": "4.5.1",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -16,17 +16,17 @@
     "dev": "tsup --watch"
   },
   "peerDependencies": {
-    "@orion-js/echoes": "^4.5.7",
+    "@orion-js/echoes": "^4.5.8",
     "@orion-js/helpers": "4.5.0",
-    "@orion-js/http": "4.5.0",
+    "@orion-js/http": "4.5.1",
     "@orion-js/logger": "4.5.0",
     "@orion-js/schema": "4.5.0",
     "@orion-js/services": "4.5.0"
   },
   "devDependencies": {
-    "@orion-js/echoes": "4.5.7",
+    "@orion-js/echoes": "4.5.8",
     "@orion-js/helpers": "4.5.0",
-    "@orion-js/http": "4.5.0",
+    "@orion-js/http": "4.5.1",
     "@orion-js/logger": "4.5.0",
     "@orion-js/schema": "4.5.0",
     "@orion-js/services": "4.5.0",

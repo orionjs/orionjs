@@ -1,6 +1,7 @@
 import {createResolver} from '@orion-js/resolvers'
 import {generateId, generateUUID} from '@orion-js/helpers'
-import AWS from 'aws-sdk'
+import {S3Client} from '@aws-sdk/client-s3'
+import {createPresignedPost} from '@aws-sdk/s3-presigned-post'
 import {getAWSCredentials} from '../credentials'
 import {Files} from '../Files'
 import {schemaWithName} from '@orion-js/schema'
@@ -43,12 +44,12 @@ export const generateUploadCredentials = createResolver({
       canUpload,
       basePath,
     } = getAWSCredentials()
-    const s3 = new AWS.S3({
-      accessKeyId,
-      secretAccessKey,
+    const s3 = new S3Client({
+      // without keys, fall back to the default AWS credential chain like aws-sdk v2 did
+      credentials: accessKeyId ? {accessKeyId, secretAccessKey} : undefined,
       region,
       endpoint,
-      s3ForcePathStyle,
+      forcePathStyle: s3ForcePathStyle,
     })
 
     if (canUpload) {
@@ -69,32 +70,23 @@ export const generateUploadCredentials = createResolver({
       createdAt: new Date(),
     })
 
-    const result = await new Promise<AWS.S3.PresignedPost>((resolve, reject) => {
-      s3.createPresignedPost(
-        {
-          Bucket: bucket,
-          Conditions: [
-            ['content-length-range', params.size, params.size],
-            {'Content-Type': params.type},
-            {'Cache-Control': 'public, max-age=31536000, immutable'},
-            {Key: key},
-          ],
-          Fields: {
-            key: key,
-            'Content-Type': params.type,
-            'Cache-Control': 'public, max-age=31536000, immutable',
-          },
-        },
-        (error, data) => {
-          if (error) reject(error)
-          else resolve(data)
-        },
-      )
+    const result = await createPresignedPost(s3, {
+      Bucket: bucket,
+      Key: key,
+      Conditions: [
+        ['content-length-range', params.size, params.size],
+        {'Content-Type': params.type},
+        {'Cache-Control': 'public, max-age=31536000, immutable'},
+      ],
+      Fields: {
+        'Content-Type': params.type,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
     })
 
     return {
       fileId,
-      ...(result as any),
+      ...result,
       key,
     }
   },

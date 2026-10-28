@@ -4,7 +4,7 @@ import startWebsocket from './startWebsocket'
 import {getApp, getServer, registerRoute, route} from '@orion-js/http'
 import {StartGraphQLOptions} from './types/startGraphQL'
 import {ApolloServer} from '@apollo/server'
-import {expressMiddleware} from '@apollo/server/express4'
+import {expressMiddleware} from '@as-integrations/express4'
 import {ApolloServerPluginDrainHttpServer} from '@apollo/server/plugin/drainHttpServer'
 
 export default async function (options: StartGraphQLOptions) {

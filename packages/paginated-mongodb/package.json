@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/paginated-mongodb",
-  "version": "4.5.2",
+  "version": "4.5.3",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -22,7 +22,7 @@
     "@orion-js/schema": "4.5.0",
     "@orion-js/services": "4.5.0",
     "@orion-js/typed-model": "4.5.0",
-    "@orion-js/graphql": "4.5.0"
+    "@orion-js/graphql": "4.5.1"
   },
   "peerDependencies": {
     "@orion-js/logger": "4.5.0",
