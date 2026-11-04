@@ -17,6 +17,7 @@ import {
   PendingFilterChecks,
 } from './jobFilters'
 import {createShuffledPartitions, getRandomPartition, validatePartitionsCount} from './partitions'
+import {raceWithStop} from './raceWithStop'
 
 const FILTERED_JOB_NAMES_ACQUISITION_HINT = 'byJobName' as const satisfies JobAcquisitionHint
 
@@ -47,8 +48,8 @@ interface InternalWorkersInstance extends WorkersInstance {
   partitionReconcilerTimer?: ReturnType<typeof setTimeout>
   cancelPartitionReconcilerWait?: () => void
   schedulerPromise: Promise<void>
-  stopSignal: Promise<void>
-  signalStop: () => void
+  stopController: AbortController
+  notifyCapacityReleased?: () => void
   stopPromise?: Promise<void>
 }
 
@@ -123,6 +124,7 @@ export class WorkerService {
     workersInstance.activeExecutions.delete(execution.job.executionId)
     this.releaseJobExecution(workersInstance, execution.job.name)
     execution.releaseCapacity()
+    workersInstance.notifyCapacityReleased?.()
 
     if (nextStatus === 'stale') {
       workersInstance.staleExecutions.set(execution.job.executionId, execution)
@@ -171,17 +173,29 @@ export class WorkerService {
   }
 
   async waitForPollOrStop(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
-    await Promise.race([sleep(config.pollInterval), workersInstance.stopSignal])
+    await raceWithStop({
+      promise: sleep(config.pollInterval),
+      signal: workersInstance.stopController.signal,
+    })
   }
 
   async waitForCapacityOrStop(workersInstance: InternalWorkersInstance) {
-    const capacityPromises = Array.from(
-      workersInstance.activeExecutions.values(),
-      execution => execution.capacityPromise,
-    )
+    if (workersInstance.activeExecutions.size === 0) return
 
-    if (capacityPromises.length === 0) return
-    await Promise.race([...capacityPromises, workersInstance.stopSignal])
+    // A fresh promise per wait: racing the executions' capacity promises would attach one reaction
+    // per wait to each long-running execution.
+    const capacityReleased = new Promise<void>(resolve => {
+      workersInstance.notifyCapacityReleased = resolve
+    })
+
+    try {
+      await raceWithStop({
+        promise: capacityReleased,
+        signal: workersInstance.stopController.signal,
+      })
+    } finally {
+      workersInstance.notifyCapacityReleased = undefined
+    }
   }
 
   getNextPartition(config: StartWorkersConfig, workersInstance: InternalWorkersInstance) {
@@ -228,16 +242,17 @@ export class WorkerService {
           }
 
           // stop() must not wait for a slow user filter
-          const availableJobNames = await Promise.race([
-            getTakeableJobNames({
+          const availableJobNames = await raceWithStop({
+            promise: getTakeableJobNames({
               jobs: config.jobs,
               getJobsFilter: config.getJobsFilter,
               jobNames: jobNamesWithCapacity,
               timeoutMs: this.jobsFilterTimeoutMs,
               pendingChecks: workersInstance.pendingFilterChecks,
             }),
-            workersInstance.stopSignal.then((): string[] => []),
-          ])
+            signal: workersInstance.stopController.signal,
+            valueOnStop: [] as string[],
+          })
           if (!workersInstance.running) break
 
           if (availableJobNames.length === 0) {
@@ -475,11 +490,6 @@ export class WorkerService {
   }
 
   createWorkersInstanceDefinition(config: StartWorkersConfig): InternalWorkersInstance {
-    let signalStop!: () => void
-    const stopSignal = new Promise<void>(resolve => {
-      signalStop = resolve
-    })
-
     const workersInstance: InternalWorkersInstance = {
       running: true,
       workersCount: config.workersCount,
@@ -496,8 +506,7 @@ export class WorkerService {
       jobAcquisitionHintProbePromise: Promise.resolve(),
       partitionReconcilerPromise: Promise.resolve(),
       schedulerPromise: Promise.resolve(),
-      stopSignal,
-      signalStop,
+      stopController: new AbortController(),
       get runningExecutions() {
         return this.activeExecutions.size
       },
@@ -507,7 +516,7 @@ export class WorkerService {
         workersInstance.stopPromise = (async () => {
           logger.info('Stopping job scheduler...')
           workersInstance.running = false
-          workersInstance.signalStop()
+          workersInstance.stopController.abort()
           workersInstance.cancelJobAcquisitionHintProbeWait?.()
           workersInstance.cancelPartitionReconcilerWait?.()
 
@@ -606,7 +615,7 @@ export class WorkerService {
 
     workersInstance.schedulerPromise = this.runScheduler(config, workersInstance).catch(error => {
       workersInstance.running = false
-      workersInstance.signalStop()
+      workersInstance.stopController.abort()
       workersInstance.cancelJobAcquisitionHintProbeWait?.()
       workersInstance.cancelPartitionReconcilerWait?.()
       logger.error('Job scheduler stopped after an unexpected error.', {error})
