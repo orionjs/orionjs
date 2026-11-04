@@ -21,7 +21,7 @@
     "@orion-js/resolvers": "4.5.0",
     "@orion-js/schema": "4.5.0",
     "@orion-js/services": "4.5.0",
-    "body-parser": "1.20.3",
+    "body-parser": "1.20.6",
     "express": "4.21.2"
   },
   "peerDependencies": {
