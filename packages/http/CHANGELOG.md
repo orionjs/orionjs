@@ -1,5 +1,11 @@
 # @orion-js/http
 
+## 4.6.0
+
+### Minor Changes
+
+- Security: express `4.21.2` → `~4.22.3` and body-parser `1.20.3` → `~1.20.9`.
+
 ## 4.5.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @orion-js/echoes
 
+## 4.6.0
+
+### Minor Changes
+
+- Security: serialize-javascript `^6.0.0` → `^7.1.4`. **Breaking:** requires Node 20+. The wire format is unchanged.
+
 ## 4.5.7
 
 ### Patch Changes

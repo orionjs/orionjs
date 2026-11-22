@@ -1,5 +1,11 @@
 # @orion-js/dogs
 
+## 4.6.11
+
+### Patch Changes
+
+- Updated dependencies to the coordinated OrionJS 4.6 release.
+
 ## 4.6.10
 
 ### Patch Changes

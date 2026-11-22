@@ -1,5 +1,11 @@
 # @orion-js/paginated-mongodb
 
+## 4.6.0
+
+### Minor Changes
+
+- Align this package with the coordinated OrionJS 4.6 release.
+
 ## 4.5.2
 
 ### Patch Changes
