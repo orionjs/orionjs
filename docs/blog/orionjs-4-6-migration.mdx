@@ -1,0 +1,65 @@
+---
+title: 'Upgrading to OrionJS 4.6'
+description: 'A security release that moves GraphQL to Apollo Server 5, telemetry to OpenTelemetry SDK 2.x, and file uploads to AWS SDK v3'
+---
+
+OrionJS 4.6 is a security release. It updates the dependencies behind the open advisories in
+`@orion-js/http`, `@orion-js/graphql`, `@orion-js/echoes`, `@orion-js/telemetry`, and
+`@orion-js/file-manager`. No OrionJS API changed.
+
+OrionJS minor releases are coordinated: every `@orion-js/*` package is published on `4.6`. Upgrade
+all OrionJS packages used by an application together. Internal dependencies are pinned to exact
+versions, so mixing 4.5 and 4.6 installs two copies of packages such as `@orion-js/http` in the same
+process.
+
+```bash
+bun update --latest $(node -p "Object.keys({...require('./package.json').dependencies, ...require('./package.json').devDependencies}).filter(n => n.startsWith('@orion-js/')).join(' ')")
+```
+
+## What you need to change
+
+### Node.js 20 or newer
+
+Apollo Server 5 and `serialize-javascript` 7 require Node.js 20+.
+
+### `graphql` 16.11 or newer
+
+`@orion-js/graphql` now runs on Apollo Server 5 through `@as-integrations/express4`, and its peer
+dependency is `graphql ^16.11.0`.
+
+```bash
+bun add graphql@^16.11.0
+```
+
+### Declare dependencies you were getting transitively
+
+Some packages are no longer installed by OrionJS. If your application imports one of them without
+declaring it, add it to your own `package.json`:
+
+| Package | Why it changed |
+| --- | --- |
+| `aws-sdk` (v2) | `@orion-js/file-manager` now uses `@aws-sdk/client-s3` and `@aws-sdk/s3-presigned-post` |
+| `@graphql-tools/schema`, `subscriptions-transport-ws` | Removed from `@orion-js/graphql`; they were not used |
+| `lru-cache` | Apollo Server 4 installed v7 (default export); Apollo Server 5 installs v11 (named `LRUCache` export) |
+
+### OpenTelemetry packages
+
+`@orion-js/telemetry` moves to OpenTelemetry SDK 0.223 (core 2.x). If your application declares its
+own `@opentelemetry/*` packages, move them to the same line. Mixing SDK 1.x and 2.x packages in one
+process is not supported by OpenTelemetry.
+
+## What did not change
+
+- The Echoes event and request wire formats. 4.5 and 4.6 services can communicate while you deploy.
+- The GraphQL websocket server, which still uses `graphql-ws`.
+- The response shape of `generateUploadCredentials`.
+
+## Dependency changes by package
+
+| Package | Change |
+| --- | --- |
+| `@orion-js/http` | express `4.21.2` → `~4.22.3`, body-parser `1.20.3` → `~1.20.9` |
+| `@orion-js/graphql` | `@apollo/server` `^4.3.0` → `^5.5.1`, adds `@as-integrations/express4` and `express` |
+| `@orion-js/echoes` | serialize-javascript `^6.0.0` → `^7.1.4` |
+| `@orion-js/telemetry` | OpenTelemetry SDK `0.57` → `0.223`, host-metrics `0.35` → `0.39`, adds `@opentelemetry/api` |
+| `@orion-js/file-manager` | aws-sdk v2 → AWS SDK v3 |

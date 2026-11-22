@@ -1,5 +1,11 @@
 # @orion-js/file-manager
 
+## 4.6.0
+
+### Minor Changes
+
+- Replace aws-sdk v2 with `@aws-sdk/client-s3` and `@aws-sdk/s3-presigned-post`. **Breaking:** `aws-sdk` is no longer installed transitively; apps that import it must declare it.
+
 ## 4.5.2
 
 ### Patch Changes

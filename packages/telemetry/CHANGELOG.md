@@ -1,5 +1,11 @@
 # @orion-js/telemetry
 
+## 4.6.0
+
+### Minor Changes
+
+- Security: move to OpenTelemetry SDK 0.223 (core 2.x). **Breaking:** apps that declare their own `@opentelemetry/*` packages must move them to the same line. Declares `@opentelemetry/api` explicitly.
+
 ## 4.5.0
 
 ### Minor Changes

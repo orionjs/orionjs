@@ -1,5 +1,11 @@
 # @orion-js/graphql
 
+## 4.6.0
+
+### Minor Changes
+
+- Security: move to Apollo Server 5 through `@as-integrations/express4`. **Breaking:** requires `graphql ^16.11.0` and Node 20+. Removes the unused `@graphql-tools/schema` and `subscriptions-transport-ws` dependencies and declares `express` explicitly.
+
 ## 4.5.0
 
 ### Minor Changes

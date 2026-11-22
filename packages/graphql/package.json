@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/graphql",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -13,20 +13,21 @@
   },
   "dependencies": {
     "@apollo/server": "^5.5.1",
-    "@orion-js/env": "4.5.0",
-    "@orion-js/helpers": "4.5.0",
-    "@orion-js/http": "4.5.0",
-    "@orion-js/models": "4.5.0",
-    "@orion-js/resolvers": "4.5.0",
-    "@orion-js/schema": "4.5.0",
-    "@orion-js/services": "4.5.0",
-    "@orion-js/typed-model": "4.5.0",
+    "@orion-js/env": "4.6.0",
+    "@orion-js/helpers": "4.6.0",
+    "@orion-js/http": "4.6.0",
+    "@orion-js/models": "4.6.0",
+    "@orion-js/resolvers": "4.6.0",
+    "@orion-js/schema": "4.6.0",
+    "@orion-js/services": "4.6.0",
+    "@orion-js/typed-model": "4.6.0",
     "graphql-scalars": "^1.24.1",
     "graphql-subscriptions": "2.0.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.11.2",
     "ws": "^8.11.0",
-    "@as-integrations/express4": "^1.1.2"
+    "@as-integrations/express4": "^1.1.2",
+    "express": "~4.22.3"
   },
   "devDependencies": {
     "@apollo/client": "^3.7.3",
@@ -40,7 +41,7 @@
     "typescript": "^7.0.2"
   },
   "peerDependencies": {
-    "@orion-js/logger": "4.5.0",
+    "@orion-js/logger": "4.6.0",
     "graphql": "^16.11.0"
   },
   "publishConfig": {

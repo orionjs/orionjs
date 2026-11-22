@@ -1,6 +1,6 @@
 {
   "name": "@orion-js/telemetry",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "main": "./dist/index.cjs",
   "author": "nicolaslopezj",
   "license": "MIT",
@@ -15,10 +15,11 @@
     "@opentelemetry/auto-instrumentations-node": "^0.81.2",
     "@opentelemetry/exporter-prometheus": "^0.223.0",
     "@opentelemetry/host-metrics": "^0.39.0",
-    "@opentelemetry/sdk-node": "^0.223.0"
+    "@opentelemetry/sdk-node": "^0.223.0",
+    "@opentelemetry/api": "^1.9.0"
   },
   "peerDependencies": {
-    "@orion-js/logger": "4.5.0"
+    "@orion-js/logger": "4.6.0"
   },
   "devDependencies": {
     "typescript": "^7.0.2",
